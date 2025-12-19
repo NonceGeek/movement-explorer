@@ -9,13 +9,25 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@apollo/client": "^4.0.11",
+    "@aptos-labs/ts-sdk": "^5.2.0",
+    "@aptos-labs/wallet-adapter-react": "^7.2.6",
+    "@tanstack/react-query": "^5.90.12",
+    "aptos": "^1.22.1",
+    "graphql": "^16.12.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.30.1",
     "next": "16.0.10",
+    "pako": "^2.1.0",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "zustand": "^5.0.9"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/lodash": "^4.17.21",
     "@types/node": "^20",
+    "@types/pako": "^2.0.4",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

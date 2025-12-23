@@ -6,6 +6,7 @@ import { getTransactions } from "@/services/transactions";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import Link from "next/link";
 import { Types } from "aptos";
+import { SearchBar } from "@/components/search";
 
 function formatNumber(num: number | string): string {
   return Number(num).toLocaleString();
@@ -54,10 +55,13 @@ export default function HomePage() {
     <div className="container mx-auto px-4 py-8">
       {/* Hero Section */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold mb-2">Movement Explorer</h1>
-        <p className="text-muted-foreground">
+        <h1 className="text-4xl font-bold mb-2">Explorer</h1>
+        <p className="text-muted-foreground mb-6">
           Explore blocks, transactions, and accounts on the Movement network.
         </p>
+
+        {/* Search Bar */}
+        <SearchBar />
       </div>
 
       {/* Network Stats Cards */}

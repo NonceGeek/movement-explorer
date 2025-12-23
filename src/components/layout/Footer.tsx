@@ -32,13 +32,13 @@ const socialLinks = [
 
 export default function Footer() {
   return (
-    <footer className="border-t border-border bg-primary text-primary-foreground">
+    <footer className="border-t border-border bg-muted/50 text-foreground">
       <div className="container mx-auto px-4 py-8">
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
           {/* Logo and Copyright */}
           <div className="flex flex-col items-center md:items-start gap-2">
             <Link href="/" className="font-bold text-lg">
-              Movement Explorer
+              Explorer
             </Link>
             <p className="text-sm opacity-80">
               © {new Date().getFullYear()} Movement Network Foundation

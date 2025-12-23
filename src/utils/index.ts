@@ -295,3 +295,38 @@ export function parseTimestamp(
     return moment(parseInt(time.toString()));
   }
 }
+
+/**
+ * Validate if a string is a valid account address (66-char hex with 0x prefix)
+ */
+export function isValidAccountAddress(address: string): boolean {
+  try {
+    AccountAddress.from(address);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Check if a string is a 32-byte hex (0x followed by 64 hex chars)
+ */
+export function is32ByteHex(text: string): boolean {
+  return /^0x[a-fA-F0-9]{64}$/.test(text);
+}
+
+/**
+ * Truncate an address for display
+ */
+export function truncateAddress(address: string): string {
+  if (!address) return "";
+  if (address.length <= 12) return address;
+  return `${address.slice(0, 6)}...${address.slice(-4)}`;
+}
+
+/**
+ * Check if a string is a valid struct type (e.g., "0x1::coin::CoinInfo")
+ */
+export function isValidStruct(text: string): boolean {
+  return /^0x[a-fA-F0-9]+::\w+::\w+/.test(text);
+}

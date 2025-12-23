@@ -1,6 +1,11 @@
+"use client";
+
 import { useQuery } from "@tanstack/react-query";
-import { MovementVerifiedToken, CoinDescription } from "../../types";
-import { HardCodedCoins } from "../../constants";
+import {
+  CoinDescription,
+  MovementVerifiedToken,
+  HardCodedCoins,
+} from "./types";
 
 export function useGetVerifiedTokens() {
   return useQuery<Record<string, CoinDescription>>({
@@ -21,7 +26,8 @@ export function useGetVerifiedTokens() {
       const panoraTokens = HardCodedCoins;
 
       if (!movementRes.ok) {
-        throw new Error("Failed to fetch Movement Labs verified tokens");
+        console.error("Failed to fetch Movement Labs verified tokens");
+        return HardCodedCoins;
       }
 
       const movementTokens: Record<string, MovementVerifiedToken> =
@@ -30,7 +36,6 @@ export function useGetVerifiedTokens() {
       const normalizedMovementTokens: Record<string, CoinDescription> = {};
 
       // Convert MovementVerifiedToken to CoinDescription format
-      // i hate this
       for (const [faAddress, token] of Object.entries(movementTokens)) {
         normalizedMovementTokens[faAddress] = {
           ...token,

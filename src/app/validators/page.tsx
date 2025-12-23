@@ -1,7 +1,6 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useQuery } from "@tanstack/react-query";
+import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -13,134 +12,174 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Shield, Users, Coins, TrendingUp } from "lucide-react";
+import { Info } from "lucide-react";
 import Link from "next/link";
 import { truncateAddress } from "@/utils";
-
-interface ValidatorInfo {
-  addr: string;
-  voting_power: string;
-  config?: {
-    validator_index: string;
-    consensus_pubkey: string;
-    fullnode_addresses: string;
-    network_addresses: string;
-  };
-}
+import { useGetValidators } from "@/hooks/validators/useGetValidators";
+import { useGetValidatorSet } from "@/hooks/validators/useGetValidatorSet";
+import { useGetEpochTime } from "@/hooks/validators/useGetEpochTime";
+import { useGetStakingRewardsRate } from "@/hooks/validators/useGetStakingRewardsRate";
+import { StakingPromo } from "@/components/validators/StakingPromo";
+import { Progress } from "@/components/ui/progress";
+import { useEffect, useState } from "react";
 
 export default function ValidatorsPage() {
-  const { aptos_client, sdk_v2_client } = useGlobalStore();
+  const { validators } = useGetValidators();
+  const { totalVotingPower, numberOfActiveValidators } = useGetValidatorSet();
+  const { curEpoch, lastEpochTime, epochInterval } = useGetEpochTime();
+  const { rewardsRateYearly } = useGetStakingRewardsRate();
 
-  // Fetch validator set
-  const { data: validatorSet, isLoading: isLoadingValidators } = useQuery({
-    queryKey: ["validatorSet"],
-    queryFn: async () => {
-      try {
-        const resource = await aptos_client.getAccountResource(
-          "0x1",
-          "0x1::stake::ValidatorSet"
-        );
-        return resource.data as {
-          active_validators: ValidatorInfo[];
-          pending_active: ValidatorInfo[];
-          pending_inactive: ValidatorInfo[];
-          total_voting_power: string;
-          total_joining_power: string;
-        };
-      } catch (error) {
-        console.error("Failed to fetch validator set:", error);
-        return null;
-      }
-    },
-  });
+  // Epoch progress state
+  const [epochProgress, setEpochProgress] = useState(0);
+  const [timeRemaining, setTimeRemaining] = useState("");
 
-  // Fetch ledger info
-  const { data: ledgerInfo, isLoading: isLoadingLedger } = useQuery({
-    queryKey: ["ledgerInfo"],
-    queryFn: () => sdk_v2_client.getLedgerInfo(),
-  });
+  // Calculate epoch progress from real data
+  useEffect(() => {
+    if (lastEpochTime && epochInterval) {
+      const epochIntervalMs = parseInt(epochInterval) / 1000; // microseconds to ms
+      const lastReconfig = parseInt(lastEpochTime) / 1000; // microseconds to ms
+      const now = Date.now();
+      const timePassed = now - lastReconfig;
 
-  const isLoading = isLoadingValidators || isLoadingLedger;
-  const activeValidators = validatorSet?.active_validators ?? [];
-  const totalStake = validatorSet?.total_voting_power
-    ? (
-        BigInt(validatorSet.total_voting_power) / BigInt(10 ** 8)
-      ).toLocaleString()
+      // Calculate percentage complete
+      const percentComplete = Math.min(
+        100,
+        Math.floor((timePassed / epochIntervalMs) * 100)
+      );
+      setEpochProgress(percentComplete);
+
+      // Calculate time remaining
+      const remaining = Math.max(0, epochIntervalMs - timePassed);
+      const remainingSeconds = Math.floor(remaining / 1000);
+      const hours = Math.floor(remainingSeconds / 3600);
+      const minutes = Math.floor((remainingSeconds % 3600) / 60);
+      const seconds = remainingSeconds % 60;
+      setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
+    }
+  }, [lastEpochTime, epochInterval, curEpoch]);
+
+  // Update time remaining every second
+  useEffect(() => {
+    if (!lastEpochTime || !epochInterval) return;
+
+    const interval = setInterval(() => {
+      const epochIntervalMs = parseInt(epochInterval) / 1000;
+      const lastReconfig = parseInt(lastEpochTime) / 1000;
+      const now = Date.now();
+      const timePassed = now - lastReconfig;
+
+      const percentComplete = Math.min(
+        100,
+        Math.floor((timePassed / epochIntervalMs) * 100)
+      );
+      setEpochProgress(percentComplete);
+
+      const remaining = Math.max(0, epochIntervalMs - timePassed);
+      const remainingSeconds = Math.floor(remaining / 1000);
+      const hours = Math.floor(remainingSeconds / 3600);
+      const minutes = Math.floor((remainingSeconds % 3600) / 60);
+      const seconds = remainingSeconds % 60;
+      setTimeRemaining(`${hours}h ${minutes}m ${seconds}s`);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [lastEpochTime, epochInterval]);
+
+  const isLoading =
+    validators.length === 0 && numberOfActiveValidators === null;
+
+  // Calculate total stake
+  const totalStake = totalVotingPower
+    ? (BigInt(totalVotingPower) / BigInt(10 ** 8)).toLocaleString("en-US")
     : "-";
 
-  const stats = [
-    {
-      title: "Active Validators",
-      value: activeValidators.length.toString(),
-      icon: Shield,
-      description: "Currently active validators",
-    },
-    {
-      title: "Total Stake",
-      value: `${totalStake} MOVE`,
-      icon: Coins,
-      description: "Total staked across all validators",
-    },
-    {
-      title: "Current Epoch",
-      value: ledgerInfo?.epoch?.toLocaleString() ?? "-",
-      icon: TrendingUp,
-      description: "Current network epoch",
-    },
-    {
-      title: "Pending Validators",
-      value: (
-        (validatorSet?.pending_active?.length ?? 0) +
-        (validatorSet?.pending_inactive?.length ?? 0)
-      ).toString(),
-      icon: Users,
-      description: "Validators in transition",
-    },
-  ];
+  // Sort validators by voting power
+  const sortedValidators = [...validators].sort((a, b) =>
+    Number(BigInt(b.voting_power) - BigInt(a.voting_power))
+  );
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-8">Validators</h1>
+      <h1 className="text-3xl font-bold mb-6">Validators</h1>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat) => (
-          <Card key={stat.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
-                {stat.title}
-              </CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoading ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <div className="text-2xl font-bold">{stat.value}</div>
-              )}
-              <p className="text-xs text-muted-foreground mt-1">
-                {stat.description}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Staking Promo Banner */}
+      <StakingPromo />
+
+      {/* Stats Grid - 3 Cards like source project */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        {/* 1. Nodes */}
+        <Card className="h-[120px]">
+          <CardContent className="pt-6 flex flex-col justify-center h-full">
+            {isLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <div className="text-2xl font-bold">
+                {numberOfActiveValidators} Nodes
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 2. Epoch with Progress */}
+        <Card className="h-[120px]">
+          <CardContent className="pt-4 flex flex-col justify-center h-full space-y-2">
+            {!curEpoch ? (
+              <Skeleton className="h-8 w-32" />
+            ) : (
+              <>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl font-bold">
+                    Epoch {Number(curEpoch).toLocaleString("en-US")}
+                  </span>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  {epochProgress}% complete
+                </div>
+                <div className="flex items-center gap-2">
+                  <Progress value={epochProgress} className="h-2 flex-1" />
+                  <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                    {timeRemaining || "calculating..."}
+                  </span>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* 3. Staking */}
+        <Card className="h-[120px]">
+          <CardContent className="pt-6 flex flex-col justify-center h-full space-y-1">
+            {isLoading ? (
+              <Skeleton className="h-8 w-40" />
+            ) : (
+              <>
+                <div className="text-xl font-bold">
+                  {totalStake} MOVE Staked
+                </div>
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>{rewardsRateYearly ?? "-"}% APR Reward</span>
+                  <Info className="h-4 w-4" />
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Validators Table */}
+      {/* Delegation Validators Table */}
       <Card>
-        <CardHeader>
-          <CardTitle>Active Validators</CardTitle>
-        </CardHeader>
-        <CardContent>
+        <CardContent className="pt-6">
+          <h2 className="text-xl font-semibold mb-4">Delegation Validators</h2>
           {isLoading ? (
             <div className="space-y-3">
               {[...Array(5)].map((_, i) => (
                 <Skeleton key={i} className="h-12 w-full" />
               ))}
             </div>
-          ) : activeValidators.length === 0 ? (
+          ) : sortedValidators.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              No active validators found
+              No validators found
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -148,58 +187,67 @@ export default function ValidatorsPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-16">#</TableHead>
-                    <TableHead>Address</TableHead>
-                    <TableHead className="text-right">Voting Power</TableHead>
-                    <TableHead className="text-right">Share</TableHead>
+                    <TableHead>Staking Pool Address</TableHead>
+                    <TableHead>Operator Address</TableHead>
+                    <TableHead className="text-right">
+                      Delegated Amount
+                    </TableHead>
+                    <TableHead className="text-right">Network %</TableHead>
                     <TableHead>Status</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {activeValidators
-                    .sort((a, b) =>
-                      Number(BigInt(b.voting_power) - BigInt(a.voting_power))
-                    )
-                    .map((validator, index) => {
-                      const votingPower =
-                        BigInt(validator.voting_power) / BigInt(10 ** 8);
-                      const totalPower = validatorSet?.total_voting_power
-                        ? BigInt(validatorSet.total_voting_power)
-                        : BigInt(1);
-                      const share =
-                        (Number(BigInt(validator.voting_power)) /
-                          Number(totalPower)) *
-                        100;
+                  {sortedValidators.map((validator, index) => {
+                    const votingPower =
+                      BigInt(validator.voting_power) / BigInt(10 ** 8);
+                    const totalPower = totalVotingPower
+                      ? BigInt(totalVotingPower)
+                      : BigInt(1);
+                    const share =
+                      totalVotingPower && BigInt(totalVotingPower) > 0
+                        ? (Number(BigInt(validator.voting_power)) /
+                            Number(totalPower)) *
+                          100
+                        : 0;
 
-                      return (
-                        <TableRow key={validator.addr}>
-                          <TableCell className="font-medium">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/account/${validator.addr}`}
-                              className="text-primary hover:underline font-mono"
-                            >
-                              {truncateAddress(validator.addr)}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {votingPower.toLocaleString()} MOVE
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {share.toFixed(2)}%
-                          </TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className="bg-green-500/10 text-green-600 border-green-500/20"
-                            >
-                              Active
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                    return (
+                      <TableRow key={validator.owner_address}>
+                        <TableCell className="font-medium">
+                          {index + 1}
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/account/${validator.owner_address}`}
+                            className="text-primary hover:underline font-mono"
+                          >
+                            {truncateAddress(validator.owner_address)}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <Link
+                            href={`/account/${validator.operator_address}`}
+                            className="text-primary hover:underline font-mono"
+                          >
+                            {truncateAddress(validator.operator_address)}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-right font-mono">
+                          {votingPower.toLocaleString("en-US")} MOVE
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {share.toFixed(2)}%
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="bg-green-500/10 text-green-600 border-green-500/20"
+                          >
+                            Active
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
             </div>

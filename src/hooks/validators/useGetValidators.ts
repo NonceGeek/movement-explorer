@@ -1,10 +1,9 @@
 import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
 import { useGetValidatorSet } from "./useGetValidatorSet";
-import { standardizeAddress } from "../../utils";
 
-// Removed hardcoded URLs and network logic for now as it was commented out in original source or specific to mainnet/testnet explorer analytics
-// Can be re-enabled if valid URLs are provided
+// JSON validator stats loading is disabled until Movement has validator stats JSON files available
+// This includes performance metrics: rewards_growth, last_epoch_performance, liveness, location_stats, etc.
 
 export interface ValidatorData {
   owner_address: string;
@@ -29,30 +28,26 @@ export interface GeoData {
   epoch: number;
 }
 
+// JSON validator stats loading is disabled until Movement has validator stats JSON files available
+const EMPTY_VALIDATORS_RAW_DATA: ValidatorData[] = [];
+
 function useGetValidatorsRawData() {
-  const { network_name } = useGlobalStore();
-  const [validatorsRawData, setValidatorsRawData] = useState<ValidatorData[]>(
-    []
-  );
-
-  useEffect(() => {
-    // Original logic had fetches for MAINNET/TESTNET analytics data
-    // Currently disabled/mocked as per original file's behavior (most lines commented out)
-    // If needed, implement fetch logic here using network_name
-    setValidatorsRawData([]);
-  }, [network_name]);
-
-  return { validatorsRawData };
+  // Always return empty array - JSON stats loading is disabled
+  // Using a constant to avoid creating new array reference on each render
+  return { validatorsRawData: EMPTY_VALIDATORS_RAW_DATA };
 }
 
 export function useGetValidators() {
+  const { aptos_client } = useGlobalStore();
   const { activeValidators } = useGetValidatorSet();
   const { validatorsRawData } = useGetValidatorsRawData();
 
   const [validators, setValidators] = useState<ValidatorData[]>([]);
+  const [hasJsonStats, setHasJsonStats] = useState<boolean>(false);
 
   useEffect(() => {
     if (activeValidators.length > 0 && validatorsRawData.length > 0) {
+      // If we have JSON stats data, merge it with active validators
       const validatorsCopy = JSON.parse(JSON.stringify(validatorsRawData));
 
       validatorsCopy.forEach((validator: ValidatorData) => {
@@ -63,8 +58,47 @@ export function useGetValidators() {
       });
 
       setValidators(validatorsCopy);
-    }
-  }, [activeValidators, validatorsRawData]);
+      setHasJsonStats(true);
+    } else if (activeValidators.length > 0) {
+      // Fallback: use active validators directly when JSON stats are not available
+      // Fetch operator addresses from StakePool resources
+      const fetchOperatorAddresses = async () => {
+        const validatorsWithOperators: ValidatorData[] = await Promise.all(
+          activeValidators.map(async (v) => {
+            let operatorAddress = v.addr; // Default to owner address
+            try {
+              const response = await aptos_client.getAccountResource(
+                v.addr,
+                "0x1::stake::StakePool"
+              );
+              if (response?.data) {
+                const data = response.data as { operator_address: string };
+                operatorAddress = data.operator_address;
+              }
+            } catch (e) {
+              // If fetch fails, use owner address as fallback
+              console.warn(`Failed to fetch StakePool for ${v.addr}:`, e);
+            }
+            return {
+              owner_address: v.addr,
+              operator_address: operatorAddress,
+              voting_power: v.voting_power,
+              governance_voting_record: "",
+              last_epoch: 0,
+              last_epoch_performance: "",
+              liveness: 0,
+              rewards_growth: 0,
+              apt_rewards_distributed: 0,
+            };
+          })
+        );
+        setValidators(validatorsWithOperators);
+      };
 
-  return { validators };
+      fetchOperatorAddresses();
+      setHasJsonStats(false);
+    }
+  }, [activeValidators, validatorsRawData, aptos_client]);
+
+  return { validators, hasJsonStats };
 }

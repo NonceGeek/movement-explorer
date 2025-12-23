@@ -48,7 +48,7 @@ export default function Footer() {
           {/* Links */}
           <div className="flex items-center gap-6">
             <Link
-              href="https://movementlabs.xyz/"
+              href="https://movementnetwork.xyz/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm hover:opacity-80 transition-opacity"

@@ -33,21 +33,23 @@ export function useGetValidatorSet() {
   );
 
   useEffect(() => {
-    // Check if data exists and matches expected shape
-    if (validatorSet && "active_validators" in validatorSet) {
+    // Check if data exists - validatorSet is a MoveResource with .data property
+    if (validatorSet?.data) {
       // Need to cast to ValidatorSetData because Types.MoveResource is generic
-      const data = validatorSet as unknown as ValidatorSetData;
-      setTotalVotingPower(data.total_voting_power);
-      setNumberOfActiveValidators(data.active_validators.length);
-      setActiveValidators(
-        data.active_validators.map((validator) => {
-          const processedAddr = standardizeAddress(validator.addr);
-          return {
-            ...validator,
-            addr: processedAddr,
-          };
-        })
-      );
+      const data = validatorSet.data as unknown as ValidatorSetData;
+      if (data.active_validators) {
+        setTotalVotingPower(data.total_voting_power);
+        setNumberOfActiveValidators(data.active_validators.length);
+        setActiveValidators(
+          data.active_validators.map((validator) => {
+            const processedAddr = standardizeAddress(validator.addr);
+            return {
+              ...validator,
+              addr: processedAddr,
+            };
+          })
+        );
+      }
     }
   }, [validatorSet, network_value]);
 

@@ -82,13 +82,13 @@ export default function NavMobile() {
             <div className="h-px bg-border" />
 
             {/* Theme */}
-            <div className="px-4">
+            {/* <div className="px-4">
               <p className="text-sm text-muted-foreground mb-2">Theme</p>
               <ThemeToggle />
-            </div>
+            </div> */}
 
             {/* Divider */}
-            <div className="h-px bg-border" />
+            {/* <div className="h-px bg-border" /> */}
 
             {/* Wallet Connector */}
             <div className="px-4">

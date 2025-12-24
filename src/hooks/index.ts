@@ -6,6 +6,7 @@ export * from "./accounts/useGetAccountResources";
 export * from "./accounts/useGetAccountTransactions";
 export * from "./transactions/useGetTransaction";
 export * from "./transactions/useSubmitTransaction";
+export { default as useGetUserTransactionVersions } from "./transactions/useGetUserTransactionVersions";
 export * from "./blocks/useGetBlock";
 export * from "./blocks/useGetMostRecentBlocks";
 export * from "./coins/useGetCoinActivities";

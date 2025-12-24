@@ -15,7 +15,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Movement Explorer",
+  title: {
+    default: "Movement Explorer",
+    template: "%s | Movement Explorer",
+  },
   description:
     "Explore the Movement Network - Blocks, Transactions, and Accounts",
 };

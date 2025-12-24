@@ -49,9 +49,9 @@ export default function Header() {
         {/* Right Section */}
         <div className="flex items-center gap-2">
           {/* Theme Toggle */}
-          <div className="hidden md:block">
+          {/* <div className="hidden md:block">
             <ThemeToggle />
-          </div>
+          </div> */}
 
           {/* Network Selector (Desktop) */}
           <div className="hidden md:block">

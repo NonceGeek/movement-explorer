@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useGetAccountResources } from "@/hooks/accounts/useGetAccountResources";
 import { useGetAccountTransactions } from "@/hooks/accounts/useGetAccountTransactions";
+import { useGetAccountTokens } from "@/hooks/accounts/useGetAccountTokens";
 import { Types } from "aptos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -17,6 +18,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Coins, Image as ImageIcon } from "lucide-react";
 
 function formatTimestamp(timestamp: string): string {
   const date = new Date(parseInt(timestamp) / 1000);
@@ -35,6 +37,33 @@ function getBalance(resources: Types.MoveResource[]): string | null {
   return null;
 }
 
+// Extract coin holdings from resources
+function getCoinHoldings(
+  resources: Types.MoveResource[]
+): { coinType: string; balance: string }[] {
+  const holdings: { coinType: string; balance: string }[] = [];
+  const coinStorePrefix = "0x1::coin::CoinStore<";
+
+  resources.forEach((resource) => {
+    if (resource.type.startsWith(coinStorePrefix)) {
+      // Extract coin type from CoinStore<CoinType>
+      const coinType = resource.type.slice(
+        coinStorePrefix.length,
+        resource.type.length - 1
+      );
+      if ("coin" in resource.data) {
+        const data = resource.data as { coin: { value: string } };
+        holdings.push({
+          coinType,
+          balance: data.coin.value,
+        });
+      }
+    }
+  });
+
+  return holdings;
+}
+
 export default function AccountDetailPage() {
   const params = useParams();
   const address = params.address as string;
@@ -48,8 +77,14 @@ export default function AccountDetailPage() {
   const { data: transactions, isLoading: transactionsLoading } =
     useGetAccountTransactions(address, undefined, 25);
 
+  const { data: tokens, isLoading: tokensLoading } = useGetAccountTokens(
+    address,
+    25
+  );
+
   const isLoading = resourcesLoading;
   const balance = resources ? getBalance(resources) : null;
+  const coinHoldings = resources ? getCoinHoldings(resources) : [];
 
   if (isLoading) {
     return (
@@ -106,6 +141,8 @@ export default function AccountDetailPage() {
       <Tabs defaultValue="transactions" className="space-y-4">
         <TabsList>
           <TabsTrigger value="transactions">Transactions</TabsTrigger>
+          <TabsTrigger value="coins">Coins ({coinHoldings.length})</TabsTrigger>
+          <TabsTrigger value="tokens">NFTs ({tokens.length})</TabsTrigger>
           <TabsTrigger value="resources">
             Resources ({resources?.length || 0})
           </TabsTrigger>
@@ -176,6 +213,125 @@ export default function AccountDetailPage() {
                 </div>
               ) : (
                 <p className="text-muted-foreground">No transactions found</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Coins Tab */}
+        <TabsContent value="coins">
+          <Card>
+            <CardHeader>
+              <CardTitle>Coin Holdings ({coinHoldings.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {coinHoldings.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Coin Type</TableHead>
+                        <TableHead className="text-right">Balance</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {coinHoldings.map((holding, i) => {
+                        const balanceNum =
+                          Number(BigInt(holding.balance)) / 1e8;
+                        return (
+                          <TableRow key={i}>
+                            <TableCell>
+                              <Link
+                                href={`/coin/${encodeURIComponent(
+                                  holding.coinType
+                                )}`}
+                                className="text-primary hover:underline font-mono text-sm flex items-center gap-2"
+                              >
+                                <Coins className="h-4 w-4" />
+                                {holding.coinType.length > 50
+                                  ? `${holding.coinType.slice(
+                                      0,
+                                      30
+                                    )}...${holding.coinType.slice(-15)}`
+                                  : holding.coinType}
+                              </Link>
+                            </TableCell>
+                            <TableCell className="text-right font-mono">
+                              {balanceNum.toLocaleString("en-US", {
+                                maximumFractionDigits: 8,
+                              })}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No coin holdings found</p>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Tokens (NFTs) Tab */}
+        <TabsContent value="tokens">
+          <Card>
+            <CardHeader>
+              <CardTitle>NFTs ({tokens.length})</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {tokensLoading ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Skeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : tokens.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Collection</TableHead>
+                        <TableHead>Standard</TableHead>
+                        <TableHead className="text-right">Amount</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tokens.map((token) => (
+                        <TableRow key={token.token_data_id}>
+                          <TableCell>
+                            <Link
+                              href={`/token/${encodeURIComponent(
+                                token.token_data_id
+                              )}`}
+                              className="text-primary hover:underline flex items-center gap-2"
+                            >
+                              <ImageIcon className="h-4 w-4" />
+                              {token.current_token_data?.token_name ||
+                                token.token_data_id.slice(0, 20) + "..."}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-muted-foreground">
+                            {token.current_token_data?.current_collection
+                              ?.collection_name || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">
+                              {token.token_standard}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {token.amount}
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <p className="text-muted-foreground">No NFTs found</p>
               )}
             </CardContent>
           </Card>

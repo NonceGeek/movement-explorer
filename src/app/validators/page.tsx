@@ -211,7 +211,13 @@ export default function ValidatorsPage() {
                         : 0;
 
                     return (
-                      <TableRow key={validator.owner_address}>
+                      <TableRow
+                        key={validator.owner_address}
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() =>
+                          (window.location.href = `/validator/${validator.owner_address}`)
+                        }
+                      >
                         <TableCell className="font-medium">
                           {index + 1}
                         </TableCell>
@@ -219,6 +225,7 @@ export default function ValidatorsPage() {
                           <Link
                             href={`/account/${validator.owner_address}`}
                             className="text-primary hover:underline font-mono"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             {truncateAddress(validator.owner_address)}
                           </Link>
@@ -227,6 +234,7 @@ export default function ValidatorsPage() {
                           <Link
                             href={`/account/${validator.operator_address}`}
                             className="text-primary hover:underline font-mono"
+                            onClick={(e) => e.stopPropagation()}
                           >
                             {truncateAddress(validator.operator_address)}
                           </Link>

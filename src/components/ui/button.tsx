@@ -1,62 +1,78 @@
-import * as React from "react"
-import { Slot } from "@radix-ui/react-slot"
-import { cva, type VariantProps } from "class-variance-authority"
+import * as React from "react";
+import { type VariantProps } from "class-variance-authority";
+import {
+  Button as DSButton,
+  buttonVariants as dsButtonVariants,
+} from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/utils";
 
-const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
-  {
-    variants: {
-      variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/90",
-        destructive:
-          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
-        outline:
-          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
-        secondary:
-          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-        ghost:
-          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
-        link: "text-primary underline-offset-4 hover:underline",
-      },
-      size: {
-        default: "h-9 px-4 py-2 has-[>svg]:px-3",
-        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
-        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
-        icon: "size-9",
-        "icon-sm": "size-8",
-        "icon-lg": "size-10",
-      },
-    },
-    defaultVariants: {
-      variant: "default",
-      size: "default",
-    },
-  }
-)
+/**
+ * 1. 导出设计系统的原始 variants 工具
+ * 注意：这个工具函数只支持设计系统原有的 variant 类型。
+ * 如果你需要在一个非 Button 组件（比如 <Link>）上使用自定义的 variant 样式，
+ * 建议直接使用 className="..." 或者封装一个新的工具函数。
+ */
+export const buttonVariants = dsButtonVariants;
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-  ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+/**
+ * 2. 定义自定义 Variants 类型
+ * 在这里添加你想要“魔改”或新增的按钮类型
+ */
+export type CustomButtonVariant = "shiny-gold" | "super-danger"; // 示例：你可以随时在这里添加字符串
 
-  return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
-  )
+/**
+ * 3. 组合最终的 Variant 类型 (Design System + Custom)
+ */
+export type ButtonVariant =
+  | VariantProps<typeof dsButtonVariants>["variant"]
+  | CustomButtonVariant;
+
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    Omit<VariantProps<typeof dsButtonVariants>, "variant"> {
+  variant?: ButtonVariant;
+  asChild?: boolean;
 }
 
-export { Button, buttonVariants }
+const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    // 4. 处理自定义 Variant 的逻辑
+    // 如果传入的是我们自定义的 variant，我们需要：
+    // a. 告诉 DSButton 渲染一个基础样式（通常是 'default' 或 'ghost'，取决于你的 CSS 策略）
+    // b. 手动添加我们自定义的样式类
+
+    let resolvedVariant: VariantProps<typeof dsButtonVariants>["variant"] =
+      "default";
+    let customClassName = "";
+
+    // 检查是否为自定义类型
+    if (variant === "shiny-gold") {
+      resolvedVariant = "default"; // 基础底子
+      customClassName =
+        "bg-yellow-400 hover:bg-yellow-500 text-black border-2 border-yellow-600 shadow-lg";
+    } else if (variant === "super-danger") {
+      resolvedVariant = "destructive";
+      customClassName = "animate-pulse border-4 border-red-900 font-black";
+    } else {
+      // 如果不是自定义的，就认为是 Design System 原有的
+      resolvedVariant = variant as VariantProps<
+        typeof dsButtonVariants
+      >["variant"];
+    }
+
+    return (
+      <DSButton
+        ref={ref}
+        variant={resolvedVariant}
+        size={size}
+        asChild={asChild}
+        className={cn(customClassName, className)}
+        {...props}
+      />
+    );
+  }
+);
+Button.displayName = "Button";
+
+export { Button };

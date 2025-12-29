@@ -12,6 +12,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface WalletModalProps {
   isOpen: boolean;
@@ -79,9 +80,10 @@ export default function WalletModal({ isOpen, onClose }: WalletModalProps) {
           {/* Not Detected Wallets Expand */}
           {!!filteredNotDetectedWallets.length && (
             <>
-              <button
+              <Button
+                variant="ghost"
                 onClick={() => setExpanded((prev) => !prev)}
-                className="w-full flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+                className="w-full gap-2 text-muted-foreground"
               >
                 <span>More Wallets</span>
                 <svg
@@ -98,7 +100,7 @@ export default function WalletModal({ isOpen, onClose }: WalletModalProps) {
                 >
                   <polyline points="6 9 12 15 18 9" />
                 </svg>
-              </button>
+              </Button>
 
               {expanded && (
                 <div className="space-y-2">
@@ -136,9 +138,7 @@ function DetectedWalletRow({ wallet, onConnect }: DetectedWalletRowProps) {
         <img src={wallet.icon} alt={wallet.name} className="w-8 h-8 rounded" />
       )}
       <span className="flex-1 font-medium">{wallet.name}</span>
-      <button className="px-3 py-1 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity">
-        Connect
-      </button>
+      <Button size="sm">Connect</Button>
     </div>
   );
 }
@@ -155,15 +155,16 @@ function NotDetectedWalletRow({ wallet }: NotDetectedWalletRowProps) {
       )}
       <span className="flex-1 font-medium">{wallet.name}</span>
       {wallet.url ? (
-        <a
-          href={wallet.url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="px-3 py-1 text-sm border border-border rounded-lg hover:bg-muted transition-colors"
+        <Button
+          size="sm"
+          variant="outline"
+          asChild
           onClick={(e) => e.stopPropagation()}
         >
-          Install
-        </a>
+          <a href={wallet.url} target="_blank" rel="noopener noreferrer">
+            Install
+          </a>
+        </Button>
       ) : (
         <span className="px-3 py-1 text-sm text-muted-foreground">
           Not Installed

@@ -7,6 +7,18 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import Link from "next/link";
 import { Types } from "aptos";
 import { SearchBar } from "@/components/search";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function formatNumber(num: number | string): string {
   return Number(num).toLocaleString();
@@ -52,9 +64,9 @@ export default function HomePage() {
   });
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Hero Section */}
-      <div className="mb-8">
+      <div>
         <h1 className="text-4xl font-bold mb-2">Explorer</h1>
         <p className="text-muted-foreground mb-6">
           Explore blocks, transactions, and accounts on the Movement network.
@@ -65,104 +77,110 @@ export default function HomePage() {
       </div>
 
       {/* Network Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-1">Block Height</p>
-          {ledgerLoading ? (
-            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-          ) : (
-            <p className="text-2xl font-bold font-mono">
-              {formatNumber(ledgerInfo?.block_height || 0)}
-            </p>
-          )}
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-1">Ledger Version</p>
-          {ledgerLoading ? (
-            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-          ) : (
-            <p className="text-2xl font-bold font-mono">
-              {formatNumber(ledgerInfo?.ledger_version || 0)}
-            </p>
-          )}
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-1">Chain ID</p>
-          {ledgerLoading ? (
-            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-          ) : (
-            <p className="text-2xl font-bold font-mono">
-              {ledgerInfo?.chain_id || "-"}
-            </p>
-          )}
-        </div>
-        <div className="bg-card border border-border rounded-xl p-6">
-          <p className="text-sm text-muted-foreground mb-1">Epoch</p>
-          {ledgerLoading ? (
-            <div className="h-8 w-24 bg-muted animate-pulse rounded" />
-          ) : (
-            <p className="text-2xl font-bold font-mono">
-              {formatNumber(ledgerInfo?.epoch || 0)}
-            </p>
-          )}
-        </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card>
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Block Height
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            {ledgerLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <p className="text-2xl font-bold font-mono">
+                {formatNumber(ledgerInfo?.block_height || 0)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Ledger Version
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            {ledgerLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <p className="text-2xl font-bold font-mono">
+                {formatNumber(ledgerInfo?.ledger_version || 0)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Chain ID
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            {ledgerLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <p className="text-2xl font-bold font-mono">
+                {ledgerInfo?.chain_id || "-"}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="p-6 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              Epoch
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-6 pt-0">
+            {ledgerLoading ? (
+              <Skeleton className="h-8 w-24" />
+            ) : (
+              <p className="text-2xl font-bold font-mono">
+                {formatNumber(ledgerInfo?.epoch || 0)}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       {/* Quick Links */}
-      <div className="flex flex-wrap gap-3 mb-8">
-        <Link
-          href="/blocks"
-          className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity"
-        >
-          View Blocks
-        </Link>
-        <Link
-          href="/transactions"
-          className="px-4 py-2 bg-secondary text-secondary-foreground rounded-lg hover:opacity-90 transition-opacity"
-        >
-          View Transactions
-        </Link>
+      <div className="flex flex-wrap gap-3">
+        <Button asChild size="lg">
+          <Link href="/blocks">View Blocks</Link>
+        </Button>
+        <Button asChild variant="secondary" size="lg">
+          <Link href="/transactions">View Transactions</Link>
+        </Button>
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-card border border-border rounded-xl p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Transactions</h2>
-          <Link
-            href="/transactions"
-            className="text-primary hover:underline text-sm"
-          >
-            View all →
-          </Link>
-        </div>
-
-        {txLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-12 bg-muted animate-pulse rounded" />
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-left p-3 font-semibold text-sm">
-                    Version
-                  </th>
-                  <th className="text-left p-3 font-semibold text-sm">
-                    Status
-                  </th>
-                  <th className="text-left p-3 font-semibold text-sm">Type</th>
-                  <th className="text-left p-3 font-semibold text-sm">
-                    Timestamp
-                  </th>
-                  <th className="text-left p-3 font-semibold text-sm">
-                    Sender
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-xl">Recent Transactions</CardTitle>
+          <Button variant="link" asChild className="p-0 h-auto">
+            <Link href="/transactions">View all →</Link>
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {txLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
+            </div>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Version</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Type</TableHead>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Sender</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
                 {transactions?.map((tx: Types.Transaction) => {
                   const status = getTransactionStatus(tx);
                   const sender = getSender(tx);
@@ -170,59 +188,50 @@ export default function HomePage() {
                   const timestamp = "timestamp" in tx ? tx.timestamp : null;
 
                   return (
-                    <tr
-                      key={tx.hash}
-                      className="border-b border-border hover:bg-muted/50"
-                    >
-                      <td className="p-3">
+                    <TableRow key={tx.hash}>
+                      <TableCell className="font-mono">
                         {version && (
                           <Link
                             href={`/txn/${version}`}
-                            className="text-primary hover:underline font-mono text-sm"
+                            className="text-primary hover:underline"
                           >
                             {version}
                           </Link>
                         )}
-                      </td>
-                      <td className="p-3">
-                        <span
-                          className={`inline-flex items-center gap-1 px-2 py-0.5 text-xs rounded-full ${
-                            status.success
-                              ? "bg-green-500/10 text-green-600"
-                              : "bg-red-500/10 text-red-600"
-                          }`}
-                        >
-                          {status.success ? "✓" : "✗"}
-                        </span>
-                      </td>
-                      <td className="p-3">
-                        <span className="text-xs bg-muted px-2 py-1 rounded capitalize">
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={status.success ? "success" : "error"}>
+                          {status.success ? "✓ Success" : "✗ Failed"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="secondary" className="capitalize">
                           {tx.type.replace(/_/g, " ")}
-                        </span>
-                      </td>
-                      <td className="p-3 text-muted-foreground text-sm">
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm">
                         {timestamp ? formatTimestamp(timestamp) : "-"}
-                      </td>
-                      <td className="p-3">
+                      </TableCell>
+                      <TableCell className="font-mono">
                         {sender ? (
                           <Link
                             href={`/account/${sender}`}
-                            className="text-primary hover:underline font-mono text-sm"
+                            className="text-primary hover:underline"
                           >
                             {sender.slice(0, 8)}...{sender.slice(-6)}
                           </Link>
                         ) : (
                           <span className="text-muted-foreground">-</span>
                         )}
-                      </td>
-                    </tr>
+                      </TableCell>
+                    </TableRow>
                   );
                 })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

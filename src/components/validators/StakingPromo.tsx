@@ -2,6 +2,8 @@
 
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Card } from "@/components/ui/card";
 
 const STAKING_URL = "https://staking.movementnetwork.xyz";
 
@@ -11,12 +13,10 @@ export function StakingPromo() {
   };
 
   return (
-    <div className="bg-gradient-to-r from-muted/50 to-muted rounded-lg p-4 md:p-6 mb-6 border border-border">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+    <Card className="bg-linear-to-r from-muted/50 to-muted mb-6">
+      <div className="p-4 md:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
-          <span className="bg-primary text-primary-foreground rounded px-2 py-1 text-xs font-semibold">
-            STAKE
-          </span>
+          <Badge>STAKE</Badge>
           <p className="text-sm md:text-base text-foreground">
             Delegate your MOVE tokens to help secure the Movement Network and
             Earn Rewards
@@ -27,6 +27,6 @@ export function StakingPromo() {
           <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </div>
-    </div>
+    </Card>
   );
 }

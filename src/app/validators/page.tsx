@@ -246,12 +246,7 @@ export default function ValidatorsPage() {
                           {share.toFixed(2)}%
                         </TableCell>
                         <TableCell>
-                          <Badge
-                            variant="outline"
-                            className="bg-green-500/10 text-green-600 border-green-500/20"
-                          >
-                            Active
-                          </Badge>
+                          <Badge variant="success">Active</Badge>
                         </TableCell>
                       </TableRow>
                     );

@@ -73,14 +73,7 @@ export default function TransactionDetailPage() {
       {/* Title */}
       <div className="flex items-center gap-4 mb-6">
         <h1 className="text-2xl font-bold">Transaction Details</h1>
-        <Badge
-          variant={isSuccess ? "outline" : "destructive"}
-          className={
-            isSuccess
-              ? "bg-green-500/10 text-green-600 border-green-500/20"
-              : ""
-          }
-        >
+        <Badge variant={isSuccess ? "success" : "error"}>
           {isSuccess ? "✓ Success" : "✗ Failed"}
         </Badge>
       </div>

@@ -1,13 +1,13 @@
-import { cn } from "@/lib/utils"
+import * as React from "react";
+import { Skeleton as DSSkeleton } from "@movementlabsxyz/movement-design-system";
+import { cn } from "@/lib/utils";
 
-function Skeleton({ className, ...props }: React.ComponentProps<"div">) {
-  return (
-    <div
-      data-slot="skeleton"
-      className={cn("bg-accent animate-pulse rounded-md", className)}
-      {...props}
-    />
-  )
-}
+const Skeleton = React.forwardRef<
+  HTMLDivElement,
+  React.ComponentPropsWithoutRef<"div">
+>(({ className, ...props }, ref) => {
+  return <DSSkeleton ref={ref} className={cn(className)} {...props} />;
+});
+Skeleton.displayName = "Skeleton";
 
-export { Skeleton }
+export { Skeleton };

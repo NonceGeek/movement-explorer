@@ -3,6 +3,7 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useState } from "react";
 import WalletMenu from "./WalletMenu";
+import { Button } from "@/components/ui/button";
 
 type WalletButtonProps = {
   handleModalOpen: () => void;
@@ -41,9 +42,9 @@ export default function WalletButton({
 
   return (
     <>
-      <button
+      <Button
         onClick={connected ? handleClick : onConnectWalletClick}
-        className="flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity font-medium"
+        className="gap-2 font-medium"
       >
         {connected ? (
           <>
@@ -61,7 +62,7 @@ export default function WalletButton({
         ) : (
           <span>Connect Wallet</span>
         )}
-      </button>
+      </Button>
       <WalletMenu
         anchorEl={menuAnchor}
         onClose={handleMenuClose}

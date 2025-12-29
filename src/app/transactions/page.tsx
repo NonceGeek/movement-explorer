@@ -114,9 +114,13 @@ function UserTransactionRow({ version }: { version: number }) {
             {version}
           </Link>
           {status ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <Badge variant="success" className="gap-1 pl-1.5">
+              <CheckCircle2 className="h-3 w-3" /> Success
+            </Badge>
           ) : (
-            <XCircle className="h-4 w-4 text-red-500" />
+            <Badge variant="error" className="gap-1 pl-1.5">
+              <XCircle className="h-3 w-3" /> Failed
+            </Badge>
           )}
         </div>
       </TableCell>
@@ -380,9 +384,13 @@ function AllTransactionRow({
             </Link>
           )}
           {status ? (
-            <CheckCircle2 className="h-4 w-4 text-green-500" />
+            <Badge variant="success" className="gap-1 pl-1.5">
+              <CheckCircle2 className="h-3 w-3" /> Success
+            </Badge>
           ) : (
-            <XCircle className="h-4 w-4 text-red-500" />
+            <Badge variant="error" className="gap-1 pl-1.5">
+              <XCircle className="h-3 w-3" /> Failed
+            </Badge>
           )}
         </div>
       </TableCell>

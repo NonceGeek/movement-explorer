@@ -1,108 +1,80 @@
-"use client"
+import * as React from "react";
+import {
+  Table as DSTable,
+  TableHeader as DSTableHeader,
+  TableBody as DSTableBody,
+  TableFooter as DSTableFooter,
+  TableHead as DSTableHead,
+  TableRow as DSTableRow,
+  TableCell as DSTableCell,
+  TableCaption as DSTableCaption,
+} from "@movementlabsxyz/movement-design-system";
 
-import * as React from "react"
+import { cn } from "@/lib/utils";
 
-import { cn } from "@/lib/utils"
+const Table = React.forwardRef<
+  React.ElementRef<typeof DSTable>,
+  React.ComponentPropsWithoutRef<typeof DSTable>
+>(({ className, ...props }, ref) => (
+  <DSTable ref={ref} className={cn(className)} {...props} />
+));
+Table.displayName = "Table";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
-  return (
-    <div
-      data-slot="table-container"
-      className="relative w-full overflow-x-auto"
-    >
-      <table
-        data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
-        {...props}
-      />
-    </div>
-  )
-}
+const TableHeader = React.forwardRef<
+  React.ElementRef<typeof DSTableHeader>,
+  React.ComponentPropsWithoutRef<typeof DSTableHeader>
+>(({ className, ...props }, ref) => (
+  <DSTableHeader ref={ref} className={cn(className)} {...props} />
+));
+TableHeader.displayName = "TableHeader";
 
-function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
-  return (
-    <thead
-      data-slot="table-header"
-      className={cn("[&_tr]:border-b", className)}
-      {...props}
-    />
-  )
-}
+const TableBody = React.forwardRef<
+  React.ElementRef<typeof DSTableBody>,
+  React.ComponentPropsWithoutRef<typeof DSTableBody>
+>(({ className, ...props }, ref) => (
+  <DSTableBody ref={ref} className={cn(className)} {...props} />
+));
+TableBody.displayName = "TableBody";
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
-  return (
-    <tbody
-      data-slot="table-body"
-      className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
-    />
-  )
-}
+const TableFooter = React.forwardRef<
+  React.ElementRef<typeof DSTableFooter>,
+  React.ComponentPropsWithoutRef<typeof DSTableFooter>
+>(({ className, ...props }, ref) => (
+  <DSTableFooter ref={ref} className={cn(className)} {...props} />
+));
+TableFooter.displayName = "TableFooter";
 
-function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
-  return (
-    <tfoot
-      data-slot="table-footer"
-      className={cn(
-        "bg-muted/50 border-t font-medium [&>tr]:last:border-b-0",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+const TableRow = React.forwardRef<
+  React.ElementRef<typeof DSTableRow>,
+  React.ComponentPropsWithoutRef<typeof DSTableRow>
+>(({ className, ...props }, ref) => (
+  <DSTableRow ref={ref} className={cn(className)} {...props} />
+));
+TableRow.displayName = "TableRow";
 
-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-  return (
-    <tr
-      data-slot="table-row"
-      className={cn(
-        "hover:bg-muted/50 data-[state=selected]:bg-muted border-b transition-colors",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+const TableHead = React.forwardRef<
+  React.ElementRef<typeof DSTableHead>,
+  React.ComponentPropsWithoutRef<typeof DSTableHead>
+>(({ className, ...props }, ref) => (
+  <DSTableHead ref={ref} className={cn(className)} {...props} />
+));
+TableHead.displayName = "TableHead";
 
-function TableHead({ className, ...props }: React.ComponentProps<"th">) {
-  return (
-    <th
-      data-slot="table-head"
-      className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className
-      )}
-      {...props}
-    />
-  )
-}
+const TableCell = React.forwardRef<
+  React.ElementRef<typeof DSTableCell>,
+  React.ComponentPropsWithoutRef<typeof DSTableCell>
+>(({ className, ...props }, ref) => (
+  <DSTableCell ref={ref} className={cn(className)} {...props} />
+));
+TableCell.displayName = "TableCell";
 
-function TableCell({ className, ...props }: React.ComponentProps<"td">) {
-  return (
-    <td
-      data-slot="table-cell"
-      className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
-        className
-      )}
-      {...props}
-    />
-  )
-}
-
-function TableCaption({
-  className,
-  ...props
-}: React.ComponentProps<"caption">) {
-  return (
-    <caption
-      data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
-      {...props}
-    />
-  )
-}
+const TableCaption = React.forwardRef<
+  React.ElementRef<typeof DSTableCaption>,
+  React.ComponentPropsWithoutRef<typeof DSTableCaption>
+>(({ className, ...props }, ref) => (
+  <DSTableCaption ref={ref} className={cn(className)} {...props} />
+));
+TableCaption.displayName = "TableCaption";
 
 export {
   Table,
@@ -113,4 +85,4 @@ export {
   TableRow,
   TableCell,
   TableCaption,
-}
+};

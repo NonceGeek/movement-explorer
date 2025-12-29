@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearch, SearchResult } from "@/hooks/common/useSearch";
 import { Search, Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 export function SearchBar() {
   const router = useRouter();
@@ -85,7 +86,7 @@ export function SearchBar() {
     <div ref={containerRef} className="relative w-full">
       <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-        <input
+        <Input
           ref={inputRef}
           type="text"
           value={inputValue}
@@ -95,7 +96,7 @@ export function SearchBar() {
             inputValue.trim() && results.length > 0 && setIsOpen(true)
           }
           placeholder="Search by Account / Txn Hash / Block Height..."
-          className="w-full pl-10 pr-10 py-3 bg-muted/50 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 text-foreground placeholder:text-muted-foreground"
+          className="w-full pl-10 pr-10"
         />
         {isLoading && (
           <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground animate-spin" />

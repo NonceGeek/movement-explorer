@@ -15,6 +15,31 @@ export type TransactionCounterparty = {
   role: "receiver" | "smartContract";
 };
 
+// Format timestamp for display
+export function formatTimestamp(timestamp: string): string {
+  const date = new Date(parseInt(timestamp) / 1000);
+  return date.toLocaleString();
+}
+
+// Get transaction type name formatted for display
+export function getTransactionTypeName(tx: Types.Transaction): string {
+  return tx.type
+    .replace(/_/g, " ")
+    .replace(/transaction$/, "")
+    .trim();
+}
+
+// Get sender address from transaction
+export function getTransactionSender(tx: Types.Transaction): string | null {
+  if (tx.type === "user_transaction" && "sender" in tx) {
+    return (tx as Types.UserTransaction).sender;
+  }
+  if (tx.type === "block_metadata_transaction" && "proposer" in tx) {
+    return (tx as Types.BlockMetadataTransaction).proposer;
+  }
+  return null;
+}
+
 // when the transaction counterparty is a "receiver",
 //    the transaction is a user transfer (account A send money to account B)
 // when the transaction counterparty is a "smartContract",

@@ -20,7 +20,7 @@ import {
   Clock,
   Server,
 } from "lucide-react";
-import { MyDepositsSection } from "@/components/staking/MyDepositsSection";
+import { MyDepositsSection } from "./components/MyDepositsSection";
 
 interface StakePoolData {
   active: { value: string };

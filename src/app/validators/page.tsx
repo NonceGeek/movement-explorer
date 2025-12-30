@@ -19,7 +19,7 @@ import { useGetValidators } from "@/hooks/validators/useGetValidators";
 import { useGetValidatorSet } from "@/hooks/validators/useGetValidatorSet";
 import { useGetEpochTime } from "@/hooks/validators/useGetEpochTime";
 import { useGetStakingRewardsRate } from "@/hooks/validators/useGetStakingRewardsRate";
-import { StakingPromo } from "@/components/validators/StakingPromo";
+import { StakingPromo } from "./components/StakingPromo";
 import { Progress } from "@/components/ui/progress";
 import { useEffect, useState } from "react";
 

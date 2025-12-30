@@ -3,7 +3,19 @@
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { useState } from "react";
 import WalletMenu from "./WalletMenu";
-import { Button } from "@/components/ui/button";
+import {
+  Button,
+  Avatar,
+  AvatarImage,
+  AvatarFallback,
+} from "@movementlabsxyz/movement-design-system";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type WalletButtonProps = {
   handleModalOpen: () => void;
@@ -42,27 +54,40 @@ export default function WalletButton({
 
   return (
     <>
-      <Button
-        onClick={connected ? handleClick : onConnectWalletClick}
-        className="gap-2 font-medium"
-      >
-        {connected ? (
-          <>
-            {wallet?.icon && (
-              <img
-                src={wallet.icon}
-                alt={wallet.name}
-                className="w-5 h-5 rounded-full"
-              />
-            )}
-            <span className="font-mono text-sm">
-              {truncateAddress(addressStr)}
-            </span>
-          </>
-        ) : (
-          <span>Connect Wallet</span>
-        )}
-      </Button>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              onClick={connected ? handleClick : onConnectWalletClick}
+              variant={connected ? "outline" : "default"}
+              size="default"
+              className={cn("gap-2 font-medium")}
+            >
+              {connected ? (
+                <>
+                  <Avatar border="guild" className="h-6 w-6">
+                    <AvatarImage src={wallet?.icon} alt={wallet?.name} />
+                    <AvatarFallback className="text-xs bg-moveus-marigold-500 text-black">
+                      {wallet?.name?.[0] || "W"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="font-mono text-sm">
+                    {truncateAddress(addressStr)}
+                  </span>
+                </>
+              ) : (
+                <span>Connect Wallet</span>
+              )}
+            </Button>
+          </TooltipTrigger>
+          {connected && (
+            <TooltipContent side="bottom">
+              <p className="font-mono">{addressStr}</p>
+              <p className="text-xs text-muted-foreground">{wallet?.name}</p>
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
       <WalletMenu
         anchorEl={menuAnchor}
         onClose={handleMenuClose}

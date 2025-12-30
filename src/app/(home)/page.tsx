@@ -7,6 +7,7 @@ import { Zap, Users, FileText, Clock } from "lucide-react";
 import { SearchBar } from "@/components/search";
 import { StatCard } from "./components/StatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
+import { DottedBackground } from "@movementlabsxyz/movement-design-system";
 
 export default function HomePage() {
   const { aptos_client, network_value } = useGlobalStore();
@@ -32,6 +33,15 @@ export default function HomePage() {
       <section className="relative overflow-hidden">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/20 via-transparent to-transparent pointer-events-none" />
+
+        {/* Dotted Background Overlay */}
+        <DottedBackground
+          className="absolute! inset-0 min-h-0! p-0! bg-transparent! rounded-none! pointer-events-none animate-background-move mask-[radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"
+          dotColor="rgba(252, 211, 77, 0.4)"
+          dotSize={2.5}
+          gap={24}
+          variant="dots"
+        />
 
         <div className="container mx-auto px-4 py-16 md:py-24 relative">
           <div className="max-w-4xl mx-auto text-center space-y-6">

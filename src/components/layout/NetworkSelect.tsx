@@ -1,15 +1,15 @@
 "use client";
 
-import { ChevronDown, Check } from "lucide-react";
+import { useState } from "react";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { availableNetworks, NetworkName, networks } from "@/constants";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 /**
  * Get display-friendly network name
@@ -33,31 +33,25 @@ export default function NetworkSelect() {
   };
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className="gap-1.5 font-normal capitalize"
-        >
+    <Select value={network_name} onValueChange={handleNetworkChange}>
+      <SelectTrigger
+        variant="outline"
+        size="sm"
+        className="w-[180px] gap-1.5 font-normal capitalize rounded-full text-base"
+      >
+        <SelectValue placeholder="Select Network">
           {getDisplayNetworkName(network_name)}
-          <ChevronDown className="h-4 w-4 opacity-50" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[180px]">
+        </SelectValue>
+      </SelectTrigger>
+      <SelectContent className="text-base">
         {Object.entries(networks)
           .filter(([name]) => availableNetworks.includes(name))
           .map(([name]) => (
-            <DropdownMenuItem
-              key={name}
-              onClick={() => handleNetworkChange(name)}
-              className="capitalize justify-between"
-            >
+            <SelectItem key={name} value={name}>
               {getDisplayNetworkName(name)}
-              {name === network_name && <Check className="h-4 w-4" />}
-            </DropdownMenuItem>
+            </SelectItem>
           ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+      </SelectContent>
+    </Select>
   );
 }

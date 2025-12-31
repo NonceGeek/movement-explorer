@@ -1,0 +1,95 @@
+/**
+ * Styling Recipes
+ * Reusable CSS classes for common UI patterns
+ * These recipes can be applied via the exported class name objects in border-styles.ts and gradient-styles.ts
+ */
+
+/* ============================================================================
+ * GRADIENT BORDER RECIPES
+ * ============================================================================
+ * Create gradient borders using CSS mask technique
+ * These create a 1px border with gradient or solid colors
+ */
+
+.gradient-border-glow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: radial-gradient(59.92% 76.24% at 50% 50%, #81FFBA 0%, rgba(129, 255, 186, 0.00) 100%), 
+              radial-gradient(59.97% 79.12% at 50% 50%, #81FFBA 18.75%, rgba(129, 255, 186, 0.00) 100%), 
+              radial-gradient(76.68% 94.29% at 50% 50%, #FFF 0%, rgba(255, 255, 255, 0.00) 100%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+
+.gradient-border-iridescent::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(136deg, #81ffba, #00fff9);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+.gradient-border-error {
+  position: relative;
+}
+
+.gradient-border-error::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: #D82C2D;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* ============================================================================
+ * GLASS BACKGROUND RECIPES
+ * ============================================================================
+ * Glass morphism backgrounds with backdrop blur
+ */
+
+.glass-background-dark {
+  background: linear-gradient(153deg, rgba(0, 0, 0, 0.36) 0%, rgba(0, 0, 0, 0) 100%);
+  backdrop-filter: blur(21px);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+}
+
+.glass-background-light {
+  background: linear-gradient(153deg, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0) 100%);
+  backdrop-filter: blur(21px);
+  border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+/* ============================================================================
+ * GRADIENT BACKGROUND RECIPES
+ * ============================================================================
+ * Reusable gradient recipes for backgrounds
+ */
+
+.gradient-mint-cyan {
+  background: linear-gradient(130deg, #81FFBA 33.64%, #00FFF9 79.2%);
+}
+
+.gradient-glass-overlay {
+  background: linear-gradient(0deg, rgba(4, 5, 27, 0.20) 0%, rgba(4, 5, 27, 0.20) 100%), 
+              linear-gradient(153deg, rgba(0, 0, 0, 0.80) 0%, rgba(0, 0, 0, 0.00) 100%), 
+              radial-gradient(100% 100% at 120.34% 112.85%, rgba(129, 255, 186, 0.40) 0%, rgba(0, 27, 133, 0.40) 100%);
+}
+

@@ -1,0 +1,650 @@
+
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /*
+   * ============================================================================
+   * DESIGN TOKEN SYSTEM - LAYERED ARCHITECTURE
+   * ============================================================================
+   * 
+   * This theme implements a layered token system based on Movement Design Tokens:
+   * 
+   * Layer 1: Primitives (spacing, sizing, radii, borders, shadows, opacity)
+   * Layer 2: Brand Colors (moveus-marigold, guild-green, etc.)
+   * Layer 3: Semantic Base (bg, fg, border, feedback)
+   * Layer 4: Component Tokens (accordion, badge, input, etc.)
+   * Layer 5: Legacy Mappings (--primary, --secondary, etc.)
+   * 
+   * Source: movement-design-tokens-FULL/design-tokens/
+   * ============================================================================
+   */
+
+  /* ========================================================================
+   * LAYER 1: PRIMITIVE TOKENS
+   * ======================================================================== */
+  
+  /* Spacing scale - based on 2px base scale */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-28: 112px;
+  --spacing-32: 128px;
+  --spacing-36: 144px;
+  --spacing-40: 160px;
+  --spacing-44: 176px;
+  --spacing-48: 192px;
+  --spacing-52: 208px;
+  --spacing-56: 224px;
+  --spacing-60: 240px;
+  --spacing-64: 256px;
+  --spacing-72: 288px;
+  --spacing-80: 320px;
+  --spacing-96: 384px;
+  --spacing-100: 400px;
+  --spacing-px: 1px;
+
+  /* Sizes - includes spacing scale plus semantic sizes */
+  --size-0: 0px;
+  --size-1: 4px;
+  --size-2: 8px;
+  --size-3: 12px;
+  --size-4: 16px;
+  --size-5: 20px;
+  --size-6: 24px;
+  --size-7: 28px;
+  --size-8: 32px;
+  --size-9: 36px;
+  --size-10: 40px;
+  --size-12: 48px;
+  --size-14: 56px;
+  --size-16: 64px;
+  --size-20: 80px;
+  --size-24: 96px;
+  --size-28: 112px;
+  --size-32: 128px;
+  --size-36: 144px;
+  --size-40: 160px;
+  --size-44: 176px;
+  --size-48: 192px;
+  --size-52: 208px;
+  --size-56: 224px;
+  --size-60: 240px;
+  --size-64: 256px;
+  --size-72: 288px;
+  --size-80: 320px;
+  --size-96: 384px;
+  --size-100: 400px;
+  --size-px: 1px;
+  --size-prose: 65ch;
+  --size-full: 100%;
+  --size-min: min-content;
+  --size-max: max-content;
+  --size-fit: fit-content;
+
+  /* Border radius tokens */
+  --radius-sm: 2px;
+  --radius-base: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+
+  /* Border widths */
+  --border-width-0: 0px;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-3: 3px;
+  --border-width-4: 4px;
+  --border-width-5: 5px;
+  --border-width-6: 6px;
+  --border-width-7: 7px;
+  --border-width-8: 8px;
+
+  /* Shadows */
+  --shadow-xs: 0 0 0 1px #0000000d;
+  --shadow-sm: 0 1px 2px 0 #0000000d;
+  --shadow-base: 0 1px 2px 0 #0000000d, 0 1px 3px 0 #0000000d;
+  --shadow-md: 0 2px 4px -1px #00000005, 0 4px 6px -1px #00000014;
+  --shadow-lg: 0 4px 6px -2px #00000005, 0 10px 15px -3px #0000000d;
+  --shadow-xl: 0 10px 10px -5px #00000005, 0 20px 25px -5px #0000000d;
+  --shadow-2xl: 0 25px 50px -12px #00000040;
+  --shadow-inner: inset 0 2px 4px 0 #00000006;
+  --shadow-none: none;
+
+  /* Z-index scale */
+  --z-index-hide: -1;
+  --z-index-auto: auto;
+  --z-index-base: 0;
+  --z-index-docked: 10;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1100;
+  --z-index-banner: 1200;
+  --z-index-overlay: 1300;
+  --z-index-modal: 1400;
+  --z-index-popover: 1500;
+  --z-index-skip-link: 1600;
+  --z-index-toast: 1700;
+  --z-index-tooltip: 1800;
+  
+  /* Semantic color mappings */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+  
+  /* ========================================================================
+   * LAYER 2: BRAND COLOR TOKENS
+   * ======================================================================== */
+  
+  /* Brand colors - Moveus Marigold */
+  --color-moveus-marigold-50: #fffbeb;
+  --color-moveus-marigold-100: #fff2bd;
+  --color-moveus-marigold-200: #ffea90;
+  --color-moveus-marigold-300: #ffe162;
+  --color-moveus-marigold-400: #ffd935;
+  --color-moveus-marigold-500: #ddba22;
+  --color-moveus-marigold-600: #bb9b13;
+  --color-moveus-marigold-700: #997e08;
+  --color-moveus-marigold-800: #776100;
+  --color-moveus-marigold-900: #554500;
+  
+  /* Brand colors - Guild Green */
+  --color-guild-green-50: #f2fff8;
+  --color-guild-green-100: #ccffe3;
+  --color-guild-green-200: #a7ffce;
+  --color-guild-green-300: #81ffba;
+  --color-guild-green-400: #6ce2a1;
+  --color-guild-green-500: #58c589;
+  --color-guild-green-600: #47a872;
+  --color-guild-green-700: #368a5c;
+  --color-guild-green-800: #286d47;
+  --color-guild-green-900: #1b5033;
+  
+  /* Brand colors - Byzantine Blue */
+  --color-byzantine-blue-50: #c2ceff;
+  --color-byzantine-blue-100: #859dff;
+  --color-byzantine-blue-200: #5c7cff;
+  --color-byzantine-blue-300: #335cff;
+  --color-byzantine-blue-400: #0337ff;
+  --color-byzantine-blue-500: #002cd6;
+  --color-byzantine-blue-600: #0024ad;
+  --color-byzantine-blue-700: #001b85;
+  --color-byzantine-blue-800: #00135c;
+  --color-byzantine-blue-900: #000c3d;
+  
+  /* Brand colors - Protocol Pink */
+  --color-protocol-pink-50: #fff1fc;
+  --color-protocol-pink-100: #ffc9f3;
+  --color-protocol-pink-200: #ffa0eb;
+  --color-protocol-pink-300: #ff77e2;
+  --color-protocol-pink-400: #eb66cf;
+  --color-protocol-pink-500: #ce52b4;
+  --color-protocol-pink-600: #b14199;
+  --color-protocol-pink-700: #94317f;
+  --color-protocol-pink-800: #762365;
+  --color-protocol-pink-900: #59184b;
+  
+  /* Brand colors - Oracle Orange */
+  --color-oracle-orange-50: #ffefec;
+  --color-oracle-orange-100: #ffcdc2;
+  --color-oracle-orange-200: #ffab97;
+  --color-oracle-orange-300: #ff886d;
+  --color-oracle-orange-400: #FF6642;
+  --color-oracle-orange-500: #ea5330;
+  --color-oracle-orange-600: #c83e1e;
+  --color-oracle-orange-700: #a62c10;
+  --color-oracle-orange-800: #841d05;
+  --color-oracle-orange-900: #621300;
+  
+  /* Neutrals */
+  --color-neutrals-white: #ffffff;
+  --color-neutrals-black: #000000;
+  
+  /* Neutrals - White Alpha */
+  --color-neutrals-white-alpha-50: #ffffff0a;
+  --color-neutrals-white-alpha-100: #ffffff0f;
+  --color-neutrals-white-alpha-200: #ffffff14;
+  --color-neutrals-white-alpha-300: #ffffff29;
+  --color-neutrals-white-alpha-400: #ffffff3d;
+  --color-neutrals-white-alpha-500: #ffffff5c;
+  --color-neutrals-white-alpha-600: #ffffff7a;
+  --color-neutrals-white-alpha-700: #ffffffa3;
+  --color-neutrals-white-alpha-800: #ffffffcc;
+  --color-neutrals-white-alpha-900: #ffffffeb;
+  
+  /* Neutrals - Black Alpha */
+  --color-neutrals-black-alpha-50: #0000000a;
+  --color-neutrals-black-alpha-100: #0000000f;
+  --color-neutrals-black-alpha-200: #00000014;
+  --color-neutrals-black-alpha-300: #00000029;
+  --color-neutrals-black-alpha-400: #0000003d;
+  --color-neutrals-black-alpha-500: #0000005c;
+  --color-neutrals-black-alpha-600: #0000007a;
+  --color-neutrals-black-alpha-700: #000000a3;
+  --color-neutrals-black-alpha-800: #000000cc;
+  --color-neutrals-black-alpha-900: #000000eb;
+  
+  /* Opacity values */
+  /* commenting out because it's interfereing with default scale */
+  /* --opacity-1: 0.1;
+  --opacity-2: 0.2;
+  --opacity-3: 0.3;
+  --opacity-4: 0.4;
+  --opacity-5: 0.5;
+  --opacity-8: 0.8;
+  --opacity-9: 0.9;
+  --opacity-10: 1; */
+  
+  /* Font families */
+  --font-heading: "TWK Everett", sans-serif;
+  --font-body: "Neue Haas Unica Pro", sans-serif;
+  --font-mono: "TWK Everett Mono", monospace;
+  
+  /* Container configuration */
+  --container-center: true;
+  --container-padding: 2rem;
+  --container-2xl: 1400px;
+  
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+  
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+  
+  /* ========================================================================
+   * LAYER 3: SEMANTIC BASE TOKENS
+   * ======================================================================== */
+  
+  /* These tokens provide semantic meaning to primitives and brand colors.
+   * They are theme-aware and change between light/dark modes.
+   * Source: Inferred from component token references in design-tokens/semantic/
+   */
+  
+  /* ========================================================================
+   * LAYER 4: COMPONENT TOKENS
+   * ======================================================================== */
+  
+  /* Component-specific tokens that reference semantic base tokens.
+   * These create a reference chain: Component → Semantic → Brand → Primitive
+   * Source: movement-design-tokens-FULL/design-tokens/semantic/
+   * 
+   * Note: Component tokens are defined inline within component declarations below
+   * using the semantic base tokens (--semantic-*) as their foundation.
+   */
+  
+  /* ========================================================================
+   * TAILWIND UTILITY CLASS MAPPINGS
+   * ========================================================================
+   * 
+   * Map semantic tokens to Tailwind utility classes for better DX.
+   * Instead of: text-[var(--semantic-fg-muted)]
+   * Use: text-fg-muted
+   */
+  
+  /* Semantic background colors */
+  --color-semantic-base: var(--semantic-bg-base);
+  --color-semantic-alt-1: var(--semantic-bg-alt-1);
+  --color-semantic-alt-2: var(--semantic-bg-alt-2);
+  
+  /* Semantic foreground colors */
+  --color-fg-base: var(--semantic-fg-base);
+  --color-fg-muted: var(--semantic-fg-muted);
+  --color-fg-subtle: var(--semantic-fg-subtle);
+  
+  /* Semantic border colors */
+  --color-border-default: var(--semantic-border-default);
+  --color-border-strong: var(--semantic-border-strong);
+  
+  /* Semantic feedback colors */
+  --color-feedback-success: var(--semantic-feedback-success-default);
+  --color-feedback-success-light: var(--semantic-feedback-success-light);
+  --color-feedback-error: var(--semantic-feedback-error-default);
+  --color-feedback-error-light: var(--semantic-feedback-error-light);
+  --color-feedback-warning: var(--semantic-feedback-warning-default);
+  --color-feedback-warning-light: var(--semantic-feedback-warning-light);
+  --color-feedback-info: var(--semantic-feedback-info-default);
+  --color-feedback-info-light: var(--semantic-feedback-info-light);
+  
+  /* Semantic disabled state */
+  --color-disabled: var(--semantic-disabled-base);
+}
+
+:root {
+  --radius: 0.625rem;
+  
+  /* ========================================================================
+   * LAYER 3: SEMANTIC BASE TOKENS (Dark Theme Default)
+   * ======================================================================== */
+  
+  /* Background semantic tokens */
+  --semantic-bg-base: rgba(255, 255, 255, 0.24); /* input/checkbox bg */
+  --semantic-bg-alt-1: rgba(255, 255, 255, 0.08); /* subtle bg */
+  --semantic-bg-alt-2: rgba(255, 255, 255, 0.16); /* disabled bg */
+  
+  /* Foreground semantic tokens */
+  --semantic-fg-base: #ffffff; /* white text */
+  --semantic-fg-muted: rgba(255, 255, 255, 0.64); /* muted white */
+  --semantic-fg-subtle: rgba(255, 255, 255, 0.40); /* subtle white */
+  
+  /* Border semantic tokens */
+  --semantic-border-default: rgba(255, 255, 255, 0.24); /* input/checkbox border */
+  --semantic-border-strong: rgba(255, 255, 255, 0.40); /* focus border */
+  
+  /* Feedback semantic tokens */
+  --semantic-feedback-success-default: var(--color-guild-green-400);
+  --semantic-feedback-success-light: var(--color-guild-green-100);
+  --semantic-feedback-error-default: #D82C2D;
+  --semantic-feedback-error-light: #ffc2c2;
+  --semantic-feedback-warning-default: var(--color-oracle-orange-500);
+  --semantic-feedback-warning-light: var(--color-oracle-orange-100);
+  --semantic-feedback-info-default: var(--color-byzantine-blue-400);
+  --semantic-feedback-info-light: var(--color-byzantine-blue-100);
+  
+  /* Disabled state */
+  --semantic-disabled-base: var(--color-neutrals-black-alpha-300);
+  
+  /* ========================================================================
+   * LAYER 4 → LAYER 5: TOKEN MAPPING DOCUMENTATION
+   * ========================================================================
+   * 
+   * This documents how existing (legacy) CSS variables map to the new
+   * layered token system. The legacy variables are preserved for backward
+   * compatibility with existing components.
+   * 
+   * LEGACY VARIABLE          → NEW TOKEN PATH
+   * -------------------------------------------------------------------------
+   * --primary                → semantic.brand.primary.default (guild-green.300)
+   * --primary-foreground     → semantic.brand.primary.on-primary
+   * --secondary              → semantic.brand.secondary.default (byzantine-blue.400)
+   * --secondary-foreground   → semantic.brand.secondary.on-secondary
+   * --accent                 → semantic.brand.accent.default (protocol-pink.400)
+   * --accent-foreground      → semantic.brand.accent.on-accent
+   * --destructive            → semantic.brand.error.default
+   * --destructive-foreground → semantic.brand.error.on-error
+   * --success                → semantic.brand.success.default (guild-green.400)
+   * --success-foreground     → semantic.brand.success.on-success
+   * --warning                → semantic.brand.warning.default (oracle-orange.500)
+   * --warning-foreground     → semantic.brand.warning.on-warning
+   * --error                  → semantic.brand.error.default (#D82C2D)
+   * --error-foreground       → semantic.brand.error.on-error
+   * --info                   → semantic.feedback.info.default (byzantine-blue.400)
+   * --info-foreground        → semantic.feedback.info.on-info
+   * --muted                  → semantic.bg.alt-1
+   * --muted-foreground       → semantic.fg.muted
+   * --border                 → semantic.border.default
+   * --input                  → semantic.bg.alt-1
+   * --ring                   → semantic.brand.primary.default
+   * --background             → semantic.bg.base
+   * --foreground             → semantic.fg.base
+   * -------------------------------------------------------------------------
+   */
+  
+  /* ========================================================================
+   * LAYER 5: LEGACY SEMANTIC MAPPINGS (Light Mode)
+   * ======================================================================== */
+  
+  /* Backgrounds & Foregrounds */
+  --background: hsl(0 0% 0%); /* black - dark theme default */
+  --foreground: hsl(0 0% 100%); /* white - default text */
+  --card: hsl(0 0% 10%); /* dark card */
+  --card-foreground: hsl(0 0% 100%); /* white text */
+  --popover: hsl(0 0% 100% / 24%); /* rgba(255,255,255,0.24) - menu/dropdown bg */
+  --popover-foreground: hsl(0 0% 100%); /* white - menu text */
+  
+  /* Brand semantic colors (dark theme) */
+  --primary: hsl(150 100% 75%); /* guild-green.300 - bright */
+  --primary-foreground: hsl(0 0% 0%); /* black - for bright green bg */
+  --secondary: 	hsl(228, 100%, 42%); /* byzantine-blue.500 - dark blue */
+  --secondary-foreground: hsl(0 0% 100%); /* white - for dark blue bg */
+  --accent: hsl(0 0% 100%); /* white - for menu/dropdown active bg */
+  --accent-foreground: hsl(0 0% 0%); /* black - for menu/dropdown active text */
+  --destructive: hsl(13 100% 63%); /* oracle-orange.400 - bright */
+  --destructive-foreground: hsl(0 0% 0%); /* black - for bright orange bg */
+  
+  /* Feedback colors - for alerts/toasts */
+  --info: hsl(0 0% 100%); /* white - basic info bg */
+  --info-foreground: hsl(0 0% 0%); /* black - basic info text */
+  --success: hsl(154 66% 66%); /* guild-green.400 - bright */
+  --success-foreground: hsl(0 0% 0%); /* black - for bright green bg */
+  --warning: hsl(47 100% 60%); /* moveus-marigold.400 - bright */
+  --warning-foreground: hsl(0 0% 0%); /* black - for bright yellow bg */
+  --error: hsl(13 100% 63%); /* oracle-orange.400 - bright */
+  --error-foreground: hsl(0 0% 0%); /* black - for bright orange bg */
+  
+  /* Muted & UI elements */
+  --muted: hsl(0 0% 15%); /* dark muted bg */
+  --muted-foreground: hsl(0 0% 60%); /* muted white */
+  --border: hsl(0 0% 100% / 24%); /* rgba(255,255,255,0.24) */
+  --input: hsl(0 0% 100% / 24%); /* rgba(255,255,255,0.24) - checkbox/input border and bg */
+  --ring: hsl(150 100% 75%); /* guild-green.300 - focus ring */
+  
+  /* Charts (using brand colors) */
+  --chart-1: hsl(154 66% 66%); /* guild-green.400 */
+  --chart-2: hsl(227 100% 50%); /* byzantine-blue.400 */
+  --chart-3: hsl(304 100% 73%); /* protocol-pink.300 */
+  --chart-4: hsl(13 100% 63%); /* oracle-orange.400 */
+  --chart-5: hsl(47 100% 60%); /* moveus-marigold.400 */
+  
+  /* Sidebar */
+  --sidebar: hsl(0 0% 5%); /* dark */
+  --sidebar-foreground: hsl(0 0% 100%); /* white */
+  --sidebar-primary: hsl(150 100% 75%); /* guild-green.300 - bright */
+  --sidebar-primary-foreground: hsl(0 0% 0%); /* black - for bright green */
+  --sidebar-accent: hsl(0 0% 15%); /* slightly lighter dark */
+  --sidebar-accent-foreground: hsl(0 0% 100%); /* white */
+  --sidebar-border: hsl(0 0% 100% / 10%);
+  --sidebar-ring: hsl(150 100% 75%);
+}
+
+.dark {
+  /* ========================================================================
+   * LAYER 3: SEMANTIC BASE TOKENS (Dark Mode)
+   * ======================================================================== */
+  
+  /* Background semantic tokens */
+  --semantic-bg-base: #000000;
+  --semantic-bg-alt-1: #0a0a0a; /* ~4% white */
+  --semantic-bg-alt-2: #141414; /* ~8% white */
+  
+  /* Foreground semantic tokens */
+  --semantic-fg-base: #ffffff;
+  --semantic-fg-muted: #b3b3b3; /* ~70% opacity white */
+  --semantic-fg-subtle: #808080; /* ~50% opacity white */
+  
+  /* Border semantic tokens */
+  --semantic-border-default: var(--color-neutrals-white-alpha-200);
+  --semantic-border-strong: var(--color-neutrals-white-alpha-400);
+  
+  /* Feedback semantic tokens (same as light mode) */
+  --semantic-feedback-success-default: var(--color-guild-green-400);
+  --semantic-feedback-success-light: var(--color-guild-green-100);
+  --semantic-feedback-error-default: #D82C2D;
+  --semantic-feedback-error-light: #ffc2c2;
+  --semantic-feedback-warning-default: var(--color-oracle-orange-500);
+  --semantic-feedback-warning-light: var(--color-oracle-orange-100);
+  --semantic-feedback-info-default: var(--color-byzantine-blue-400);
+  --semantic-feedback-info-light: var(--color-byzantine-blue-100);
+  
+  /* Disabled state */
+  --semantic-disabled-base: var(--color-neutrals-white-alpha-300);
+  
+  /* ========================================================================
+   * LAYER 5: LEGACY SEMANTIC MAPPINGS (Dark Mode)
+   * ======================================================================== */
+  
+  /* Dark mode backgrounds & foregrounds */
+  --background: hsl(0 0% 0%); /* black */
+  --foreground: hsl(0 0% 100%); /* white */
+  --card: hsl(0 0% 10%);
+  --card-foreground: hsl(0 0% 100%);
+  --popover: hsl(0 0% 10%);
+  --popover-foreground: hsl(0 0% 100%);
+  
+  /* Brand semantic colors (dark mode - slightly adjusted) */
+  --primary: hsl(154 66% 66%); /* guild-green.400 (slightly less bright) */
+  --primary-foreground: hsl(0 0% 0%);
+  --secondary: hsl(227 100% 65%); /* byzantine-blue.200 (lighter for dark mode) */
+  --secondary-foreground: hsl(0 0% 0%);
+  --accent: hsl(304 100% 73%); /* protocol-pink.300 */
+  --accent-foreground: hsl(0 0% 0%);
+  --destructive: hsl(13 100% 63%); /* oracle-orange.400 */
+  --destructive-foreground: hsl(0 0% 0%);
+  
+  /* Feedback colors (dark mode) */
+  --info: hsl(227 100% 65%); /* byzantine-blue.200 */
+  --info-foreground: hsl(0 0% 0%);
+  --success: hsl(154 66% 66%); /* guild-green.400 */
+  --success-foreground: hsl(0 0% 0%);
+  --warning: hsl(47 100% 60%); /* moveus-marigold.400 */
+  --warning-foreground: hsl(0 0% 0%);
+  --error: hsl(13 100% 63%); /* oracle-orange.400 */
+  --error-foreground: hsl(0 0% 0%);
+  
+  /* Muted & UI elements (dark mode) */
+  --muted: hsl(0 0% 15%);
+  --muted-foreground: hsl(0 0% 70%);
+  --border: hsl(0 0% 100% / 10%);
+  --input: hsl(0 0% 100% / 15%);
+  --ring: hsl(154 66% 66%); /* guild-green.400 */
+  
+  /* Charts (dark mode) */
+  --chart-1: hsl(154 66% 66%); /* guild-green.400 */
+  --chart-2: hsl(227 100% 65%); /* byzantine-blue.200 */
+  --chart-3: hsl(304 100% 73%); /* protocol-pink.300 */
+  --chart-4: hsl(13 100% 63%); /* oracle-orange.400 */
+  --chart-5: hsl(47 100% 60%); /* moveus-marigold.400 */
+  
+  /* Sidebar (dark mode) */
+  --sidebar: hsl(0 0% 10%);
+  --sidebar-foreground: hsl(0 0% 100%);
+  --sidebar-primary: hsl(154 66% 66%); /* guild-green.400 */
+  --sidebar-primary-foreground: hsl(0 0% 0%);
+  --sidebar-accent: hsl(0 0% 15%);
+  --sidebar-accent-foreground: hsl(0 0% 100%);
+  --sidebar-border: hsl(0 0% 100% / 10%);
+  --sidebar-ring: hsl(154 66% 66%);
+}
+
+/* ============================================================================
+ * COMPONENT TOKEN COVERAGE SUMMARY
+ * ============================================================================
+ * 
+ * Components WITH matching token files (16 components UPDATED):
+ * -------------------------------------------------------------------------
+ * ✓ accordion.tsx        → semantic-accordion.json
+ * ✓ avatar.tsx           → semantic-avatar.json  
+ * ✓ badge.tsx            → semantic-badge.json + semantic-tag.json
+ * ✓ card.tsx             → semantic-surface.json
+ * ✓ checkbox.tsx         → semantic-checkbox.json
+ * ✓ dialog.tsx           → semantic-modal.json
+ * ✓ input.tsx            → semantic-input.json
+ * ✓ navigation-menu.tsx  → semantic-navigation.json
+ * ✓ pagination.tsx       → semantic-pagination.json
+ * ✓ radio-group.tsx      → semantic-radio.json
+ * ✓ select.tsx           → semantic-select.json
+ * ✓ slider.tsx           → semantic-slider.json
+ * ✓ switch.tsx           → semantic-switch.json
+ * ✓ table.tsx            → semantic-table.json
+ * ✓ tooltip.tsx          → semantic-tooltip.json
+ * ✓ sonner.tsx           → semantic-toast.json (Toaster component)
+ * 
+ * Components WITHOUT matching token files (37 components):
+ * -------------------------------------------------------------------------
+ * These components use legacy semantic tokens (--primary, --border, etc.)
+ * or have custom styling that doesn't map to the design token system:
+ * 
+ * alert, alert-dialog, aspect-ratio, breadcrumb, button, button-group,
+ * calendar, carousel, chart, collapsible, command, context-menu,
+ * crypto-amount-input, drawer, dropdown-menu, empty, field, form,
+ * hover-card, input-group, input-otp, item, kbd, label, menubar, popover,
+ * progress, resizable, scroll-area, separator, sheet, sidebar, skeleton,
+ * spinner, tabs, textarea, toggle, toggle-group, typography
+ * 
+ * Token files WITHOUT matching components (3 files):
+ * -------------------------------------------------------------------------
+ * These token files don't have corresponding components in the system:
+ * 
+ * - semantic-stepper.json        (no stepper component exists)
+ * - semantic-list.json           (could apply to item.tsx, unclear mapping)
+ * - semantic-segmented-control.json (could apply to toggle-group.tsx, unclear)
+ * 
+ * ============================================================================
+ */
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-family-body);
+  }
+}

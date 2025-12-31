@@ -1,2 +1,2 @@
-onlyBuiltDependencies:
-  - "@movementlabsxyz/movement-design-system"
+packages:
+  - "packages/*"

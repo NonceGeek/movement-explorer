@@ -2,12 +2,17 @@
 
 import { useState, useCallback } from "react";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import { knownAddresses } from "@/constants";
+import {
+  knownAddresses,
+  faMetadataResource,
+  objectCoreResource,
+} from "@/constants";
 import {
   isValidAccountAddress,
   isNumeric,
   is32ByteHex,
   truncateAddress,
+  isValidStruct,
 } from "@/utils";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import {
@@ -26,6 +31,9 @@ export type SearchResult = {
     | "label"
     | "coin"
     | "emojicoin"
+    | "fungible_asset"
+    | "object"
+    | "coin_struct"
     | "none";
   image?: string;
 };
@@ -141,6 +149,22 @@ export function useSearch() {
             // Not a valid block height
           }
 
+          // Try block by version (find block containing this transaction version)
+          try {
+            const block = await sdk_v2_client.getBlockByVersion({
+              ledgerVersion: num,
+            });
+            if (block) {
+              foundResults.push({
+                label: `Block with Txn Version ${num}`,
+                to: `/block/${block.block_height}`,
+                type: "block",
+              });
+            }
+          } catch {
+            // Not a valid version for block lookup
+          }
+
           // Try transaction by version
           try {
             await aptos_client.getTransactionByVersion(num);
@@ -170,6 +194,7 @@ export function useSearch() {
 
         // Check if valid account address
         if (isValidAccountAddress(trimmed)) {
+          // Try as account
           try {
             await aptos_client.getAccount(trimmed);
             const knownName = knownAddresses[trimmed.toLowerCase()];
@@ -182,6 +207,48 @@ export function useSearch() {
             });
           } catch {
             // Account not found
+          }
+
+          // Try as Fungible Asset
+          try {
+            await aptos_client.getAccountResource(trimmed, faMetadataResource);
+            foundResults.push({
+              label: `Fungible Asset ${truncateAddress(trimmed)}`,
+              to: `/fa/${trimmed}`,
+              type: "fungible_asset",
+            });
+          } catch {
+            // Not a Fungible Asset
+          }
+
+          // Try as Object
+          try {
+            await aptos_client.getAccountResource(trimmed, objectCoreResource);
+            foundResults.push({
+              label: `Object ${truncateAddress(trimmed)}`,
+              to: `/object/${trimmed}`,
+              type: "object",
+            });
+          } catch {
+            // Not an Object
+          }
+        }
+
+        // Check if valid struct (e.g., 0x1::coin::CoinInfo<...>)
+        if (isValidStruct(trimmed)) {
+          const address = trimmed.split("::")[0];
+          try {
+            await aptos_client.getAccountResource(
+              address,
+              `0x1::coin::CoinInfo<${trimmed}>`
+            );
+            foundResults.push({
+              label: `Coin ${trimmed}`,
+              to: `/coin/${trimmed}`,
+              type: "coin_struct",
+            });
+          } catch {
+            // Not a valid coin struct
           }
         }
 

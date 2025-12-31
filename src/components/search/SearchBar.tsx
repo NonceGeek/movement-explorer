@@ -3,8 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useSearch, SearchResult } from "@/hooks/common/useSearch";
-import { Search, Loader2, ArrowRight } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  ArrowRight,
+  CornerDownLeft,
+  SearchX,
+} from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { Button } from "@movementlabsxyz/movement-design-system";
 
 export interface SearchBarProps {
   variant?: "default" | "hero";
@@ -92,10 +99,17 @@ export function SearchBar({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const trimmed = inputValue.trim();
+
+    // If there are results, navigate to the first one
     if (results.length > 0 && results[0].to) {
       router.push(results[0].to);
       setInputValue("");
       setIsOpen(false);
+    } else if (trimmed) {
+      // If there's input but no results yet, trigger a search
+      search(trimmed);
+      setIsOpen(true);
     }
   };
 
@@ -105,7 +119,7 @@ export function SearchBar({
       <div ref={containerRef} className="relative w-full max-w-2xl">
         <form
           onSubmit={handleSubmit}
-          className="flex items-center bg-card border border-border rounded-xl overflow-hidden transition-all duration-200 focus-within:border-moveus-marigold-500 focus-within:ring-2 focus-within:ring-moveus-marigold-500/20"
+          className="flex items-center bg-card border-2 border-guild-green-300 rounded-xl overflow-hidden shadow-[0_0_0_0_#0337FF] transition-all duration-300 ease-out focus-within:-translate-y-1 focus-within:shadow-[5px_5px_0_0_#0337FF]"
         >
           <div className="pl-4 text-muted-foreground">
             <Search size={20} />
@@ -122,10 +136,11 @@ export function SearchBar({
             placeholder={placeholder}
             className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground outline-none"
           />
-          <button
+          <Button
             type="submit"
+            variant="glow"
             disabled={isLoading}
-            className="flex items-center gap-2 px-6 py-3.5 m-2 bg-moveus-marigold-500 hover:bg-moveus-marigold-600 text-black font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="m-2 w-auto! max-w-none! p-3! px-6! text-base! rounded-lg! shadow-[4px_4px_0_0_#0337FF]! hover:shadow-[-4px_-4px_0_0_#0337FF]!"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
@@ -135,36 +150,70 @@ export function SearchBar({
                 <ArrowRight size={16} />
               </>
             )}
-          </button>
+          </Button>
         </form>
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-50 w-full mt-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-            <ul className="max-h-80 overflow-y-auto">
-              {results.map((result, index) => (
-                <li
-                  key={`${result.to}-${index}`}
-                  onClick={() => handleResultClick(result)}
-                  className={`px-4 py-3 cursor-pointer transition-colors ${
-                    index === selectedIndex ? "bg-muted" : "hover:bg-muted/50"
-                  } ${
-                    !result.to ? "cursor-default text-muted-foreground" : ""
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    {result.image && (
-                      <img
-                        src={result.image}
-                        alt=""
-                        className="w-5 h-5 rounded"
-                      />
-                    )}
-                    <span className="text-sm">{result.label}</span>
-                  </div>
-                </li>
-              ))}
-            </ul>
+          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-sm border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Check if only result is "No Results" */}
+            {results.length === 1 && results[0].type === "none" ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-guild-green-300/10 flex items-center justify-center mb-4">
+                  <SearchX size={28} className="text-guild-green-400/60" />
+                </div>
+                <p className="text-base font-medium text-foreground">
+                  No results found
+                </p>
+                <p className="text-sm text-guild-green-400/60 mt-1.5">
+                  Try searching for an address, transaction, or block
+                </p>
+              </div>
+            ) : (
+              <ul className="max-h-80 overflow-y-auto divide-y divide-border/50">
+                {results.map((result, index) => (
+                  <li
+                    key={`${result.to}-${index}`}
+                    onClick={() => handleResultClick(result)}
+                    className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                      index === selectedIndex
+                        ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
+                        : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                    } ${
+                      !result.to
+                        ? "cursor-default text-muted-foreground"
+                        : "hover:pl-5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {result.image ? (
+                        <img
+                          src={result.image}
+                          alt=""
+                          className="w-6 h-6 rounded-full ring-1 ring-guild-green-300/30"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-guild-green-300/20 flex items-center justify-center">
+                          <CornerDownLeft
+                            size={12}
+                            className="text-guild-green-400"
+                          />
+                        </div>
+                      )}
+                      <span
+                        className={`text-sm font-medium ${
+                          index === selectedIndex
+                            ? "text-guild-green-300"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {result.label}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         )}
       </div>
@@ -195,29 +244,65 @@ export function SearchBar({
 
       {/* Results dropdown */}
       {isOpen && results.length > 0 && (
-        <div className="absolute z-50 w-full mt-2 bg-card border border-border rounded-lg shadow-lg overflow-hidden">
-          <ul className="max-h-80 overflow-y-auto">
-            {results.map((result, index) => (
-              <li
-                key={`${result.to}-${index}`}
-                onClick={() => handleResultClick(result)}
-                className={`px-4 py-3 cursor-pointer transition-colors ${
-                  index === selectedIndex ? "bg-muted" : "hover:bg-muted/50"
-                } ${!result.to ? "cursor-default text-muted-foreground" : ""}`}
-              >
-                <div className="flex items-center gap-3">
-                  {result.image && (
-                    <img
-                      src={result.image}
-                      alt=""
-                      className="w-5 h-5 rounded"
-                    />
-                  )}
-                  <span className="text-sm">{result.label}</span>
-                </div>
-              </li>
-            ))}
-          </ul>
+        <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          {/* Check if only result is "No Results" */}
+          {results.length === 1 && results[0].type === "none" ? (
+            <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+              <div className="w-14 h-14 rounded-full bg-guild-green-300/10 flex items-center justify-center mb-4">
+                <SearchX size={28} className="text-guild-green-400/60" />
+              </div>
+              <p className="text-base font-medium text-foreground">
+                No results found
+              </p>
+              <p className="text-sm text-guild-green-400/60 mt-1.5">
+                Try searching for an address, transaction, or block
+              </p>
+            </div>
+          ) : (
+            <ul className="max-h-80 overflow-y-auto divide-y divide-border/50">
+              {results.map((result, index) => (
+                <li
+                  key={`${result.to}-${index}`}
+                  onClick={() => handleResultClick(result)}
+                  className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                    index === selectedIndex
+                      ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
+                      : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                  } ${
+                    !result.to
+                      ? "cursor-default text-muted-foreground"
+                      : "hover:pl-5"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    {result.image ? (
+                      <img
+                        src={result.image}
+                        alt=""
+                        className="w-6 h-6 rounded-full ring-1 ring-guild-green-300/30"
+                      />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-guild-green-300/20 flex items-center justify-center">
+                        <CornerDownLeft
+                          size={12}
+                          className="text-guild-green-400"
+                        />
+                      </div>
+                    )}
+                    <span
+                      className={`text-sm font-medium ${
+                        index === selectedIndex
+                          ? "text-guild-green-300"
+                          : "text-foreground"
+                      }`}
+                    >
+                      {result.label}
+                    </span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>

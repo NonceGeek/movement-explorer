@@ -3,34 +3,45 @@
 import { useQuery } from "@tanstack/react-query";
 import { getLedgerInfo } from "@/services/general";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import { Zap, Users, FileText, Clock } from "lucide-react";
 import { SearchBar } from "@/components/search";
 import { StatCard } from "./components/StatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
 import { DottedBackground } from "@movementlabsxyz/movement-design-system";
+import { useGetPeakTPS, useGetAnalyticsData } from "@/hooks";
 
 export default function HomePage() {
   const { aptos_client, network_value } = useGlobalStore();
 
-  // Ledger Info (for stats)
+  // Ledger Info (for total transactions)
   const { data: ledgerInfo, isLoading: ledgerLoading } = useQuery({
     queryKey: ["ledgerInfo", network_value],
     queryFn: () => getLedgerInfo(aptos_client),
     refetchInterval: 5000,
   });
 
-  // Mock stats - in a real app these would come from an API
-  const currentTps = 2450;
-  const activeValidators = 104;
+  // Analytics data
+  const analyticsData = useGetAnalyticsData();
+  const { peakTps } = useGetPeakTPS();
+
+  // Real data from APIs
   const totalTransactions = ledgerInfo?.ledger_version
     ? parseInt(ledgerInfo.ledger_version)
     : 0;
-  const avgBlockTime = "400ms";
+
+  const totalAccounts = analyticsData?.total_accounts?.[0]?.total_accounts ?? 0;
+  const totalContracts =
+    analyticsData?.cumulative_deployers?.[0]?.cumulative_contracts_deployed ??
+    0;
+  const totalDeployers =
+    analyticsData?.cumulative_deployers?.[0]?.cumulative_contract_deployers ??
+    0;
+
+  const isAnalyticsLoading = !analyticsData;
 
   return (
     <div className="min-h-screen bg-background">
       {/* Hero Section with Gradient Background */}
-      <section className="relative overflow-hidden">
+      <section className="relative overflow-visible">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/20 via-transparent to-transparent pointer-events-none" />
 
@@ -43,7 +54,7 @@ export default function HomePage() {
           variant="dots"
         />
 
-        <div className="container mx-auto px-4 py-16 md:py-24 relative">
+        <div className="container mx-auto px-4 py-12 md:py-16 relative">
           <div className="max-w-4xl mx-auto text-center space-y-6">
             {/* Title */}
             <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
@@ -61,7 +72,7 @@ export default function HomePage() {
             </p>
 
             {/* Search Bar */}
-            <div className="pt-4 max-w-2xl mx-auto">
+            <div className="pt-4 max-w-2xl mx-auto relative z-10">
               <SearchBar
                 variant="hero"
                 placeholder="Search by Address / Txn Hash / Block / Token"
@@ -72,35 +83,38 @@ export default function HomePage() {
       </section>
 
       {/* Network Stats */}
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard
-            label="Current TPS"
-            value={currentTps}
-            icon={<Zap size={20} className="text-moveus-marigold-500" />}
-            isLive={true}
-            isLoading={ledgerLoading}
-          />
-          <StatCard
-            label="Active Validators"
-            value={activeValidators}
-            icon={<Users size={20} className="text-moveus-marigold-500" />}
-            badge="Global"
-            isLoading={ledgerLoading}
-          />
+      <div className="container mx-auto px-4 py-8 relative z-0">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <StatCard
             label="Total Transactions"
             value={totalTransactions}
-            icon={<FileText size={20} className="text-moveus-marigold-500" />}
-            change="+5.2k"
+            tooltip="Total number of transactions on the Movement network."
             isLoading={ledgerLoading}
           />
           <StatCard
-            label="Avg Block Time"
-            value={avgBlockTime}
-            icon={<Clock size={20} className="text-moveus-marigold-500" />}
-            badge="Stable"
-            isLoading={ledgerLoading}
+            label="Max TPS"
+            value={peakTps ?? "-"}
+            subLabel="Peak Last 30 Days"
+            tooltip="The highest count of user transactions within any two-block interval on a given day, divided by the duration of that interval."
+            isLoading={!peakTps && isAnalyticsLoading}
+          />
+          <StatCard
+            label="Total Accounts"
+            value={totalAccounts}
+            tooltip="Total number of accounts created on the Movement network."
+            isLoading={isAnalyticsLoading}
+          />
+          <StatCard
+            label="Contracts Deployed"
+            value={totalContracts}
+            tooltip="Total number of smart contracts deployed on the network."
+            isLoading={isAnalyticsLoading}
+          />
+          <StatCard
+            label="Contract Deployers"
+            value={totalDeployers}
+            tooltip="Total number of unique addresses that have deployed contracts."
+            isLoading={isAnalyticsLoading}
           />
         </div>
       </div>

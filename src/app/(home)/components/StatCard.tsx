@@ -1,14 +1,20 @@
+"use client";
+
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Card } from "@movementlabsxyz/movement-design-system";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { Info } from "lucide-react";
 
 export interface StatCardProps {
   label: string;
   value: string | number;
-  icon: React.ReactNode;
-  badge?: string;
-  change?: string;
-  isLive?: boolean;
+  subLabel?: string;
+  tooltip?: string;
   isLoading?: boolean;
 }
 
@@ -19,49 +25,54 @@ function formatNumber(num: number | string): string {
 export function StatCard({
   label,
   value,
-  icon,
-  badge,
-  change,
-  isLive,
+  subLabel,
+  tooltip,
   isLoading,
 }: StatCardProps) {
   return (
-    <Card className="p-5 border-border/50 bg-card hover:border-moveus-marigold-500/30 transition-colors">
-      <div className="flex justify-between items-start mb-3">
-        <span className="text-sm text-muted-foreground font-medium">
-          {label}
+    <Card
+      variant="default"
+      className="p-5 h-[120px] flex flex-col justify-between group hover:border-guild-green-300/30 transition-all duration-300"
+    >
+      {/* Header: Label & Tooltip */}
+      <div className="flex items-center gap-1.5">
+        <span className="text-[11px] text-muted-foreground font-medium tracking-wider">
+          {label.toUpperCase()}
         </span>
-        <div className="text-moveus-marigold-500">{icon}</div>
+        {tooltip && (
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Info
+                  size={13}
+                  className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors"
+                />
+              </TooltipTrigger>
+              <TooltipContent
+                side="top"
+                className="max-w-[240px] text-xs leading-relaxed"
+              >
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
       </div>
 
-      {isLoading ? (
-        <Skeleton className="h-9 w-32 mb-2" />
-      ) : (
-        <div className="text-3xl font-bold font-mono text-foreground mb-2">
-          {typeof value === "number" ? formatNumber(value) : value}
-        </div>
-      )}
+      {/* Value & SubLabel */}
+      <div className="flex-1 flex flex-col justify-center">
+        {isLoading ? (
+          <Skeleton className="h-6 w-20" />
+        ) : (
+          <div className="text-[20px] font-semibold font-mono text-foreground leading-tight">
+            {typeof value === "number" ? formatNumber(value) : value}
+          </div>
+        )}
 
-      <div className="flex items-center gap-2 flex-wrap">
-        {isLive && (
-          <Badge
-            variant="outline"
-            className="gap-1.5 text-guild-green-500 border-guild-green-500/30 bg-guild-green-500/10"
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-guild-green-500 animate-pulse" />
-            Live
-          </Badge>
-        )}
-        {badge && (
-          <Badge variant="secondary" className="text-xs">
-            {badge}
-          </Badge>
-        )}
-        {change && (
-          <span className="text-xs font-medium text-guild-green-500">
-            {change}
-          </span>
-        )}
+        {/* Sub Label - always takes space for alignment */}
+        <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-1 h-3">
+          {subLabel || "\u00A0"}
+        </div>
       </div>
     </Card>
   );

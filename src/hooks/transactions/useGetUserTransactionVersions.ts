@@ -29,12 +29,16 @@ interface UserTransactionsResponse {
 export default function useGetUserTransactionVersions(
   limit: number,
   startVersion?: number,
-  offset?: number
+  offset?: number,
+  pollInterval?: number
 ): number[] {
   const topTxnsOnly = startVersion === undefined || offset === undefined;
   const { loading, error, data } = useGraphqlQuery<UserTransactionsResponse>(
     topTxnsOnly ? TOP_USER_TRANSACTIONS_QUERY : USER_TRANSACTIONS_QUERY,
-    { variables: { limit: limit, start_version: startVersion, offset: offset } }
+    {
+      variables: { limit: limit, start_version: startVersion, offset: offset },
+      pollInterval,
+    }
   );
 
   if (loading || error || !data) {

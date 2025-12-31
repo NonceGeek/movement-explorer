@@ -22,16 +22,28 @@ import {
 } from "@/utils/transaction";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 
+import { Types } from "aptos";
+
 export interface UserTransactionRowProps {
   version: number;
+  transactionData?: Types.Transaction;
+  className?: string;
 }
 
-export function UserTransactionRow({ version }: UserTransactionRowProps) {
+export function UserTransactionRow({
+  version,
+  transactionData,
+  className,
+}: UserTransactionRowProps) {
   const {
-    data: transaction,
+    data: fetchedTransaction,
     isError,
     isLoading,
-  } = useGetTransaction(version.toString());
+  } = useGetTransaction(version.toString(), {
+    enabled: !transactionData,
+  });
+
+  const transaction = transactionData || fetchedTransaction;
 
   if (isLoading) {
     return (
@@ -58,7 +70,7 @@ export function UserTransactionRow({ version }: UserTransactionRowProps) {
     "gas_unit_price" in transaction ? transaction.gas_unit_price : null;
 
   return (
-    <TableRow>
+    <TableRow className={className}>
       {/* Version + Status */}
       <TableCell>
         <div className="flex items-center gap-2">

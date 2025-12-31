@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 import {
   formatTimestamp,
   getTransactionTypeName,
@@ -21,7 +23,6 @@ import {
   formatMoveAmount,
 } from "@/utils/transaction";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
-
 import { Types } from "aptos";
 
 export interface UserTransactionRowProps {
@@ -35,6 +36,8 @@ export function UserTransactionRow({
   transactionData,
   className,
 }: UserTransactionRowProps) {
+  const router = useRouter();
+
   const {
     data: fetchedTransaction,
     isError,
@@ -44,6 +47,8 @@ export function UserTransactionRow({
   });
 
   const transaction = transactionData || fetchedTransaction;
+
+  // ... (loading and error checks)
 
   if (isLoading) {
     return (
@@ -59,6 +64,8 @@ export function UserTransactionRow({
     return null;
   }
 
+  // ... (variable definitions)
+
   const status = "success" in transaction ? transaction.success : true;
   const sender = getTransactionSender(transaction);
   const timestamp = "timestamp" in transaction ? transaction.timestamp : null;
@@ -69,14 +76,27 @@ export function UserTransactionRow({
   const gasUnitPrice =
     "gas_unit_price" in transaction ? transaction.gas_unit_price : null;
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    // Prevent navigation if clicking on an interactive element
+    if ((e.target as HTMLElement).closest("a, button")) return;
+    router.push(`/txn/${version}`);
+  };
+
   return (
-    <TableRow className={className}>
+    <TableRow
+      className={cn(
+        "cursor-pointer hover:bg-guild-green-500/50 group",
+        className
+      )}
+      onClick={handleRowClick}
+    >
       {/* Version + Status */}
       <TableCell>
         <div className="flex items-center gap-2">
           <Link
             href={`/txn/${version}`}
-            className="text-primary hover:underline font-mono"
+            className="text-primary hover:underline font-mono group-hover:text-white transition-colors"
+            onClick={(e) => e.stopPropagation()}
           >
             {version}
           </Link>
@@ -92,7 +112,7 @@ export function UserTransactionRow({
         </div>
       </TableCell>
       {/* Timestamp */}
-      <TableCell className="text-muted-foreground text-sm">
+      <TableCell className="text-muted-foreground text-sm group-hover:text-white/90 transition-colors">
         {timestamp ? formatTimestamp(timestamp) : "-"}
       </TableCell>
       {/* Sender */}
@@ -100,12 +120,15 @@ export function UserTransactionRow({
         {sender ? (
           <Link
             href={`/account/${sender}`}
-            className="text-primary hover:underline font-mono text-sm"
+            className="text-primary hover:underline font-mono text-sm group-hover:text-white transition-colors"
+            onClick={(e) => e.stopPropagation()}
           >
             {sender.slice(0, 8)}...{sender.slice(-6)}
           </Link>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+            -
+          </span>
         )}
       </TableCell>
       {/* Receiver */}
@@ -116,9 +139,9 @@ export function UserTransactionRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   {counterparty.role === "smartContract" ? (
-                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <FileText className="h-4 w-4 text-muted-foreground group-hover:text-white/90 transition-colors" />
                   ) : (
-                    <ArrowRight className="h-4 w-4 text-muted-foreground" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-white/90 transition-colors" />
                   )}
                 </TooltipTrigger>
                 <TooltipContent>
@@ -130,36 +153,45 @@ export function UserTransactionRow({
             </TooltipProvider>
             <Link
               href={`/account/${counterparty.address}`}
-              className="text-primary hover:underline font-mono text-sm"
+              className="text-primary hover:underline font-mono text-sm group-hover:text-white transition-colors"
+              onClick={(e) => e.stopPropagation()}
             >
               {counterparty.address.slice(0, 8)}...
               {counterparty.address.slice(-6)}
             </Link>
           </div>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+            -
+          </span>
         )}
       </TableCell>
       {/* Function */}
       <TableCell>
         {functionName ? (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
+          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-white/20 group-hover:text-white transition-colors">
             {functionName}
           </code>
         ) : (
-          <span className="text-muted-foreground">-</span>
+          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+            -
+          </span>
         )}
       </TableCell>
       {/* Amount + Gas */}
       <TableCell className="text-right">
         <div className="flex flex-col items-end">
           {amount !== undefined && amount > 0 ? (
-            <span className="font-mono">{formatMoveAmount(amount)} MOVE</span>
+            <span className="font-mono group-hover:text-white transition-colors">
+              {formatMoveAmount(amount)} MOVE
+            </span>
           ) : (
-            <span className="text-muted-foreground">-</span>
+            <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+              -
+            </span>
           )}
           {gasUsed && gasUnitPrice && (
-            <span className="text-xs text-muted-foreground">
+            <span className="text-xs text-muted-foreground group-hover:text-white/80 transition-colors">
               Gas {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
             </span>
           )}

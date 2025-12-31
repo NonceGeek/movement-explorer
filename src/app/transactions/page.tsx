@@ -1,5 +1,6 @@
 "use client";
 
+import PageNavigation from "@/components/layout/PageNavigation";
 import { useQuery } from "@tanstack/react-query";
 import { getTransactions, getLedgerInfo } from "@/services";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -711,26 +712,29 @@ function TransactionsContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">
-          {isUserTransactions ? "User Transactions" : "All Transactions"}
-        </h1>
-        {isGraphqlClientSupported && (
-          <Button variant="ghost" onClick={toggleTransactionType}>
-            {isUserTransactions
-              ? "View All Transactions"
-              : "View User Transactions"}
-          </Button>
-        )}
-      </div>
+    <>
+      <PageNavigation />
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-row justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">
+            {isUserTransactions ? "User Transactions" : "All Transactions"}
+          </h1>
+          {isGraphqlClientSupported && (
+            <Button variant="ghost" onClick={toggleTransactionType}>
+              {isUserTransactions
+                ? "View All Transactions"
+                : "View User Transactions"}
+            </Button>
+          )}
+        </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          {isUserTransactions ? <UserTransactions /> : <AllTransactions />}
-        </CardContent>
-      </Card>
-    </div>
+        <Card>
+          <CardContent className="pt-6">
+            {isUserTransactions ? <UserTransactions /> : <AllTransactions />}
+          </CardContent>
+        </Card>
+      </div>
+    </>
   );
 }
 

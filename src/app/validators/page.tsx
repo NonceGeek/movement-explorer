@@ -1,5 +1,6 @@
 "use client";
 
+import PageNavigation from "@/components/layout/PageNavigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -99,164 +100,169 @@ export default function ValidatorsPage() {
   );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold mb-6">Validators</h1>
+    <>
+      <PageNavigation />
+      <div className="container mx-auto px-4 py-8">
+        <h1 className="text-3xl font-bold mb-6">Validators</h1>
 
-      {/* Staking Promo Banner */}
-      <StakingPromo />
+        {/* Staking Promo Banner */}
+        <StakingPromo />
 
-      {/* Stats Grid - 3 Cards like source project */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-        {/* 1. Nodes */}
-        <Card className="h-[120px]">
-          <CardContent className="pt-6 flex flex-col justify-center h-full">
+        {/* Stats Grid - 3 Cards like source project */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+          {/* 1. Nodes */}
+          <Card className="h-[120px]">
+            <CardContent className="pt-6 flex flex-col justify-center h-full">
+              {isLoading ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <div className="text-2xl font-bold">
+                  {numberOfActiveValidators} Nodes
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 2. Epoch with Progress */}
+          <Card className="h-[120px]">
+            <CardContent className="pt-4 flex flex-col justify-center h-full space-y-2">
+              {!curEpoch ? (
+                <Skeleton className="h-8 w-32" />
+              ) : (
+                <>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl font-bold">
+                      Epoch {Number(curEpoch).toLocaleString("en-US")}
+                    </span>
+                    <Info className="h-4 w-4 text-muted-foreground" />
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    {epochProgress}% complete
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Progress value={epochProgress} className="h-2 flex-1" />
+                    <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
+                      {timeRemaining || "calculating..."}
+                    </span>
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 3. Staking */}
+          <Card className="h-[120px]">
+            <CardContent className="pt-6 flex flex-col justify-center h-full space-y-1">
+              {isLoading ? (
+                <Skeleton className="h-8 w-40" />
+              ) : (
+                <>
+                  <div className="text-xl font-bold">
+                    {totalStake} MOVE Staked
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <span>{rewardsRateYearly ?? "-"}% APR Reward</span>
+                    <Info className="h-4 w-4" />
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Delegation Validators Table */}
+        <Card>
+          <CardContent className="pt-6">
+            <h2 className="text-xl font-semibold mb-4">
+              Delegation Validators
+            </h2>
             {isLoading ? (
-              <Skeleton className="h-8 w-24" />
+              <div className="space-y-3">
+                {[...Array(5)].map((_, i) => (
+                  <Skeleton key={i} className="h-12 w-full" />
+                ))}
+              </div>
+            ) : sortedValidators.length === 0 ? (
+              <div className="text-center py-8 text-muted-foreground">
+                No validators found
+              </div>
             ) : (
-              <div className="text-2xl font-bold">
-                {numberOfActiveValidators} Nodes
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-16">#</TableHead>
+                      <TableHead>Staking Pool Address</TableHead>
+                      <TableHead>Operator Address</TableHead>
+                      <TableHead className="text-right">
+                        Delegated Amount
+                      </TableHead>
+                      <TableHead className="text-right">Network %</TableHead>
+                      <TableHead>Status</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {sortedValidators.map((validator, index) => {
+                      const votingPower =
+                        BigInt(validator.voting_power) / BigInt(10 ** 8);
+                      const totalPower = totalVotingPower
+                        ? BigInt(totalVotingPower)
+                        : BigInt(1);
+                      const share =
+                        totalVotingPower && BigInt(totalVotingPower) > 0
+                          ? (Number(BigInt(validator.voting_power)) /
+                              Number(totalPower)) *
+                            100
+                          : 0;
+
+                      return (
+                        <TableRow
+                          key={validator.owner_address}
+                          className="cursor-pointer hover:bg-muted/50"
+                          onClick={() =>
+                            (window.location.href = `/validator/${validator.owner_address}`)
+                          }
+                        >
+                          <TableCell className="font-medium">
+                            {index + 1}
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              href={`/account/${validator.owner_address}`}
+                              className="text-primary hover:underline font-mono"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {truncateAddress(validator.owner_address)}
+                            </Link>
+                          </TableCell>
+                          <TableCell>
+                            <Link
+                              href={`/account/${validator.operator_address}`}
+                              className="text-primary hover:underline font-mono"
+                              onClick={(e) => e.stopPropagation()}
+                            >
+                              {truncateAddress(validator.operator_address)}
+                            </Link>
+                          </TableCell>
+                          <TableCell className="text-right font-mono">
+                            {votingPower.toLocaleString("en-US")} MOVE
+                          </TableCell>
+                          <TableCell className="text-right">
+                            {share.toFixed(2)}%
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="success">Active</Badge>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
               </div>
             )}
           </CardContent>
         </Card>
-
-        {/* 2. Epoch with Progress */}
-        <Card className="h-[120px]">
-          <CardContent className="pt-4 flex flex-col justify-center h-full space-y-2">
-            {!curEpoch ? (
-              <Skeleton className="h-8 w-32" />
-            ) : (
-              <>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl font-bold">
-                    Epoch {Number(curEpoch).toLocaleString("en-US")}
-                  </span>
-                  <Info className="h-4 w-4 text-muted-foreground" />
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  {epochProgress}% complete
-                </div>
-                <div className="flex items-center gap-2">
-                  <Progress value={epochProgress} className="h-2 flex-1" />
-                  <span className="text-xs bg-primary/20 text-primary px-2 py-1 rounded">
-                    {timeRemaining || "calculating..."}
-                  </span>
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* 3. Staking */}
-        <Card className="h-[120px]">
-          <CardContent className="pt-6 flex flex-col justify-center h-full space-y-1">
-            {isLoading ? (
-              <Skeleton className="h-8 w-40" />
-            ) : (
-              <>
-                <div className="text-xl font-bold">
-                  {totalStake} MOVE Staked
-                </div>
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <span>{rewardsRateYearly ?? "-"}% APR Reward</span>
-                  <Info className="h-4 w-4" />
-                </div>
-              </>
-            )}
-          </CardContent>
-        </Card>
       </div>
-
-      {/* Delegation Validators Table */}
-      <Card>
-        <CardContent className="pt-6">
-          <h2 className="text-xl font-semibold mb-4">Delegation Validators</h2>
-          {isLoading ? (
-            <div className="space-y-3">
-              {[...Array(5)].map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : sortedValidators.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No validators found
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-16">#</TableHead>
-                    <TableHead>Staking Pool Address</TableHead>
-                    <TableHead>Operator Address</TableHead>
-                    <TableHead className="text-right">
-                      Delegated Amount
-                    </TableHead>
-                    <TableHead className="text-right">Network %</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {sortedValidators.map((validator, index) => {
-                    const votingPower =
-                      BigInt(validator.voting_power) / BigInt(10 ** 8);
-                    const totalPower = totalVotingPower
-                      ? BigInt(totalVotingPower)
-                      : BigInt(1);
-                    const share =
-                      totalVotingPower && BigInt(totalVotingPower) > 0
-                        ? (Number(BigInt(validator.voting_power)) /
-                            Number(totalPower)) *
-                          100
-                        : 0;
-
-                    return (
-                      <TableRow
-                        key={validator.owner_address}
-                        className="cursor-pointer hover:bg-muted/50"
-                        onClick={() =>
-                          (window.location.href = `/validator/${validator.owner_address}`)
-                        }
-                      >
-                        <TableCell className="font-medium">
-                          {index + 1}
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            href={`/account/${validator.owner_address}`}
-                            className="text-primary hover:underline font-mono"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {truncateAddress(validator.owner_address)}
-                          </Link>
-                        </TableCell>
-                        <TableCell>
-                          <Link
-                            href={`/account/${validator.operator_address}`}
-                            className="text-primary hover:underline font-mono"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            {truncateAddress(validator.operator_address)}
-                          </Link>
-                        </TableCell>
-                        <TableCell className="text-right font-mono">
-                          {votingPower.toLocaleString("en-US")} MOVE
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {share.toFixed(2)}%
-                        </TableCell>
-                        <TableCell>
-                          <Badge variant="success">Active</Badge>
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
+    </>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import PageNavigation from "@/components/layout/PageNavigation";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useMemo } from "react";
@@ -96,276 +97,281 @@ function ValidatorContent() {
     validator !== undefined && BigInt(validator.voting_power || 0) > 0;
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-center gap-4 mb-6">
-        <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-          <Server className="w-6 h-6 text-primary" />
-        </div>
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">Validator</h1>
-            {isLoading ? (
-              <Skeleton className="h-6 w-20" />
-            ) : (
-              <Badge variant={isActive ? "default" : "secondary"}>
-                {isActive ? "Active" : "Inactive"}
-              </Badge>
-            )}
+    <>
+      <PageNavigation />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-center gap-4 mb-6">
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Server className="w-6 h-6 text-primary" />
           </div>
-          <Link
-            href={`/account/${addressHex}`}
-            className="text-muted-foreground font-mono text-sm hover:text-primary hover:underline"
-          >
-            {addressHex}
-          </Link>
+          <div className="flex-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-3xl font-bold">Validator</h1>
+              {isLoading ? (
+                <Skeleton className="h-6 w-20" />
+              ) : (
+                <Badge variant={isActive ? "default" : "secondary"}>
+                  {isActive ? "Active" : "Inactive"}
+                </Badge>
+              )}
+            </div>
+            <Link
+              href={`/account/${addressHex}`}
+              className="text-muted-foreground font-mono text-sm hover:text-primary hover:underline"
+            >
+              {addressHex}
+            </Link>
+          </div>
         </div>
-      </div>
 
-      {isLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Card key={i}>
-              <CardContent className="pt-6">
-                <Skeleton className="h-8 w-24 mb-2" />
-                <Skeleton className="h-6 w-32" />
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      ) : (
-        <>
-          {/* Stats Cards */}
+        {isLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {/* Total Stake */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Coins className="h-4 w-4" />
-                  <span className="text-sm">Total Stake</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {formatMoveAmount(totalStake)} MOVE
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Voting Power */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Users className="h-4 w-4" />
-                  <span className="text-sm">Voting Power</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {validator?.voting_power
-                    ? formatMoveAmount(BigInt(validator.voting_power))
-                    : "0"}{" "}
-                  MOVE
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Rewards Growth */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <TrendingUp className="h-4 w-4" />
-                  <span className="text-sm">Rewards Growth</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {rewardsGrowth.toFixed(2)}%
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Last Epoch */}
-            <Card>
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                  <Clock className="h-4 w-4" />
-                  <span className="text-sm">Last Active Epoch</span>
-                </div>
-                <p className="text-2xl font-bold">
-                  {validator?.last_epoch ?? "-"}
-                </p>
-              </CardContent>
-            </Card>
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i}>
+                <CardContent className="pt-6">
+                  <Skeleton className="h-8 w-24 mb-2" />
+                  <Skeleton className="h-6 w-32" />
+                </CardContent>
+              </Card>
+            ))}
           </div>
-
-          {/* Detail Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Validator Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Validator Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Stake Pool Address */}
-                <div className="flex justify-between items-center py-2 border-b">
-                  <span className="text-muted-foreground">
-                    Stake Pool Address
-                  </span>
-                  <Link
-                    href={`/account/${addressHex}`}
-                    className="text-primary hover:underline font-mono text-sm"
-                  >
-                    {addressHex.slice(0, 10)}...{addressHex.slice(-8)}
-                  </Link>
-                </div>
-
-                {/* Operator Address */}
-                {stakePoolData?.data?.operator_address && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Operator</span>
-                    <Link
-                      href={`/account/${stakePoolData.data.operator_address}`}
-                      className="text-primary hover:underline font-mono text-sm"
-                    >
-                      {stakePoolData.data.operator_address.slice(0, 10)}...
-                      {stakePoolData.data.operator_address.slice(-8)}
-                    </Link>
+        ) : (
+          <>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {/* Total Stake */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                    <Coins className="h-4 w-4" />
+                    <span className="text-sm">Total Stake</span>
                   </div>
-                )}
+                  <p className="text-2xl font-bold">
+                    {formatMoveAmount(totalStake)} MOVE
+                  </p>
+                </CardContent>
+              </Card>
 
-                {/* Voter Address */}
-                {stakePoolData?.data?.delegated_voter && (
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Voter</span>
-                    <Link
-                      href={`/account/${stakePoolData.data.delegated_voter}`}
-                      className="text-primary hover:underline font-mono text-sm"
-                    >
-                      {stakePoolData.data.delegated_voter.slice(0, 10)}...
-                      {stakePoolData.data.delegated_voter.slice(-8)}
-                    </Link>
+              {/* Voting Power */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                    <Users className="h-4 w-4" />
+                    <span className="text-sm">Voting Power</span>
                   </div>
-                )}
+                  <p className="text-2xl font-bold">
+                    {validator?.voting_power
+                      ? formatMoveAmount(BigInt(validator.voting_power))
+                      : "0"}{" "}
+                    MOVE
+                  </p>
+                </CardContent>
+              </Card>
 
-                {/* Lock Until */}
-                {stakePoolData?.data?.locked_until_secs && (
-                  <div className="flex justify-between items-center py-2">
-                    <span className="text-muted-foreground">Locked Until</span>
-                    <span>
-                      {new Date(
-                        parseInt(stakePoolData.data.locked_until_secs) * 1000
-                      ).toLocaleString()}
-                    </span>
+              {/* Rewards Growth */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                    <TrendingUp className="h-4 w-4" />
+                    <span className="text-sm">Rewards Growth</span>
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                  <p className="text-2xl font-bold">
+                    {rewardsGrowth.toFixed(2)}%
+                  </p>
+                </CardContent>
+              </Card>
 
-            {/* Staking Breakdown */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Staking Breakdown</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Active */}
-                <div className="flex justify-between items-center py-2 border-b">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle2 className="h-4 w-4 text-green-500" />
-                    <span className="text-muted-foreground">Active</span>
+              {/* Last Epoch */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                    <Clock className="h-4 w-4" />
+                    <span className="text-sm">Last Active Epoch</span>
                   </div>
-                  <span className="font-mono">
-                    {formatMoveAmount(activeStake)} MOVE
-                  </span>
-                </div>
+                  <p className="text-2xl font-bold">
+                    {validator?.last_epoch ?? "-"}
+                  </p>
+                </CardContent>
+              </Card>
+            </div>
 
-                {/* Pending Active */}
-                <div className="flex justify-between items-center py-2 border-b">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-yellow-500" />
-                    <span className="text-muted-foreground">
-                      Pending Active
-                    </span>
-                  </div>
-                  <span className="font-mono">
-                    {formatMoveAmount(pendingActive)} MOVE
-                  </span>
-                </div>
-
-                {/* Pending Inactive */}
-                <div className="flex justify-between items-center py-2 border-b">
-                  <div className="flex items-center gap-2">
-                    <Clock className="h-4 w-4 text-orange-500" />
-                    <span className="text-muted-foreground">
-                      Pending Inactive
-                    </span>
-                  </div>
-                  <span className="font-mono">
-                    {formatMoveAmount(pendingInactive)} MOVE
-                  </span>
-                </div>
-
-                {/* Inactive */}
-                <div className="flex justify-between items-center py-2">
-                  <div className="flex items-center gap-2">
-                    <XCircle className="h-4 w-4 text-gray-500" />
-                    <span className="text-muted-foreground">Inactive</span>
-                  </div>
-                  <span className="font-mono">
-                    {formatMoveAmount(inactive)} MOVE
-                  </span>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Performance */}
-            {validator && (
-              <Card className="lg:col-span-2">
+            {/* Detail Cards */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Validator Info */}
+              <Card>
                 <CardHeader>
-                  <CardTitle>Performance</CardTitle>
+                  <CardTitle>Validator Information</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    {/* Last Epoch Performance */}
-                    <div>
-                      <p className="text-muted-foreground text-sm mb-2">
-                        Last Epoch Performance
-                      </p>
-                      <p className="text-xl font-bold">
-                        {validator.last_epoch_performance || "-"}
-                      </p>
-                    </div>
+                  {/* Stake Pool Address */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <span className="text-muted-foreground">
+                      Stake Pool Address
+                    </span>
+                    <Link
+                      href={`/account/${addressHex}`}
+                      className="text-primary hover:underline font-mono text-sm"
+                    >
+                      {addressHex.slice(0, 10)}...{addressHex.slice(-8)}
+                    </Link>
+                  </div>
 
-                    {/* Liveness */}
-                    <div>
-                      <p className="text-muted-foreground text-sm mb-2">
-                        Liveness
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <Progress
-                          value={(validator.liveness || 0) * 100}
-                          className="flex-1"
-                        />
-                        <span className="text-sm font-mono">
-                          {((validator.liveness || 0) * 100).toFixed(1)}%
-                        </span>
-                      </div>
+                  {/* Operator Address */}
+                  {stakePoolData?.data?.operator_address && (
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Operator</span>
+                      <Link
+                        href={`/account/${stakePoolData.data.operator_address}`}
+                        className="text-primary hover:underline font-mono text-sm"
+                      >
+                        {stakePoolData.data.operator_address.slice(0, 10)}...
+                        {stakePoolData.data.operator_address.slice(-8)}
+                      </Link>
                     </div>
+                  )}
 
-                    {/* Rewards Distributed */}
-                    <div>
-                      <p className="text-muted-foreground text-sm mb-2">
-                        Rewards Distributed (APT)
-                      </p>
-                      <p className="text-xl font-bold">
-                        {validator.apt_rewards_distributed?.toFixed(2) || "0"}
-                      </p>
+                  {/* Voter Address */}
+                  {stakePoolData?.data?.delegated_voter && (
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Voter</span>
+                      <Link
+                        href={`/account/${stakePoolData.data.delegated_voter}`}
+                        className="text-primary hover:underline font-mono text-sm"
+                      >
+                        {stakePoolData.data.delegated_voter.slice(0, 10)}...
+                        {stakePoolData.data.delegated_voter.slice(-8)}
+                      </Link>
                     </div>
+                  )}
+
+                  {/* Lock Until */}
+                  {stakePoolData?.data?.locked_until_secs && (
+                    <div className="flex justify-between items-center py-2">
+                      <span className="text-muted-foreground">
+                        Locked Until
+                      </span>
+                      <span>
+                        {new Date(
+                          parseInt(stakePoolData.data.locked_until_secs) * 1000
+                        ).toLocaleString()}
+                      </span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Staking Breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Staking Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Active */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-green-500" />
+                      <span className="text-muted-foreground">Active</span>
+                    </div>
+                    <span className="font-mono">
+                      {formatMoveAmount(activeStake)} MOVE
+                    </span>
+                  </div>
+
+                  {/* Pending Active */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-yellow-500" />
+                      <span className="text-muted-foreground">
+                        Pending Active
+                      </span>
+                    </div>
+                    <span className="font-mono">
+                      {formatMoveAmount(pendingActive)} MOVE
+                    </span>
+                  </div>
+
+                  {/* Pending Inactive */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4 text-orange-500" />
+                      <span className="text-muted-foreground">
+                        Pending Inactive
+                      </span>
+                    </div>
+                    <span className="font-mono">
+                      {formatMoveAmount(pendingInactive)} MOVE
+                    </span>
+                  </div>
+
+                  {/* Inactive */}
+                  <div className="flex justify-between items-center py-2">
+                    <div className="flex items-center gap-2">
+                      <XCircle className="h-4 w-4 text-gray-500" />
+                      <span className="text-muted-foreground">Inactive</span>
+                    </div>
+                    <span className="font-mono">
+                      {formatMoveAmount(inactive)} MOVE
+                    </span>
                   </div>
                 </CardContent>
               </Card>
-            )}
-          </div>
 
-          {/* My Deposits Section */}
-          <MyDepositsSection validatorAddress={addressHex} />
-        </>
-      )}
-    </div>
+              {/* Performance */}
+              {validator && (
+                <Card className="lg:col-span-2">
+                  <CardHeader>
+                    <CardTitle>Performance</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {/* Last Epoch Performance */}
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Last Epoch Performance
+                        </p>
+                        <p className="text-xl font-bold">
+                          {validator.last_epoch_performance || "-"}
+                        </p>
+                      </div>
+
+                      {/* Liveness */}
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Liveness
+                        </p>
+                        <div className="flex items-center gap-2">
+                          <Progress
+                            value={(validator.liveness || 0) * 100}
+                            className="flex-1"
+                          />
+                          <span className="text-sm font-mono">
+                            {((validator.liveness || 0) * 100).toFixed(1)}%
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Rewards Distributed */}
+                      <div>
+                        <p className="text-muted-foreground text-sm mb-2">
+                          Rewards Distributed (APT)
+                        </p>
+                        <p className="text-xl font-bold">
+                          {validator.apt_rewards_distributed?.toFixed(2) || "0"}
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* My Deposits Section */}
+            <MyDepositsSection validatorAddress={addressHex} />
+          </>
+        )}
+      </div>
+    </>
   );
 }
 

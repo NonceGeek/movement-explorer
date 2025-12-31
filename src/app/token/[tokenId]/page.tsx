@@ -1,5 +1,6 @@
 "use client";
 
+import PageNavigation from "@/components/layout/PageNavigation";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -48,236 +49,242 @@ function TokenContent() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* Header */}
-      <div className="flex items-start gap-6 mb-6">
-        {/* Token Image */}
-        <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
-          {isLoading ? (
-            <Skeleton className="w-full h-full" />
-          ) : token?.token_uri ? (
-            <img
-              src={token.token_uri}
-              alt={token?.token_name || "Token"}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-                const parent = (e.target as HTMLImageElement).parentElement;
-                if (parent) {
-                  const icon = document.createElement("div");
-                  icon.innerHTML =
-                    '<svg class="w-8 h-8 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                  parent.appendChild(icon.firstChild as Node);
-                }
-              }}
-            />
-          ) : (
-            <ImageIcon className="w-8 h-8 text-muted-foreground" />
-          )}
-        </div>
-
-        <div className="flex-1">
-          <h1 className="text-3xl font-bold">
+    <>
+      <PageNavigation />
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex items-start gap-6 mb-6">
+          {/* Token Image */}
+          <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden flex-shrink-0">
             {isLoading ? (
-              <Skeleton className="h-9 w-48" />
+              <Skeleton className="w-full h-full" />
+            ) : token?.token_uri ? (
+              <img
+                src={token.token_uri}
+                alt={token?.token_name || "Token"}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                  const parent = (e.target as HTMLImageElement).parentElement;
+                  if (parent) {
+                    const icon = document.createElement("div");
+                    icon.innerHTML =
+                      '<svg class="w-8 h-8 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
+                    parent.appendChild(icon.firstChild as Node);
+                  }
+                }}
+              />
             ) : (
-              token?.token_name || "Unknown Token"
+              <ImageIcon className="w-8 h-8 text-muted-foreground" />
             )}
-          </h1>
-          {token?.current_collection && (
-            <p className="text-muted-foreground mt-1">
-              Collection: {token.current_collection.collection_name}
+          </div>
+
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold">
+              {isLoading ? (
+                <Skeleton className="h-9 w-48" />
+              ) : (
+                token?.token_name || "Unknown Token"
+              )}
+            </h1>
+            {token?.current_collection && (
+              <p className="text-muted-foreground mt-1">
+                Collection: {token.current_collection.collection_name}
+              </p>
+            )}
+            <p className="text-muted-foreground font-mono text-xs mt-2 truncate max-w-lg">
+              {tokenId}
             </p>
-          )}
-          <p className="text-muted-foreground font-mono text-xs mt-2 truncate max-w-lg">
-            {tokenId}
-          </p>
+          </div>
         </div>
-      </div>
 
-      {/* Tabs */}
-      <Tabs defaultValue="overview" className="w-full">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-        </TabsList>
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="overview">
-          {isLoading ? (
-            <Card>
-              <CardContent className="pt-6 space-y-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <div key={i} className="flex justify-between">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-5 w-48" />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-          ) : token ? (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Token Info */}
+          <TabsContent value="overview">
+            {isLoading ? (
               <Card>
-                <CardHeader>
-                  <CardTitle>Token Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Name */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Name</span>
-                    <span className="font-medium">{token.token_name}</span>
-                  </div>
-
-                  {/* Token Standard */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Standard</span>
-                    <Badge variant="secondary">{token.token_standard}</Badge>
-                  </div>
-
-                  {/* Token ID */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Token ID</span>
-                    <span className="font-mono text-xs truncate max-w-[200px]">
-                      {token.token_data_id}
-                    </span>
-                  </div>
-
-                  {/* Supply */}
-                  {token.supply !== null && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Supply</span>
-                      <span className="font-mono">{token.supply}</span>
+                <CardContent className="pt-6 space-y-4">
+                  {Array.from({ length: 8 }).map((_, i) => (
+                    <div key={i} className="flex justify-between">
+                      <Skeleton className="h-5 w-24" />
+                      <Skeleton className="h-5 w-48" />
                     </div>
-                  )}
-
-                  {/* Fungible */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Fungible</span>
-                    <Badge
-                      variant={token.is_fungible_v2 ? "default" : "secondary"}
-                    >
-                      {token.is_fungible_v2 ? "Yes" : "No"}
-                    </Badge>
-                  </div>
-
-                  {/* Token URI */}
-                  {token.token_uri && (
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-muted-foreground">Token URI</span>
-                      <a
-                        href={token.token_uri}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1 text-sm truncate max-w-[200px]"
-                      >
-                        View
-                        <ExternalLink className="h-3 w-3 flex-shrink-0" />
-                      </a>
-                    </div>
-                  )}
+                  ))}
                 </CardContent>
               </Card>
-
-              {/* Collection Info */}
-              {token.current_collection && (
+            ) : token ? (
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Token Info */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Collection</CardTitle>
+                    <CardTitle>Token Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    {/* Collection Name */}
+                    {/* Name */}
                     <div className="flex justify-between items-center py-2 border-b">
                       <span className="text-muted-foreground">Name</span>
-                      <span className="font-medium">
-                        {token.current_collection.collection_name}
+                      <span className="font-medium">{token.token_name}</span>
+                    </div>
+
+                    {/* Token Standard */}
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Standard</span>
+                      <Badge variant="secondary">{token.token_standard}</Badge>
+                    </div>
+
+                    {/* Token ID */}
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Token ID</span>
+                      <span className="font-mono text-xs truncate max-w-[200px]">
+                        {token.token_data_id}
                       </span>
                     </div>
 
-                    {/* Creator */}
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Creator</span>
-                      <Link
-                        href={`/account/${token.current_collection.creator_address}`}
-                        className="text-primary hover:underline font-mono text-sm"
-                      >
-                        {token.current_collection.creator_address.slice(0, 8)}
-                        ...
-                        {token.current_collection.creator_address.slice(-6)}
-                      </Link>
-                    </div>
-
-                    {/* Description */}
-                    {token.current_collection.description && (
-                      <div className="py-2 border-b">
-                        <span className="text-muted-foreground block mb-2">
-                          Description
-                        </span>
-                        <p className="text-sm">
-                          {token.current_collection.description}
-                        </p>
+                    {/* Supply */}
+                    {token.supply !== null && (
+                      <div className="flex justify-between items-center py-2 border-b">
+                        <span className="text-muted-foreground">Supply</span>
+                        <span className="font-mono">{token.supply}</span>
                       </div>
                     )}
 
-                    {/* Collection URI */}
-                    {token.current_collection.uri && (
+                    {/* Fungible */}
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Fungible</span>
+                      <Badge
+                        variant={token.is_fungible_v2 ? "default" : "secondary"}
+                      >
+                        {token.is_fungible_v2 ? "Yes" : "No"}
+                      </Badge>
+                    </div>
+
+                    {/* Token URI */}
+                    {token.token_uri && (
                       <div className="flex justify-between items-center py-2">
-                        <span className="text-muted-foreground">URI</span>
+                        <span className="text-muted-foreground">Token URI</span>
                         <a
-                          href={token.current_collection.uri}
+                          href={token.token_uri}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="text-primary hover:underline flex items-center gap-1"
+                          className="text-primary hover:underline flex items-center gap-1 text-sm truncate max-w-[200px]"
                         >
                           View
-                          <ExternalLink className="h-3 w-3" />
+                          <ExternalLink className="h-3 w-3 flex-shrink-0" />
                         </a>
                       </div>
                     )}
                   </CardContent>
                 </Card>
-              )}
 
-              {/* Token Description */}
-              {token.description && (
-                <Card className="lg:col-span-2">
-                  <CardHeader>
-                    <CardTitle>Description</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p>{token.description}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Token Properties */}
-              {token.token_properties &&
-                Object.keys(token.token_properties).length > 0 && (
-                  <Card className="lg:col-span-2">
+                {/* Collection Info */}
+                {token.current_collection && (
+                  <Card>
                     <CardHeader>
-                      <CardTitle>Properties</CardTitle>
+                      <CardTitle>Collection</CardTitle>
                     </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {Object.entries(token.token_properties).map(
-                          ([key, value]) => (
-                            <div key={key} className="p-3 bg-muted rounded-lg">
-                              <p className="text-xs text-muted-foreground uppercase">
-                                {key}
-                              </p>
-                              <p className="font-medium truncate">
-                                {String(value)}
-                              </p>
-                            </div>
-                          )
-                        )}
+                    <CardContent className="space-y-4">
+                      {/* Collection Name */}
+                      <div className="flex justify-between items-center py-2 border-b">
+                        <span className="text-muted-foreground">Name</span>
+                        <span className="font-medium">
+                          {token.current_collection.collection_name}
+                        </span>
                       </div>
+
+                      {/* Creator */}
+                      <div className="flex justify-between items-center py-2 border-b">
+                        <span className="text-muted-foreground">Creator</span>
+                        <Link
+                          href={`/account/${token.current_collection.creator_address}`}
+                          className="text-primary hover:underline font-mono text-sm"
+                        >
+                          {token.current_collection.creator_address.slice(0, 8)}
+                          ...
+                          {token.current_collection.creator_address.slice(-6)}
+                        </Link>
+                      </div>
+
+                      {/* Description */}
+                      {token.current_collection.description && (
+                        <div className="py-2 border-b">
+                          <span className="text-muted-foreground block mb-2">
+                            Description
+                          </span>
+                          <p className="text-sm">
+                            {token.current_collection.description}
+                          </p>
+                        </div>
+                      )}
+
+                      {/* Collection URI */}
+                      {token.current_collection.uri && (
+                        <div className="flex justify-between items-center py-2">
+                          <span className="text-muted-foreground">URI</span>
+                          <a
+                            href={token.current_collection.uri}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline flex items-center gap-1"
+                          >
+                            View
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      )}
                     </CardContent>
                   </Card>
                 )}
-            </div>
-          ) : null}
-        </TabsContent>
-      </Tabs>
-    </div>
+
+                {/* Token Description */}
+                {token.description && (
+                  <Card className="lg:col-span-2">
+                    <CardHeader>
+                      <CardTitle>Description</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p>{token.description}</p>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {/* Token Properties */}
+                {token.token_properties &&
+                  Object.keys(token.token_properties).length > 0 && (
+                    <Card className="lg:col-span-2">
+                      <CardHeader>
+                        <CardTitle>Properties</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                          {Object.entries(token.token_properties).map(
+                            ([key, value]) => (
+                              <div
+                                key={key}
+                                className="p-3 bg-muted rounded-lg"
+                              >
+                                <p className="text-xs text-muted-foreground uppercase">
+                                  {key}
+                                </p>
+                                <p className="font-medium truncate">
+                                  {String(value)}
+                                </p>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+              </div>
+            ) : null}
+          </TabsContent>
+        </Tabs>
+      </div>
+    </>
   );
 }
 

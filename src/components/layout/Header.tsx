@@ -4,7 +4,7 @@ import { WalletConnector } from "@/components/wallet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NetworkSelect from "./NetworkSelect";
 import NavMobile from "./NavMobile";
-import { Logo, NavigationLink, HeaderSearchBar } from "./header-parts";
+import { Logo, NavigationLink } from "./header-parts";
 import { NAV_LINKS } from "./types";
 
 export default function Header() {
@@ -28,11 +28,6 @@ export default function Header() {
         {/* Right Section */}
         <TooltipProvider>
           <div className="flex items-center gap-3">
-            {/* Search Bar (Desktop) - Only shows on sub-pages */}
-            <div className="hidden md:block">
-              <HeaderSearchBar />
-            </div>
-
             {/* Network Selector (Desktop) */}
             <div className="hidden md:block">
               <NetworkSelect />

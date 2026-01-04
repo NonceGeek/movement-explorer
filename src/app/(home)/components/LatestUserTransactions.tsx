@@ -2,9 +2,15 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { ArrowLeftRight, ArrowRight, Clock, Info } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Table,
   TableBody,
@@ -59,6 +65,9 @@ export function LatestUserTransactions({
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
+  // Timestamp display mode: "age" (default) or "dateTime"
+  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+
   // 3. Sync data only when all requests are successful
   useEffect(() => {
     const allSuccess = transactionQueries.every((q) => q.isSuccess);
@@ -86,7 +95,7 @@ export function LatestUserTransactions({
   const isLoading = isInitialLoad && displayedTransactions.length === 0;
 
   return (
-    <Card variant="default">
+    <Card variant="glow">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2 text-xl font-heading">
           <ArrowLeftRight size={20} className="text-moveus-marigold-500" />
@@ -94,10 +103,10 @@ export function LatestUserTransactions({
         </CardTitle>
         <Link
           href="/transactions?type=user"
-          className="text-sm font-medium text-moveus-marigold-500 hover:text-moveus-marigold-400 transition-colors flex items-center gap-1"
+          className="text-sm font-medium text-moveus-marigold-500 hover:text-moveus-marigold-400 bg-moveus-marigold-500/10 hover:bg-moveus-marigold-500/20 px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5"
         >
           View All
-          <ArrowRight size={16} />
+          <ArrowRight size={14} />
         </Link>
       </CardHeader>
       <CardContent>
@@ -106,7 +115,36 @@ export function LatestUserTransactions({
             <TableHeader>
               <TableRow>
                 <TableHead>Version</TableHead>
-                <TableHead>Timestamp</TableHead>
+                <TableHead>
+                  <button
+                    onClick={() =>
+                      setTimestampMode((prev) =>
+                        prev === "age" ? "dateTime" : "age"
+                      )
+                    }
+                    className="flex items-center transition-colors"
+                  >
+                    <span
+                      className={
+                        timestampMode === "age"
+                          ? "text-foreground"
+                          : "text-muted-foreground/50 hover:text-muted-foreground"
+                      }
+                    >
+                      Age
+                    </span>
+                    <span className="text-muted-foreground/30 mx-1.5">/</span>
+                    <span
+                      className={
+                        timestampMode === "dateTime"
+                          ? "text-foreground"
+                          : "text-muted-foreground/50 hover:text-muted-foreground"
+                      }
+                    >
+                      UTC
+                    </span>
+                  </button>
+                </TableHead>
                 <TableHead>Sender</TableHead>
                 <TableHead>Receiver</TableHead>
                 <TableHead>Function</TableHead>
@@ -127,6 +165,7 @@ export function LatestUserTransactions({
                       key={version}
                       version={version}
                       transactionData={data}
+                      timestampMode={timestampMode}
                       className="animate-in slide-in-from-top-2 fade-in duration-500"
                     />
                   ))}

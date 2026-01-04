@@ -39,7 +39,7 @@ export default function HomePage() {
   const isAnalyticsLoading = !analyticsData;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen">
       {/* Hero Section with Gradient Background */}
       <section className="relative overflow-visible">
         {/* Background Gradient */}

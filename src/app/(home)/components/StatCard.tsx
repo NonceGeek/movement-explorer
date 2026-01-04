@@ -31,7 +31,7 @@ export function StatCard({
 }: StatCardProps) {
   return (
     <Card
-      variant="default"
+      variant="glow"
       className="p-5 h-[120px] flex flex-col justify-between group hover:border-guild-green-300/30 transition-all duration-300"
     >
       {/* Header: Label & Tooltip */}
@@ -45,12 +45,12 @@ export function StatCard({
               <TooltipTrigger asChild>
                 <Info
                   size={13}
-                  className="text-muted-foreground/50 hover:text-muted-foreground cursor-help transition-colors"
+                  className="text-muted-foreground/50 hover:text-muted-foreground cursor-pointer transition-colors"
                 />
               </TooltipTrigger>
               <TooltipContent
                 side="top"
-                className="max-w-[240px] text-xs leading-relaxed"
+                className="max-w-60 text-xs leading-relaxed"
               >
                 {tooltip}
               </TooltipContent>

@@ -12,6 +12,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { cn } from "@/lib/utils";
 import {
   formatTimestamp,
@@ -22,18 +23,21 @@ import {
   getTransactionFunction,
   formatMoveAmount,
 } from "@/utils/transaction";
+import { formatAge, formatDateTimeUTC } from "@/utils/time";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { Types } from "aptos";
 
 export interface UserTransactionRowProps {
   version: number;
   transactionData?: Types.Transaction;
+  timestampMode?: "age" | "dateTime";
   className?: string;
 }
 
 export function UserTransactionRow({
   version,
   transactionData,
+  timestampMode = "age",
   className,
 }: UserTransactionRowProps) {
   const router = useRouter();
@@ -112,19 +116,17 @@ export function UserTransactionRow({
         </div>
       </TableCell>
       {/* Timestamp */}
-      <TableCell className="text-muted-foreground text-sm group-hover:text-white/90 transition-colors">
-        {timestamp ? formatTimestamp(timestamp) : "-"}
+      <TableCell className="text-muted-foreground text-sm group-hover:text-white/90 transition-colors whitespace-nowrap">
+        {timestamp
+          ? timestampMode === "age"
+            ? formatAge(timestamp)
+            : formatDateTimeUTC(timestamp)
+          : "-"}
       </TableCell>
       {/* Sender */}
       <TableCell>
         {sender ? (
-          <Link
-            href={`/account/${sender}`}
-            className="text-primary hover:underline font-mono text-sm group-hover:text-white transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {sender.slice(0, 8)}...{sender.slice(-6)}
-          </Link>
+          <CopyableAddress address={sender} href={`/account/${sender}`} />
         ) : (
           <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
             -
@@ -151,14 +153,10 @@ export function UserTransactionRow({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <Link
+            <CopyableAddress
+              address={counterparty.address}
               href={`/account/${counterparty.address}`}
-              className="text-primary hover:underline font-mono text-sm group-hover:text-white transition-colors"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {counterparty.address.slice(0, 8)}...
-              {counterparty.address.slice(-6)}
-            </Link>
+            />
           </div>
         ) : (
           <span className="text-muted-foreground group-hover:text-white/70 transition-colors">

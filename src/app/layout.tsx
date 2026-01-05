@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import NextTopLoader from "nextjs-toploader";
 import "./globals.css";
 import Providers from "./providers";
 import { Header, Footer, LayoutBackground } from "@/components/layout";
@@ -33,6 +34,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col`}
       >
+        <NextTopLoader color="#58c589" showSpinner={false} />
         <Providers>
           <LayoutBackground>
             <Header />

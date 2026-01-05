@@ -2,9 +2,9 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ArrowRight, Clock, Info } from "lucide-react";
+import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { Button } from "@movementlabsxyz/movement-design-system";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Tooltip,
   TooltipContent,
@@ -20,11 +20,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { UserTransactionRow } from "./UserTransactionRow";
+import { MobileTransactionCard } from "./MobileTransactionCard";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
 import { useQueries } from "@tanstack/react-query";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import { Types } from "aptos";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 export interface LatestUserTransactionsProps {
   limit?: number;
@@ -91,88 +93,159 @@ export function LatestUserTransactions({
     }
   }, [transactionQueries, userTransactionVersions, displayedTransactions]);
 
+  // Check if mobile
+  const isMobile = useIsMobile();
+
   // Loading state is strictly for the FIRST load (when we define it as initial load and no data)
   const isLoading = isInitialLoad && displayedTransactions.length === 0;
 
+  // Mobile loading skeleton
+  const MobileLoadingSkeleton = () => (
+    <div className="space-y-3">
+      {Array.from({ length: limit }).map((_, i) => (
+        <Skeleton key={i} className="h-32 w-full rounded-lg" />
+      ))}
+    </div>
+  );
+
+  // Mobile view header with Age/UTC toggle
+  const MobileHeader = () => (
+    <div className="flex items-center justify-between mb-3">
+      <span className="text-sm text-muted-foreground">Time Display</span>
+      <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
+        <button
+          onClick={() => setTimestampMode("age")}
+          className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+            timestampMode === "age"
+              ? "bg-guild-green-500 text-black shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          Age
+        </button>
+        <button
+          onClick={() => setTimestampMode("dateTime")}
+          className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+            timestampMode === "dateTime"
+              ? "bg-guild-green-500 text-black shadow-sm"
+              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+          }`}
+        >
+          UTC
+        </button>
+      </div>
+    </div>
+  );
+
   return (
-    <Card variant="glow">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2 text-xl font-heading">
+    <>
+      <div className="flex flex-row items-center justify-between py-4">
+        <h3 className="flex items-center gap-2 text-base sm:text-xl font-heading font-semibold">
           <ArrowLeftRight size={20} className="text-moveus-marigold-500" />
           Latest User Transactions
-        </CardTitle>
-        <Link
-          href="/transactions?type=user"
-          className="text-sm font-medium text-moveus-marigold-500 hover:text-moveus-marigold-400 bg-moveus-marigold-500/10 hover:bg-moveus-marigold-500/20 px-3 py-1.5 rounded-md transition-all flex items-center gap-1.5"
+        </h3>
+        <Button
+          variant="link"
+          asChild
+          className="text-moveus-marigold-500 hover:text-moveus-marigold-400 gap-1.5"
         >
-          View All
-          <ArrowRight size={14} />
-        </Link>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Version</TableHead>
-                <TableHead>
-                  <button
-                    onClick={() =>
-                      setTimestampMode((prev) =>
-                        prev === "age" ? "dateTime" : "age"
-                      )
-                    }
-                    className="flex items-center transition-colors"
-                  >
-                    <span
-                      className={
-                        timestampMode === "age"
-                          ? "text-foreground"
-                          : "text-muted-foreground/50 hover:text-muted-foreground"
-                      }
-                    >
-                      Age
-                    </span>
-                    <span className="text-muted-foreground/30 mx-1.5">/</span>
-                    <span
-                      className={
-                        timestampMode === "dateTime"
-                          ? "text-foreground"
-                          : "text-muted-foreground/50 hover:text-muted-foreground"
-                      }
-                    >
-                      UTC
-                    </span>
-                  </button>
-                </TableHead>
-                <TableHead>Sender</TableHead>
-                <TableHead>Receiver</TableHead>
-                <TableHead>Function</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading
-                ? Array.from({ length: limit }).map((_, i) => (
-                    <TableRow key={i}>
-                      <TableCell colSpan={6}>
-                        <Skeleton className="h-8 w-full" />
-                      </TableCell>
-                    </TableRow>
-                  ))
-                : displayedTransactions.map(({ version, data }) => (
-                    <UserTransactionRow
-                      key={version}
-                      version={version}
-                      transactionData={data}
-                      timestampMode={timestampMode}
-                      className="animate-in slide-in-from-top-2 fade-in duration-500"
-                    />
-                  ))}
-            </TableBody>
-          </Table>
+          <Link href="/transactions?type=user">
+            View All
+            <ArrowRight size={20} strokeWidth={2.5} />
+          </Link>
+        </Button>
+      </div>
+
+      {/* Mobile View */}
+      {isMobile ? (
+        <div>
+          <MobileHeader />
+          {isLoading ? (
+            <MobileLoadingSkeleton />
+          ) : (
+            <div className="space-y-3">
+              {displayedTransactions.map(({ version, data }) => (
+                <MobileTransactionCard
+                  key={version}
+                  version={version}
+                  transactionData={data}
+                  timestampMode={timestampMode}
+                  className="animate-in slide-in-from-top-2 fade-in duration-500"
+                />
+              ))}
+            </div>
+          )}
         </div>
-      </CardContent>
-    </Card>
+      ) : (
+        /* Desktop View */
+        <Table className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-0!">
+          <TableHeader className="bg-muted/30">
+            <TableRow className="hover:bg-transparent border-0">
+              <TableHead className="text-muted-foreground font-normal">
+                Version
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal">
+                <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
+                  <button
+                    onClick={() => setTimestampMode("age")}
+                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                      timestampMode === "age"
+                        ? "bg-guild-green-500 text-black shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    Age
+                  </button>
+                  <button
+                    onClick={() => setTimestampMode("dateTime")}
+                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
+                      timestampMode === "dateTime"
+                        ? "bg-guild-green-500 text-black shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    }`}
+                  >
+                    UTC
+                  </button>
+                </div>
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal">
+                Sender
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal hidden md:table-cell">
+                Receiver
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal hidden sm:table-cell">
+                Function
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal hidden lg:table-cell text-right">
+                Amount
+              </TableHead>
+              <TableHead className="text-muted-foreground font-normal hidden lg:table-cell text-right">
+                Gas
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading
+              ? Array.from({ length: limit }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell colSpan={7}>
+                      <Skeleton className="h-8 w-full" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : displayedTransactions.map(({ version, data }) => (
+                  <UserTransactionRow
+                    key={version}
+                    version={version}
+                    transactionData={data}
+                    timestampMode={timestampMode}
+                    className="animate-in slide-in-from-top-2 fade-in duration-500"
+                  />
+                ))}
+          </TableBody>
+        </Table>
+      )}
+    </>
   );
 }

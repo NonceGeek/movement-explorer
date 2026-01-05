@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
@@ -57,7 +56,7 @@ export function UserTransactionRow({
   if (isLoading) {
     return (
       <TableRow>
-        <TableCell colSpan={6}>
+        <TableCell colSpan={7}>
           <Skeleton className="h-8 w-full" />
         </TableCell>
       </TableRow>
@@ -83,40 +82,35 @@ export function UserTransactionRow({
   const handleRowClick = (e: React.MouseEvent) => {
     // Prevent navigation if clicking on an interactive element
     if ((e.target as HTMLElement).closest("a, button")) return;
-    router.push(`/txn/${version}`);
+    // Removed: router.push(`/txn/${version}`);
   };
 
   return (
     <TableRow
       className={cn(
-        "cursor-pointer hover:bg-guild-green-500/50 group",
+        "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
         className
       )}
-      onClick={handleRowClick}
     >
-      {/* Version + Status */}
+      {/* Version + Status Icon */}
       <TableCell>
         <div className="flex items-center gap-2">
+          {status ? (
+            <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+          ) : (
+            <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+          )}
           <Link
             href={`/txn/${version}`}
-            className="text-primary hover:underline font-mono group-hover:text-white transition-colors"
+            className="text-primary hover:underline font-mono group-hover:text-guild-green-500 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {version}
           </Link>
-          {status ? (
-            <Badge variant="success" className="gap-1 pl-1.5">
-              <CheckCircle2 className="h-3 w-3" /> Success
-            </Badge>
-          ) : (
-            <Badge variant="error" className="gap-1 pl-1.5">
-              <XCircle className="h-3 w-3" /> Failed
-            </Badge>
-          )}
         </div>
       </TableCell>
       {/* Timestamp */}
-      <TableCell className="text-muted-foreground text-sm group-hover:text-white/90 transition-colors whitespace-nowrap">
+      <TableCell className="text-muted-foreground text-sm group-hover:text-guild-green-500/90 transition-colors whitespace-nowrap">
         {timestamp
           ? timestampMode === "age"
             ? formatAge(timestamp)
@@ -128,22 +122,22 @@ export function UserTransactionRow({
         {sender ? (
           <CopyableAddress address={sender} href={`/account/${sender}`} />
         ) : (
-          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -
           </span>
         )}
       </TableCell>
       {/* Receiver */}
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         {counterparty ? (
           <div className="flex items-center gap-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   {counterparty.role === "smartContract" ? (
-                    <FileText className="h-4 w-4 text-muted-foreground group-hover:text-white/90 transition-colors" />
+                    <FileText className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
                   ) : (
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-white/90 transition-colors" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
                   )}
                 </TooltipTrigger>
                 <TooltipContent>
@@ -159,41 +153,46 @@ export function UserTransactionRow({
             />
           </div>
         ) : (
-          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -
           </span>
         )}
       </TableCell>
       {/* Function */}
-      <TableCell>
+      <TableCell className="hidden sm:table-cell">
         {functionName ? (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-white/20 group-hover:text-white transition-colors">
+          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors">
             {functionName}
           </code>
         ) : (
-          <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
+          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -
           </span>
         )}
       </TableCell>
-      {/* Amount + Gas */}
-      <TableCell className="text-right">
-        <div className="flex flex-col items-end">
-          {amount !== undefined && amount > 0 ? (
-            <span className="font-mono group-hover:text-white transition-colors">
-              {formatMoveAmount(amount)} MOVE
-            </span>
-          ) : (
-            <span className="text-muted-foreground group-hover:text-white/70 transition-colors">
-              -
-            </span>
-          )}
-          {gasUsed && gasUnitPrice && (
-            <span className="text-xs text-muted-foreground group-hover:text-white/80 transition-colors">
-              Gas {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
-            </span>
-          )}
-        </div>
+      {/* Amount */}
+      <TableCell className="hidden lg:table-cell text-right">
+        {amount !== undefined && amount > 0 ? (
+          <span className="font-mono group-hover:text-guild-green-500 transition-colors">
+            {formatMoveAmount(amount)} MOVE
+          </span>
+        ) : (
+          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
+            -
+          </span>
+        )}
+      </TableCell>
+      {/* Gas */}
+      <TableCell className="hidden lg:table-cell text-right">
+        {gasUsed && gasUnitPrice ? (
+          <span className="font-mono text-sm text-muted-foreground group-hover:text-guild-green-500/80 transition-colors">
+            {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
+          </span>
+        ) : (
+          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
+            -
+          </span>
+        )}
       </TableCell>
     </TableRow>
   );

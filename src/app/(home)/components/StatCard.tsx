@@ -32,11 +32,11 @@ export function StatCard({
   return (
     <Card
       variant="glow"
-      className="p-5 h-[120px] flex flex-col justify-between group hover:border-guild-green-300/30 transition-all duration-300"
+      className="p-4 sm:p-5 h-[100px] sm:h-[120px] flex flex-col justify-between group hover:border-guild-green-300/30 transition-all duration-300"
     >
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5">
-        <span className="text-[11px] text-muted-foreground font-medium tracking-wider">
+        <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium tracking-wider">
           {label.toUpperCase()}
         </span>
         {tooltip && (
@@ -64,7 +64,7 @@ export function StatCard({
         {isLoading ? (
           <Skeleton className="h-6 w-20" />
         ) : (
-          <div className="text-[20px] font-semibold font-mono text-foreground leading-tight">
+          <div className="text-[16px] sm:text-[20px] font-semibold font-mono text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}
           </div>
         )}

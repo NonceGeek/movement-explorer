@@ -140,13 +140,13 @@ export function SearchBar({
             type="submit"
             variant="glow"
             disabled={isLoading}
-            className="m-2 w-auto! max-w-none! p-3! px-6! text-base! rounded-lg! shadow-[4px_4px_0_0_#0337FF]! hover:shadow-[-4px_-4px_0_0_#0337FF]!"
+            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-lg! shadow-[4px_4px_0_0_#0337FF]! hover:shadow-[-4px_-4px_0_0_#0337FF]!"
           >
             {isLoading ? (
               <Loader2 size={16} className="animate-spin" />
             ) : (
               <>
-                Search
+                <span className="hidden sm:inline">Search</span>
                 <ArrowRight size={16} />
               </>
             )}

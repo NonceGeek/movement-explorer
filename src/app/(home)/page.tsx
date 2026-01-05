@@ -54,10 +54,10 @@ export default function HomePage() {
           variant="dots"
         />
 
-        <div className="container mx-auto px-4 py-12 md:py-16 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-6">
+        <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16 relative">
+          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
             {/* Title */}
-            <h1 className="font-heading text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+            <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
               Explore the{" "}
               <span className="text-transparent bg-clip-text bg-linear-to-r from-moveus-marigold-400 to-moveus-marigold-600">
                 Movement
@@ -66,7 +66,7 @@ export default function HomePage() {
             </h1>
 
             {/* Subtitle */}
-            <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
               The next-generation high-performance blockchain explorer powered
               by Move
             </p>
@@ -83,8 +83,8 @@ export default function HomePage() {
       </section>
 
       {/* Network Stats */}
-      <div className="container mx-auto px-4 py-8 relative z-0">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
+      <div className="container mx-auto px-4 py-6 sm:py-8 relative z-0">
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 sm:gap-3">
           <StatCard
             label="Total Transactions"
             value={totalTransactions}

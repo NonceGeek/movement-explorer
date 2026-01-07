@@ -64,7 +64,7 @@ export default function BlockDetailPage() {
 
   return (
     <>
-      <PageNavigation />
+      <PageNavigation title="Block Details" />
       <div className="container mx-auto px-4 py-8">
         {/* Navigation */}
         <div className="flex items-center gap-2 mb-6">

@@ -50,7 +50,7 @@ function TokenContent() {
 
   return (
     <>
-      <PageNavigation />
+      <PageNavigation title="Token" />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-start gap-6 mb-6">

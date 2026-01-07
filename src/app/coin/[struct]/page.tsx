@@ -102,7 +102,7 @@ function CoinContent() {
 
   return (
     <>
-      <PageNavigation />
+      <PageNavigation title="Coin" />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">

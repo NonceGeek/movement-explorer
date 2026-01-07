@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 export interface SearchBarProps {
-  variant?: "default" | "hero";
+  variant?: "default" | "hero" | "navigation";
   placeholder?: string;
 }
 
@@ -207,6 +207,92 @@ export function SearchBar({
                             : "text-foreground"
                         }`}
                       >
+                        {result.label}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Navigation variant - for PageNavigation bar
+  if (variant === "navigation") {
+    return (
+      <div ref={containerRef} className="relative w-full">
+        <form
+          onSubmit={handleSubmit}
+          className="relative group flex items-center"
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() =>
+              inputValue.trim() && results.length > 0 && setIsOpen(true)
+            }
+            placeholder={placeholder}
+            className="w-full h-12 pl-5 pr-14 bg-background/40 backdrop-blur-sm border border-guild-green-500/40 rounded-xl text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition-all duration-300 ease-out focus:border-guild-green-400 focus:bg-background/60 shadow-[0_0_0_0_rgba(88,197,137,0.4)] focus:shadow-[4px_4px_0_0_rgba(88,197,137,0.4)] focus:-translate-y-0.5"
+          />
+
+          <Button
+            type="submit"
+            variant="glow"
+            disabled={isLoading}
+            className="absolute right-1.5 w-9 h-9 p-0 rounded-lg! shadow-[2px_2px_0_0_#0337FF]! hover:shadow-[-2px_-2px_0_0_#0337FF]! transition-all duration-200"
+          >
+            {isLoading ? (
+              <Loader2 size={16} className="animate-spin" />
+            ) : (
+              <Search size={16} />
+            )}
+          </Button>
+        </form>
+
+        {/* Results dropdown */}
+        {isOpen && results.length > 0 && (
+          <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border border-guild-green-500/40 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            {results.length === 1 && results[0].type === "none" ? (
+              <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
+                <SearchX size={24} className="text-guild-green-400/50 mb-2" />
+                <p className="text-sm text-muted-foreground">
+                  No results found
+                </p>
+              </div>
+            ) : (
+              <ul className="max-h-64 overflow-y-auto divide-y divide-border/30">
+                {results.map((result, index) => (
+                  <li
+                    key={`${result.to}-${index}`}
+                    onClick={() => handleResultClick(result)}
+                    className={`px-4 py-3 cursor-pointer transition-all duration-150 ${
+                      index === selectedIndex
+                        ? "bg-guild-green-500/15 text-guild-green-300"
+                        : "hover:bg-guild-green-500/10 text-foreground"
+                    } ${
+                      !result.to ? "cursor-default text-muted-foreground" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {result.image ? (
+                        <img
+                          src={result.image}
+                          alt=""
+                          className="w-5 h-5 rounded-full"
+                        />
+                      ) : (
+                        <CornerDownLeft
+                          size={12}
+                          className="text-guild-green-400/60"
+                        />
+                      )}
+                      <span className="text-sm font-medium truncate">
                         {result.label}
                       </span>
                     </div>

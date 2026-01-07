@@ -71,7 +71,7 @@ export default function TransactionDetailPage() {
 
   return (
     <>
-      <PageNavigation />
+      <PageNavigation title="Transaction Details" />
       <div className="container mx-auto px-4 py-8">
         {/* Title */}
         <div className="flex items-center gap-4 mb-6">

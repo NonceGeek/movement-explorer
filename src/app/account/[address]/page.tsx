@@ -112,7 +112,7 @@ export default function AccountDetailPage() {
 
   return (
     <>
-      <PageNavigation />
+      <PageNavigation title="Account" />
       <div className="container mx-auto px-4 py-8">
         {/* Title */}
         <h1 className="text-2xl font-bold mb-6">Account</h1>

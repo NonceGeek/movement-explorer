@@ -45,25 +45,36 @@ export function MobileTransactionCard({
   const gasUnitPrice =
     "gas_unit_price" in transaction ? transaction.gas_unit_price : null;
 
+  // Truncate function name for mobile display
+  const displayFunctionName = functionName
+    ? functionName.length > 25
+      ? functionName.slice(0, 22) + "..."
+      : functionName
+    : null;
+
   return (
     <Link
       href={`/txn/${version}`}
       className={cn(
-        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4 transition-all hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
+        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50",
+        "p-3 sm:p-4",
+        "transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
         className
       )}
     >
       {/* Header: Version + Status + Timestamp */}
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-between mb-2 sm:mb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {status ? (
-            <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+            <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-guild-green-500 shrink-0" />
           ) : (
-            <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+            <XCircle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-oracle-orange-500 shrink-0" />
           )}
-          <span className="font-mono text-primary font-medium">{version}</span>
+          <span className="font-mono text-primary font-medium text-sm sm:text-base">
+            {version}
+          </span>
         </div>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs sm:text-sm text-muted-foreground">
           {timestamp
             ? timestampMode === "age"
               ? formatAge(timestamp)
@@ -73,34 +84,39 @@ export function MobileTransactionCard({
       </div>
 
       {/* Sender & Receiver */}
-      <div className="space-y-2 mb-3">
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground w-16 shrink-0">
+      <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <span className="text-[10px] sm:text-xs text-muted-foreground w-12 sm:w-16 shrink-0">
             From
           </span>
-          <div className="flex items-center gap-1">
-            <User className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+          <div className="flex items-center gap-1 min-w-0 flex-1">
+            <User className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
             {sender ? (
-              <CopyableAddress address={sender} href={`/account/${sender}`} />
+              <CopyableAddress
+                address={sender}
+                href={`/account/${sender}`}
+                className="text-xs sm:text-sm"
+              />
             ) : (
-              <span className="text-muted-foreground">-</span>
+              <span className="text-muted-foreground text-xs">-</span>
             )}
           </div>
         </div>
         {counterparty && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground w-16 shrink-0">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <span className="text-[10px] sm:text-xs text-muted-foreground w-12 sm:w-16 shrink-0">
               {counterparty.role === "smartContract" ? "Contract" : "To"}
             </span>
-            <div className="flex items-center gap-1">
+            <div className="flex items-center gap-1 min-w-0 flex-1">
               {counterparty.role === "smartContract" ? (
-                <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <FileText className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
               ) : (
-                <ArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-muted-foreground shrink-0" />
               )}
               <CopyableAddress
                 address={counterparty.address}
                 href={`/account/${counterparty.address}`}
+                className="text-xs sm:text-sm"
               />
             </div>
           </div>
@@ -108,21 +124,21 @@ export function MobileTransactionCard({
       </div>
 
       {/* Footer: Function + Amount + Gas */}
-      <div className="flex items-start justify-between flex-wrap gap-2">
-        {functionName && (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono">
-            {functionName}
+      <div className="flex items-start justify-between gap-2">
+        {displayFunctionName && (
+          <code className="px-1.5 sm:px-2 py-0.5 sm:py-1 bg-muted rounded text-[10px] sm:text-xs font-mono truncate max-w-[45%]">
+            {displayFunctionName}
           </code>
         )}
-        <div className="flex flex-col items-end gap-1 ml-auto">
+        <div className="flex flex-col items-end gap-0.5 sm:gap-1 ml-auto shrink-0">
           {amount !== undefined && amount > 0 && (
-            <span className="font-mono text-sm">
+            <span className="font-mono text-xs sm:text-sm">
               {formatMoveAmount(amount)}{" "}
               <span className="text-muted-foreground">MOVE</span>
             </span>
           )}
           {gasUsed && gasUnitPrice && (
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-[10px] sm:text-xs text-muted-foreground">
               Gas: {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
             </span>
           )}

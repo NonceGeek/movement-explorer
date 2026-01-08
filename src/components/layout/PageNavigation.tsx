@@ -23,9 +23,9 @@ export default function PageNavigation({
         className
       )}
     >
-      <div className="container mx-auto flex h-16 items-center justify-between gap-4 px-4">
-        {/* Left: Breadcrumbs */}
-        <div className="flex items-center gap-2.5 shrink-0">
+      <div className="container mx-auto flex h-14 md:h-16 items-center justify-between gap-4 px-4">
+        {/* Left: Breadcrumbs - Hidden on mobile */}
+        <div className="hidden md:flex items-center gap-2.5 shrink-0">
           <Link
             href="/"
             className="text-lg font-medium text-muted-foreground hover:text-guild-green-400 transition-colors"
@@ -43,8 +43,8 @@ export default function PageNavigation({
           )}
         </div>
 
-        {/* Right: Search Bar - narrower as requested */}
-        <div className="w-full max-w-xl">
+        {/* Search Bar - Full width on mobile */}
+        <div className="w-full md:max-w-xl">
           <SearchBar
             variant="navigation"
             placeholder="Search address, txn, block..."

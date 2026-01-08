@@ -1,8 +1,13 @@
 "use client";
 
-import { useState } from "react";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import { availableNetworks, NetworkName, networks } from "@/constants";
+import {
+  availableNetworks,
+  NetworkName,
+  networks,
+  defaultNetworkName,
+} from "@/constants";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
   Select,
   SelectContent,
@@ -25,11 +30,47 @@ function getDisplayNetworkName(networkName: string): string {
   return networkName.charAt(0).toUpperCase() + networkName.slice(1);
 }
 
+// Network name to URL param mapping
+const networkToUrlParam: Record<string, string> = {
+  mainnet: "mainnet",
+  "bardock testnet": "bardock-testnet",
+};
+
+// URL param to network name mapping
+const urlParamToNetwork: Record<string, NetworkName> = {
+  mainnet: "mainnet",
+  "bardock-testnet": "bardock testnet",
+  testnet: "bardock testnet", // alias
+};
+
 export default function NetworkSelect() {
   const { network_name, selectNetwork } = useGlobalStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
 
   const handleNetworkChange = (network: string) => {
-    selectNetwork(network as NetworkName);
+    const networkName = network as NetworkName;
+    selectNetwork(networkName);
+
+    // Update URL with network param
+    const newParams = new URLSearchParams(searchParams.toString());
+
+    if (networkName === defaultNetworkName) {
+      // Remove network param for default (mainnet)
+      newParams.delete("network");
+    } else {
+      const urlValue = networkToUrlParam[networkName];
+      if (urlValue) {
+        newParams.set("network", urlValue);
+      }
+    }
+
+    const newUrl = newParams.toString()
+      ? `${pathname}?${newParams.toString()}`
+      : pathname;
+
+    router.replace(newUrl, { scroll: false });
   };
 
   return (
@@ -55,3 +96,6 @@ export default function NetworkSelect() {
     </Select>
   );
 }
+
+// Export URL param mappings for use in other components
+export { networkToUrlParam, urlParamToNetwork };

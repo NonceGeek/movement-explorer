@@ -1,11 +1,12 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useState } from "react";
+import { ReactNode, useState, Suspense } from "react";
 import { GraphqlClientProvider } from "@/hooks/common/useGraphqlClient";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { Network } from "@aptos-labs/ts-sdk";
 import { ThemeProvider } from "next-themes";
+import NetworkUrlSync from "@/components/layout/NetworkUrlSync";
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -36,7 +37,12 @@ export default function Providers({ children }: { children: ReactNode }) {
             console.error("Wallet error:", error);
           }}
         >
-          <GraphqlClientProvider>{children}</GraphqlClientProvider>
+          <GraphqlClientProvider>
+            <Suspense fallback={null}>
+              <NetworkUrlSync />
+            </Suspense>
+            {children}
+          </GraphqlClientProvider>
         </AptosWalletAdapterProvider>
       </QueryClientProvider>
     </ThemeProvider>

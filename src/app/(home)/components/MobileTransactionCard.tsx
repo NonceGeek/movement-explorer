@@ -46,9 +46,10 @@ export function MobileTransactionCard({
     "gas_unit_price" in transaction ? transaction.gas_unit_price : null;
 
   return (
-    <div
+    <Link
+      href={`/txn/${version}`}
       className={cn(
-        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4",
+        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4 transition-all hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
         className
       )}
     >
@@ -127,6 +128,6 @@ export function MobileTransactionCard({
           )}
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

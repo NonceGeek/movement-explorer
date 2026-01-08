@@ -3,11 +3,14 @@
 import { useState, useEffect } from "react";
 import { WalletConnector } from "@/components/wallet";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NetworkSelect from "./NetworkSelect";
 import NavMobile from "./NavMobile";
 import { Logo, NavigationLink } from "./header-parts";
 import { NAV_LINKS } from "./types";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+
+// Dynamic import to avoid useSearchParams SSR issues
+const NetworkSelect = dynamic(() => import("./NetworkSelect"), { ssr: false });
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);

@@ -1,12 +1,18 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ReactNode, useState, Suspense } from "react";
+import { ReactNode, useState } from "react";
 import { GraphqlClientProvider } from "@/hooks/common/useGraphqlClient";
 import { AptosWalletAdapterProvider } from "@aptos-labs/wallet-adapter-react";
 import { Network } from "@aptos-labs/ts-sdk";
 import { ThemeProvider } from "next-themes";
-import NetworkUrlSync from "@/components/layout/NetworkUrlSync";
+import dynamic from "next/dynamic";
+
+// Dynamic import with SSR disabled to avoid useSearchParams issues during prerender
+const NetworkUrlSync = dynamic(
+  () => import("@/components/layout/NetworkUrlSync"),
+  { ssr: false }
+);
 
 export default function Providers({ children }: { children: ReactNode }) {
   const [queryClient] = useState(
@@ -38,9 +44,7 @@ export default function Providers({ children }: { children: ReactNode }) {
           }}
         >
           <GraphqlClientProvider>
-            <Suspense fallback={null}>
-              <NetworkUrlSync />
-            </Suspense>
+            <NetworkUrlSync />
             {children}
           </GraphqlClientProvider>
         </AptosWalletAdapterProvider>

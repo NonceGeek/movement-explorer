@@ -20,11 +20,26 @@ const TabsList = React.forwardRef<
 ));
 TabsList.displayName = "TabsList";
 
+export type TabsTriggerVariant = "default" | "interactive";
+
+interface TabsTriggerProps
+  extends React.ComponentPropsWithoutRef<typeof DSTabsTrigger> {
+  variant?: TabsTriggerVariant;
+}
+
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof DSTabsTrigger>,
-  React.ComponentPropsWithoutRef<typeof DSTabsTrigger>
->(({ className, ...props }, ref) => (
-  <DSTabsTrigger ref={ref} className={cn(className)} {...props} />
+  TabsTriggerProps
+>(({ className, variant = "default", ...props }, ref) => (
+  <DSTabsTrigger
+    ref={ref}
+    className={cn(
+      variant === "interactive" &&
+        "cursor-pointer hover:bg-muted/50 data-[state=active]:hover:bg-background transition-[color,box-shadow,background-color]",
+      className
+    )}
+    {...props}
+  />
 ));
 TabsTrigger.displayName = "TabsTrigger";
 

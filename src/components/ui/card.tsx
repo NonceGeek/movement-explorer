@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 import {
   Card as DSCard,
@@ -7,6 +9,7 @@ import {
   CardDescription as DSCardDescription,
   CardContent as DSCardContent,
 } from "@movementlabsxyz/movement-design-system";
+import { ChevronRight, ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
@@ -58,6 +61,61 @@ const CardContent = React.forwardRef<
 ));
 CardContent.displayName = "CardContent";
 
+// Collapsible section card variant
+interface SectionCardProps {
+  title: string;
+  children: React.ReactNode;
+  defaultCollapsed?: boolean;
+  className?: string;
+}
+
+function SectionCard({
+  title,
+  children,
+  defaultCollapsed = false,
+  className,
+}: SectionCardProps) {
+  const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
+
+  return (
+    <div
+      className={cn(
+        "rounded-lg border border-border bg-card/50 p-4",
+        className
+      )}
+    >
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        className="flex items-center justify-between w-full text-left cursor-pointer"
+      >
+        <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
+          {title}
+        </h3>
+        <span className="transition-transform duration-200">
+          {isCollapsed ? (
+            <ChevronRight className="w-4 h-4 text-muted-foreground" />
+          ) : (
+            <ChevronDown className="w-4 h-4 text-muted-foreground" />
+          )}
+        </span>
+      </button>
+      <div
+        className={cn(
+          "grid transition-all duration-200 ease-in-out",
+          isCollapsed
+            ? "grid-rows-[0fr] opacity-0"
+            : "grid-rows-[1fr] opacity-100"
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="pt-4 space-y-4">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+SectionCard.displayName = "SectionCard";
+
 export {
   Card,
   CardHeader,
@@ -65,4 +123,5 @@ export {
   CardTitle,
   CardDescription,
   CardContent,
+  SectionCard,
 };

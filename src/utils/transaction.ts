@@ -467,3 +467,136 @@ export function formatMoveAmount(amount: bigint | number | string): string {
     .replace(/0+$/, "");
   return `${whole}.${fractionStr}`;
 }
+
+// Gas information type
+export type GasInfo = {
+  gasUsed: string;
+  gasPrice: string;
+  gasFee: string;
+  maxGas?: string;
+};
+
+// Get gas information from transaction
+export function getGasInfo(tx: Types.Transaction): GasInfo | null {
+  if ("gas_used" in tx && "gas_unit_price" in tx) {
+    const gasUsed = tx.gas_used;
+    const gasPrice = tx.gas_unit_price;
+    const gasFee = (BigInt(gasUsed) * BigInt(gasPrice)).toString();
+    const maxGas =
+      "max_gas_amount" in tx
+        ? (tx as Types.UserTransaction).max_gas_amount
+        : undefined;
+    return { gasUsed, gasPrice, gasFee, maxGas };
+  }
+  return null;
+}
+
+// Balance change type for display
+export type BalanceChange = {
+  address: string;
+  amount: bigint;
+  type: "Deposit" | "Withdraw";
+};
+
+// Get balance changes from events (simplified for display)
+export function getBalanceChanges(tx: Types.Transaction): BalanceChange[] {
+  const events: Types.Event[] = "events" in tx ? tx.events : [];
+  const changes: BalanceChange[] = [];
+
+  for (const event of events) {
+    if (event.type === "0x1::coin::DepositEvent") {
+      changes.push({
+        address: event.guid.account_address,
+        amount: BigInt(event.data.amount),
+        type: "Deposit",
+      });
+    } else if (event.type === "0x1::coin::WithdrawEvent") {
+      changes.push({
+        address: event.guid.account_address,
+        amount: -BigInt(event.data.amount),
+        type: "Withdraw",
+      });
+    } else if (event.type === "0x1::fungible_asset::Deposit") {
+      changes.push({
+        address: event.data.store || event.guid.account_address,
+        amount: BigInt(event.data.amount),
+        type: "Deposit",
+      });
+    } else if (event.type === "0x1::fungible_asset::Withdraw") {
+      changes.push({
+        address: event.data.store || event.guid.account_address,
+        amount: -BigInt(event.data.amount),
+        type: "Withdraw",
+      });
+    }
+  }
+
+  return changes;
+}
+
+// Get storage refund from FeeStatement event
+export function getStorageRefund(tx: Types.Transaction): bigint | null {
+  const events: Types.Event[] = "events" in tx ? tx.events : [];
+  const feeStatement = events.find(
+    (e) => e.type === "0x1::transaction_fee::FeeStatement"
+  );
+  if (feeStatement?.data?.storage_fee_refund_octas) {
+    const refund = BigInt(feeStatement.data.storage_fee_refund_octas);
+    return refund > 0 ? refund : null;
+  }
+  return null;
+}
+
+// Transaction action types
+export type TransactionAction =
+  | { type: "swap"; dex: string; amountIn: string; amountOut: string }
+  | { type: "nft_mint"; collection: string; token: string }
+  | { type: "nft_burn"; collection: string; token: string }
+  | { type: "object_transfer"; object: string; from: string; to: string };
+
+// Parse transaction actions from events
+export function getTransactionActions(
+  tx: Types.Transaction
+): TransactionAction[] {
+  const events: Types.Event[] = "events" in tx ? tx.events : [];
+  const actions: TransactionAction[] = [];
+
+  for (const event of events) {
+    // NFT Mint
+    if (
+      event.type.startsWith("0x4::collection::Mint") ||
+      event.type.startsWith("0x4::collection::MintEvent")
+    ) {
+      actions.push({
+        type: "nft_mint",
+        collection: event.data.collection,
+        token: event.data.token,
+      });
+    }
+    // NFT Burn
+    else if (
+      event.type.startsWith("0x4::collection::Burn") ||
+      event.type.startsWith("0x4::collection::BurnEvent")
+    ) {
+      actions.push({
+        type: "nft_burn",
+        collection: event.data.collection,
+        token: event.data.token,
+      });
+    }
+    // Object Transfer
+    else if (
+      event.type.startsWith("0x1::object::Transfer") ||
+      event.type.startsWith("0x1::object::TransferEvent")
+    ) {
+      actions.push({
+        type: "object_transfer",
+        object: event.data.object,
+        from: event.data.from,
+        to: event.data.to,
+      });
+    }
+  }
+
+  return actions;
+}

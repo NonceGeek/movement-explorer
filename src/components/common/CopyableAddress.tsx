@@ -17,6 +17,10 @@ export interface CopyableAddressProps {
   className?: string;
   truncateLength?: { start: number; end: number };
   showCopyButton?: boolean;
+  /** Show full address without truncation */
+  showFull?: boolean;
+  /** Styling variant */
+  variant?: "default" | "muted" | "hash";
 }
 
 export function CopyableAddress({
@@ -25,13 +29,22 @@ export function CopyableAddress({
   className,
   truncateLength = { start: 8, end: 6 },
   showCopyButton = true,
+  showFull = false,
+  variant = "default",
 }: CopyableAddressProps) {
   const [copied, setCopied] = useState(false);
 
-  const truncatedAddress = `${address.slice(
-    0,
-    truncateLength.start
-  )}...${address.slice(-truncateLength.end)}`;
+  const displayAddress = showFull
+    ? address
+    : `${address.slice(0, truncateLength.start)}...${address.slice(
+        -truncateLength.end
+      )}`;
+
+  const variantStyles = {
+    default: href ? "text-primary hover:underline" : "",
+    muted: "text-muted-foreground",
+    hash: "text-foreground bg-muted/50 px-2 py-1 rounded-md",
+  };
 
   const handleCopy = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -48,42 +61,52 @@ export function CopyableAddress({
   const AddressContent = (
     <span
       className={cn(
-        "font-mono text-sm",
-        href && "text-primary hover:underline cursor-pointer",
+        "font-mono text-sm break-all",
+        variantStyles[variant],
         className
       )}
     >
-      {truncatedAddress}
+      {displayAddress}
     </span>
+  );
+
+  const AddressElement = href ? (
+    <Link
+      href={href}
+      className={cn(
+        "font-mono text-sm break-all group-hover:text-white transition-colors",
+        variantStyles[variant],
+        className
+      )}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {displayAddress}
+    </Link>
+  ) : (
+    AddressContent
   );
 
   return (
     <TooltipProvider>
-      <div className="inline-flex items-center gap-1">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {href ? (
-              <Link
-                href={href}
-                className={cn(
-                  "font-mono text-sm text-primary hover:underline group-hover:text-white transition-colors",
-                  className
-                )}
-                onClick={(e) => e.stopPropagation()}
-              >
-                {truncatedAddress}
-              </Link>
-            ) : (
-              AddressContent
-            )}
-          </TooltipTrigger>
-          <TooltipContent
-            side="top"
-            className="max-w-80 break-all font-mono text-xs"
-          >
-            <p>{address}</p>
-          </TooltipContent>
-        </Tooltip>
+      <div
+        className={cn(
+          "inline-flex items-center gap-1",
+          showFull && "flex-wrap"
+        )}
+      >
+        {showFull ? (
+          AddressElement
+        ) : (
+          <Tooltip>
+            <TooltipTrigger asChild>{AddressElement}</TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="max-w-80 break-all font-mono text-xs"
+            >
+              <p>{address}</p>
+            </TooltipContent>
+          </Tooltip>
+        )}
 
         {showCopyButton && (
           <Tooltip>

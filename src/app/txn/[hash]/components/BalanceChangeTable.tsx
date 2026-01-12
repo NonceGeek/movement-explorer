@@ -1,5 +1,14 @@
-import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
 import type { BalanceChange } from "@/utils/transaction";
 
 interface BalanceChangeTableProps {
@@ -7,57 +16,62 @@ interface BalanceChangeTableProps {
 }
 
 export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
-  if (changes.length === 0) {
-    return <p className="text-muted-foreground">No balance changes</p>;
+  if (!changes || changes.length === 0) {
+    return (
+      <Card className="w-full">
+        <CardContent className="py-8 text-center text-muted-foreground">
+          No balance changes found
+        </CardContent>
+      </Card>
+    );
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-sm">
-        <thead>
-          <tr className="border-b border-border">
-            <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-              Account
-            </th>
-            <th className="text-left py-3 px-4 text-muted-foreground font-medium">
-              Type
-            </th>
-            <th className="text-right py-3 px-4 text-muted-foreground font-medium">
-              Amount (MOVE)
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {changes.map((change, i) => (
-            <tr key={i} className="border-b border-border/50">
-              <td className="py-3 px-4">
-                <Link
-                  href={`/account/${change.address}`}
-                  className="font-mono text-xs text-primary hover:underline"
-                >
-                  {change.address.slice(0, 10)}...{change.address.slice(-8)}
-                </Link>
-              </td>
-              <td className="py-3 px-4">
-                <Badge
-                  variant={change.type === "Deposit" ? "success" : "secondary"}
-                  className="text-xs"
-                >
-                  {change.type}
-                </Badge>
-              </td>
-              <td
-                className={`py-3 px-4 text-right font-mono ${
-                  change.amount >= 0 ? "text-green-500" : "text-red-500"
-                }`}
-              >
-                {change.amount >= 0 ? "+" : ""}
-                {(Number(change.amount) / 1e8).toFixed(8)}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
+    <Card className="w-full">
+      <CardContent className="p-0">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[40%]">Account</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead className="text-right">Amount (MOVE)</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {changes.map((change, i) => (
+              <TableRow key={i}>
+                <TableCell>
+                  <CopyableAddress
+                    address={change.address}
+                    href={`/account/${change.address}`}
+                    truncateLength={{ start: 10, end: 8 }}
+                  />
+                </TableCell>
+                <TableCell>
+                  <Badge
+                    variant={
+                      change.type === "Deposit" ? "success" : "secondary"
+                    }
+                    className="font-medium"
+                  >
+                    {change.type}
+                  </Badge>
+                </TableCell>
+                <TableCell className="text-right font-mono text-sm">
+                  <span
+                    className={
+                      change.amount >= 0 ? "text-green-600" : "text-destructive"
+                    }
+                  >
+                    {change.amount >= 0 ? "+" : ""}
+                    {(Number(change.amount) / 1e8).toFixed(8)}
+                  </span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }

@@ -83,69 +83,6 @@ export default function TransactionDetailPage() {
     version: version ? parseInt(version) : 0,
     withTransactions: false,
   });
-
-  if (isLoading) {
-    return (
-      <>
-        <PageNavigation title="Transaction Details" />
-        <div className="container mx-auto px-4 py-8">
-          <div className="space-y-4">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-96 w-full" />
-          </div>
-        </div>
-      </>
-    );
-  }
-
-  // Check if transaction not found
-  const isNotFound = error?.type === "Not Found";
-
-  if (isNotFound || (!tx && !isLoading)) {
-    return (
-      <>
-        <PageNavigation title="Transaction Details" />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="border-border">
-            <CardContent className="pt-6">
-              <div className="text-center py-12 space-y-4">
-                <Search className="w-16 h-16 mx-auto text-muted-foreground" />
-                <h2 className="text-xl font-semibold">Transaction Not Found</h2>
-                <p className="text-muted-foreground max-w-md mx-auto">
-                  The transaction{" "}
-                  <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
-                    {hash.slice(0, 20)}...
-                  </code>{" "}
-                  could not be found on the current network.
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Please check the transaction hash or try a different network.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
-  if (error || !tx) {
-    return (
-      <>
-        <PageNavigation title="Transaction Details" />
-        <div className="container mx-auto px-4 py-8">
-          <Card className="border-destructive">
-            <CardContent className="pt-6">
-              <p className="text-destructive">
-                Failed to load transaction {hash}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </>
-    );
-  }
-
   // Basic fields
   const {
     isSuccess,
@@ -280,6 +217,68 @@ export default function TransactionDetailPage() {
       functionName,
     };
   }, [tx]);
+
+  if (isLoading) {
+    return (
+      <>
+        <PageNavigation title="Transaction Details" />
+        <div className="container mx-auto px-4 py-8">
+          <div className="space-y-4">
+            <Skeleton className="h-10 w-64" />
+            <Skeleton className="h-96 w-full" />
+          </div>
+        </div>
+      </>
+    );
+  }
+
+  // Check if transaction not found
+  const isNotFound = error?.type === "Not Found";
+
+  if (isNotFound || (!tx && !isLoading)) {
+    return (
+      <>
+        <PageNavigation title="Transaction Details" />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="border-border">
+            <CardContent className="pt-6">
+              <div className="text-center py-12 space-y-4">
+                <Search className="w-16 h-16 mx-auto text-muted-foreground" />
+                <h2 className="text-xl font-semibold">Transaction Not Found</h2>
+                <p className="text-muted-foreground max-w-md mx-auto">
+                  The transaction{" "}
+                  <code className="font-mono text-sm bg-muted px-2 py-1 rounded">
+                    {hash.slice(0, 20)}...
+                  </code>{" "}
+                  could not be found on the current network.
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  Please check the transaction hash or try a different network.
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    );
+  }
+
+  if (error || !tx) {
+    return (
+      <>
+        <PageNavigation title="Transaction Details" />
+        <div className="container mx-auto px-4 py-8">
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <p className="text-destructive">
+                Failed to load transaction {hash}
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </>
+    );
+  }
 
   const blockHeight = blockData?.block_height;
 

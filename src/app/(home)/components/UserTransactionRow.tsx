@@ -100,13 +100,12 @@ export function UserTransactionRow({
           ) : (
             <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
           )}
-          <Link
-            href={`/txn/${version}`}
+          <CopyableAddress
+            address={transaction?.hash || ""}
+            href={`/txn/${transaction?.hash}`}
             className="text-primary hover:underline font-mono group-hover:text-guild-green-500 transition-colors"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {version}
-          </Link>
+            truncateLength={{ start: 6, end: 6 }}
+          />
         </div>
       </TableCell>
       {/* Timestamp */}

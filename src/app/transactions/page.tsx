@@ -45,6 +45,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
 
 const LIMIT = 20;
 const NUM_PAGES = 100;
@@ -105,15 +106,19 @@ function UserTransactionRow({ version }: { version: number }) {
 
   return (
     <TableRow>
-      {/* Version + Status */}
+      {/* Transaction Hash + Status */}
       <TableCell>
         <div className="flex items-center gap-2">
-          <Link
-            href={`/txn/${version}`}
-            className="text-primary hover:underline font-mono"
-          >
-            {version}
-          </Link>
+          {transaction.hash ? (
+            <CopyableAddress
+              address={transaction.hash}
+              href={`/txn/${transaction.hash}`}
+              className="text-primary hover:underline font-mono"
+              truncateLength={{ start: 6, end: 6 }}
+            />
+          ) : (
+            <span>-</span>
+          )}
           {status ? (
             <Badge variant="success" className="gap-1 pl-1.5">
               <CheckCircle2 className="h-3 w-3" /> Success
@@ -264,7 +269,7 @@ function UserTransactions() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Version</TableHead>
+              <TableHead>Transaction Hash</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Timestamp</TableHead>
               <TableHead>Sender</TableHead>
@@ -376,7 +381,14 @@ function AllTransactionRow({
       {/* Version + Status */}
       <TableCell>
         <div className="flex items-center gap-2">
-          {version && (
+          {transaction.hash ? (
+            <CopyableAddress
+              address={transaction.hash}
+              href={`/txn/${transaction.hash}`}
+              className="text-primary hover:underline font-mono"
+              truncateLength={{ start: 6, end: 6 }}
+            />
+          ) : (
             <Link
               href={`/txn/${version}`}
               className="text-primary hover:underline font-mono"

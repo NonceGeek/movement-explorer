@@ -182,7 +182,7 @@ export function LatestUserTransactions({
           <TableHeader className="bg-muted/30">
             <TableRow className="hover:bg-transparent border-0">
               <TableHead className="text-muted-foreground font-normal">
-                Version
+                Transaction Hash
               </TableHead>
               <TableHead className="text-muted-foreground font-normal">
                 <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">

@@ -5,7 +5,7 @@ import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Types } from "aptos";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -56,9 +56,20 @@ export default function TransactionDetailPage() {
   // Get tab from URL or default to overview
   const tabFromUrl = searchParams.get("tab") || "overview";
   const validTabs = ["overview", "balance", "events", "payload", "changes"];
-  const currentTab = validTabs.includes(tabFromUrl) ? tabFromUrl : "overview";
+
+  const [currentTab, setCurrentTab] = useState(() =>
+    validTabs.includes(tabFromUrl) ? tabFromUrl : "overview"
+  );
+
+  useEffect(() => {
+    const tab = searchParams.get("tab");
+    if (tab && validTabs.includes(tab)) {
+      setCurrentTab(tab);
+    }
+  }, [searchParams]);
 
   const handleTabChange = (value: string) => {
+    setCurrentTab(value);
     const newParams = new URLSearchParams(searchParams.toString());
     newParams.set("tab", value);
     router.push(`/txn/${hash}?${newParams.toString()}`, { scroll: false });
@@ -136,60 +147,141 @@ export default function TransactionDetailPage() {
   }
 
   // Basic fields
-  const isSuccess = "success" in tx ? tx.success : true;
-  const txVersion = "version" in tx ? tx.version : null;
+  const {
+    isSuccess,
+    txVersion,
+    timestamp,
+    sender,
+    sequenceNumber,
+    expirationTimestamp,
+    vmStatus,
+    stateChangeHash,
+    eventRootHash,
+    accumulatorRootHash,
+    signature,
+    feePayer,
+    secondarySigners,
+    gasInfo,
+    payload,
+    events,
+    changes,
+    balanceChanges,
+    transactionAmount,
+    storageRefund,
+    transactionActions,
+    counterparty,
+    functionName,
+  } = useMemo(() => {
+    if (!tx) {
+      return {
+        isSuccess: true,
+        txVersion: null,
+        timestamp: null,
+        sender: null,
+        sequenceNumber: null,
+        expirationTimestamp: null,
+        vmStatus: null,
+        stateChangeHash: null,
+        eventRootHash: null,
+        accumulatorRootHash: null,
+        signature: null,
+        feePayer: undefined,
+        secondarySigners: undefined,
+        gasInfo: null,
+        payload: null,
+        events: [],
+        changes: [],
+        balanceChanges: [],
+        transactionAmount: null,
+        storageRefund: null,
+        transactionActions: [],
+        counterparty: null,
+        functionName: null,
+      };
+    }
+
+    const isSuccess = "success" in tx ? tx.success : true;
+    const txVersion = "version" in tx ? tx.version : null;
+    const timestamp = "timestamp" in tx ? tx.timestamp : null;
+    const sender = "sender" in tx ? (tx as Types.UserTransaction).sender : null;
+
+    // Additional fields
+    const sequenceNumber =
+      "sequence_number" in tx
+        ? (tx as Types.UserTransaction).sequence_number
+        : null;
+    const expirationTimestamp =
+      "expiration_timestamp_secs" in tx
+        ? (tx as Types.UserTransaction).expiration_timestamp_secs
+        : null;
+    const vmStatus = "vm_status" in tx ? tx.vm_status : null;
+    const stateChangeHash =
+      "state_change_hash" in tx ? tx.state_change_hash : null;
+    const eventRootHash = "event_root_hash" in tx ? tx.event_root_hash : null;
+    const accumulatorRootHash =
+      "accumulator_root_hash" in tx ? tx.accumulator_root_hash : null;
+    const signature =
+      "signature" in tx ? (tx as Types.UserTransaction).signature : null;
+
+    // Fee payer & secondary signers
+    let feePayer: string | undefined;
+    let secondarySigners: string[] | undefined;
+    if (signature) {
+      if ("fee_payer_address" in signature) {
+        feePayer = (signature as { fee_payer_address?: string })
+          .fee_payer_address;
+      }
+      if ("secondary_signer_addresses" in signature) {
+        secondarySigners = (
+          signature as { secondary_signer_addresses?: string[] }
+        ).secondary_signer_addresses;
+      }
+    }
+
+    const gasInfo = getGasInfo(tx);
+    const payload =
+      "payload" in tx ? (tx as Types.UserTransaction).payload : null;
+    const events = "events" in tx ? tx.events : [];
+    const changes = "changes" in tx ? tx.changes : [];
+    const balanceChanges = getBalanceChanges(tx);
+
+    // New fields
+    const transactionAmount = getTransactionAmount(tx);
+    const storageRefund = getStorageRefund(tx);
+    const transactionActions = getTransactionActions(tx);
+
+    // Counterparty and function
+    const counterparty = getTransactionCounterparty(tx);
+    const functionName = getTransactionFunction(tx);
+
+    return {
+      isSuccess,
+      txVersion,
+      timestamp,
+      sender,
+      sequenceNumber,
+      expirationTimestamp,
+      vmStatus,
+      stateChangeHash,
+      eventRootHash,
+      accumulatorRootHash,
+      signature,
+      feePayer,
+      secondarySigners,
+      gasInfo,
+      payload,
+      events,
+      changes,
+      balanceChanges,
+      transactionAmount,
+      storageRefund,
+      transactionActions,
+      counterparty,
+      functionName,
+    };
+  }, [tx]);
+
   const blockHeight = blockData?.block_height;
-  const timestamp = "timestamp" in tx ? tx.timestamp : null;
-  const sender = "sender" in tx ? (tx as Types.UserTransaction).sender : null;
-
-  // Additional fields
-  const sequenceNumber =
-    "sequence_number" in tx
-      ? (tx as Types.UserTransaction).sequence_number
-      : null;
-  const expirationTimestamp =
-    "expiration_timestamp_secs" in tx
-      ? (tx as Types.UserTransaction).expiration_timestamp_secs
-      : null;
-  const vmStatus = "vm_status" in tx ? tx.vm_status : null;
-  const stateChangeHash =
-    "state_change_hash" in tx ? tx.state_change_hash : null;
-  const eventRootHash = "event_root_hash" in tx ? tx.event_root_hash : null;
-  const accumulatorRootHash =
-    "accumulator_root_hash" in tx ? tx.accumulator_root_hash : null;
-  const signature =
-    "signature" in tx ? (tx as Types.UserTransaction).signature : null;
-
-  // Fee payer & secondary signers
-  let feePayer: string | undefined;
-  let secondarySigners: string[] | undefined;
-  if (signature) {
-    if ("fee_payer_address" in signature) {
-      feePayer = (signature as { fee_payer_address?: string })
-        .fee_payer_address;
-    }
-    if ("secondary_signer_addresses" in signature) {
-      secondarySigners = (
-        signature as { secondary_signer_addresses?: string[] }
-      ).secondary_signer_addresses;
-    }
-  }
-
-  const gasInfo = getGasInfo(tx);
-  const payload =
-    "payload" in tx ? (tx as Types.UserTransaction).payload : null;
-  const events = "events" in tx ? tx.events : [];
-  const changes = "changes" in tx ? tx.changes : [];
-  const balanceChanges = getBalanceChanges(tx);
-
-  // New fields
-  const transactionAmount = getTransactionAmount(tx);
-  const storageRefund = getStorageRefund(tx);
-  const transactionActions = getTransactionActions(tx);
-
-  // Counterparty and function
-  const counterparty = getTransactionCounterparty(tx);
-  const functionName = getTransactionFunction(tx);
 
   return (
     <>

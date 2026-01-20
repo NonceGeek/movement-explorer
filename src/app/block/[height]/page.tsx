@@ -4,7 +4,7 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { useGetBlockByHeight } from "@/hooks/blocks/useGetBlock";
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -15,12 +15,59 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
+import {
+  isBlockMetadataTransactionResponse,
+  BlockMetadataTransactionResponse,
+} from "@aptos-labs/ts-sdk";
+import { Copy, Check, BarChart3, FileText } from "lucide-react";
+import { useState } from "react";
 
 function formatTimestamp(timestamp: string): string {
   const date = new Date(parseInt(timestamp) / 1000);
   return date.toLocaleString();
+}
+
+function CopyableTimestamp({ timestamp }: { timestamp: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(timestamp);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="flex items-center gap-2">
+      <span className="font-mono">{formatTimestamp(timestamp)}</span>
+      <button
+        onClick={handleCopy}
+        className="p-1 hover:bg-muted rounded transition-colors"
+        title="Copy timestamp"
+      >
+        {copied ? (
+          <Check className="h-4 w-4 text-guild-green-500" />
+        ) : (
+          <Copy className="h-4 w-4 text-muted-foreground" />
+        )}
+      </button>
+    </div>
+  );
+}
+
+interface ContentRowProps {
+  title: string;
+  value: React.ReactNode;
+}
+
+function ContentRow({ title, value }: ContentRowProps) {
+  return (
+    <div className="grid grid-cols-1 sm:grid-cols-[200px_1fr] gap-2 py-3 border-b border-border/50 last:border-b-0">
+      <div className="text-sm text-muted-foreground">{title}</div>
+      <div className="text-sm">{value ?? "-"}</div>
+    </div>
+  );
 }
 
 export default function BlockDetailPage() {
@@ -59,147 +106,177 @@ export default function BlockDetailPage() {
     );
   }
 
+  // Extract BlockMetadata transaction for additional info
+  const blockMetaTxn = (block.transactions ?? []).find(
+    isBlockMetadataTransactionResponse,
+  ) as BlockMetadataTransactionResponse | undefined;
+
   const transactionCount =
     BigInt(block.last_version) - BigInt(block.first_version) + BigInt(1);
 
+  const previousBlock = height > 0 ? (height - 1).toString() : null;
+  const nextBlock = (height + 1).toString();
+
   return (
     <>
-      <PageNavigation title="Block Details" />
+      <PageNavigation title="Block" />
       <div className="container mx-auto px-4 py-8">
-        {/* Navigation */}
-        <div className="flex items-center gap-2 mb-6">
-          {height > 0 && (
-            <Button variant="outline" size="sm" asChild>
-              <Link href={`/block/${height - 1}`}>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
-              </Link>
-            </Button>
-          )}
-          <Button variant="outline" size="sm" asChild>
-            <Link href={`/block/${height + 1}`}>
-              Next
-              <ChevronRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
-        </div>
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger
+              value="overview"
+              variant="interactive"
+              className="gap-2"
+            >
+              <BarChart3 className="h-4 w-4" />
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="transactions"
+              variant="interactive"
+              className="gap-2"
+            >
+              <FileText className="h-4 w-4" />
+              Transactions
+            </TabsTrigger>
+          </TabsList>
 
-        {/* Title */}
-        <h1 className="text-3xl font-bold mb-6">Block #{height}</h1>
+          {/* Overview Tab */}
+          <TabsContent value="overview">
+            <Card>
+              <CardContent className="pt-6">
+                <ContentRow
+                  title="Block Height:"
+                  value={
+                    <span className="font-mono text-lg">
+                      {block.block_height}
+                    </span>
+                  }
+                />
+                <ContentRow
+                  title={`Transactions (${transactionCount.toString()}):`}
+                  value={
+                    <div className="flex items-center gap-1">
+                      <Link
+                        href={`/txn/${block.first_version}`}
+                        className="text-primary hover:underline font-mono"
+                      >
+                        {block.first_version}
+                      </Link>
+                      <span className="text-muted-foreground">-</span>
+                      <Link
+                        href={`/txn/${block.last_version}`}
+                        className="text-primary hover:underline font-mono"
+                      >
+                        {block.last_version}
+                      </Link>
+                    </div>
+                  }
+                />
+                <ContentRow
+                  title="Timestamp:"
+                  value={
+                    <CopyableTimestamp timestamp={block.block_timestamp} />
+                  }
+                />
+                {blockMetaTxn && (
+                  <>
+                    <ContentRow
+                      title="Proposer:"
+                      value={
+                        <CopyableAddress
+                          address={blockMetaTxn.proposer}
+                          href={`/account/${blockMetaTxn.proposer}`}
+                        />
+                      }
+                    />
+                    <ContentRow title="Epoch:" value={blockMetaTxn.epoch} />
+                    <ContentRow title="Round:" value={blockMetaTxn.round} />
+                  </>
+                )}
+                {previousBlock && (
+                  <ContentRow
+                    title="Previous Block:"
+                    value={
+                      <Link
+                        href={`/block/${previousBlock}`}
+                        className="text-primary hover:underline font-mono"
+                      >
+                        {previousBlock}
+                      </Link>
+                    }
+                  />
+                )}
+                <ContentRow
+                  title="Next Block:"
+                  value={
+                    <Link
+                      href={`/block/${nextBlock}`}
+                      className="text-primary hover:underline font-mono"
+                    >
+                      {nextBlock}
+                    </Link>
+                  }
+                />
+              </CardContent>
+            </Card>
+          </TabsContent>
 
-        {/* Block Info Card */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle>Block Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-sm text-muted-foreground">Block Height</p>
-                <p className="font-mono text-lg">{block.block_height}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Timestamp</p>
-                <p className="font-mono">
-                  {formatTimestamp(block.block_timestamp)}
-                </p>
-              </div>
-              <div className="md:col-span-2">
-                <p className="text-sm text-muted-foreground">Block Hash</p>
-                <p className="font-mono text-sm break-all">
-                  {block.block_hash}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">First Version</p>
-                <Link
-                  href={`/txn/${block.first_version}`}
-                  className="font-mono text-primary hover:underline"
-                >
-                  {block.first_version}
-                </Link>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Last Version</p>
-                <Link
-                  href={`/txn/${block.last_version}`}
-                  className="font-mono text-primary hover:underline"
-                >
-                  {block.last_version}
-                </Link>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">Transactions</p>
-                <p className="font-mono">{transactionCount.toString()}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Transactions in Block */}
-        {block.transactions && block.transactions.length > 0 && (
-          <Card>
-            <CardHeader>
-              <CardTitle>
-                Transactions in this Block ({block.transactions.length})
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Version</TableHead>
-                      <TableHead>Type</TableHead>
-                      <TableHead>Hash</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {block.transactions.slice(0, 25).map((tx) => {
-                      const version = "version" in tx ? tx.version : null;
-                      return (
-                        <TableRow key={tx.hash}>
-                          <TableCell>
-                            {version && (
-                              <Link
-                                href={`/txn/${version}`}
-                                className="text-primary hover:underline font-mono"
-                              >
-                                {version}
-                              </Link>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="secondary">{tx.type}</Badge>
-                          </TableCell>
-                          <TableCell className="font-mono text-sm">
-                            <Link
-                              href={`/txn/${tx.hash}`}
-                              className="text-primary hover:underline"
-                            >
-                              {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
-                            </Link>
-                          </TableCell>
+          {/* Transactions Tab */}
+          <TabsContent value="transactions">
+            <Card>
+              <CardContent className="pt-6">
+                {block.transactions && block.transactions.length > 0 ? (
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Version</TableHead>
+                          <TableHead>Type</TableHead>
+                          <TableHead>Hash</TableHead>
                         </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-              {block.transactions.length > 25 && (
-                <p className="text-muted-foreground text-sm mt-4">
-                  Showing first 25 transactions.{" "}
-                  <Link
-                    href={`/transactions?block=${height}`}
-                    className="text-primary hover:underline"
-                  >
-                    View all
-                  </Link>
-                </p>
-              )}
-            </CardContent>
-          </Card>
-        )}
+                      </TableHeader>
+                      <TableBody>
+                        {block.transactions.map((tx) => {
+                          const version = "version" in tx ? tx.version : null;
+                          return (
+                            <TableRow key={tx.hash}>
+                              <TableCell>
+                                {version && (
+                                  <Link
+                                    href={`/txn/${version}`}
+                                    className="text-primary hover:underline font-mono"
+                                  >
+                                    {version}
+                                  </Link>
+                                )}
+                              </TableCell>
+                              <TableCell>
+                                <Badge variant="secondary">{tx.type}</Badge>
+                              </TableCell>
+                              <TableCell className="font-mono text-sm">
+                                <Link
+                                  href={`/txn/${tx.hash}`}
+                                  className="text-primary hover:underline"
+                                >
+                                  {tx.hash.slice(0, 10)}...{tx.hash.slice(-8)}
+                                </Link>
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                ) : (
+                  <p className="text-muted-foreground text-center py-8">
+                    No transactions in this block
+                  </p>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
       </div>
     </>
   );

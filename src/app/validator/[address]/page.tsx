@@ -9,6 +9,10 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useGetValidators } from "@/hooks/validators/useGetValidators";
+import { useGetValidatorSet } from "@/hooks/validators/useGetValidatorSet";
+import { useGetStakingRewardsRate } from "@/hooks/validators/useGetStakingRewardsRate";
+import { useGetDelegationNodeInfo } from "@/hooks/validators/useGetDelegationNodeInfo";
+import { useGetNumberOfDelegators } from "@/hooks/validators/useGetNumberOfDelegators";
 import { useGetAccountResource } from "@/hooks/accounts/useGetAccountResource";
 import { standardizeAddress } from "@/utils";
 import { formatMoveAmount } from "@/utils/transaction";
@@ -20,8 +24,18 @@ import {
   TrendingUp,
   Clock,
   Server,
+  Percent,
+  Award,
+  HelpCircle,
 } from "lucide-react";
 import { MyDepositsSection } from "./components/MyDepositsSection";
+import { TimeDurationIntervalBar } from "./components/TimeDurationIntervalBar";
+import { calculateNetworkPercentage, getValidatorStatus } from "./utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface StakePoolData {
   active: { value: string };
@@ -55,7 +69,24 @@ function ValidatorContent() {
     error,
   } = useGetAccountResource(addressHex, "0x1::stake::StakePool");
 
-  const isLoading = isLoadingStakePool;
+  // Fetch validator set for total voting power
+  const { totalVotingPower } = useGetValidatorSet();
+
+  // Fetch staking rewards rate
+  const { rewardsRateYearly } = useGetStakingRewardsRate();
+
+  // Fetch commission and validator status
+  const {
+    commission,
+    validatorStatus: validatorStatusFromChain,
+    isQueryLoading: isLoadingDelegationInfo,
+  } = useGetDelegationNodeInfo({ validatorAddress: addressHex });
+
+  // Fetch number of delegators
+  const { delegatorBalance, loading: isLoadingDelegators } =
+    useGetNumberOfDelegators(addressHex);
+
+  const isLoading = isLoadingStakePool || isLoadingDelegationInfo;
 
   // Find validator in list
   const validator = validators.find((v) => v.owner_address === addressHex);
@@ -89,12 +120,44 @@ function ValidatorContent() {
     ? BigInt(stakePoolData.data.inactive.value)
     : BigInt(0);
 
-  const totalStake = activeStake + pendingActive + pendingInactive + inactive;
-
   // Calculate performance
   const rewardsGrowth = validator?.rewards_growth ?? 0;
-  const isActive =
-    validator !== undefined && BigInt(validator.voting_power || 0) > 0;
+
+  // Validator status from chain
+  const validatorStatusText = validatorStatusFromChain
+    ? getValidatorStatus(Number(validatorStatusFromChain[0]))
+    : undefined;
+
+  // Use validator status or fall back to basic active check
+  const displayStatus =
+    validatorStatusText ||
+    (validator && BigInt(validator.voting_power || 0) > 0
+      ? "Active"
+      : "Inactive");
+
+  // Get status badge variant
+  const getStatusVariant = (status: string) => {
+    switch (status) {
+      case "Active":
+        return "default";
+      case "Pending Active":
+        return "secondary";
+      case "Pending Inactive":
+        return "outline";
+      case "Inactive":
+        return "destructive";
+      default:
+        return "secondary";
+    }
+  };
+
+  // Network percentage
+  const networkPercentage = validator?.voting_power
+    ? calculateNetworkPercentage(validator.voting_power, totalVotingPower)
+    : "0.00";
+
+  // Rewards earned
+  const rewardsEarned = validator?.apt_rewards_distributed ?? 0;
 
   return (
     <>
@@ -111,8 +174,8 @@ function ValidatorContent() {
               {isLoading ? (
                 <Skeleton className="h-6 w-20" />
               ) : (
-                <Badge variant={isActive ? "default" : "secondary"}>
-                  {isActive ? "Active" : "Inactive"}
+                <Badge variant={getStatusVariant(displayStatus)}>
+                  {displayStatus}
                 </Badge>
               )}
             </div>
@@ -138,27 +201,24 @@ function ValidatorContent() {
           </div>
         ) : (
           <>
-            {/* Stats Cards */}
+            {/* Stats Cards - Updated to match source project */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* Total Stake */}
+              {/* Delegated Stake Amount */}
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 text-muted-foreground mb-2">
                     <Coins className="h-4 w-4" />
-                    <span className="text-sm">Total Stake</span>
-                  </div>
-                  <p className="text-2xl font-bold">
-                    {formatMoveAmount(totalStake)} MOVE
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Voting Power */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <Users className="h-4 w-4" />
-                    <span className="text-sm">Voting Power</span>
+                    <span className="text-sm">Delegated Stake Amount</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-3 w-3" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          The total amount of delegated stake in this stake pool
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <p className="text-2xl font-bold">
                     {validator?.voting_power
@@ -169,15 +229,36 @@ function ValidatorContent() {
                 </CardContent>
               </Card>
 
-              {/* Rewards Growth */}
+              {/* Of Network */}
               <Card>
                 <CardContent className="pt-6">
                   <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <TrendingUp className="h-4 w-4" />
-                    <span className="text-sm">Rewards Growth</span>
+                    <Percent className="h-4 w-4" />
+                    <span className="text-sm">Of Network</span>
+                  </div>
+                  <p className="text-2xl font-bold">{networkPercentage}%</p>
+                </CardContent>
+              </Card>
+
+              {/* Rewards Earned So Far */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
+                    <Award className="h-4 w-4" />
+                    <span className="text-sm">Rewards Earned So Far</span>
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-3 w-3" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          Amount of rewards earned by this stake pool to date
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
                   </div>
                   <p className="text-2xl font-bold">
-                    {rewardsGrowth.toFixed(2)}%
+                    {rewardsEarned.toFixed(0)} MOVE
                   </p>
                 </CardContent>
               </Card>
@@ -196,12 +277,105 @@ function ValidatorContent() {
               </Card>
             </div>
 
-            {/* Detail Cards */}
+            {/* Detail Cards - Updated structure to match source project */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Validator Info */}
+              {/* Left Panel */}
               <Card>
                 <CardHeader>
-                  <CardTitle>Validator Information</CardTitle>
+                  <CardTitle>Validator Details</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Operator Address */}
+                  {stakePoolData?.data?.operator_address && (
+                    <div className="flex justify-between items-center py-2 border-b">
+                      <span className="text-muted-foreground">Operator</span>
+                      <Link
+                        href={`/account/${stakePoolData.data.operator_address}`}
+                        className="text-primary hover:underline font-mono text-sm"
+                      >
+                        {stakePoolData.data.operator_address.slice(0, 10)}...
+                        {stakePoolData.data.operator_address.slice(-8)}
+                      </Link>
+                    </div>
+                  )}
+
+                  {/* Number of Delegators */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">
+                        Number of Delegators
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Number of owner accounts who have delegated stake to
+                            this stake pool + reward account(s)
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span>
+                      {isLoadingDelegators ? (
+                        <Skeleton className="h-4 w-8" />
+                      ) : (
+                        delegatorBalance
+                      )}
+                    </span>
+                  </div>
+
+                  {/* Compound Rewards */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">
+                        Compound Rewards
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            The expected APR for staking rewards, compounded
+                            daily
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span>{rewardsRateYearly ?? "-"}% APR</span>
+                  </div>
+
+                  {/* Operator Commission */}
+                  <div className="flex justify-between items-center py-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">
+                        Operator Commission
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            % of staking reward paid out to operator as
+                            commission
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span>
+                      {commission !== undefined ? `${commission}%` : "-"}
+                    </span>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Right Panel */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Stake Pool Info</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {/* Stake Pool Address */}
@@ -217,47 +391,72 @@ function ValidatorContent() {
                     </Link>
                   </div>
 
-                  {/* Operator Address */}
-                  {stakePoolData?.data?.operator_address && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Operator</span>
-                      <Link
-                        href={`/account/${stakePoolData.data.operator_address}`}
-                        className="text-primary hover:underline font-mono text-sm"
-                      >
-                        {stakePoolData.data.operator_address.slice(0, 10)}...
-                        {stakePoolData.data.operator_address.slice(-8)}
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Voter Address */}
-                  {stakePoolData?.data?.delegated_voter && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Voter</span>
-                      <Link
-                        href={`/account/${stakePoolData.data.delegated_voter}`}
-                        className="text-primary hover:underline font-mono text-sm"
-                      >
-                        {stakePoolData.data.delegated_voter.slice(0, 10)}...
-                        {stakePoolData.data.delegated_voter.slice(-8)}
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Lock Until */}
-                  {stakePoolData?.data?.locked_until_secs && (
-                    <div className="flex justify-between items-center py-2">
+                  {/* Rewards Performance */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-1">
                       <span className="text-muted-foreground">
-                        Locked Until
+                        Rewards Performance
                       </span>
-                      <span>
-                        {new Date(
-                          parseInt(stakePoolData.data.locked_until_secs) * 1000
-                        ).toLocaleString()}
-                      </span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Measures how well a validator has performed compared
+                            to the network average
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
-                  )}
+                    <span>{rewardsGrowth.toFixed(2)}%</span>
+                  </div>
+
+                  {/* Last Epoch Performance */}
+                  <div className="flex justify-between items-center py-2 border-b">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">
+                        Last Epoch Performance
+                      </span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            Number of successful vs failed proposals in the last
+                            epoch
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <span>{validator?.last_epoch_performance || "-"}</span>
+                  </div>
+
+                  {/* Next Unlock */}
+                  <div className="flex justify-between items-center py-2">
+                    <div className="flex items-center gap-1">
+                      <span className="text-muted-foreground">Next Unlock</span>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>
+                            When tokens will be available for removal from the
+                            stake pool
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </div>
+                    <TimeDurationIntervalBar
+                      timestamp={
+                        stakePoolData?.data?.locked_until_secs
+                          ? parseInt(stakePoolData.data.locked_until_secs)
+                          : undefined
+                      }
+                    />
+                  </div>
                 </CardContent>
               </Card>
 
@@ -319,22 +518,12 @@ function ValidatorContent() {
 
               {/* Performance */}
               {validator && (
-                <Card className="lg:col-span-2">
+                <Card>
                   <CardHeader>
                     <CardTitle>Performance</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                      {/* Last Epoch Performance */}
-                      <div>
-                        <p className="text-muted-foreground text-sm mb-2">
-                          Last Epoch Performance
-                        </p>
-                        <p className="text-xl font-bold">
-                          {validator.last_epoch_performance || "-"}
-                        </p>
-                      </div>
-
+                    <div className="grid grid-cols-1 gap-4">
                       {/* Liveness */}
                       <div>
                         <p className="text-muted-foreground text-sm mb-2">
@@ -349,16 +538,6 @@ function ValidatorContent() {
                             {((validator.liveness || 0) * 100).toFixed(1)}%
                           </span>
                         </div>
-                      </div>
-
-                      {/* Rewards Distributed */}
-                      <div>
-                        <p className="text-muted-foreground text-sm mb-2">
-                          Rewards Distributed (APT)
-                        </p>
-                        <p className="text-xl font-bold">
-                          {validator.apt_rewards_distributed?.toFixed(2) || "0"}
-                        </p>
                       </div>
                     </div>
                   </CardContent>

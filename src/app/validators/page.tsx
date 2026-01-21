@@ -5,13 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Table,
+  StyledTable,
+  StyledTableHeader,
+  StyledTableHeaderRow,
+  StyledTableHead,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/StyledTable";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
 import Link from "next/link";
@@ -45,7 +46,7 @@ export default function ValidatorsPage() {
       // Calculate percentage complete
       const percentComplete = Math.min(
         100,
-        Math.floor((timePassed / epochIntervalMs) * 100)
+        Math.floor((timePassed / epochIntervalMs) * 100),
       );
       setEpochProgress(percentComplete);
 
@@ -71,7 +72,7 @@ export default function ValidatorsPage() {
 
       const percentComplete = Math.min(
         100,
-        Math.floor((timePassed / epochIntervalMs) * 100)
+        Math.floor((timePassed / epochIntervalMs) * 100),
       );
       setEpochProgress(percentComplete);
 
@@ -96,7 +97,7 @@ export default function ValidatorsPage() {
 
   // Sort validators by voting power
   const sortedValidators = [...validators].sort((a, b) =>
-    Number(BigInt(b.voting_power) - BigInt(a.voting_power))
+    Number(BigInt(b.voting_power) - BigInt(a.voting_power)),
   );
 
   return (
@@ -171,97 +172,91 @@ export default function ValidatorsPage() {
         </div>
 
         {/* Delegation Validators Table */}
-        <Card>
-          <CardContent className="pt-6">
-            <h2 className="text-xl font-semibold mb-4">
-              Delegation Validators
-            </h2>
-            {isLoading ? (
-              <div className="space-y-3">
-                {[...Array(5)].map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : sortedValidators.length === 0 ? (
-              <div className="text-center py-8 text-muted-foreground">
-                No validators found
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-16">#</TableHead>
-                      <TableHead>Staking Pool Address</TableHead>
-                      <TableHead>Operator Address</TableHead>
-                      <TableHead className="text-right">
-                        Delegated Amount
-                      </TableHead>
-                      <TableHead className="text-right">Network %</TableHead>
-                      <TableHead>Status</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {sortedValidators.map((validator, index) => {
-                      const votingPower =
-                        BigInt(validator.voting_power) / BigInt(10 ** 8);
-                      const totalPower = totalVotingPower
-                        ? BigInt(totalVotingPower)
-                        : BigInt(1);
-                      const share =
-                        totalVotingPower && BigInt(totalVotingPower) > 0
-                          ? (Number(BigInt(validator.voting_power)) /
-                              Number(totalPower)) *
-                            100
-                          : 0;
+        <h2 className="text-xl font-semibold mb-4">Delegation Validators</h2>
+        {isLoading ? (
+          <div className="space-y-3">
+            {[...Array(5)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
+          </div>
+        ) : sortedValidators.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            No validators found
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <StyledTable>
+              <StyledTableHeader>
+                <StyledTableHeaderRow>
+                  <StyledTableHead className="w-16">#</StyledTableHead>
+                  <StyledTableHead>Staking Pool Address</StyledTableHead>
+                  <StyledTableHead>Operator Address</StyledTableHead>
+                  <StyledTableHead className="text-right">
+                    Delegated Amount
+                  </StyledTableHead>
+                  <StyledTableHead className="text-right">
+                    Network %
+                  </StyledTableHead>
+                  <StyledTableHead>Status</StyledTableHead>
+                </StyledTableHeaderRow>
+              </StyledTableHeader>
+              <TableBody>
+                {sortedValidators.map((validator, index) => {
+                  const votingPower =
+                    BigInt(validator.voting_power) / BigInt(10 ** 8);
+                  const totalPower = totalVotingPower
+                    ? BigInt(totalVotingPower)
+                    : BigInt(1);
+                  const share =
+                    totalVotingPower && BigInt(totalVotingPower) > 0
+                      ? (Number(BigInt(validator.voting_power)) /
+                          Number(totalPower)) *
+                        100
+                      : 0;
 
-                      return (
-                        <TableRow
-                          key={validator.owner_address}
-                          className="cursor-pointer hover:bg-muted/50"
-                          onClick={() =>
-                            (window.location.href = `/validator/${validator.owner_address}`)
-                          }
+                  return (
+                    <TableRow
+                      key={validator.owner_address}
+                      className="cursor-pointer hover:bg-muted/50"
+                      onClick={() =>
+                        (window.location.href = `/validator/${validator.owner_address}`)
+                      }
+                    >
+                      <TableCell className="font-medium">{index + 1}</TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/account/${validator.owner_address}`}
+                          className="text-primary hover:underline font-mono"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          <TableCell className="font-medium">
-                            {index + 1}
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/account/${validator.owner_address}`}
-                              className="text-primary hover:underline font-mono"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {truncateAddress(validator.owner_address)}
-                            </Link>
-                          </TableCell>
-                          <TableCell>
-                            <Link
-                              href={`/account/${validator.operator_address}`}
-                              className="text-primary hover:underline font-mono"
-                              onClick={(e) => e.stopPropagation()}
-                            >
-                              {truncateAddress(validator.operator_address)}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right font-mono">
-                            {votingPower.toLocaleString("en-US")} MOVE
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {share.toFixed(2)}%
-                          </TableCell>
-                          <TableCell>
-                            <Badge variant="success">Active</Badge>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                          {truncateAddress(validator.owner_address)}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <Link
+                          href={`/account/${validator.operator_address}`}
+                          className="text-primary hover:underline font-mono"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          {truncateAddress(validator.operator_address)}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right font-mono">
+                        {votingPower.toLocaleString("en-US")} MOVE
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {share.toFixed(2)}%
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant="success">Active</Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              </TableBody>
+            </StyledTable>
+          </div>
+        )}
       </div>
     </>
   );

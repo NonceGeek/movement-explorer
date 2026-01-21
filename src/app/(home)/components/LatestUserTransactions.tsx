@@ -12,13 +12,14 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import {
-  Table,
+  StyledTable,
+  StyledTableHeader,
+  StyledTableHeaderRow,
+  StyledTableHead,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
-} from "@/components/ui/table";
+} from "@/components/ui/StyledTable";
 import { UserTransactionRow } from "./UserTransactionRow";
 import { MobileTransactionCard } from "./MobileTransactionCard";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
@@ -42,7 +43,7 @@ export function LatestUserTransactions({
     limit,
     undefined,
     undefined,
-    3000
+    3000,
   );
 
   // 2. Fetch details for all versions
@@ -178,13 +179,11 @@ export function LatestUserTransactions({
         </div>
       ) : (
         /* Desktop View */
-        <Table className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-0!">
-          <TableHeader className="bg-muted/30">
-            <TableRow className="hover:bg-transparent border-0">
-              <TableHead className="text-muted-foreground font-normal">
-                Transaction Hash
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal">
+        <StyledTable>
+          <StyledTableHeader>
+            <StyledTableHeaderRow>
+              <StyledTableHead>Transaction Hash</StyledTableHead>
+              <StyledTableHead>
                 <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
                   <button
                     onClick={() => setTimestampMode("age")}
@@ -207,24 +206,22 @@ export function LatestUserTransactions({
                     UTC
                   </button>
                 </div>
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal">
-                Sender
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal hidden md:table-cell">
+              </StyledTableHead>
+              <StyledTableHead>Sender</StyledTableHead>
+              <StyledTableHead className="hidden md:table-cell">
                 Receiver
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal hidden sm:table-cell">
+              </StyledTableHead>
+              <StyledTableHead className="hidden sm:table-cell">
                 Function
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal hidden lg:table-cell text-right">
+              </StyledTableHead>
+              <StyledTableHead className="hidden lg:table-cell text-right">
                 Amount
-              </TableHead>
-              <TableHead className="text-muted-foreground font-normal hidden lg:table-cell text-right">
+              </StyledTableHead>
+              <StyledTableHead className="hidden lg:table-cell text-right">
                 Gas
-              </TableHead>
-            </TableRow>
-          </TableHeader>
+              </StyledTableHead>
+            </StyledTableHeaderRow>
+          </StyledTableHeader>
           <TableBody>
             {isLoading
               ? Array.from({ length: limit }).map((_, i) => (
@@ -244,7 +241,7 @@ export function LatestUserTransactions({
                   />
                 ))}
           </TableBody>
-        </Table>
+        </StyledTable>
       )}
     </>
   );

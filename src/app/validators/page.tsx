@@ -12,7 +12,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/components/ui/StyledTable";
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Info } from "lucide-react";
 import Link from "next/link";

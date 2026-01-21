@@ -19,7 +19,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/components/ui/StyledTable";
+} from "@/components/ui/table";
 import { UserTransactionRow } from "./UserTransactionRow";
 import { MobileTransactionCard } from "./MobileTransactionCard";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";

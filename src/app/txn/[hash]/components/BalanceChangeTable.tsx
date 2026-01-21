@@ -1,10 +1,11 @@
 import {
-  Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
+  StyledTableHead as TableHead,
+  StyledTableHeader as TableHeader,
+  StyledTableHeaderRow as HeaderRow,
+  StyledTable as Table,
 } from "@/components/ui/table";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -31,11 +32,11 @@ export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
       <CardContent className="p-0">
         <Table>
           <TableHeader>
-            <TableRow>
+            <HeaderRow>
               <TableHead className="w-[40%]">Account</TableHead>
               <TableHead>Type</TableHead>
               <TableHead className="text-right">Amount (MOVE)</TableHead>
-            </TableRow>
+            </HeaderRow>
           </TableHeader>
           <TableBody>
             {changes.map((change, i) => (

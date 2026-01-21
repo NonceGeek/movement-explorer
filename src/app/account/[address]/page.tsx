@@ -9,12 +9,13 @@ import { useGetAccountTokens } from "@/hooks/accounts/useGetAccountTokens";
 import { Types } from "aptos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
+  StyledTable as Table,
+  StyledTableHead as TableHead,
+  StyledTableHeader as TableHeader,
+  StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -28,7 +29,7 @@ function formatTimestamp(timestamp: string): string {
 
 function getBalance(resources: Types.MoveResource[]): string | null {
   const coinStore = resources.find(
-    (r) => r.type === "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>"
+    (r) => r.type === "0x1::coin::CoinStore<0x1::aptos_coin::AptosCoin>",
   );
   if (coinStore && "coin" in coinStore.data) {
     const data = coinStore.data as { coin: { value: string } };
@@ -40,7 +41,7 @@ function getBalance(resources: Types.MoveResource[]): string | null {
 
 // Extract coin holdings from resources
 function getCoinHoldings(
-  resources: Types.MoveResource[]
+  resources: Types.MoveResource[],
 ): { coinType: string; balance: string }[] {
   const holdings: { coinType: string; balance: string }[] = [];
   const coinStorePrefix = "0x1::coin::CoinStore<";
@@ -50,7 +51,7 @@ function getCoinHoldings(
       // Extract coin type from CoinStore<CoinType>
       const coinType = resource.type.slice(
         coinStorePrefix.length,
-        resource.type.length - 1
+        resource.type.length - 1,
       );
       if ("coin" in resource.data) {
         const data = resource.data as { coin: { value: string } };
@@ -80,7 +81,7 @@ export default function AccountDetailPage() {
 
   const { data: tokens, isLoading: tokensLoading } = useGetAccountTokens(
     address,
-    25
+    25,
   );
 
   const isLoading = resourcesLoading;
@@ -170,12 +171,12 @@ export default function AccountDetailPage() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <HeaderRow>
                           <TableHead>Version</TableHead>
                           <TableHead>Type</TableHead>
                           <TableHead>Timestamp</TableHead>
                           <TableHead>Hash</TableHead>
-                        </TableRow>
+                        </HeaderRow>
                       </TableHeader>
                       <TableBody>
                         {transactions.map((tx: Types.Transaction) => {
@@ -183,7 +184,10 @@ export default function AccountDetailPage() {
                           const timestamp =
                             "timestamp" in tx ? tx.timestamp : null;
                           return (
-                            <TableRow key={tx.hash}>
+                            <TableRow
+                              key={tx.hash}
+                              className="hover:bg-card/50" // Slight hover effect tweak if needed, or rely on StyledTable defaults. Using standard TableRow for body
+                            >
                               <TableCell>
                                 {version && (
                                   <Link
@@ -237,10 +241,10 @@ export default function AccountDetailPage() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <HeaderRow>
                           <TableHead>Coin Type</TableHead>
                           <TableHead className="text-right">Balance</TableHead>
-                        </TableRow>
+                        </HeaderRow>
                       </TableHeader>
                       <TableBody>
                         {coinHoldings.map((holding, i) => {
@@ -251,7 +255,7 @@ export default function AccountDetailPage() {
                               <TableCell>
                                 <Link
                                   href={`/coin/${encodeURIComponent(
-                                    holding.coinType
+                                    holding.coinType,
                                   )}`}
                                   className="text-primary hover:underline font-mono text-sm flex items-center gap-2"
                                 >
@@ -259,7 +263,7 @@ export default function AccountDetailPage() {
                                   {holding.coinType.length > 50
                                     ? `${holding.coinType.slice(
                                         0,
-                                        30
+                                        30,
                                       )}...${holding.coinType.slice(-15)}`
                                     : holding.coinType}
                                 </Link>
@@ -301,12 +305,12 @@ export default function AccountDetailPage() {
                   <div className="overflow-x-auto">
                     <Table>
                       <TableHeader>
-                        <TableRow>
+                        <HeaderRow>
                           <TableHead>Name</TableHead>
                           <TableHead>Collection</TableHead>
                           <TableHead>Standard</TableHead>
                           <TableHead className="text-right">Amount</TableHead>
-                        </TableRow>
+                        </HeaderRow>
                       </TableHeader>
                       <TableBody>
                         {tokens.map((token) => (
@@ -314,7 +318,7 @@ export default function AccountDetailPage() {
                             <TableCell>
                               <Link
                                 href={`/token/${encodeURIComponent(
-                                  token.token_data_id
+                                  token.token_data_id,
                                 )}`}
                                 className="text-primary hover:underline flex items-center gap-2"
                               >

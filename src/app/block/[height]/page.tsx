@@ -13,7 +13,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/components/ui/StyledTable";
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

@@ -17,7 +17,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/components/ui/StyledTable";
+} from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";

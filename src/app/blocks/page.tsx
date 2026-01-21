@@ -15,7 +15,7 @@ import {
   TableBody,
   TableCell,
   TableRow,
-} from "@/components/ui/StyledTable";
+} from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const BLOCKS_COUNT = 30;

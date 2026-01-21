@@ -10,16 +10,7 @@ import { Types } from "aptos";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Button } from "@/components/ui/button";
-import { JsonViewer } from "@/components/ui/json-viewer";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 import {
   Search,
   LayoutDashboard,
@@ -45,6 +36,8 @@ import {
   CollapsibleList,
 } from "./components";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { Button } from "@/components/ui/button";
+import JsonViewer from "@/components/ui/json-viewer";
 
 export default function TransactionDetailPage() {
   const params = useParams();
@@ -53,27 +46,8 @@ export default function TransactionDetailPage() {
   const hash = params.hash as string;
   const [showRaw, setShowRaw] = useState(false);
 
-  // Get tab from URL or default to overview
-  const tabFromUrl = searchParams.get("tab") || "overview";
-  const validTabs = ["overview", "balance", "events", "payload", "changes"];
-
-  const [currentTab, setCurrentTab] = useState(() =>
-    validTabs.includes(tabFromUrl) ? tabFromUrl : "overview"
-  );
-
-  useEffect(() => {
-    const tab = searchParams.get("tab");
-    if (tab && validTabs.includes(tab)) {
-      setCurrentTab(tab);
-    }
-  }, [searchParams]);
-
-  const handleTabChange = (value: string) => {
-    setCurrentTab(value);
-    const newParams = new URLSearchParams(searchParams.toString());
-    newParams.set("tab", value);
-    router.push(`/txn/${hash}?${newParams.toString()}`, { scroll: false });
-  };
+  // Tabs
+  const [currentTab, setCurrentTab] = useState("overview");
 
   const { data: tx, isLoading, error } = useGetTransaction(hash);
 
@@ -218,6 +192,34 @@ export default function TransactionDetailPage() {
     };
   }, [tx]);
 
+  const tabItems = [
+    {
+      value: "overview",
+      label: "Overview",
+      icon: <LayoutDashboard className="w-4 h-4" />,
+    },
+    {
+      value: "balance",
+      label: `Balance Change (${balanceChanges.length})`,
+      icon: <Wallet className="w-4 h-4" />,
+    },
+    {
+      value: "events",
+      label: `Events (${events?.length || 0})`,
+      icon: <Activity className="w-4 h-4" />,
+    },
+    {
+      value: "payload",
+      label: "Payload",
+      icon: <Code className="w-4 h-4" />,
+    },
+    {
+      value: "changes",
+      label: `Changes (${changes?.length || 0})`,
+      icon: <GitCommit className="w-4 h-4" />,
+    },
+  ];
+
   if (isLoading) {
     return (
       <>
@@ -307,74 +309,14 @@ export default function TransactionDetailPage() {
         {/* Tabs */}
         <Tabs
           value={currentTab}
-          onValueChange={handleTabChange}
+          onValueChange={setCurrentTab}
           className="space-y-4"
         >
-          <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2 -mx-4 px-4 md:mx-0 md:px-0">
-            {/* Mobile: Dropdown Select */}
-            <div className="md:hidden">
-              <Select value={currentTab} onValueChange={handleTabChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="overview">
-                    <div className="flex items-center gap-2">
-                      <LayoutDashboard className="w-4 h-4" />
-                      Overview
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="balance">
-                    <div className="flex items-center gap-2">
-                      <Wallet className="w-4 h-4" />
-                      Balance Change ({balanceChanges.length})
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="events">
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4" />
-                      Events ({events?.length || 0})
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="payload">
-                    <div className="flex items-center gap-2">
-                      <Code className="w-4 h-4" />
-                      Payload
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="changes">
-                    <div className="flex items-center gap-2">
-                      <GitCommit className="w-4 h-4" />
-                      Changes ({changes?.length || 0})
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            {/* Desktop: Tab Pills */}
-            <TabsList className="hidden md:inline-flex w-full justify-center">
-              <TabsTrigger value="overview" variant="interactive">
-                <LayoutDashboard className="w-4 h-4" />
-                Overview
-              </TabsTrigger>
-              <TabsTrigger value="balance" variant="interactive">
-                <Wallet className="w-4 h-4" />
-                Balance Change ({balanceChanges.length})
-              </TabsTrigger>
-              <TabsTrigger value="events" variant="interactive">
-                <Activity className="w-4 h-4" />
-                Events ({events?.length || 0})
-              </TabsTrigger>
-              <TabsTrigger value="payload" variant="interactive">
-                <Code className="w-4 h-4" />
-                Payload
-              </TabsTrigger>
-              <TabsTrigger value="changes" variant="interactive">
-                <GitCommit className="w-4 h-4" />
-                Changes ({changes?.length || 0})
-              </TabsTrigger>
-            </TabsList>
-          </div>
+          <ResponsiveTabsList
+            items={tabItems}
+            activeTab={currentTab}
+            onTabChange={setCurrentTab}
+          />
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
@@ -481,7 +423,7 @@ export default function TransactionDetailPage() {
                     <InfoItem
                       label="Amount"
                       value={`${(Number(transactionAmount) / 1e8).toFixed(
-                        8
+                        8,
                       )} MOVE`}
                       mono
                     />
@@ -509,7 +451,7 @@ export default function TransactionDetailPage() {
                       <InfoItem
                         label="Gas Fee"
                         value={`${(Number(gasInfo.gasFee) / 1e8).toFixed(
-                          8
+                          8,
                         )} MOVE`}
                         mono
                       />
@@ -518,7 +460,7 @@ export default function TransactionDetailPage() {
                       <InfoItem
                         label="Storage Refund"
                         value={`${(Number(storageRefund) / 1e8).toFixed(
-                          8
+                          8,
                         )} MOVE`}
                         mono
                       />
@@ -541,7 +483,7 @@ export default function TransactionDetailPage() {
                         <InfoItem
                           label="Expiration"
                           value={new Date(
-                            parseInt(expirationTimestamp) * 1000
+                            parseInt(expirationTimestamp) * 1000,
                           ).toLocaleString()}
                           mono
                         />

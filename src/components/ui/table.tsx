@@ -89,6 +89,7 @@ export {
   StyledTableHeader,
   StyledTableHeaderRow,
   StyledTableHead,
+  StyledTableRow,
 };
 
 /**
@@ -150,3 +151,21 @@ const StyledTableHead = React.forwardRef<
   />
 ));
 StyledTableHead.displayName = "StyledTableHead";
+
+/**
+ * StyledTableRow - A pre-styled table row with specific hover and border styles
+ */
+const StyledTableRow = React.forwardRef<
+  HTMLTableRowElement,
+  React.HTMLAttributes<HTMLTableRowElement>
+>(({ className, ...props }, ref) => (
+  <TableRow
+    ref={ref}
+    className={cn(
+      "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
+      className,
+    )}
+    {...props}
+  />
+));
+StyledTableRow.displayName = "StyledTableRow";

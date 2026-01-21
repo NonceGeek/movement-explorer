@@ -12,6 +12,7 @@ const ACCOUNT_TOKENS_QUERY = gql`
       token_data_id
       amount
       token_standard
+      table_type_v1
       property_version_v1
       current_token_data {
         token_name
@@ -44,6 +45,7 @@ export interface TokenOwnership {
   token_data_id: string;
   amount: number;
   token_standard: string;
+  table_type_v1?: string | null;
   property_version_v1: number;
   current_token_data?: {
     token_name: string;

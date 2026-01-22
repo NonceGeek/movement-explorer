@@ -1,5 +1,9 @@
+"use client";
+
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { AccountLabelBadge } from "@/components/common/AccountLabelBadge";
 import { Badge } from "@/components/ui/badge";
+import { useGetAccountLabel } from "@/hooks/accounts/useGetAccountLabel";
 
 interface AccountTitleProps {
   address: string;
@@ -14,6 +18,8 @@ export default function AccountTitle({
   isToken = false,
   isDeleted = false,
 }: AccountTitleProps) {
+  const accountLabel = useGetAccountLabel(address);
+
   let title = "Account";
   if (isToken) {
     title = isDeleted ? "Deleted Token Object" : "Token Object";
@@ -27,13 +33,14 @@ export default function AccountTitle({
         <h1 className="text-3xl font-bold tracking-tight">{title}</h1>
         {isDeleted && <Badge variant="destructive">Deleted</Badge>}
       </div>
-      <div className="flex items-center gap-2 text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2">
         <CopyableAddress
           address={address}
           showFull
           showCopyButton
           className="text-lg"
         />
+        <AccountLabelBadge accountLabel={accountLabel ?? null} />
       </div>
     </div>
   );

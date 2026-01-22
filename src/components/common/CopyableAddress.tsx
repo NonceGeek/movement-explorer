@@ -10,6 +10,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useGetAccountLabel } from "@/hooks/accounts/useGetAccountLabel";
+import { AccountLabelBadge } from "@/components/common/AccountLabelBadge";
 
 export interface CopyableAddressProps {
   address: string;
@@ -20,7 +22,9 @@ export interface CopyableAddressProps {
   /** Show full address without truncation */
   showFull?: boolean;
   /** Styling variant */
-  variant?: "default" | "muted" | "hash";
+  variant?: "default" | "muted" | "hash" | "label";
+  /** Show account label (known name, ANS domain) instead of address if available */
+  showLabel?: boolean;
 }
 
 export function CopyableAddress({
@@ -31,19 +35,23 @@ export function CopyableAddress({
   showCopyButton = true,
   showFull = false,
   variant = "default",
+  showLabel = false,
 }: CopyableAddressProps) {
   const [copied, setCopied] = useState(false);
+  const accountLabel = useGetAccountLabel(address, showLabel);
 
-  const displayAddress = showFull
-    ? address
-    : `${address.slice(0, truncateLength.start)}...${address.slice(
-        -truncateLength.end
-      )}`;
+  // Determine display text
+  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${address.slice(-truncateLength.end)}`;
+  const displayAddress = showFull ? address : truncatedAddress;
+
+  // When using label variant with showLabel, delegate to AccountLabelBadge for styling
+  const useLabelBadge = variant === "label" && showLabel && accountLabel?.name;
 
   const variantStyles = {
     default: href ? "text-primary hover:underline" : "",
     muted: "text-muted-foreground",
     hash: "text-foreground bg-muted/50 px-2 py-1 rounded-md",
+    label: "bg-muted px-3 py-1 rounded-sm hover:opacity-80 transition-opacity",
   };
 
   const handleCopy = async (e: React.MouseEvent) => {
@@ -57,6 +65,75 @@ export function CopyableAddress({
       console.error("Failed to copy:", err);
     }
   };
+
+  // When useLabelBadge is true, render AccountLabelBadge with link wrapper
+  if (useLabelBadge) {
+    const LabelBadgeElement = (
+      <AccountLabelBadge
+        accountLabel={accountLabel}
+        variant="compact"
+        className={cn("hover:opacity-80 transition-opacity", className)}
+      />
+    );
+
+    const WrappedLabelBadge = href ? (
+      <Link href={href} onClick={(e) => e.stopPropagation()}>
+        {LabelBadgeElement}
+      </Link>
+    ) : (
+      LabelBadgeElement
+    );
+
+    return (
+      <TooltipProvider>
+        <div className="inline-flex items-center gap-1">
+          <Tooltip>
+            <TooltipTrigger asChild>{WrappedLabelBadge}</TooltipTrigger>
+            <TooltipContent
+              side="top"
+              className="max-w-80 break-all font-mono text-xs"
+            >
+              <p>{address}</p>
+            </TooltipContent>
+          </Tooltip>
+
+          {showCopyButton && (
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  onClick={handleCopy}
+                  className={cn(
+                    "p-1.5 rounded-md transition-all duration-200",
+                    "text-muted-foreground hover:text-foreground",
+                    "hover:bg-muted/50 active:scale-90"
+                  )}
+                  aria-label="Copy address"
+                >
+                  <span className="relative block h-3.5 w-3.5">
+                    <Copy
+                      className={cn(
+                        "absolute inset-0 h-3.5 w-3.5 transition-all duration-200",
+                        copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                      )}
+                    />
+                    <Check
+                      className={cn(
+                        "absolute inset-0 h-3.5 w-3.5 text-guild-green-500 transition-all duration-200",
+                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                      )}
+                    />
+                  </span>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="top">
+                <p>{copied ? "Copied!" : "Copy address"}</p>
+              </TooltipContent>
+            </Tooltip>
+          )}
+        </div>
+      </TooltipProvider>
+    );
+  }
 
   const AddressContent = (
     <span

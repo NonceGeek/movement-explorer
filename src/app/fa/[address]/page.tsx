@@ -2,23 +2,47 @@
 
 import PageNavigation from "@/components/layout/PageNavigation";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense, useEffect, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { useGetFASupply } from "@/hooks/coins/useGetFASupply";
 import { useGetFaPairedCoin } from "@/hooks/coins/useGetFaPairedCoin";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
-import { isValidAccountAddress } from "@/utils";
-import { formatMoveAmount } from "@/utils/transaction";
-import { ExternalLink, Coins, Image as ImageIcon } from "lucide-react";
+import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
+import { isValidAccountAddress, getAssetSymbol } from "@/utils";
+import { Coins, Info, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
+import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+
+import InfoTab from "./components/InfoTab";
+import HoldersTab from "./components/HoldersTab";
+import TransactionsTab from "./components/TransactionsTab";
 
 function FAContent() {
   const params = useParams();
   const address = params.address as string;
+  const isGraphqlSupported = useGetIsGraphqlClientSupported();
+  const [currentTab, setCurrentTab] = useState("info");
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAddress = async () => {
+    try {
+      await navigator.clipboard.writeText(address);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  };
 
   // Validate address format
   if (!isValidAccountAddress(address)) {
@@ -56,174 +80,160 @@ function FAContent() {
     (coin) => coin.faAddress === address || coin.tokenAddress === address
   );
 
+  const displaySymbol = getAssetSymbol(
+    coinDescription?.panoraSymbol,
+    coinDescription?.bridge,
+    metadata?.symbol
+  );
+
+  useEffect(() => {
+    if (displaySymbol && address) {
+      document.title = `Fungible Asset ${displaySymbol} (${address}) | Movement Explorer`;
+    }
+  }, [displaySymbol, address]);
+
+  const tabItems = [
+    {
+      value: "info",
+      label: "Info",
+      icon: <Info className="h-4 w-4 mr-1" />,
+    },
+    ...(isGraphqlSupported
+      ? [
+          {
+            value: "holders",
+            label: "Holders",
+            icon: <Users className="h-4 w-4 mr-1" />,
+          },
+          {
+            value: "transactions",
+            label: "Transactions",
+            icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
+          },
+        ]
+      : []),
+  ];
+
   return (
     <>
       <PageNavigation title="Fungible Asset" />
       <div className="container mx-auto px-4 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          {metadata?.icon_uri ? (
+        <div className="flex items-start gap-4 mb-6">
+          {metadata?.icon_uri || coinDescription?.logoUrl ? (
             <img
-              src={metadata.icon_uri}
+              src={metadata?.icon_uri || coinDescription?.logoUrl}
               alt={metadata?.name || "FA"}
-              className="w-12 h-12 rounded-full"
+              className="w-14 h-14 rounded-full shrink-0"
               onError={(e) => {
                 (e.target as HTMLImageElement).style.display = "none";
               }}
             />
-          ) : coinDescription?.logoUrl ? (
-            <img
-              src={coinDescription.logoUrl}
-              alt={metadata?.name || "FA"}
-              className="w-12 h-12 rounded-full"
-            />
           ) : (
-            <div className="w-12 h-12 rounded-full bg-muted flex items-center justify-center">
-              <Coins className="w-6 h-6 text-muted-foreground" />
+            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0">
+              <Coins className="w-7 h-7 text-muted-foreground" />
             </div>
           )}
-          <div>
-            <h1 className="text-3xl font-bold">
-              {isLoading ? (
-                <Skeleton className="h-9 w-48" />
-              ) : (
-                metadata?.name || "Unknown Fungible Asset"
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-3 flex-wrap mb-2">
+              <h1 className="text-3xl font-bold">
+                {isLoading ? (
+                  <Skeleton className="h-9 w-48" />
+                ) : (
+                  metadata?.name || "Unknown Fungible Asset"
+                )}
+              </h1>
+              {!isLoading && (
+                <VerifiedAssetBadge
+                  id={address}
+                  coinData={coinDescription}
+                  symbol={displaySymbol}
+                />
               )}
-            </h1>
-            <p className="text-muted-foreground font-mono text-sm">{address}</p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleCopyAddress}
+                      className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-md transition-colors group"
+                    >
+                      <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground truncate max-w-[300px]">
+                        {address}
+                      </span>
+                      <span className="relative h-4 w-4 shrink-0">
+                        <Copy
+                          className={cn(
+                            "absolute inset-0 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200",
+                            copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                          )}
+                        />
+                        <Check
+                          className={cn(
+                            "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
+                            copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                          )}
+                        />
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>{copied ? "Copied!" : "Click to copy"}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              {displaySymbol && !isLoading && (
+                <Badge variant="secondary" className="font-mono text-sm px-3 py-1.5">
+                  {displaySymbol}
+                </Badge>
+              )}
+            </div>
           </div>
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="info" className="w-full">
-          <TabsList>
-            <TabsTrigger value="info">Info</TabsTrigger>
-          </TabsList>
+        <Tabs
+          value={currentTab}
+          onValueChange={setCurrentTab}
+          className="space-y-6"
+        >
+          <ResponsiveTabsList
+            items={tabItems}
+            activeTab={currentTab}
+            onTabChange={setCurrentTab}
+          />
 
           <TabsContent value="info">
-            {isLoading ? (
-              <Card>
-                <CardContent className="pt-6 space-y-4">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div key={i} className="flex justify-between">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-5 w-48" />
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            ) : metadata ? (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Fungible Asset Information</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Name */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Name</span>
-                    <span className="font-medium">{metadata.name}</span>
-                  </div>
-
-                  {/* Symbol */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Symbol</span>
-                    <Badge variant="secondary">{metadata.symbol}</Badge>
-                  </div>
-
-                  {/* Decimals */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Decimals</span>
-                    <span className="font-mono">{metadata.decimals}</span>
-                  </div>
-
-                  {/* Total Supply */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Total Supply</span>
-                    <span className="font-mono">
-                      {supply !== null
-                        ? `${formatMoveAmount(supply)} ${metadata.symbol}`
-                        : "Not tracked"}
-                    </span>
-                  </div>
-
-                  {/* Address */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">Address</span>
-                    <Link
-                      href={`/account/${address}`}
-                      className="text-primary hover:underline font-mono text-sm"
-                    >
-                      {address.slice(0, 10)}...{address.slice(-8)}
-                    </Link>
-                  </div>
-
-                  {/* Paired Coin */}
-                  {pairedCoin && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Paired Coin</span>
-                      <Link
-                        href={`/coin/${encodeURIComponent(pairedCoin)}`}
-                        className="text-primary hover:underline font-mono text-sm flex items-center gap-1"
-                      >
-                        {pairedCoin.length > 40
-                          ? `${pairedCoin.slice(0, 20)}...${pairedCoin.slice(
-                              -10
-                            )}`
-                          : pairedCoin}
-                        <ExternalLink className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  )}
-
-                  {/* Icon */}
-                  {metadata.icon_uri && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Icon</span>
-                      <div className="flex items-center gap-2">
-                        <img
-                          src={metadata.icon_uri}
-                          alt={metadata.name}
-                          className="w-16 h-16 rounded"
-                          onError={(e) => {
-                            const parent = (e.target as HTMLImageElement)
-                              .parentElement;
-                            if (parent) {
-                              parent.innerHTML =
-                                '<span class="text-muted-foreground">Failed to load</span>';
-                            }
-                          }}
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Project URI */}
-                  {metadata.project_uri && (
-                    <div className="flex justify-between items-center py-2">
-                      <span className="text-muted-foreground">Project URL</span>
-                      <a
-                        href={metadata.project_uri}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-primary hover:underline flex items-center gap-1"
-                      >
-                        {metadata.project_uri}
-                        <ExternalLink className="h-3 w-3" />
-                      </a>
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            ) : (
-              <Card>
-                <CardContent className="pt-6">
-                  <p className="text-muted-foreground">
-                    No fungible asset data found
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <InfoTab
+              address={address}
+              metadata={metadata}
+              supply={supply}
+              pairedCoin={pairedCoin}
+              coinDescription={coinDescription}
+              displaySymbol={displaySymbol}
+              isLoading={isLoading}
+            />
           </TabsContent>
+
+          {isGraphqlSupported && (
+            <>
+              <TabsContent value="holders">
+                <HoldersTab
+                  address={address}
+                  metadata={metadata}
+                  coinDescription={coinDescription}
+                  displaySymbol={displaySymbol}
+                />
+              </TabsContent>
+
+              <TabsContent value="transactions">
+                <TransactionsTab address={address} />
+              </TabsContent>
+            </>
+          )}
         </Tabs>
       </div>
     </>

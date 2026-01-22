@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useGetAccountCoins } from "@/hooks/accounts/useGetAccountCoins";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
+import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { CoinDescription } from "@/hooks/coins/types";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
@@ -39,6 +40,7 @@ import {
   BadgeCheck,
   CircleSlash,
   ShieldCheck,
+  Coins,
 } from "lucide-react";
 
 type CoinRow = {
@@ -51,6 +53,7 @@ type CoinRow = {
   usdPrice: number | null;
   usdValue: number | null;
   verification: VerifiedLevelInfo;
+  logoUrl: string | null;
 };
 
 type CoinFilter = "verified" | "recognized" | "all";
@@ -226,6 +229,66 @@ function findCoinData(
   );
 }
 
+function AssetIconFallback({ symbol }: { symbol: string }) {
+  const text = symbol ? symbol.slice(0, 2).toUpperCase() : "";
+  return (
+    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground">
+      {text ? text : <Coins className="h-4 w-4" />}
+    </div>
+  );
+}
+
+function CoinAssetIcon({
+  logoUrl,
+  symbol,
+}: {
+  logoUrl: string | null;
+  symbol: string;
+}) {
+  if (logoUrl) {
+    return (
+      <img
+        src={logoUrl}
+        alt={symbol || "Coin"}
+        className="h-6 w-6 rounded-full"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+    );
+  }
+
+  return <AssetIconFallback symbol={symbol} />;
+}
+
+function FaAssetIcon({
+  address,
+  fallbackLogoUrl,
+  symbol,
+}: {
+  address: string;
+  fallbackLogoUrl: string | null;
+  symbol: string;
+}) {
+  const { data } = useGetFaMetadata(address);
+  const iconUrl = data?.icon_uri || fallbackLogoUrl;
+
+  if (iconUrl) {
+    return (
+      <img
+        src={iconUrl}
+        alt={symbol || "FA"}
+        className="h-6 w-6 rounded-full"
+        onError={(e) => {
+          (e.target as HTMLImageElement).style.display = "none";
+        }}
+      />
+    );
+  }
+
+  return <AssetIconFallback symbol={symbol} />;
+}
+
 export default function CoinsTab({ address }: { address: string }) {
   const { data: accountCoins, isLoading } = useGetAccountCoins(address);
   const { data: coinListData } = useGetCoinList();
@@ -271,6 +334,13 @@ export default function CoinsTab({ address }: { address: string }) {
         );
 
         const tokenStandard: "v1" | "v2" = coin.is_v1_coin ? "v1" : "v2";
+        const isMoveCoin =
+          coin.asset_type_v2 === "0x1::aptos_coin::AptosCoin";
+        const isMoveFa =
+          coin.asset_type_v2 === "0xa" ||
+          coin.asset_type_v2 ===
+            "0x000000000000000000000000000000000000000000000000000000000000000a";
+        const fallbackLogoUrl = isMoveCoin || isMoveFa ? "/coinLogo.png" : null;
 
         return {
           assetType: coin.asset_type_v2,
@@ -282,6 +352,7 @@ export default function CoinsTab({ address }: { address: string }) {
           usdPrice,
           usdValue,
           verification,
+          logoUrl: foundCoin?.logoUrl ?? fallbackLogoUrl,
         };
       })
       .sort((a, b) => {
@@ -393,6 +464,7 @@ export default function CoinsTab({ address }: { address: string }) {
               <HeaderRow>
                 <TableHead>Coin</TableHead>
                 <TableHead>Asset Type</TableHead>
+                <TableHead>Asset</TableHead>
                 <TableHead>Verified</TableHead>
                 <TableHead className="text-right">Standard</TableHead>
                 <TableHead className="text-right">Balance</TableHead>
@@ -406,6 +478,13 @@ export default function CoinsTab({ address }: { address: string }) {
                 const href = isStruct
                   ? `/coin/${encodeURIComponent(coin.assetType)}`
                   : `/fa/${encodeURIComponent(coin.assetType)}`;
+                const assetTypeLabel =
+                  coin.tokenStandard === "v1"
+                    ? "Coin"
+                    : coin.tokenStandard === "v2"
+                      ? "Fungible Asset"
+                      : coin.tokenStandard;
+                const isFA = coin.tokenStandard === "v2";
 
                 return (
                   <TableRow key={coin.assetType}>
@@ -417,12 +496,30 @@ export default function CoinsTab({ address }: { address: string }) {
                         {coin.name} ({coin.symbol})
                       </Link>
                     </TableCell>
+                    <TableCell>{assetTypeLabel}</TableCell>
                     <TableCell className="font-mono text-sm">
-                      {coin.assetType.length > 50
-                        ? `${coin.assetType.slice(0, 30)}...${coin.assetType.slice(
-                            -15,
-                          )}`
-                        : coin.assetType}
+                      <Link
+                        href={href}
+                        className="inline-flex items-center gap-2 text-primary hover:underline"
+                      >
+                        {isFA ? (
+                          <FaAssetIcon
+                            address={coin.assetType}
+                            fallbackLogoUrl={coin.logoUrl}
+                            symbol={coin.symbol}
+                          />
+                        ) : (
+                          <CoinAssetIcon
+                            logoUrl={coin.logoUrl}
+                            symbol={coin.symbol}
+                          />
+                        )}
+                        {coin.assetType.length > 50
+                          ? `${coin.assetType.slice(0, 30)}...${coin.assetType.slice(
+                              -15,
+                            )}`
+                          : coin.assetType}
+                      </Link>
                     </TableCell>
                     <TableCell>
                       {(() => {

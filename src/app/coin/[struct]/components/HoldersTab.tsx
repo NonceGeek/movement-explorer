@@ -30,7 +30,8 @@ export default function HoldersTab({ struct, coinData }: HoldersTabProps) {
   // Show toast when error occurs
   useEffect(() => {
     if (error) {
-      toast.error("Failed to load holders", {
+      toast.error({
+        title: "Failed to load holders",
         description: error.message,
       });
     }

@@ -1,28 +1,6 @@
-// import {CoinDescription} from "./api/hooks/useGetCoinList";
-// Placeholder type since we haven't migrated hooks yet
-export type CoinDescription = {
-  chainId: number;
-  tokenAddress: string;
-  faAddress: string;
-  name: string;
-  symbol: string;
-  decimals: number;
-  panoraSymbol: string;
-  bridge: string | null;
-  logoUrl: string;
-  websiteUrl: string;
-  category: string;
-  isInPanoraTokenList: boolean;
-  panoraUI: boolean;
-  usdPrice: string | null;
-  panoraTags: string[];
-  isBanned: boolean;
-  panoraOrderIndex: number;
-  panoraIndex: number;
-  coinGeckoId: string;
-  coinMarketCapId: number;
-  native: boolean;
-};
+// Import and re-export CoinDescription from hooks/coins/types
+import { CoinDescription } from "./hooks/coins/types";
+export type { CoinDescription } from "./hooks/coins/types";
 
 /**
  * Network
@@ -203,7 +181,7 @@ export const HardCodedCoins: Record<string, CoinDescription> = {
     decimals: 8,
     panoraSymbol: "MOVE",
     bridge: null,
-    logoUrl: "/logo.png",
+    logoUrl: "/coinLogo.png",
     websiteUrl: "https://movementnetwork.xyz",
     category: "Native",
     isInPanoraTokenList: false,
@@ -226,7 +204,7 @@ export const HardCodedCoins: Record<string, CoinDescription> = {
     decimals: 8,
     panoraSymbol: "MOVE",
     bridge: null,
-    logoUrl: "/logo.png",
+    logoUrl: "/coinLogo.png",
     websiteUrl: "https://movementnetwork.xyz",
     category: "Native",
     isInPanoraTokenList: false,

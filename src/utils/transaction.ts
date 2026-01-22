@@ -449,10 +449,12 @@ export function getTransactionFunction(
   return functionFullStr;
 }
 
-// Format MOVE amount (8 decimals)
-export function formatMoveAmount(amount: bigint | number | string): string {
+// Format MOVE amount (default 8 decimals)
+export function formatMoveAmount(
+  amount: bigint | number | string,
+  decimals: number = 8
+): string {
   const amountBigInt = typeof amount === "bigint" ? amount : BigInt(amount);
-  const decimals = 8;
   const divisor = BigInt(10 ** decimals);
   const whole = amountBigInt / divisor;
   const fraction = amountBigInt % divisor;

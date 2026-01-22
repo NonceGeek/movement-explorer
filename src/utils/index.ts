@@ -330,3 +330,26 @@ export function truncateAddress(address: string): string {
 export function isValidStruct(text: string): boolean {
   return /^0x[a-fA-F0-9]+::\w+::\w+/.test(text);
 }
+
+/**
+ * Get the display symbol for an asset, handling bridge tokens
+ * @param panoraSymbol - Symbol from Panora token list
+ * @param bridge - Bridge name (e.g., "Wormhole", "LayerZero")
+ * @param symbol - Original symbol from on-chain
+ * @returns Formatted symbol string
+ */
+export function getAssetSymbol(
+  panoraSymbol: string | null | undefined,
+  bridge: string | null | undefined,
+  symbol: string | null | undefined
+): string {
+  if (panoraSymbol && panoraSymbol !== symbol) {
+    if (bridge) {
+      return `${panoraSymbol} (${bridge} ${symbol})`;
+    }
+    return `${panoraSymbol} (${symbol})`;
+  } else if (symbol) {
+    return symbol;
+  }
+  return "";
+}

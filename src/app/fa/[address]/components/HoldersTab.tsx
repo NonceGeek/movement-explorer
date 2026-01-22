@@ -37,7 +37,8 @@ export default function HoldersTab({
 
   useEffect(() => {
     if (error) {
-      toast.error("Failed to load holders", {
+      toast.error({
+        title: "Failed to load holders",
         description: error.message,
       });
     }

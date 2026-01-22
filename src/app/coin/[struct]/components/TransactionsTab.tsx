@@ -29,7 +29,8 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
   // Show toast when error occurs
   useEffect(() => {
     if (error) {
-      toast.error("Failed to load transactions", {
+      toast.error({
+        title: "Failed to load transactions",
         description: error.message,
       });
     }

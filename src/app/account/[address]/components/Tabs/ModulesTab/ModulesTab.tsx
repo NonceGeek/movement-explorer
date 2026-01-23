@@ -8,17 +8,27 @@ import PackageContent from "./PackageContent";
 
 interface ModulesTabProps {
   address: string;
+  initialPackage?: string;
+  initialModule?: string;
+  initialFunction?: string;
 }
 
-export default function ModulesTab({ address }: ModulesTabProps) {
+export default function ModulesTab({
+  address,
+  initialPackage,
+  initialModule,
+  initialFunction,
+}: ModulesTabProps) {
   const packages = useGetAccountPackages(address);
   const [selectedPackageName, setSelectedPackageName] = useState<string>("");
 
   useEffect(() => {
-    if (!selectedPackageName && packages.length > 0) {
+    if (initialPackage && packages.some((p) => p.name === initialPackage)) {
+      setSelectedPackageName(initialPackage);
+    } else if (!selectedPackageName && packages.length > 0) {
       setSelectedPackageName(packages[0].name);
     }
-  }, [packages, selectedPackageName]);
+  }, [packages, selectedPackageName, initialPackage]);
 
   if (packages.length === 0) {
     return (
@@ -43,7 +53,12 @@ export default function ModulesTab({ address }: ModulesTabProps) {
       </div>
       <div className="md:col-span-3">
         {selectedPackage ? (
-          <PackageContent address={address} packageMetadata={selectedPackage} />
+          <PackageContent
+            address={address}
+            packageMetadata={selectedPackage}
+            initialModule={initialModule}
+            initialFunction={initialFunction}
+          />
         ) : (
           <Card>
             <CardContent className="pt-6">

@@ -2,10 +2,15 @@ import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { ChevronLeft, FileCode } from "lucide-react";
 
 interface PackageContentProps {
   address: string;
   packageMetadata: PackageMetadata;
+  initialModule?: string;
+  initialFunction?: string;
 }
 
 function getUpgradePolicyLabel(policy: number) {
@@ -24,7 +29,28 @@ function getUpgradePolicyLabel(policy: number) {
 export default function PackageContent({
   address,
   packageMetadata,
+  initialModule,
+  initialFunction,
 }: PackageContentProps) {
+  const [selectedModuleName, setSelectedModuleName] = useState<string | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (
+      initialModule &&
+      packageMetadata.modules.some((m) => m.name === initialModule)
+    ) {
+      setSelectedModuleName(initialModule);
+    } else {
+      setSelectedModuleName(null);
+    }
+  }, [initialModule, packageMetadata]);
+
+  const selectedModule = selectedModuleName
+    ? packageMetadata.modules.find((m) => m.name === selectedModuleName)
+    : null;
+
   return (
     <div className="space-y-6">
       <Card>
@@ -57,37 +83,67 @@ export default function PackageContent({
                 {packageMetadata.source_digest}
               </p>
             </div>
-            {/* Add more metadata if needed */}
           </div>
         </CardContent>
       </Card>
 
-      <div className="space-y-2">
-        <h3 className="text-lg font-semibold">
-          Modules ({packageMetadata.modules.length})
-        </h3>
-        <div className="grid gap-3">
-          {packageMetadata.modules.map((module) => (
-            <Card key={module.name} className="overflow-hidden">
-              <CardContent className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h4 className="font-medium font-mono text-sm">
-                    {module.name}
-                  </h4>
+      {selectedModule ? (
+        <div className="space-y-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setSelectedModuleName(null)}
+            className="gap-2"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            Back to Modules
+          </Button>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="font-mono flex items-center gap-2">
+                <FileCode className="h-5 w-5" />
+                {selectedModule.name}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {selectedModule.source ? (
+                <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs font-mono leading-relaxed">
+                  {selectedModule.source}
+                </pre>
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  Source code not available.
                 </div>
-                {/*
-                    If we want to show source code, we could add a collapsible or a link to a separate view.
-                    For now just listing them.
-                  */}
-                <div className="max-h-32 overflow-y-auto bg-muted/50 p-2 rounded text-xs font-mono text-muted-foreground">
-                  {/* Just a preview or empty state if source is too large */}
-                  {module.source ? "Source available" : "Bytecode only"}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+              )}
+            </CardContent>
+          </Card>
         </div>
-      </div>
+      ) : (
+        <div className="space-y-2">
+          <h3 className="text-lg font-semibold">
+            Modules ({packageMetadata.modules.length})
+          </h3>
+          <div className="grid gap-3">
+            {packageMetadata.modules.map((module) => (
+              <Card
+                key={module.name}
+                className="overflow-hidden hover:border-primary/50 transition-colors cursor-pointer"
+                onClick={() => setSelectedModuleName(module.name)}
+              >
+                <CardContent className="p-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <h4 className="font-medium font-mono text-sm flex items-center gap-2">
+                      <FileCode className="h-4 w-4 text-muted-foreground" />
+                      {module.name}
+                    </h4>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

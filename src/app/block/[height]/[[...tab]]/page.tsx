@@ -2,7 +2,7 @@
 
 import PageNavigation from "@/components/layout/PageNavigation";
 import { useGetBlockByHeight } from "@/hooks/blocks/useGetBlock";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -42,7 +42,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function formatTimestamp(timestamp: string): string {
   const date = new Date(parseInt(timestamp) / 1000);
@@ -201,7 +201,23 @@ function ContentRow({ title, value }: ContentRowProps) {
 
 export default function BlockDetailPage() {
   const params = useParams();
+  const router = useRouter();
   const height = parseInt(params.height as string);
+  const tabSlug = params.tab as string[] | undefined;
+  const initialTab = tabSlug ? tabSlug[0] : "overview";
+
+  const [currentTab, setCurrentTab] = useState(initialTab);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    router.push(`/block/${height}/${value}`);
+  };
+
+  useEffect(() => {
+    if (tabSlug && tabSlug[0] !== currentTab) {
+      setCurrentTab(tabSlug[0]);
+    }
+  }, [tabSlug]);
 
   const {
     data: block,
@@ -250,7 +266,11 @@ export default function BlockDetailPage() {
     <>
       <PageNavigation title="Block" />
       <div className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs
+          value={currentTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <TabsList className="mb-6">
             <TabsTrigger
               value="overview"

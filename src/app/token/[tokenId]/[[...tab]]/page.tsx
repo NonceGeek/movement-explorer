@@ -1,23 +1,39 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
-import { useParams } from "next/navigation";
-import { Suspense } from "react";
+import { useParams, useRouter, usePathname } from "next/navigation";
+import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetTokenData } from "@/hooks/tokens/useGetTokenData";
 import { FileText, BarChart2, Activity } from "lucide-react";
-import { TokenHeader } from "./components/TokenHeader";
-import { TokenBasicInfoCard } from "./components/TokenBasicInfoCard";
-import { CollectionInfoCard } from "./components/CollectionInfoCard";
-import { TokenDetailInfoCard } from "./components/TokenDetailInfoCard";
-import { TokenDescriptionCard } from "./components/TokenDescriptionCard";
-import { ActivitiesTab } from "./components/ActivitiesTab";
+import { TokenHeader } from "../components/TokenHeader";
+import { TokenBasicInfoCard } from "../components/TokenBasicInfoCard";
+import { CollectionInfoCard } from "../components/CollectionInfoCard";
+import { TokenDetailInfoCard } from "../components/TokenDetailInfoCard";
+import { TokenDescriptionCard } from "../components/TokenDescriptionCard";
+import { ActivitiesTab } from "../components/ActivitiesTab";
 
 function TokenContent() {
   const params = useParams();
+  const router = useRouter();
   const tokenId = decodeURIComponent(params.tokenId as string);
+  const tabSlug = params.tab as string[] | undefined;
+  const initialTab = tabSlug ? tabSlug[0] : "overview";
+
+  const [currentTab, setCurrentTab] = useState(initialTab);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    router.push(`/token/${tokenId}/${value}`);
+  };
+
+  useEffect(() => {
+    if (tabSlug && tabSlug[0] !== currentTab) {
+      setCurrentTab(tabSlug[0]);
+    }
+  }, [tabSlug]);
 
   const { data, isLoading, error } = useGetTokenData(tokenId);
 
@@ -64,7 +80,11 @@ function TokenContent() {
           collectionName={token?.current_collection?.collection_name}
         />
 
-        <Tabs defaultValue="overview" className="w-full">
+        <Tabs
+          value={currentTab}
+          onValueChange={handleTabChange}
+          className="w-full"
+        >
           <TabsList>
             <TabsTrigger value="overview" className="flex items-center gap-2">
               <BarChart2 className="h-4 w-4" />

@@ -23,6 +23,7 @@ import {
   TRANSACTION_TYPE_INFO,
 } from "@/constants/transaction";
 import Link from "next/link";
+import { TransactionFunction } from "@/components/common/TransactionFunction";
 
 export function AllTransactionRow({
   transaction,
@@ -145,9 +146,7 @@ export function AllTransactionRow({
       {/* Function */}
       <TableCell className="hidden sm:table-cell">
         {functionName ? (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors">
-            {functionName}
-          </code>
+          <TransactionFunction transaction={transaction} />
         ) : (
           <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -

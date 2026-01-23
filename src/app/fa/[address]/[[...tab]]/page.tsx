@@ -1,7 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,16 +23,30 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-import InfoTab from "./components/InfoTab";
-import HoldersTab from "./components/HoldersTab";
-import TransactionsTab from "./components/TransactionsTab";
+import InfoTab from "../components/InfoTab";
+import HoldersTab from "../components/HoldersTab";
+import TransactionsTab from "../components/TransactionsTab";
 
 function FAContent() {
   const params = useParams();
+  const router = useRouter();
   const address = params.address as string;
+  const tabSlug = params.tab as string[] | undefined;
+  const initialTab = tabSlug ? tabSlug[0] : "info";
   const isGraphqlSupported = useGetIsGraphqlClientSupported();
-  const [currentTab, setCurrentTab] = useState("info");
+  const [currentTab, setCurrentTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    router.push(`/fa/${address}/${value}`);
+  };
+
+  useEffect(() => {
+    if (tabSlug && tabSlug[0] !== currentTab) {
+      setCurrentTab(tabSlug[0]);
+    }
+  }, [tabSlug]);
 
   const handleCopyAddress = async () => {
     try {
@@ -77,13 +91,13 @@ function FAContent() {
 
   // Find coin description
   const coinDescription = coinList?.data?.find(
-    (coin) => coin.faAddress === address || coin.tokenAddress === address
+    (coin) => coin.faAddress === address || coin.tokenAddress === address,
   );
 
   const displaySymbol = getAssetSymbol(
     coinDescription?.panoraSymbol,
     coinDescription?.bridge,
-    metadata?.symbol
+    metadata?.symbol,
   );
 
   useEffect(() => {
@@ -167,13 +181,17 @@ function FAContent() {
                         <Copy
                           className={cn(
                             "absolute inset-0 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200",
-                            copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                            copied
+                              ? "scale-0 opacity-0"
+                              : "scale-100 opacity-100",
                           )}
                         />
                         <Check
                           className={cn(
                             "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
-                            copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                            copied
+                              ? "scale-100 opacity-100"
+                              : "scale-0 opacity-0",
                           )}
                         />
                       </span>
@@ -186,7 +204,10 @@ function FAContent() {
               </TooltipProvider>
 
               {displaySymbol && !isLoading && (
-                <Badge variant="secondary" className="font-mono text-sm px-3 py-1.5">
+                <Badge
+                  variant="secondary"
+                  className="font-mono text-sm px-3 py-1.5"
+                >
                   {displaySymbol}
                 </Badge>
               )}
@@ -197,13 +218,13 @@ function FAContent() {
         {/* Tabs */}
         <Tabs
           value={currentTab}
-          onValueChange={setCurrentTab}
+          onValueChange={handleTabChange}
           className="space-y-6"
         >
           <ResponsiveTabsList
             items={tabItems}
             activeTab={currentTab}
-            onTabChange={setCurrentTab}
+            onTabChange={handleTabChange}
           />
 
           <TabsContent value="info">

@@ -23,6 +23,7 @@ import {
   TransactionTypeName,
   TRANSACTION_TYPE_INFO,
 } from "@/constants/transaction";
+import { TransactionFunction } from "@/components/common/TransactionFunction";
 
 export function UserTransactionRow({
   version,
@@ -159,9 +160,7 @@ export function UserTransactionRow({
       {/* Function */}
       <TableCell className="hidden sm:table-cell">
         {functionName ? (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors">
-            {functionName}
-          </code>
+          <TransactionFunction transaction={transaction} />
         ) : (
           <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -

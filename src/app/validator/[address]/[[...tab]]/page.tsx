@@ -28,9 +28,9 @@ import {
   Award,
   HelpCircle,
 } from "lucide-react";
-import { MyDepositsSection } from "./components/MyDepositsSection";
-import { TimeDurationIntervalBar } from "./components/TimeDurationIntervalBar";
-import { calculateNetworkPercentage, getValidatorStatus } from "./utils";
+import { MyDepositsSection } from "../components/MyDepositsSection";
+import { TimeDurationIntervalBar } from "../components/TimeDurationIntervalBar";
+import { calculateNetworkPercentage, getValidatorStatus } from "../utils";
 import {
   Tooltip,
   TooltipContent,

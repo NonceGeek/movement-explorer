@@ -47,13 +47,13 @@ import {
 } from "@/utils/transaction";
 
 // Components
-import AccountTitle from "./components/AccountTitle";
-import BalanceCard from "./components/BalanceCard";
-import InfoTab from "./components/Tabs/InfoTab";
-import NFTsTab from "./components/Tabs/NFTsTab";
-import ModulesTab from "./components/Tabs/ModulesTab/ModulesTab";
-import TokensTab from "./components/Tabs/TokensTab";
-import CoinsTab from "./components/Tabs/CoinsTab";
+import AccountTitle from "../components/AccountTitle";
+import BalanceCard from "../components/BalanceCard";
+import InfoTab from "../components/Tabs/InfoTab";
+import NFTsTab from "../components/Tabs/NFTsTab";
+import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
+import TokensTab from "../components/Tabs/TokensTab";
+import CoinsTab from "../components/Tabs/CoinsTab";
 
 const TXN_PER_PAGE = 25;
 
@@ -156,6 +156,55 @@ export default function AccountDetailPage() {
 
   // Tabs State
   const [currentTab, setCurrentTab] = useState("transactions");
+
+  // Handle Deep Linking via Slug
+  // Route: /account/[address]/[[...slug]]
+  // Possible patterns:
+  // - /modules
+  // - /modules/code/[package]/[module]
+  // - /modules/code/[package]/[module]/[function]
+  const slug = params.slug as string[] | undefined;
+
+  // Derive initial state from slug
+  const initialPackage =
+    slug && slug.length > 2 && slug[0] === "modules" && slug[1] === "code"
+      ? decodeURIComponent(slug[2])
+      : undefined;
+  // Module name is just the name, not full path, but let's assume we might get partial or full.
+  // Actually, usually it's just module name if we know the package.
+  // If the link is .../code/0x1::coin/transfer, then package is 0x1::coin (wrong)
+  // Usually link is .../code/package/module/function
+
+  // Let's assume structure: /modules/code/package_name/module_name/function_name
+  const initialModule =
+    slug && slug.length > 3 && slug[0] === "modules" && slug[1] === "code"
+      ? decodeURIComponent(slug[3])
+      : undefined;
+  const initialFunction =
+    slug && slug.length > 4 && slug[0] === "modules" && slug[1] === "code"
+      ? decodeURIComponent(slug[4])
+      : undefined;
+
+  // Set initial tab if slug dictates it
+  if (slug && slug[0] === "modules" && currentTab !== "modules") {
+    // We use a simple check to avoid infinite loops or re-renders if likely
+    // But better to use useEffect or initialize state lazily if possible.
+    // Since this is a Client Component, we can use useEffect (as done below) or just initialize state.
+  }
+
+  // Better: Initialize state based on params (only on mount)
+  useState(() => {
+    if (slug && slug[0] === "modules") {
+      setCurrentTab("modules");
+    } else if (slug && slug[0]) {
+      // Handle other tabs if they were mapped (e.g. /resources)
+      // For now only modules is explicitly required deep linking
+      const tab = slug[0];
+      if (tabItems.some((t) => t.value === tab)) {
+        setCurrentTab(tab);
+      }
+    }
+  });
 
   const tabItems = [
     { value: "transactions", label: "Transactions" },
@@ -454,7 +503,12 @@ export default function AccountDetailPage() {
           </TabsContent>
 
           <TabsContent value="modules">
-            <ModulesTab address={address} />
+            <ModulesTab
+              address={address}
+              initialPackage={initialPackage}
+              initialModule={initialModule}
+              initialFunction={initialFunction}
+            />
           </TabsContent>
 
           <TabsContent value="info">

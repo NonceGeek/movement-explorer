@@ -25,6 +25,7 @@ import {
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { Types } from "aptos";
+import { TransactionFunction } from "@/components/common/TransactionFunction";
 
 export interface UserTransactionRowProps {
   version: number;
@@ -89,7 +90,7 @@ export function UserTransactionRow({
     <TableRow
       className={cn(
         "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
-        className
+        className,
       )}
     >
       {/* Version + Status Icon */}
@@ -160,9 +161,7 @@ export function UserTransactionRow({
       {/* Function */}
       <TableCell className="hidden sm:table-cell">
         {functionName ? (
-          <code className="px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors">
-            {functionName}
-          </code>
+          <TransactionFunction transaction={transaction} />
         ) : (
           <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
             -

@@ -34,7 +34,7 @@ import {
   BalanceChangeTable,
   ActionsDisplay,
   CollapsibleList,
-} from "./components";
+} from "../components";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { Button } from "@/components/ui/button";
 import JsonViewer from "@/components/ui/json-viewer";
@@ -44,10 +44,23 @@ export default function TransactionDetailPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const hash = params.hash as string;
+  const tabSlug = params.tab as string[] | undefined;
+  const initialTab = tabSlug ? tabSlug[0] : "overview";
   const [showRaw, setShowRaw] = useState(false);
 
   // Tabs
-  const [currentTab, setCurrentTab] = useState("overview");
+  const [currentTab, setCurrentTab] = useState(initialTab);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    router.push(`/txn/${hash}/${value}`);
+  };
+
+  useEffect(() => {
+    if (tabSlug && tabSlug[0] !== currentTab) {
+      setCurrentTab(tabSlug[0]);
+    }
+  }, [tabSlug]);
 
   const { data: tx, isLoading, error } = useGetTransaction(hash);
 
@@ -309,7 +322,7 @@ export default function TransactionDetailPage() {
         {/* Tabs */}
         <Tabs
           value={currentTab}
-          onValueChange={setCurrentTab}
+          onValueChange={handleTabChange}
           className="space-y-4"
         >
           <ResponsiveTabsList

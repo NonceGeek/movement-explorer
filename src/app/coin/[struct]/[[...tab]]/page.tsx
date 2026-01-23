@@ -1,7 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,16 +24,30 @@ import {
 import { cn } from "@/lib/utils";
 
 // Tab Components
-import InfoTab, { CoinData } from "./components/InfoTab";
-import HoldersTab from "./components/HoldersTab";
-import TransactionsTab from "./components/TransactionsTab";
+import InfoTab, { CoinData } from "../components/InfoTab";
+import HoldersTab from "../components/HoldersTab";
+import TransactionsTab from "../components/TransactionsTab";
 
 function CoinContent() {
   const params = useParams();
+  const router = useRouter();
   const struct = decodeURIComponent(params.struct as string);
+  const tabSlug = params.tab as string[] | undefined;
+  const initialTab = tabSlug ? tabSlug[0] : "info";
   const isGraphqlSupported = useGetIsGraphqlClientSupported();
-  const [currentTab, setCurrentTab] = useState("info");
+  const [currentTab, setCurrentTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
+
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
+    router.push(`/coin/${struct}/${value}`);
+  };
+
+  useEffect(() => {
+    if (tabSlug && tabSlug[0] !== currentTab) {
+      setCurrentTab(tabSlug[0]);
+    }
+  }, [tabSlug]);
 
   const handleCopyStruct = async () => {
     try {
@@ -85,7 +99,7 @@ function CoinContent() {
 
   // Find coin in list
   const coinDescription = coinList?.data?.find(
-    (coin) => coin.tokenAddress === struct || coin.faAddress === struct
+    (coin) => coin.tokenAddress === struct || coin.faAddress === struct,
   );
 
   if (error) {
@@ -108,7 +122,7 @@ function CoinContent() {
   const displaySymbol = getAssetSymbol(
     coinDescription?.panoraSymbol,
     coinDescription?.bridge,
-    coinData?.data?.symbol
+    coinData?.data?.symbol,
   );
 
   // Update page title
@@ -193,13 +207,17 @@ function CoinContent() {
                         <Copy
                           className={cn(
                             "absolute inset-0 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200",
-                            copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                            copied
+                              ? "scale-0 opacity-0"
+                              : "scale-100 opacity-100",
                           )}
                         />
                         <Check
                           className={cn(
                             "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
-                            copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                            copied
+                              ? "scale-100 opacity-100"
+                              : "scale-0 opacity-0",
                           )}
                         />
                       </span>
@@ -227,13 +245,13 @@ function CoinContent() {
         {/* Tabs */}
         <Tabs
           value={currentTab}
-          onValueChange={setCurrentTab}
+          onValueChange={handleTabChange}
           className="space-y-6"
         >
           <ResponsiveTabsList
             items={tabItems}
             activeTab={currentTab}
-            onTabChange={setCurrentTab}
+            onTabChange={handleTabChange}
           />
 
           <TabsContent value="info">

@@ -4,8 +4,8 @@ import { useState, useEffect } from "react";
 import { WalletConnector } from "@/components/wallet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NavMobile from "./NavMobile";
-import { Logo, NavigationLink } from "./header-parts";
-import { NAV_LINKS } from "./types";
+import { Logo, NavigationLink, NavigationDropdown } from "./header-parts";
+import { NAV_ITEMS, isNavDropdown } from "./types";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
@@ -36,20 +36,29 @@ export default function Header() {
       )}
     >
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Logo */}
+        <div className="flex items-center gap-2">
+          {/* Logo */}
         <Logo />
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((link) => (
-            <NavigationLink
-              key={link.href}
-              href={link.href}
-              label={link.label}
-            />
-          ))}
+          {NAV_ITEMS.map((item, index) =>
+            isNavDropdown(item) ? (
+              <NavigationDropdown
+                key={item.label}
+                label={item.label}
+                items={item.items}
+              />
+            ) : (
+              <NavigationLink
+                key={item.href}
+                href={item.href}
+                label={item.label}
+              />
+            )
+          )}
         </nav>
-
+        </div>
         {/* Right Section */}
         <TooltipProvider>
           <div className="flex items-center gap-3">

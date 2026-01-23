@@ -147,7 +147,7 @@ export function AllTransactions() {
               </StyledTableHead>
               <StyledTableHead>Sender</StyledTableHead>
               <StyledTableHead className="hidden md:table-cell">
-                Receiver
+                To
               </StyledTableHead>
               <StyledTableHead className="hidden sm:table-cell">
                 Function

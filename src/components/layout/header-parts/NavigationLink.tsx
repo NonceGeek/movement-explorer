@@ -19,16 +19,13 @@ export function NavigationLink({ href, label }: NavigationLinkProps) {
       href={href}
       className={cn(
         buttonVariants({ variant: "ghost", size: "sm" }),
-        "relative transition-all duration-200",
+        "transition-all duration-200",
         isActive
-          ? "text-foreground bg-moveus-marigold-500/10"
+          ? "text-primary-foreground bg-primary"
           : "text-muted-foreground"
       )}
     >
       {label}
-      {isActive && (
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-moveus-marigold-500 rounded-full" />
-      )}
     </Link>
   );
 }

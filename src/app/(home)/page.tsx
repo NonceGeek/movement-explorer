@@ -6,7 +6,6 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import { SearchBar } from "@/components/search";
 import { StatCard } from "./components/StatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
-import { DottedBackground } from "@movementlabsxyz/movement-design-system";
 import { useGetPeakTPS, useGetAnalyticsData } from "@/hooks";
 
 export default function HomePage() {
@@ -40,44 +39,17 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero Section with Gradient Background */}
-      <section className="relative overflow-visible">
-        {/* Background Gradient */}
-        <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/20 via-transparent to-transparent pointer-events-none" />
+      {/* Hero Section - Minimalist */}
+      <section className="relative">
+        {/* Subtle Background Gradient */}
+        <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/10 to-transparent pointer-events-none" />
 
-        {/* Dotted Background Overlay */}
-        <DottedBackground
-          className="absolute! inset-0 min-h-0! p-0! bg-transparent! rounded-none! pointer-events-none animate-background-move mask-[radial-gradient(ellipse_at_center,black_30%,transparent_70%)]"
-          dotColor="rgba(252, 211, 77, 0.4)"
-          dotSize={2.5}
-          gap={24}
-          variant="dots"
-        />
-
-        <div className="container mx-auto px-4 py-8 sm:py-12 md:py-16 relative">
-          <div className="max-w-4xl mx-auto text-center space-y-4 sm:space-y-6">
-            {/* Title */}
-            <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-              Explore the{" "}
-              <span className="text-transparent bg-clip-text bg-linear-to-r from-moveus-marigold-400 to-moveus-marigold-600">
-                Movement
-              </span>{" "}
-              Network
-            </h1>
-
-            {/* Subtitle */}
-            <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-              The next-generation high-performance blockchain explorer powered
-              by Move
-            </p>
-
-            {/* Search Bar */}
-            <div className="pt-4 max-w-2xl mx-auto relative z-10">
-              <SearchBar
-                variant="hero"
-                placeholder="Search by Address / Txn Hash / Block / Token"
-              />
-            </div>
+        <div className="container mx-auto px-4 py-4 sm:py-6 relative">
+          <div className="max-w-230">
+            <SearchBar
+              variant="hero"
+              placeholder="Search by Address / Txn Hash / Block / Token"
+            />
           </div>
         </div>
       </section>

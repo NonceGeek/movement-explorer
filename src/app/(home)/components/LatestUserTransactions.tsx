@@ -6,12 +6,6 @@ import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import {
   StyledTable,
   StyledTableHeader,
   StyledTableHeaderRow,
@@ -142,13 +136,13 @@ export function LatestUserTransactions({
     <>
       <div className="flex flex-row items-center justify-between py-4">
         <h3 className="flex items-center gap-2 text-base sm:text-xl font-heading font-semibold">
-          <ArrowLeftRight size={20} className="text-moveus-marigold-500" />
+          <ArrowLeftRight size={20} className="text-white" />
           Latest User Transactions
         </h3>
         <Button
           variant="link"
           asChild
-          className="text-moveus-marigold-500 hover:text-moveus-marigold-400 gap-1.5"
+          className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
         >
           <Link href="/transactions?type=user">
             View All
@@ -209,7 +203,7 @@ export function LatestUserTransactions({
               </StyledTableHead>
               <StyledTableHead>Sender</StyledTableHead>
               <StyledTableHead className="hidden md:table-cell">
-                Receiver
+                To
               </StyledTableHead>
               <StyledTableHead className="hidden sm:table-cell">
                 Function

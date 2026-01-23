@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu } from "lucide-react";
+import { Menu, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Sheet,
@@ -15,14 +15,9 @@ import {
 import { WalletConnector } from "@/components/wallet";
 import NetworkSelect from "./NetworkSelect";
 import ThemeToggle from "./ThemeToggle";
+import { NAV_ITEMS, isNavDropdown } from "./types";
 
-const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/transactions", label: "Transactions" },
-  { href: "/analytics", label: "Analytics" },
-  { href: "/validators", label: "Validators" },
-  { href: "/blocks", label: "Blocks" },
-];
+const homeLink = { href: "/", label: "Home" };
 
 export default function NavMobile() {
   const [open, setOpen] = useState(false);
@@ -48,14 +43,65 @@ export default function NavMobile() {
           <div className="flex flex-col gap-6 mt-6">
             {/* Navigation Links */}
             <nav className="flex flex-col gap-2">
-              {navLinks.map((link) => {
+              {/* Home link */}
+              <Link
+                href={homeLink.href}
+                onClick={handleLinkClick}
+                className={`px-4 py-3 rounded-lg transition-colors ${
+                  pathname === homeLink.href
+                    ? "bg-primary/10 text-primary font-medium"
+                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {homeLink.label}
+              </Link>
+
+              {/* Dynamic nav items */}
+              {NAV_ITEMS.map((item) => {
+                if (isNavDropdown(item)) {
+                  const isGroupActive = item.items.some(
+                    (subItem) =>
+                      pathname === subItem.href ||
+                      pathname.startsWith(`${subItem.href}/`)
+                  );
+                  return (
+                    <div key={item.label} className="flex flex-col">
+                      <div
+                        className={`px-4 py-2 text-sm font-medium ${
+                          isGroupActive ? "text-primary" : "text-muted-foreground"
+                        }`}
+                      >
+                        {item.label}
+                      </div>
+                      {item.items.map((subItem) => {
+                        const isActive =
+                          pathname === subItem.href ||
+                          pathname.startsWith(`${subItem.href}/`);
+                        return (
+                          <Link
+                            key={subItem.href}
+                            href={subItem.href}
+                            onClick={handleLinkClick}
+                            className={`px-4 py-3 pl-8 rounded-lg transition-colors ${
+                              isActive
+                                ? "bg-primary/10 text-primary font-medium"
+                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                            }`}
+                          >
+                            {subItem.label}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  );
+                }
                 const isActive =
-                  pathname === link.href ||
-                  (link.href !== "/" && pathname.startsWith(link.href));
+                  pathname === item.href ||
+                  pathname.startsWith(`${item.href}/`);
                 return (
                   <Link
-                    key={link.href}
-                    href={link.href}
+                    key={item.href}
+                    href={item.href}
                     onClick={handleLinkClick}
                     className={`px-4 py-3 rounded-lg transition-colors ${
                       isActive
@@ -63,7 +109,7 @@ export default function NavMobile() {
                         : "text-muted-foreground hover:bg-muted hover:text-foreground"
                     }`}
                   >
-                    {link.label}
+                    {item.label}
                   </Link>
                 );
               })}

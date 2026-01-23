@@ -35,7 +35,18 @@ const DropdownMenuContent = React.forwardRef<
   React.ElementRef<typeof DSDropdownMenuContent>,
   React.ComponentPropsWithoutRef<typeof DSDropdownMenuContent>
 >(({ className, ...props }, ref) => (
-  <DSDropdownMenuContent ref={ref} className={cn(className)} {...props} />
+  <DSDropdownMenuContent
+    ref={ref}
+    className={cn(
+      "data-[state=open]:animate-in data-[state=closed]:animate-out",
+      "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+      "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
+      "data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2",
+      "data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2",
+      className
+    )}
+    {...props}
+  />
 ));
 DropdownMenuContent.displayName = "DropdownMenuContent";
 
@@ -43,7 +54,15 @@ const DropdownMenuItem = React.forwardRef<
   React.ElementRef<typeof DSDropdownMenuItem>,
   React.ComponentPropsWithoutRef<typeof DSDropdownMenuItem>
 >(({ className, ...props }, ref) => (
-  <DSDropdownMenuItem ref={ref} className={cn(className)} {...props} />
+  <DSDropdownMenuItem
+    ref={ref}
+    className={cn(
+      "hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
+      "transition-colors",
+      className
+    )}
+    {...props}
+  />
 ));
 DropdownMenuItem.displayName = "DropdownMenuItem";
 

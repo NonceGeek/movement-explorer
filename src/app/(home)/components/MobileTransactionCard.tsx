@@ -83,7 +83,7 @@ export function MobileTransactionCard({
         </span>
       </div>
 
-      {/* Sender & Receiver */}
+      {/* Sender & To */}
       <div className="space-y-1.5 sm:space-y-2 mb-2 sm:mb-3">
         <div className="flex items-center gap-1.5 sm:gap-2">
           <span className="text-[10px] sm:text-xs text-muted-foreground w-12 sm:w-16 shrink-0">

@@ -1,7 +1,6 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import { Card } from "@movementlabsxyz/movement-design-system";
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +9,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
-export interface StatCardProps {
+export interface StatItemProps {
   label: string;
   value: string | number;
   subLabel?: string;
@@ -22,18 +21,18 @@ function formatNumber(num: number | string): string {
   return Number(num).toLocaleString();
 }
 
-export function StatCard({
+/**
+ * StatItem - 无边框的统计项，用于放在 StatsGrid 容器内
+ */
+export function StatItem({
   label,
   value,
   subLabel,
   tooltip,
   isLoading,
-}: StatCardProps) {
+}: StatItemProps) {
   return (
-    <Card
-      variant="glow"
-      className="p-4 sm:p-5 h-[100px] sm:h-[120px] flex flex-col justify-between group hover:border-guild-green-300/30 transition-all duration-300"
-    >
+    <div className="p-4 sm:p-5 h-[100px] sm:h-[120px] flex flex-col justify-between">
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5">
         <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium tracking-wider">
@@ -74,6 +73,32 @@ export function StatCard({
           {subLabel || "\u00A0"}
         </div>
       </div>
-    </Card>
+    </div>
+  );
+}
+
+interface StatsRowProps {
+  children: React.ReactNode;
+}
+
+/**
+ * StatsRow - 横向排列的统计容器
+ * 设计为 1 行 N 列网格布局，用分隔线隔开
+ * 响应式：移动端 2 列，平板 3 列，桌面 5 列
+ */
+export function StatsRow({ children }: StatsRowProps) {
+  return (
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 [&>*:not(:last-child)]:border-r [&>*]:border-border/30 [&>*:nth-child(2)]:max-sm:border-r-0 [&>*:nth-child(3)]:max-lg:border-r-0 [&>*:nth-child(n+3)]:max-sm:border-t [&>*:nth-child(n+4)]:sm:max-lg:border-t">
+      {children}
+    </div>
+  );
+}
+
+// 保留旧的 StatCard 组件用于向后兼容（独立卡片场景）
+export function StatCard(props: StatItemProps) {
+  return (
+    <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+      <StatItem {...props} />
+    </div>
   );
 }

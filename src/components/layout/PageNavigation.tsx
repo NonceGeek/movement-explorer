@@ -12,11 +12,17 @@ import { cn } from "@/lib/utils";
 interface PageNavigationProps {
   className?: string;
   title?: string;
+  /** 是否显示返回按钮，默认 true */
+  showBackButton?: boolean;
+  /** 是否在桌面端隐藏，默认 false */
+  hideOnDesktop?: boolean;
 }
 
 export default function PageNavigation({
   className,
   title,
+  showBackButton = true,
+  hideOnDesktop = false,
 }: PageNavigationProps) {
   const router = useRouter();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -120,27 +126,29 @@ export default function PageNavigation({
       <div className="container mx-auto flex h-14 md:h-16 items-center px-4">
         {/* ===== Mobile Layout ===== */}
         <div className="flex md:hidden items-center w-full gap-2" ref={mobileSearchContainerRef}>
-          {/* Left: Back/Close button */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => isSearchExpanded ? handleCloseSearch() : router.back()}
-            className="shrink-0 text-muted-foreground hover:text-black transition-colors"
-          >
-            {isSearchExpanded ? (
-              <X className="h-5 w-5" />
-            ) : (
-              <ArrowLeft className="h-5 w-5" />
-            )}
-          </Button>
+          {/* Left: Back/Close button - 仅在 showBackButton 为 true 或搜索展开时显示 */}
+          {(showBackButton || isSearchExpanded) && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => isSearchExpanded ? handleCloseSearch() : router.back()}
+              className="shrink-0 text-muted-foreground hover:text-black transition-colors"
+            >
+              {isSearchExpanded ? (
+                <X className="h-5 w-5" />
+              ) : (
+                <ArrowLeft className="h-5 w-5" />
+              )}
+            </Button>
+          )}
 
           {/* Middle: Title (when collapsed) or Search Input (when expanded) */}
           <div className="flex-1 min-w-0 relative">
-            {/* Title - visible when search is collapsed */}
+            {/* Title - visible when search is collapsed and showBackButton is true */}
             <div
               className={cn(
                 "transition-all duration-300 ease-out",
-                isSearchExpanded
+                isSearchExpanded || !showBackButton
                   ? "opacity-0 scale-95 pointer-events-none absolute inset-0"
                   : "opacity-100 scale-100"
               )}
@@ -152,11 +160,11 @@ export default function PageNavigation({
               )}
             </div>
 
-            {/* Search Input - visible when search is expanded */}
+            {/* Search Input - visible when search is expanded or no back button (home mode) */}
             <div
               className={cn(
                 "transition-all duration-300 ease-out",
-                isSearchExpanded
+                isSearchExpanded || !showBackButton
                   ? "opacity-100 scale-100"
                   : "opacity-0 scale-95 pointer-events-none absolute inset-0"
               )}
@@ -226,28 +234,32 @@ export default function PageNavigation({
         </div>
 
         {/* ===== Desktop Layout ===== */}
-        <div className="hidden md:flex items-center gap-3 shrink-0">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => router.back()}
-            className="text-muted-foreground hover:text-black transition-colors"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          {title && (
-            <h1 className="text-xl font-semibold text-guild-green-400 shadow-[0_0_15px_rgba(88,197,137,0.2)]">
-              {title}
-            </h1>
-          )}
-        </div>
-        <div className="hidden md:block flex-1" />
-        <div className="hidden md:block w-full max-w-xl">
-          <SearchBar
-            variant="navigation"
-            placeholder="Search address, txn, block..."
-          />
-        </div>
+        {!hideOnDesktop && (
+          <>
+            <div className="hidden md:flex items-center gap-3 shrink-0">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => router.back()}
+                className="text-muted-foreground hover:text-black transition-colors"
+              >
+                <ArrowLeft className="h-5 w-5" />
+              </Button>
+              {title && (
+                <h1 className="text-xl font-semibold text-guild-green-400 shadow-[0_0_15px_rgba(88,197,137,0.2)]">
+                  {title}
+                </h1>
+              )}
+            </div>
+            <div className="hidden md:block flex-1" />
+            <div className="hidden md:block w-full max-w-xl">
+              <SearchBar
+                variant="navigation"
+                placeholder="Search address, txn, block..."
+              />
+            </div>
+          </>
+        )}
       </div>
     </nav>
   );

@@ -1,7 +1,5 @@
 "use client";
 
-import { DottedBackground } from "@movementlabsxyz/movement-design-system";
-
 interface LayoutBackgroundProps {
   children: React.ReactNode;
 }

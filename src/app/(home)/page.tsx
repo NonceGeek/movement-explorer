@@ -80,34 +80,56 @@ export default function HomePage() {
       {/* Mobile Search Navigation - 仅移动端显示 */}
       <PageNavigation showBackButton={false} hideOnDesktop />
 
-      {/* Hero Section - 仅桌面端显示，移动端使用导航栏搜索 */}
-      <section className="relative hidden md:block md:pt-10">
-        {/* Subtle Background Gradient */}
-        <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/10 to-transparent pointer-events-none" />
+      {/* Hero + Stats Section with Dotted Background */}
+      <div className="relative overflow-hidden">
+        {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: `
+              radial-gradient(circle, rgba(129, 255, 186, 0.3) 1.2px, transparent 1.2px),
+              radial-gradient(circle, rgba(0, 45, 214, 0.18) 1px, transparent 1px)
+            `,
+            backgroundSize: "24px 24px, 24px 24px",
+            backgroundPosition: "0 0, 12px 12px",
+            maskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%), 
+                        linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)`,
+            maskComposite: "intersect",
+            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%), 
+                              linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)`,
+            WebkitMaskComposite: "source-in",
+          }}
+        />
 
-        <div className="container mx-auto px-4 py-10 relative">
-          <div className="max-w-230 space-y-4">
-            {/* Hero Title */}
-            <h1 className="text-2xl md:text-3xl font-semibold text-white">
-              Explore the Movement Network
-            </h1>
+        {/* Centered Glow above search bar */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-guild-green-500/20 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-byzantine-blue-500/15 blur-[100px] rounded-full pointer-events-none" />
 
-            {/* Search Bar */}
-            <SearchBar
-              variant="hero-subtle"
-              placeholder="Search by Address / Txn Hash / Block / Token"
-            />
+        {/* Hero Section - 仅桌面端显示，移动端使用导航栏搜索 */}
+        <section className="relative hidden md:block md:pt-10 z-10">
+          <div className="container mx-auto px-4 py-10 relative">
+            <div className="max-w-230 space-y-4">
+              {/* Hero Title */}
+              <h1 className="text-2xl md:text-3xl font-semibold text-white">
+                Explore the Movement Network
+              </h1>
 
-            {/* Subtitle */}
-            {/* <p className="text-sm text-muted-foreground">
-              The next-generation high-performance blockchain explorer powered by Move
-            </p> */}
+              {/* Search Bar */}
+              <SearchBar
+                variant="hero-subtle"
+                placeholder="Search by Address / Txn Hash / Block / Token"
+              />
+
+              {/* Subtitle */}
+              {/* <p className="text-sm text-muted-foreground">
+                The next-generation high-performance blockchain explorer powered by Move
+              </p> */}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Network Stats */}
-      <div className="container mx-auto px-4 py-6 sm:py-8 relative z-0 space-y-3">
+        {/* Network Stats */}
+        <div className="container mx-auto px-4 py-6 sm:py-8 relative z-10 space-y-3">
         {/* Row 1: 5 Stat Items */}
         <StatsRow>
           <StatItem
@@ -161,6 +183,7 @@ export default function HomePage() {
             chartData={dailyTxnsChartData}
             chartLabels={dailyTxnsChartLabels}
           />
+        </div>
         </div>
       </div>
 

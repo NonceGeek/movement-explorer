@@ -133,7 +133,7 @@ export function ChartStatCard({
         backgroundColor: LINE_COLOR,
       },
       line: {
-        borderWidth: 2,
+        borderWidth: 1,
       },
     },
   };

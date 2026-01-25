@@ -81,7 +81,7 @@ export default function HomePage() {
       <PageNavigation showBackButton={false} hideOnDesktop />
 
       {/* Hero Section - 仅桌面端显示，移动端使用导航栏搜索 */}
-      <section className="relative hidden md:block">
+      <section className="relative hidden md:block md:pt-10">
         {/* Subtle Background Gradient */}
         <div className="absolute inset-0 bg-linear-to-b from-moveus-marigold-950/10 to-transparent pointer-events-none" />
 
@@ -94,14 +94,14 @@ export default function HomePage() {
 
             {/* Search Bar */}
             <SearchBar
-              variant="hero"
+              variant="hero-subtle"
               placeholder="Search by Address / Txn Hash / Block / Token"
             />
 
             {/* Subtitle */}
-            <p className="text-sm text-muted-foreground">
+            {/* <p className="text-sm text-muted-foreground">
               The next-generation high-performance blockchain explorer powered by Move
-            </p>
+            </p> */}
           </div>
         </div>
       </section>

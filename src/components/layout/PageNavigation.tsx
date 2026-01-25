@@ -116,8 +116,8 @@ export default function PageNavigation({
         "sticky z-40 w-full transition-all duration-300",
         "bg-background/80",
         "backdrop-blur-xl",
-        // Desktop: always top-16
-        "md:top-16",
+        // Desktop: always top-16, or hidden if hideOnDesktop
+        hideOnDesktop ? "md:hidden" : "md:top-16",
         // Mobile: top-0 when header hidden, top-16 when visible
         isHeaderHidden ? "top-0" : "top-16",
         className

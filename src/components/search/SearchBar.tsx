@@ -14,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 export interface SearchBarProps {
-  variant?: "default" | "hero" | "navigation";
+  variant?: "default" | "hero" | "hero-subtle" | "navigation";
   placeholder?: string;
 }
 
@@ -204,6 +204,107 @@ export function SearchBar({
                         className={`text-sm font-medium ${
                           index === selectedIndex
                             ? "text-guild-green-300"
+                            : "text-foreground"
+                        }`}
+                      >
+                        {result.label}
+                      </span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Hero Subtle variant - 弱化版的首页搜索栏
+  if (variant === "hero-subtle") {
+    return (
+      <div ref={containerRef} className="relative w-full max-w-2xl">
+        <form
+          onSubmit={handleSubmit}
+          className="flex items-center bg-background/60 backdrop-blur-sm border border-border/60 rounded-xl overflow-hidden transition-all duration-300 ease-out focus-within:border-guild-green-500 focus-within:bg-background/80"
+        >
+          <input
+            ref={inputRef}
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={handleKeyDown}
+            onFocus={() =>
+              inputValue.trim() && results.length > 0 && setIsOpen(true)
+            }
+            placeholder={placeholder}
+            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground/60 outline-none"
+          />
+          <Button
+            type="submit"
+            variant="secondary"
+            disabled={isLoading}
+            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-lg! bg-guild-green-500! hover:bg-guild-green-600! text-white! border-0!"
+          >
+            {isLoading ? (
+              <Loader2 size={24} className="animate-spin !w-6 !h-6 text-black" />
+            ) : (
+              <Search size={24} className="!w-6 !h-6 text-black" />
+            )}
+          </Button>
+        </form>
+
+        {/* Results dropdown */}
+        {isOpen && results.length > 0 && (
+          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+            {/* Check if only result is "No Results" */}
+            {results.length === 1 && results[0].type === "none" ? (
+              <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                <div className="w-14 h-14 rounded-full bg-muted/50 flex items-center justify-center mb-4">
+                  <SearchX size={28} className="text-muted-foreground/60" />
+                </div>
+                <p className="text-base font-medium text-foreground">
+                  No results found
+                </p>
+                <p className="text-sm text-muted-foreground mt-1.5">
+                  Try searching for an address, transaction, or block
+                </p>
+              </div>
+            ) : (
+              <ul className="max-h-80 overflow-y-auto divide-y divide-border/30">
+                {results.map((result, index) => (
+                  <li
+                    key={`${result.to}-${index}`}
+                    onClick={() => handleResultClick(result)}
+                    className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                      index === selectedIndex
+                        ? "bg-guild-green-500/15 border-l-4 border-l-guild-green-500/70"
+                        : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-guild-green-500/30"
+                    } ${
+                      !result.to
+                        ? "cursor-default text-muted-foreground"
+                        : "hover:pl-5"
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {result.image ? (
+                        <img
+                          src={result.image}
+                          alt=""
+                          className="w-6 h-6 rounded-full ring-1 ring-border/50"
+                        />
+                      ) : (
+                        <div className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center">
+                          <CornerDownLeft
+                            size={12}
+                            className="text-muted-foreground"
+                          />
+                        </div>
+                      )}
+                      <span
+                        className={`text-sm font-medium ${
+                          index === selectedIndex
+                            ? "text-guild-green-400"
                             : "text-foreground"
                         }`}
                       >

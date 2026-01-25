@@ -301,22 +301,16 @@ export default function TransactionDetailPage() {
     <>
       <PageNavigation title="Transaction Details" />
       <div className="container mx-auto px-4 py-8">
-        {/* Title */}
-        <div className="flex items-center gap-4 mb-2">
-          <h1 className="text-2xl font-bold font-heading">
-            Transaction Details
-          </h1>
-          <Badge variant={isSuccess ? "success" : "error"}>
-            {isSuccess ? "✓ Success" : "✗ Failed"}
-          </Badge>
-        </div>
-        {/* Transaction Hash */}
-        <div className="mb-6">
+        {/* Transaction Hash with Status */}
+        <div className="flex items-center gap-4 mb-6">
           <CopyableAddress
             address={tx.hash}
             truncateLength={{ start: 16, end: 16 }}
             className="text-muted-foreground"
           />
+          <Badge variant={isSuccess ? "success" : "error"}>
+            {isSuccess ? "✓ Success" : "✗ Failed"}
+          </Badge>
         </div>
 
         {/* Tabs */}

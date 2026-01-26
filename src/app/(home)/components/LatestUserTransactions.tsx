@@ -60,10 +60,10 @@ const updateContainerVariants: Variants = {
 };
 
 // Animation for new items entering during updates
-// Uses custom prop to calculate stagger delay based on position
+// Uses custom prop: { index, isNew } for stagger and highlight
 const updateItemVariants: Variants = {
   initial: { opacity: 0, y: -24, scale: 0.96 },
-  animate: (custom: number) => ({
+  animate: (custom: { index: number; isNew: boolean }) => ({
     opacity: 1,
     y: 0,
     scale: 1,
@@ -72,7 +72,7 @@ const updateItemVariants: Variants = {
       stiffness: 200,   // Slower spring
       damping: 22,      // Smooth landing
       mass: 0.8,
-      delay: custom * 0.06, // Slower stagger
+      delay: custom.index * 0.06, // Slower stagger
     },
   }),
   exit: {
@@ -80,6 +80,22 @@ const updateItemVariants: Variants = {
     x: -30,
     transition: {
       duration: 0.3,    // Slower exit
+      ease: "easeOut",
+    },
+  },
+};
+
+// Highlight animation for new items
+const highlightVariants: Variants = {
+  initial: {
+    backgroundColor: "rgba(0, 255, 127, 0.15)", // guild-green with alpha
+    boxShadow: "inset 0 0 0 1px rgba(0, 255, 127, 0.3)",
+  },
+  animate: {
+    backgroundColor: "rgba(0, 255, 127, 0)",
+    boxShadow: "inset 0 0 0 1px rgba(0, 255, 127, 0)",
+    transition: {
+      duration: 2,
       ease: "easeOut",
     },
   },
@@ -123,8 +139,11 @@ export function LatestUserTransactions({
   >([]);
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  // Track if initial animation has completed
-  const hasAnimatedInitial = useRef(false);
+  // Track if initial animation has completed (use state to trigger re-render)
+  const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
+
+  // Track newly added versions for highlight effect
+  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(new Set());
 
   // Timestamp display mode: "age" (default) or "dateTime"
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
@@ -143,9 +162,21 @@ export function LatestUserTransactions({
       const currentVersions = displayedTransactions
         .map((t) => t.version)
         .join(",");
-      const newVersions = newData.map((t) => t.version).join(",");
+      const newVersionsStr = newData.map((t) => t.version).join(",");
 
-      if (currentVersions !== newVersions) {
+      if (currentVersions !== newVersionsStr) {
+        // Detect newly added versions (only after initial animation completed)
+        if (hasAnimatedInitial) {
+          const currentVersionSet = new Set(displayedTransactions.map((t) => t.version));
+          const newlyAdded = newData
+            .filter((t) => !currentVersionSet.has(t.version))
+            .map((t) => t.version);
+          
+          if (newlyAdded.length > 0) {
+            setHighlightedVersions(new Set(newlyAdded));
+          }
+        }
+
         setDisplayedTransactions(newData);
         // Mark initial load as complete after first data arrives
         if (isInitialLoad) {
@@ -153,17 +184,27 @@ export function LatestUserTransactions({
         }
       }
     }
-  }, [transactionQueries, userTransactionVersions, displayedTransactions, isInitialLoad]);
+  }, [transactionQueries, userTransactionVersions, displayedTransactions, isInitialLoad, hasAnimatedInitial]);
+
+  // Clear highlight after animation completes
+  useEffect(() => {
+    if (highlightedVersions.size > 0) {
+      const timer = setTimeout(() => {
+        setHighlightedVersions(new Set());
+      }, 2000); // Clear highlight after 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedVersions]);
 
   // Mark initial animation as complete after a delay
   useEffect(() => {
-    if (!isInitialLoad && displayedTransactions.length > 0 && !hasAnimatedInitial.current) {
+    if (!isInitialLoad && displayedTransactions.length > 0 && !hasAnimatedInitial) {
       const timer = setTimeout(() => {
-        hasAnimatedInitial.current = true;
-      }, 600); // Wait for stagger animation to complete
+        setHasAnimatedInitial(true);
+      }, 800); // Wait for stagger animation to complete
       return () => clearTimeout(timer);
     }
-  }, [isInitialLoad, displayedTransactions.length]);
+  }, [isInitialLoad, displayedTransactions.length, hasAnimatedInitial]);
 
   // Check if mobile
   const isMobile = useIsMobile();
@@ -233,62 +274,53 @@ export function LatestUserTransactions({
           <MobileHeader />
           {isLoading ? (
             <MobileLoadingSkeleton />
-          ) : !hasAnimatedInitial.current ? (
-            // Initial load animation with stagger
-            <motion.div
-              className="space-y-3"
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {displayedTransactions.map(({ version, data }) => (
-                <motion.div key={version} variants={itemVariants}>
-                  <Link
-                    href={`/txn/${version}`}
-                    className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
-                  >
-                    <MobileTransactionCardContent
-                      version={version}
-                      transactionData={data}
-                      timestampMode={timestampMode}
-                    />
-                  </Link>
-                </motion.div>
-              ))}
-            </motion.div>
           ) : (
-            // Update animation with layout and stagger
+            // Unified animation container - use different configs based on state
             <motion.div
               className="space-y-3"
-              variants={updateContainerVariants}
-              animate="animate"
+              variants={!hasAnimatedInitial ? containerVariants : updateContainerVariants}
+              initial={!hasAnimatedInitial ? "hidden" : false}
+              animate={!hasAnimatedInitial ? "show" : "animate"}
             >
               <AnimatePresence mode="popLayout">
-                {displayedTransactions.map(({ version, data }, index) => (
-                  <motion.div
-                    key={version}
-                    layout
-                    custom={index}
-                    variants={updateItemVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{
-                      layout: { type: "spring", stiffness: 200, damping: 25 },
-                    }}
-                  >
-                    <Link
-                      href={`/txn/${version}`}
-                      className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                {displayedTransactions.map(({ version, data }, index) => {
+                  const isNew = highlightedVersions.has(version);
+                  return (
+                    <motion.div
+                      key={version}
+                      layout={hasAnimatedInitial}
+                      custom={{ index, isNew }}
+                      variants={!hasAnimatedInitial ? itemVariants : updateItemVariants}
+                      initial={!hasAnimatedInitial ? "hidden" : (isNew ? "initial" : false)}
+                      animate={!hasAnimatedInitial ? "show" : "animate"}
+                      exit="exit"
+                      transition={{
+                        layout: { type: "spring", stiffness: 200, damping: 25 },
+                      }}
+                      className="relative"
                     >
-                      <MobileTransactionCardContent
-                        version={version}
-                        transactionData={data}
-                        timestampMode={timestampMode}
-                      />
-                    </Link>
-                  </motion.div>
-                ))}
+                      {/* Highlight overlay for new items */}
+                      {isNew && (
+                        <motion.div
+                          className="absolute inset-0 rounded-lg pointer-events-none"
+                          variants={highlightVariants}
+                          initial="initial"
+                          animate="animate"
+                        />
+                      )}
+                      <Link
+                        href={`/txn/${version}`}
+                        className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                      >
+                        <MobileTransactionCardContent
+                          version={version}
+                          transactionData={data}
+                          timestampMode={timestampMode}
+                        />
+                      </Link>
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </motion.div>
           )}
@@ -348,55 +380,59 @@ export function LatestUserTransactions({
                 </TableRow>
               ))}
             </TableBody>
-          ) : !hasAnimatedInitial.current ? (
-            // Initial load animation with stagger
-            <motion.tbody
-              variants={containerVariants}
-              initial="hidden"
-              animate="show"
-            >
-              {displayedTransactions.map(({ version, data }) => (
-                <motion.tr
-                  key={version}
-                  variants={itemVariants}
-                  className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
-                >
-                  <UserTransactionRowCells
-                    version={version}
-                    transactionData={data}
-                    timestampMode={timestampMode}
-                  />
-                </motion.tr>
-              ))}
-            </motion.tbody>
           ) : (
-            // Update animation with layout and stagger
+            // Unified animation container - use different configs based on state
             <motion.tbody
-              variants={updateContainerVariants}
-              animate="animate"
+              variants={!hasAnimatedInitial ? containerVariants : updateContainerVariants}
+              initial={!hasAnimatedInitial ? "hidden" : false}
+              animate={!hasAnimatedInitial ? "show" : "animate"}
             >
               <AnimatePresence mode="popLayout">
-                {displayedTransactions.map(({ version, data }, index) => (
-                  <motion.tr
-                    key={version}
-                    layout
-                    custom={index}
-                    variants={updateItemVariants}
-                    initial="initial"
-                    animate="animate"
-                    exit="exit"
-                    transition={{
-                      layout: { type: "spring", stiffness: 200, damping: 25 },
-                    }}
-                    className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
-                  >
-                    <UserTransactionRowCells
-                      version={version}
-                      transactionData={data}
-                      timestampMode={timestampMode}
-                    />
-                  </motion.tr>
-                ))}
+                {displayedTransactions.map(({ version, data }, index) => {
+                  const isNew = highlightedVersions.has(version);
+                  return (
+                    <motion.tr
+                      key={version}
+                      layout={hasAnimatedInitial}
+                      custom={{ index, isNew }}
+                      variants={!hasAnimatedInitial ? itemVariants : undefined}
+                      initial={
+                        !hasAnimatedInitial 
+                          ? "hidden" 
+                          : isNew 
+                            ? { opacity: 0, y: -24, scale: 0.96, backgroundColor: "rgba(0, 255, 127, 0.12)" }
+                            : false
+                      }
+                      animate={
+                        !hasAnimatedInitial 
+                          ? "show" 
+                          : {
+                              opacity: 1,
+                              y: 0,
+                              scale: 1,
+                              backgroundColor: "rgba(0, 0, 0, 0)", // Always animate to transparent
+                            }
+                      }
+                      exit="exit"
+                      transition={{
+                        layout: { type: "spring", stiffness: 200, damping: 25 },
+                        type: "spring",
+                        stiffness: 200,
+                        damping: 22,
+                        mass: 0.8,
+                        delay: isNew ? index * 0.06 : 0,
+                        backgroundColor: { duration: 2, ease: "easeOut" },
+                      }}
+                      className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
+                    >
+                      <UserTransactionRowCells
+                        version={version}
+                        transactionData={data}
+                        timestampMode={timestampMode}
+                      />
+                    </motion.tr>
+                  );
+                })}
               </AnimatePresence>
             </motion.tbody>
           )}

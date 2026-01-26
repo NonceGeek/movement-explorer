@@ -4,7 +4,7 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useGetTokenData } from "@/hooks/tokens/useGetTokenData";
 import { FileText, BarChart2, Activity } from "lucide-react";
@@ -102,8 +102,8 @@ function TokenContent() {
                 <CardContent className="pt-6 space-y-4">
                   {Array.from({ length: 8 }).map((_, i) => (
                     <div key={i} className="flex justify-between">
-                      <Skeleton className="h-5 w-24" />
-                      <Skeleton className="h-5 w-48" />
+                      <EnhancedSkeleton className="h-5 w-24" />
+                      <EnhancedSkeleton className="h-5 w-48" />
                     </div>
                   ))}
                 </CardContent>
@@ -142,16 +142,16 @@ export default function TokenPage() {
       fallback={
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-start gap-6 mb-6">
-            <Skeleton className="w-24 h-24 rounded-lg" />
+            <EnhancedSkeleton className="w-24 h-24 rounded-lg" />
             <div>
-              <Skeleton className="h-9 w-48 mb-2" />
-              <Skeleton className="h-5 w-64" />
+              <EnhancedSkeleton className="h-9 w-48 mb-2" />
+              <EnhancedSkeleton className="h-5 w-64" />
             </div>
           </div>
           <Card>
             <CardContent className="pt-6 space-y-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <EnhancedSkeleton key={i} className="h-12 w-full" />
               ))}
             </CardContent>
           </Card>

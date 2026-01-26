@@ -8,7 +8,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 
 interface BalanceCardProps {
   address: string;
@@ -40,8 +40,8 @@ export default function BalanceCard({ address }: BalanceCardProps) {
     return (
       <Card className="h-full">
         <CardContent className="pt-6 flex flex-col gap-2">
-          <Skeleton className="h-8 w-32" />
-          <Skeleton className="h-4 w-24" />
+          <EnhancedSkeleton className="h-8 w-32" />
+          <EnhancedSkeleton className="h-4 w-24" />
         </CardContent>
       </Card>
     );

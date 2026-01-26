@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -196,7 +196,7 @@ export function ChartStatCard({
       {/* Value */}
       <div className="mb-3">
         {isLoading ? (
-          <Skeleton className="h-8 w-24" />
+          <EnhancedSkeleton className="h-8 w-24" />
         ) : (
           <div className="text-[24px] sm:text-[28px] font-semibold font-mono text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}
@@ -209,7 +209,7 @@ export function ChartStatCard({
         {chartData.length > 0 ? (
           <Line options={options} data={data} />
         ) : (
-          <Skeleton className="h-full w-full" />
+          <EnhancedSkeleton className="h-full w-full" />
         )}
       </div>
     </div>

@@ -6,7 +6,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StyledTableRow, TableCell, TableRow } from "@/components/ui/table";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
@@ -44,7 +44,7 @@ export function UserTransactionRow({
     return (
       <TableRow>
         <TableCell colSpan={8}>
-          <Skeleton className="h-8 w-full" />
+          <EnhancedSkeleton className="h-8 w-full" />
         </TableCell>
       </TableRow>
     );

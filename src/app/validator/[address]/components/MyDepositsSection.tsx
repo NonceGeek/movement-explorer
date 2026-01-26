@@ -5,7 +5,7 @@ import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StakeOperationDialog } from "./StakeOperationDialog";
 import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
 import { useGetDelegatorStakeInfo } from "@/hooks/staking/useGetDelegatorStakeInfo";
@@ -75,8 +75,8 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
         <CardContent>
           {isLoading ? (
             <div className="space-y-4">
-              <Skeleton className="h-12 w-full" />
-              <Skeleton className="h-10 w-full" />
+              <EnhancedSkeleton className="h-12 w-full" />
+              <EnhancedSkeleton className="h-10 w-full" />
             </div>
           ) : (
             <div className="space-y-6">

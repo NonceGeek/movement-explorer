@@ -3,7 +3,7 @@
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   useGetTokenActivities,
@@ -70,7 +70,7 @@ export function ActivitiesTab({ tokenId }: { tokenId: string }) {
       {activitiesLoading ? (
         <div className="space-y-3">
           {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+            <EnhancedSkeleton key={i} className="h-12 w-full" />
           ))}
         </div>
       ) : (

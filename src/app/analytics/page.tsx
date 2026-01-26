@@ -3,7 +3,7 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { useState } from "react";
 import { useGetAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import NetworkInfo from "./components/NetworkInfo";
 import ChartRangeDaysSelect, {
   ChartRangeDays,
@@ -40,7 +40,7 @@ export default function AnalyticsPage() {
         {!data ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 9 }).map((_, i) => (
-              <Skeleton key={i} className="h-[180px] w-full" />
+              <EnhancedSkeleton key={i} className="h-[180px] w-full" />
             ))}
           </div>
         ) : (

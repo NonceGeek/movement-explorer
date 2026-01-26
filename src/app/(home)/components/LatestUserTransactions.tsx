@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Button } from "@movementlabsxyz/movement-design-system";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
   StyledTable,
   StyledTableHeader,
@@ -212,10 +212,10 @@ export function LatestUserTransactions({
   const isLoading = isInitialLoad && displayedTransactions.length === 0;
 
   // Mobile loading skeleton
-  const MobileLoadingSkeleton = () => (
+  const MobileLoadingEnhancedSkeleton = () => (
     <div className="space-y-3">
       {Array.from({ length: limit }).map((_, i) => (
-        <Skeleton key={i} className="h-32 w-full rounded-lg" />
+        <EnhancedSkeleton key={i} className="h-32 w-full rounded-lg" />
       ))}
     </div>
   );
@@ -272,7 +272,7 @@ export function LatestUserTransactions({
         <div>
           <MobileHeader />
           {isLoading ? (
-            <MobileLoadingSkeleton />
+            <MobileLoadingEnhancedSkeleton />
           ) : (
             // Unified animation container - use different configs based on state
             <motion.div
@@ -374,7 +374,7 @@ export function LatestUserTransactions({
               {Array.from({ length: limit }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell colSpan={7}>
-                    <Skeleton className="h-8 w-full" />
+                    <EnhancedSkeleton className="h-8 w-full" />
                   </TableCell>
                 </TableRow>
               ))}

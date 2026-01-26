@@ -12,7 +12,7 @@ import {
   StyledTableHeader as TableHeader,
   StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { useGetCoinActivities } from "@/hooks/coins/useGetCoinActivities";
 import { formatTimestamp } from "@/utils/transaction";
@@ -44,7 +44,7 @@ export default function TransactionsTab({ address }: TransactionsTabProps) {
         <CardContent>
           <div className="space-y-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <EnhancedSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         </CardContent>

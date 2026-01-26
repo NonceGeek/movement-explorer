@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { useGetValidators } from "@/hooks/validators/useGetValidators";
@@ -172,7 +172,7 @@ function ValidatorContent() {
             <div className="flex items-center gap-3">
               <h1 className="text-3xl font-bold">Validator</h1>
               {isLoading ? (
-                <Skeleton className="h-6 w-20" />
+                <EnhancedSkeleton className="h-6 w-20" />
               ) : (
                 <Badge variant={getStatusVariant(displayStatus)}>
                   {displayStatus}
@@ -193,8 +193,8 @@ function ValidatorContent() {
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardContent className="pt-6">
-                  <Skeleton className="h-8 w-24 mb-2" />
-                  <Skeleton className="h-6 w-32" />
+                  <EnhancedSkeleton className="h-8 w-24 mb-2" />
+                  <EnhancedSkeleton className="h-6 w-32" />
                 </CardContent>
               </Card>
             ))}
@@ -319,7 +319,7 @@ function ValidatorContent() {
                     </div>
                     <span>
                       {isLoadingDelegators ? (
-                        <Skeleton className="h-4 w-8" />
+                        <EnhancedSkeleton className="h-4 w-8" />
                       ) : (
                         delegatorBalance
                       )}
@@ -560,18 +560,18 @@ export default function ValidatorDetailPage() {
       fallback={
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Skeleton className="w-12 h-12 rounded-full" />
+            <EnhancedSkeleton className="w-12 h-12 rounded-full" />
             <div>
-              <Skeleton className="h-9 w-48 mb-2" />
-              <Skeleton className="h-5 w-64" />
+              <EnhancedSkeleton className="h-9 w-48 mb-2" />
+              <EnhancedSkeleton className="h-5 w-64" />
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {Array.from({ length: 4 }).map((_, i) => (
               <Card key={i}>
                 <CardContent className="pt-6">
-                  <Skeleton className="h-8 w-24 mb-2" />
-                  <Skeleton className="h-6 w-32" />
+                  <EnhancedSkeleton className="h-8 w-24 mb-2" />
+                  <EnhancedSkeleton className="h-6 w-32" />
                 </CardContent>
               </Card>
             ))}

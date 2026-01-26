@@ -1,4 +1,4 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Image as ImageIcon } from "lucide-react";
 import { isValidIpfsUrl, toIpfsUrl } from "@/store/utils";
 
@@ -27,7 +27,7 @@ export function TokenHeader({
       {/* Token Image */}
       <div className="w-24 h-24 rounded-lg bg-muted flex items-center justify-center overflow-hidden shrink-0">
         {isLoading ? (
-          <Skeleton className="w-full h-full" />
+          <EnhancedSkeleton className="w-full h-full" />
         ) : tokenUri ? (
           <img
             src={parsedUrl}
@@ -52,7 +52,7 @@ export function TokenHeader({
       <div className="flex-1">
         <h1 className="text-3xl font-bold">
           {isLoading ? (
-            <Skeleton className="h-9 w-48" />
+            <EnhancedSkeleton className="h-9 w-48" />
           ) : (
             tokenName || "Unknown Token"
           )}

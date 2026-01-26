@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGetTokenOwners } from "@/hooks/tokens/useGetTokenData";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 
@@ -11,7 +11,7 @@ export function OwnersRow({ tokenId }: { tokenId: string }) {
     return (
       <div className="flex justify-between items-start py-3 border-b border-border/50">
         <span className="text-muted-foreground shrink-0">Owner(s):</span>
-        <Skeleton className="h-7 w-32" />
+        <EnhancedSkeleton className="h-7 w-32" />
       </div>
     );
   }

@@ -45,3 +45,9 @@
 .animate-background-move {
   animation: background-move 20s linear infinite;
 }
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}

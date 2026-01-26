@@ -9,7 +9,7 @@ import { useState, useMemo, useEffect } from "react";
 import { Types } from "aptos";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 import {
   Search,
@@ -239,8 +239,8 @@ export default function TransactionDetailPage() {
         <PageNavigation title="Transaction Details" />
         <div className="container mx-auto px-4 py-8">
           <div className="space-y-4">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-96 w-full" />
+            <EnhancedSkeleton className="h-10 w-64" />
+            <EnhancedSkeleton className="h-96 w-full" />
           </div>
         </div>
       </>

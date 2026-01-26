@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { SupplyType } from "@/hooks/coins/useGetCoinSupplyLimit";
 import { CoinDescription } from "@/hooks/coins/types";
@@ -109,8 +109,8 @@ export default function InfoTab({
         <CardContent className="pt-6 space-y-4">
           {Array.from({ length: 6 }).map((_, i) => (
             <div key={i} className="flex justify-between">
-              <Skeleton className="h-5 w-24" />
-              <Skeleton className="h-5 w-48" />
+              <EnhancedSkeleton className="h-5 w-24" />
+              <EnhancedSkeleton className="h-5 w-48" />
             </div>
           ))}
         </CardContent>

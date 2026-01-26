@@ -11,7 +11,7 @@ import {
   StyledTableHeader as TableHeader,
   StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { useGetCoinHolders } from "@/hooks/coins/useGetCoinHolders";
 import { formatMoveAmount } from "@/utils/transaction";
@@ -46,7 +46,7 @@ export default function HoldersTab({ struct, coinData }: HoldersTabProps) {
         <CardContent>
           <div className="space-y-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <EnhancedSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         </CardContent>

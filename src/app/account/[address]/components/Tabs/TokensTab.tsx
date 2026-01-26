@@ -26,7 +26,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 
 const LIMIT = 20;
 
@@ -112,7 +112,7 @@ export default function TokensTab({ address }: TokensTabProps) {
         {tokensLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <EnhancedSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : (

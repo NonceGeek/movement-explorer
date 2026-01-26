@@ -1,7 +1,7 @@
 "use client";
 
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
@@ -52,7 +52,7 @@ export function UserTransactionRowCells({
   if (isLoading) {
     return (
       <TableCell colSpan={7}>
-        <Skeleton className="h-8 w-full" />
+        <EnhancedSkeleton className="h-8 w-full" />
       </TableCell>
     );
   }
@@ -200,7 +200,7 @@ export function UserTransactionRow({
     return (
       <TableRow>
         <TableCell colSpan={7}>
-          <Skeleton className="h-8 w-full" />
+          <EnhancedSkeleton className="h-8 w-full" />
         </TableCell>
       </TableRow>
     );

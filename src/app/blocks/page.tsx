@@ -16,7 +16,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 
 const BLOCKS_COUNT = 30;
 
@@ -52,7 +52,7 @@ function BlocksContent() {
         {isLoading ? (
           <div className="space-y-3">
             {Array.from({ length: 10 }).map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <EnhancedSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : (
@@ -137,7 +137,7 @@ export default function BlocksPage() {
             <CardContent>
               <div className="space-y-3">
                 {Array.from({ length: 10 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
+                  <EnhancedSkeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
             </CardContent>

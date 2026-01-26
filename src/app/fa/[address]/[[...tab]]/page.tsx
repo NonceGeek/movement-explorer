@@ -4,7 +4,7 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { useParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
@@ -152,7 +152,7 @@ function FAContent() {
             <div className="flex items-center gap-3 flex-wrap mb-2">
               <h1 className="text-3xl font-bold">
                 {isLoading ? (
-                  <Skeleton className="h-9 w-48" />
+                  <EnhancedSkeleton className="h-9 w-48" />
                 ) : (
                   metadata?.name || "Unknown Fungible Asset"
                 )}
@@ -267,16 +267,16 @@ export default function FAPage() {
       fallback={
         <div className="container mx-auto px-4 py-8">
           <div className="flex items-center gap-4 mb-6">
-            <Skeleton className="w-12 h-12 rounded-full" />
+            <EnhancedSkeleton className="w-12 h-12 rounded-full" />
             <div>
-              <Skeleton className="h-9 w-48 mb-2" />
-              <Skeleton className="h-5 w-64" />
+              <EnhancedSkeleton className="h-9 w-48 mb-2" />
+              <EnhancedSkeleton className="h-5 w-64" />
             </div>
           </div>
           <Card>
             <CardContent className="pt-6 space-y-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
+                <EnhancedSkeleton key={i} className="h-12 w-full" />
               ))}
             </CardContent>
           </Card>

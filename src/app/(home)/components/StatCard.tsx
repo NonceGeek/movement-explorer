@@ -1,6 +1,6 @@
 "use client";
 
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
   TooltipContent,
@@ -61,7 +61,7 @@ export function StatItem({
       {/* Value & SubLabel */}
       <div className="flex-1 flex flex-col justify-center">
         {isLoading ? (
-          <Skeleton className="h-6 w-20" />
+          <EnhancedSkeleton className="h-6 w-20" />
         ) : (
           <div className="text-[16px] sm:text-[20px] font-semibold font-mono text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}

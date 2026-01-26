@@ -15,7 +15,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import {
@@ -232,8 +232,8 @@ export default function BlockDetailPage() {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="space-y-4">
-          <Skeleton className="h-10 w-48" />
-          <Skeleton className="h-64 w-full" />
+          <EnhancedSkeleton className="h-10 w-48" />
+          <EnhancedSkeleton className="h-64 w-full" />
         </div>
       </div>
     );

@@ -1,6 +1,6 @@
 import { useGetAccountTokens } from "@/hooks/accounts/useGetAccountTokens";
 import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Image as ImageIcon } from "lucide-react";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 
@@ -15,7 +15,7 @@ export default function NFTsTab({ address }: NFTsTabProps) {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {Array.from({ length: 8 }).map((_, i) => (
-          <Skeleton key={i} className="h-64 w-full" />
+          <EnhancedSkeleton key={i} className="h-64 w-full" />
         ))}
       </div>
     );

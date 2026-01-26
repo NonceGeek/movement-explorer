@@ -23,7 +23,7 @@ import {
   StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 import {
   Pagination,
@@ -267,7 +267,7 @@ export default function AccountDetailPage() {
                 {transactionsLoading ? (
                   <div className="space-y-3">
                     {Array.from({ length: 5 }).map((_, i) => (
-                      <Skeleton key={i} className="h-12 w-full" />
+                      <EnhancedSkeleton key={i} className="h-12 w-full" />
                     ))}
                   </div>
                 ) : !transactions || transactions.length === 0 ? (
@@ -476,7 +476,7 @@ export default function AccountDetailPage() {
                 {resourcesLoading ? (
                   <div className="space-y-3">
                     {Array.from({ length: 3 }).map((_, i) => (
-                      <Skeleton key={i} className="h-24 w-full" />
+                      <EnhancedSkeleton key={i} className="h-24 w-full" />
                     ))}
                   </div>
                 ) : resources && resources.length > 0 ? (

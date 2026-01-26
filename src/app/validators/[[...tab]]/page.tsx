@@ -3,7 +3,7 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
   StyledTable,
   StyledTableHeader,
@@ -113,7 +113,7 @@ export default function ValidatorsPage() {
           <Card className="h-[120px]">
             <CardContent className="pt-6 flex flex-col justify-center h-full">
               {isLoading ? (
-                <Skeleton className="h-8 w-24" />
+                <EnhancedSkeleton className="h-8 w-24" />
               ) : (
                 <div className="text-2xl font-bold">
                   {numberOfActiveValidators} Nodes
@@ -126,7 +126,7 @@ export default function ValidatorsPage() {
           <Card className="h-[120px]">
             <CardContent className="pt-4 flex flex-col justify-center h-full space-y-2">
               {!curEpoch ? (
-                <Skeleton className="h-8 w-32" />
+                <EnhancedSkeleton className="h-8 w-32" />
               ) : (
                 <>
                   <div className="flex items-center gap-2">
@@ -153,7 +153,7 @@ export default function ValidatorsPage() {
           <Card className="h-[120px]">
             <CardContent className="pt-6 flex flex-col justify-center h-full space-y-1">
               {isLoading ? (
-                <Skeleton className="h-8 w-40" />
+                <EnhancedSkeleton className="h-8 w-40" />
               ) : (
                 <>
                   <div className="text-xl font-bold">
@@ -174,7 +174,7 @@ export default function ValidatorsPage() {
         {isLoading ? (
           <div className="space-y-3">
             {[...Array(5)].map((_, i) => (
-              <Skeleton key={i} className="h-12 w-full" />
+              <EnhancedSkeleton key={i} className="h-12 w-full" />
             ))}
           </div>
         ) : sortedValidators.length === 0 ? (

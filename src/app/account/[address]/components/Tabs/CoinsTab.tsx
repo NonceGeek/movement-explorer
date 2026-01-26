@@ -25,7 +25,7 @@ import {
   StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -393,7 +393,7 @@ export default function CoinsTab({ address }: { address: string }) {
       <Card>
         <CardContent className="pt-6 space-y-3">
           {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-12 w-full" />
+            <EnhancedSkeleton key={i} className="h-12 w-full" />
           ))}
         </CardContent>
       </Card>

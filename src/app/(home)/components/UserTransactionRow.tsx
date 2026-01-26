@@ -1,7 +1,5 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
@@ -14,8 +12,6 @@ import {
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { cn } from "@/lib/utils";
 import {
-  formatTimestamp,
-  getTransactionTypeName,
   getTransactionSender,
   getTransactionCounterparty,
   getTransactionAmount,
@@ -34,14 +30,15 @@ export interface UserTransactionRowProps {
   className?: string;
 }
 
-export function UserTransactionRow({
+/**
+ * UserTransactionRowCells - Returns only the TableCell contents (without TableRow wrapper)
+ * Used by parent components that need to wrap with motion.tr for animations
+ */
+export function UserTransactionRowCells({
   version,
   transactionData,
   timestampMode = "age",
-  className,
-}: UserTransactionRowProps) {
-  const router = useRouter();
-
+}: Omit<UserTransactionRowProps, "className">) {
   const {
     data: fetchedTransaction,
     isError,
@@ -52,23 +49,17 @@ export function UserTransactionRow({
 
   const transaction = transactionData || fetchedTransaction;
 
-  // ... (loading and error checks)
-
   if (isLoading) {
     return (
-      <TableRow>
-        <TableCell colSpan={7}>
-          <Skeleton className="h-8 w-full" />
-        </TableCell>
-      </TableRow>
+      <TableCell colSpan={7}>
+        <Skeleton className="h-8 w-full" />
+      </TableCell>
     );
   }
 
   if (!transaction || isError) {
     return null;
   }
-
-  // ... (variable definitions)
 
   const status = "success" in transaction ? transaction.success : true;
   const sender = getTransactionSender(transaction);
@@ -80,19 +71,8 @@ export function UserTransactionRow({
   const gasUnitPrice =
     "gas_unit_price" in transaction ? transaction.gas_unit_price : null;
 
-  const handleRowClick = (e: React.MouseEvent) => {
-    // Prevent navigation if clicking on an interactive element
-    if ((e.target as HTMLElement).closest("a, button")) return;
-    // Removed: router.push(`/txn/${version}`);
-  };
-
   return (
-    <TableRow
-      className={cn(
-        "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
-        className,
-      )}
-    >
+    <>
       {/* Version + Status Icon */}
       <TableCell>
         <div className="flex items-center gap-2">
@@ -192,6 +172,56 @@ export function UserTransactionRow({
           </span>
         )}
       </TableCell>
+    </>
+  );
+}
+
+/**
+ * UserTransactionRow - Full table row component (backward compatible)
+ * Wraps UserTransactionRowCells with a TableRow
+ */
+export function UserTransactionRow({
+  version,
+  transactionData,
+  timestampMode = "age",
+  className,
+}: UserTransactionRowProps) {
+  const {
+    data: fetchedTransaction,
+    isError,
+    isLoading,
+  } = useGetTransaction(version.toString(), {
+    enabled: !transactionData,
+  });
+
+  const transaction = transactionData || fetchedTransaction;
+
+  if (isLoading) {
+    return (
+      <TableRow>
+        <TableCell colSpan={7}>
+          <Skeleton className="h-8 w-full" />
+        </TableCell>
+      </TableRow>
+    );
+  }
+
+  if (!transaction || isError) {
+    return null;
+  }
+
+  return (
+    <TableRow
+      className={cn(
+        "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
+        className,
+      )}
+    >
+      <UserTransactionRowCells
+        version={version}
+        transactionData={transaction}
+        timestampMode={timestampMode}
+      />
     </TableRow>
   );
 }

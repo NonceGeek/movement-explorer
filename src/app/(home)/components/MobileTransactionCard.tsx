@@ -27,12 +27,15 @@ export interface MobileTransactionCardProps {
   className?: string;
 }
 
-export function MobileTransactionCard({
+/**
+ * MobileTransactionCardContent - Returns the card content without Link wrapper
+ * Used by parent components that need to wrap with motion.div for animations
+ */
+export function MobileTransactionCardContent({
   version,
   transactionData,
   timestampMode = "age",
-  className,
-}: MobileTransactionCardProps) {
+}: Omit<MobileTransactionCardProps, "className">) {
   const transaction = transactionData;
 
   const status = "success" in transaction ? transaction.success : true;
@@ -53,15 +56,7 @@ export function MobileTransactionCard({
     : null;
 
   return (
-    <Link
-      href={`/txn/${version}`}
-      className={cn(
-        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50",
-        "p-3 sm:p-4",
-        "transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
-        className
-      )}
-    >
+    <>
       {/* Header: Version + Status + Timestamp */}
       <div className="flex items-center justify-between mb-2 sm:mb-3">
         <div className="flex items-center gap-1.5 sm:gap-2">
@@ -144,6 +139,34 @@ export function MobileTransactionCard({
           )}
         </div>
       </div>
+    </>
+  );
+}
+
+/**
+ * MobileTransactionCard - Full card component with Link wrapper (backward compatible)
+ */
+export function MobileTransactionCard({
+  version,
+  transactionData,
+  timestampMode = "age",
+  className,
+}: MobileTransactionCardProps) {
+  return (
+    <Link
+      href={`/txn/${version}`}
+      className={cn(
+        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50",
+        "p-3 sm:p-4",
+        "transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
+        className
+      )}
+    >
+      <MobileTransactionCardContent
+        version={version}
+        transactionData={transactionData}
+        timestampMode={timestampMode}
+      />
     </Link>
   );
 }

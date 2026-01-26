@@ -65,7 +65,7 @@ async function fetchMNSName(
     const { name } = await fetchJsonResponse(nameUrl);
     return name ?? null;
   } catch (error) {
-    console.error(
+    console.warn(
       "ERROR! Couldn't find MNS name for %s on %s",
       address,
       networkName,

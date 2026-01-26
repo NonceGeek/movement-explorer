@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeftRight, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -14,14 +15,75 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { UserTransactionRow } from "./UserTransactionRow";
-import { MobileTransactionCard } from "./MobileTransactionCard";
+import { UserTransactionRowCells } from "./UserTransactionRow";
+import { MobileTransactionCardContent } from "./MobileTransactionCard";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
 import { useQueries } from "@tanstack/react-query";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import { Types } from "aptos";
 import { useIsMobile } from "@/hooks/use-mobile";
+
+// Animation variants for initial load (stagger effect)
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  show: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08, // Slower stagger
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 24 },
+  show: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      type: "spring",
+      stiffness: 200,  // Lower = slower, more relaxed
+      damping: 20,     // Smooth deceleration
+      mass: 0.8,       // Lighter feel
+    },
+  },
+};
+
+// Animation container for updates (with stagger for new items)
+const updateContainerVariants: Variants = {
+  animate: {
+    transition: {
+      staggerChildren: 0.06, // Slower stagger for updates
+    },
+  },
+};
+
+// Animation for new items entering during updates
+// Uses custom prop to calculate stagger delay based on position
+const updateItemVariants: Variants = {
+  initial: { opacity: 0, y: -24, scale: 0.96 },
+  animate: (custom: number) => ({
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: "spring",
+      stiffness: 200,   // Slower spring
+      damping: 22,      // Smooth landing
+      mass: 0.8,
+      delay: custom * 0.06, // Slower stagger
+    },
+  }),
+  exit: {
+    opacity: 0,
+    x: -30,
+    transition: {
+      duration: 0.3,    // Slower exit
+      ease: "easeOut",
+    },
+  },
+};
 
 export interface LatestUserTransactionsProps {
   limit?: number;
@@ -61,6 +123,8 @@ export function LatestUserTransactions({
   >([]);
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  // Track if initial animation has completed
+  const hasAnimatedInitial = useRef(false);
 
   // Timestamp display mode: "age" (default) or "dateTime"
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
@@ -83,10 +147,23 @@ export function LatestUserTransactions({
 
       if (currentVersions !== newVersions) {
         setDisplayedTransactions(newData);
-        setIsInitialLoad(false);
+        // Mark initial load as complete after first data arrives
+        if (isInitialLoad) {
+          setIsInitialLoad(false);
+        }
       }
     }
-  }, [transactionQueries, userTransactionVersions, displayedTransactions]);
+  }, [transactionQueries, userTransactionVersions, displayedTransactions, isInitialLoad]);
+
+  // Mark initial animation as complete after a delay
+  useEffect(() => {
+    if (!isInitialLoad && displayedTransactions.length > 0 && !hasAnimatedInitial.current) {
+      const timer = setTimeout(() => {
+        hasAnimatedInitial.current = true;
+      }, 600); // Wait for stagger animation to complete
+      return () => clearTimeout(timer);
+    }
+  }, [isInitialLoad, displayedTransactions.length]);
 
   // Check if mobile
   const isMobile = useIsMobile();
@@ -136,7 +213,6 @@ export function LatestUserTransactions({
     <>
       <div className="flex flex-row items-center justify-between py-4">
         <h3 className="flex items-center gap-2 text-base sm:text-xl font-heading font-semibold">
-          <ArrowLeftRight size={20} className="text-white" />
           Latest User Transactions
         </h3>
         <Button
@@ -157,18 +233,64 @@ export function LatestUserTransactions({
           <MobileHeader />
           {isLoading ? (
             <MobileLoadingSkeleton />
-          ) : (
-            <div className="space-y-3">
+          ) : !hasAnimatedInitial.current ? (
+            // Initial load animation with stagger
+            <motion.div
+              className="space-y-3"
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
               {displayedTransactions.map(({ version, data }) => (
-                <MobileTransactionCard
-                  key={version}
-                  version={version}
-                  transactionData={data}
-                  timestampMode={timestampMode}
-                  className="animate-in slide-in-from-top-2 fade-in duration-500"
-                />
+                <motion.div key={version} variants={itemVariants}>
+                  <Link
+                    href={`/txn/${version}`}
+                    className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                  >
+                    <MobileTransactionCardContent
+                      version={version}
+                      transactionData={data}
+                      timestampMode={timestampMode}
+                    />
+                  </Link>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
+          ) : (
+            // Update animation with layout and stagger
+            <motion.div
+              className="space-y-3"
+              variants={updateContainerVariants}
+              animate="animate"
+            >
+              <AnimatePresence mode="popLayout">
+                {displayedTransactions.map(({ version, data }, index) => (
+                  <motion.div
+                    key={version}
+                    layout
+                    custom={index}
+                    variants={updateItemVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{
+                      layout: { type: "spring", stiffness: 200, damping: 25 },
+                    }}
+                  >
+                    <Link
+                      href={`/txn/${version}`}
+                      className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                    >
+                      <MobileTransactionCardContent
+                        version={version}
+                        transactionData={data}
+                        timestampMode={timestampMode}
+                      />
+                    </Link>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </motion.div>
           )}
         </div>
       ) : (
@@ -216,25 +338,68 @@ export function LatestUserTransactions({
               </StyledTableHead>
             </StyledTableHeaderRow>
           </StyledTableHeader>
-          <TableBody>
-            {isLoading
-              ? Array.from({ length: limit }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={7}>
-                      <Skeleton className="h-8 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              : displayedTransactions.map(({ version, data }) => (
-                  <UserTransactionRow
-                    key={version}
+          {isLoading ? (
+            <TableBody>
+              {Array.from({ length: limit }).map((_, i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={7}>
+                    <Skeleton className="h-8 w-full" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          ) : !hasAnimatedInitial.current ? (
+            // Initial load animation with stagger
+            <motion.tbody
+              variants={containerVariants}
+              initial="hidden"
+              animate="show"
+            >
+              {displayedTransactions.map(({ version, data }) => (
+                <motion.tr
+                  key={version}
+                  variants={itemVariants}
+                  className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
+                >
+                  <UserTransactionRowCells
                     version={version}
                     transactionData={data}
                     timestampMode={timestampMode}
-                    className="animate-in slide-in-from-top-2 fade-in duration-500"
                   />
+                </motion.tr>
+              ))}
+            </motion.tbody>
+          ) : (
+            // Update animation with layout and stagger
+            <motion.tbody
+              variants={updateContainerVariants}
+              animate="animate"
+            >
+              <AnimatePresence mode="popLayout">
+                {displayedTransactions.map(({ version, data }, index) => (
+                  <motion.tr
+                    key={version}
+                    layout
+                    custom={index}
+                    variants={updateItemVariants}
+                    initial="initial"
+                    animate="animate"
+                    exit="exit"
+                    transition={{
+                      layout: { type: "spring", stiffness: 200, damping: 25 },
+                    }}
+                    className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
+                  >
+                    <UserTransactionRowCells
+                      version={version}
+                      transactionData={data}
+                      timestampMode={timestampMode}
+                    />
+                  </motion.tr>
                 ))}
-          </TableBody>
+              </AnimatePresence>
+            </motion.tbody>
+          )}
         </StyledTable>
       )}
     </>

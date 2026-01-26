@@ -8,7 +8,6 @@ import { StatItem, StatsRow } from "./components/StatCard";
 import { ChartStatCard } from "./components/ChartStatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
 import { useGetPeakTPS, useGetAnalyticsData } from "@/hooks";
-import PageNavigation from "@/components/layout/PageNavigation";
 
 export default function HomePage() {
   const { aptos_client, network_value } = useGlobalStore();
@@ -39,7 +38,8 @@ export default function HomePage() {
 
   // Daily Active Users (latest)
   const dailyActiveUsers =
-    analyticsData?.daily_active_users?.slice(-1)[0]?.daily_active_user_count ?? 0;
+    analyticsData?.daily_active_users?.slice(-1)[0]?.daily_active_user_count ??
+    0;
 
   // Extract chart data (last 14 days)
   const CHART_DAYS = 14;
@@ -71,15 +71,13 @@ export default function HomePage() {
       .map((d) => formatDateLabel(d.date)) ?? [];
   // Get latest daily transactions value for display
   const latestDailyTxns =
-    analyticsData?.daily_user_transactions?.slice(-1)[0]?.num_user_transactions ?? 0;
+    analyticsData?.daily_user_transactions?.slice(-1)[0]
+      ?.num_user_transactions ?? 0;
 
   const isAnalyticsLoading = !analyticsData;
 
   return (
     <div className="min-h-screen">
-      {/* Mobile Search Navigation - 仅移动端显示 */}
-      <PageNavigation showBackButton={false} hideOnDesktop />
-
       {/* Hero + Stats Section with Dotted Background */}
       <div className="relative overflow-hidden">
         {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}
@@ -105,9 +103,9 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-guild-green-500/20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-byzantine-blue-500/15 blur-[100px] rounded-full pointer-events-none" />
 
-        {/* Hero Section - 仅桌面端显示，移动端使用导航栏搜索 */}
-        <section className="relative hidden md:block md:pt-10 z-10">
-          <div className="container mx-auto px-4 py-10 relative">
+        {/* Hero Section - Visible on both mobile and desktop */}
+        <section className="relative pt-10 md:pt-10 z-10">
+          <div className="container mx-auto px-4 py-8 md:py-10 relative">
             <div className="max-w-230 space-y-4">
               {/* Hero Title */}
               <h1 className="text-2xl md:text-3xl font-semibold text-white">
@@ -130,60 +128,60 @@ export default function HomePage() {
 
         {/* Network Stats */}
         <div className="container mx-auto px-4 py-6 sm:py-8 relative z-10 space-y-3">
-        {/* Row 1: 5 Stat Items */}
-        <StatsRow>
-          <StatItem
-            label="Total Transactions"
-            value={totalTransactions}
-            tooltip="Total number of transactions on the Movement network."
-            isLoading={ledgerLoading}
-          />
-          <StatItem
-            label="Max TPS"
-            value={peakTps ?? "-"}
-            subLabel="Peak Last 30 Days"
-            tooltip="The highest count of user transactions within any two-block interval on a given day, divided by the duration of that interval."
-            isLoading={!peakTps && isAnalyticsLoading}
-          />
-          <StatItem
-            label="Total Accounts"
-            value={totalAccounts}
-            tooltip="Total number of accounts created on the Movement network."
-            isLoading={isAnalyticsLoading}
-          />
-          <StatItem
-            label="Contracts Deployed"
-            value={totalContracts}
-            tooltip="Total number of smart contracts deployed on the network."
-            isLoading={isAnalyticsLoading}
-          />
-          <StatItem
-            label="Daily Active Users"
-            value={dailyActiveUsers}
-            tooltip="Number of unique addresses that signed transactions today."
-            isLoading={isAnalyticsLoading}
-          />
-        </StatsRow>
+          {/* Row 1: 5 Stat Items */}
+          <StatsRow>
+            <StatItem
+              label="Total Transactions"
+              value={totalTransactions}
+              tooltip="Total number of transactions on the Movement network."
+              isLoading={ledgerLoading}
+            />
+            <StatItem
+              label="Max TPS"
+              value={peakTps ?? "-"}
+              subLabel="Peak Last 30 Days"
+              tooltip="The highest count of user transactions within any two-block interval on a given day, divided by the duration of that interval."
+              isLoading={!peakTps && isAnalyticsLoading}
+            />
+            <StatItem
+              label="Total Accounts"
+              value={totalAccounts}
+              tooltip="Total number of accounts created on the Movement network."
+              isLoading={isAnalyticsLoading}
+            />
+            <StatItem
+              label="Contracts Deployed"
+              value={totalContracts}
+              tooltip="Total number of smart contracts deployed on the network."
+              isLoading={isAnalyticsLoading}
+            />
+            <StatItem
+              label="Daily Active Users"
+              value={dailyActiveUsers}
+              tooltip="Number of unique addresses that signed transactions today."
+              isLoading={isAnalyticsLoading}
+            />
+          </StatsRow>
 
-        {/* Row 2: 2 Chart Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <ChartStatCard
-            label="Contract Deployers"
-            value={totalDeployers}
-            tooltip="Total number of unique addresses that have deployed contracts."
-            isLoading={isAnalyticsLoading}
-            chartData={deployersChartData}
-            chartLabels={deployersChartLabels}
-          />
-          <ChartStatCard
-            label="Daily User Transactions"
-            value={latestDailyTxns}
-            tooltip="Number of user transactions in the last 24 hours."
-            isLoading={isAnalyticsLoading}
-            chartData={dailyTxnsChartData}
-            chartLabels={dailyTxnsChartLabels}
-          />
-        </div>
+          {/* Row 2: 2 Chart Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <ChartStatCard
+              label="Contract Deployers"
+              value={totalDeployers}
+              tooltip="Total number of unique addresses that have deployed contracts."
+              isLoading={isAnalyticsLoading}
+              chartData={deployersChartData}
+              chartLabels={deployersChartLabels}
+            />
+            <ChartStatCard
+              label="Daily User Transactions"
+              value={latestDailyTxns}
+              tooltip="Number of user transactions in the last 24 hours."
+              isLoading={isAnalyticsLoading}
+              chartData={dailyTxnsChartData}
+              chartLabels={dailyTxnsChartLabels}
+            />
+          </div>
         </div>
       </div>
 

@@ -110,12 +110,16 @@ export default function PageNavigation({
     clearResults();
   };
 
+  // Home mode (no back button) uses a special transparent gradient background
+  const isHomeMode = !showBackButton;
+
   return (
     <nav
       className={cn(
         "sticky z-40 w-full transition-all duration-300",
-        "bg-background/80",
-        "backdrop-blur-xl",
+        isHomeMode
+          ? "bg-linear-to-b from-black/70 to-transparent backdrop-blur-md"
+          : "bg-background/80 backdrop-blur-xl",
         // Desktop: always top-16, or hidden if hideOnDesktop
         hideOnDesktop ? "md:hidden" : "md:top-16",
         // Mobile: top-0 when header hidden, top-16 when visible

@@ -30,22 +30,21 @@ const containerVariants: Variants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.08, // Slower stagger
-      delayChildren: 0.1,
+      staggerChildren: 0.06,  // Time between each item
+      delayChildren: 0.05,    // Initial delay before first item
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 16 },  // Shorter distance for smoother feel
   show: {
     opacity: 1,
     y: 0,
     transition: {
-      type: "spring",
-      stiffness: 200,  // Lower = slower, more relaxed
-      damping: 20,     // Smooth deceleration
-      mass: 0.8,       // Lighter feel
+      type: "tween",
+      duration: 0.4,        // Smooth 400ms duration
+      ease: [0.25, 0.1, 0.25, 1],  // Custom easing (ease-out-quad like)
     },
   },
 };

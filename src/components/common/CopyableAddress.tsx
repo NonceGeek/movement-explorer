@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, BadgeCheck } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +10,10 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { useGetAccountLabel } from "@/hooks/accounts/useGetAccountLabel";
+import {
+  useGetAccountLabel,
+  AccountLabelType,
+} from "@/hooks/accounts/useGetAccountLabel";
 import { AccountLabelBadge } from "@/components/common/AccountLabelBadge";
 
 export interface CopyableAddressProps {
@@ -44,13 +47,29 @@ export function CopyableAddress({
   const accountLabel = useGetAccountLabel(address, showLabel);
 
   // Determine display text
-  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${
-    truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
-  }`;
-  const displayAddress = showFull ? address : truncatedAddress;
+  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
+    }`;
 
-  // When using label variant with showLabel, delegate to AccountLabelBadge for styling
-  const useLabelBadge = variant === "label" && showLabel && accountLabel?.name;
+  // Check if this is a verified address and we should show label
+  const isVerifiedWithLabel =
+    showLabel &&
+    accountLabel?.name &&
+    accountLabel.type === AccountLabelType.VERIFIED;
+
+  // Use label name for verified addresses, otherwise use address
+  const displayText = isVerifiedWithLabel
+    ? accountLabel.name
+    : showFull
+      ? address
+      : truncatedAddress;
+
+  // When using label variant with showLabel and NOT verified, delegate to AccountLabelBadge
+  // (for ANS, SCAM, etc. that need special styling)
+  const useLabelBadge =
+    showLabel &&
+    accountLabel?.name &&
+    variant === "label" &&
+    accountLabel.type !== AccountLabelType.VERIFIED;
 
   const variantStyles = {
     default: href
@@ -142,6 +161,7 @@ export function CopyableAddress({
     );
   }
 
+  // Render content with optional verified icon
   const AddressContent = (
     <span
       className={cn(
@@ -151,7 +171,10 @@ export function CopyableAddress({
       )}
     >
       {icon}
-      {displayAddress}
+      {displayText}
+      {isVerifiedWithLabel && (
+        <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+      )}
     </span>
   );
 
@@ -166,7 +189,10 @@ export function CopyableAddress({
       onClick={(e) => e.stopPropagation()}
     >
       {icon}
-      {displayAddress}
+      {displayText}
+      {isVerifiedWithLabel && (
+        <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+      )}
     </Link>
   ) : (
     AddressContent
@@ -179,7 +205,7 @@ export function CopyableAddress({
           "inline-flex items-center gap-1 transition-all duration-200 group/address",
           showFull && "flex-wrap",
           variant === "default" &&
-            "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
+          "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
         )}
       >
         {showFull ? (

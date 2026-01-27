@@ -121,7 +121,7 @@ export function SearchBar({
           onSubmit={handleSubmit}
           className="flex items-center bg-card border-2 border-guild-green-300 rounded-xl overflow-hidden shadow-[0_0_0_0_#0337FF] transition-all duration-300 ease-out focus-within:-translate-y-1 focus-within:shadow-[5px_5px_0_0_#0337FF]"
         >
-          <div className="pl-4 text-muted-foreground">
+          <div className="pl-4 text-[#999]">
             <Search size={20} />
           </div>
           <input
@@ -134,7 +134,7 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground outline-none"
+            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-white placeholder:text-[#999] outline-none"
           />
           <Button
             type="submit"
@@ -155,7 +155,7 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-sm border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Check if only result is "No Results" */}
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -170,38 +170,38 @@ export function SearchBar({
                 </p>
               </div>
             ) : (
-              <ul className="max-h-80 overflow-y-auto divide-y divide-border/50">
+              <ul className="max-h-[22rem] overflow-y-auto divide-y divide-border/50">
                 {results.map((result, index) => (
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
                       index === selectedIndex
                         ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
                         : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
                     } ${
                       !result.to
                         ? "cursor-default text-muted-foreground"
-                        : "hover:pl-5"
+                        : "hover:pl-6"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3.5">
                       {result.image ? (
                         <img
                           src={result.image}
                           alt=""
-                          className="w-6 h-6 rounded-full ring-1 ring-guild-green-300/30"
+                          className="w-7 h-7 rounded-full ring-2 ring-guild-green-300/30"
                         />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-guild-green-300/20 flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-full bg-guild-green-300/20 flex items-center justify-center">
                           <CornerDownLeft
-                            size={12}
+                            size={16}
                             className="text-guild-green-400"
                           />
                         </div>
                       )}
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-base font-medium ${
                           index === selectedIndex
                             ? "text-guild-green-300"
                             : "text-foreground"
@@ -238,7 +238,7 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground/60 outline-none"
+            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-white placeholder:text-[#999] outline-none"
           />
           <Button
             type="submit"
@@ -256,7 +256,7 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-sm border border-border/60 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border border-border/60 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Check if only result is "No Results" */}
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -271,38 +271,38 @@ export function SearchBar({
                 </p>
               </div>
             ) : (
-              <ul className="max-h-80 overflow-y-auto divide-y divide-border/30">
+              <ul className="max-h-[22rem] overflow-y-auto divide-y divide-border/30">
                 {results.map((result, index) => (
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
                       index === selectedIndex
                         ? "bg-guild-green-500/15 border-l-4 border-l-guild-green-500/70"
                         : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-guild-green-500/30"
                     } ${
                       !result.to
                         ? "cursor-default text-muted-foreground"
-                        : "hover:pl-5"
+                        : "hover:pl-6"
                     }`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3.5">
                       {result.image ? (
                         <img
                           src={result.image}
                           alt=""
-                          className="w-6 h-6 rounded-full ring-1 ring-border/50"
+                          className="w-7 h-7 rounded-full ring-1 ring-border/50"
                         />
                       ) : (
-                        <div className="w-6 h-6 rounded-full bg-muted/50 flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-full bg-muted/50 flex items-center justify-center">
                           <CornerDownLeft
-                            size={12}
+                            size={16}
                             className="text-muted-foreground"
                           />
                         </div>
                       )}
                       <span
-                        className={`text-sm font-medium ${
+                        className={`text-base font-medium ${
                           index === selectedIndex
                             ? "text-guild-green-400"
                             : "text-foreground"

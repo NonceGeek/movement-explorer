@@ -31,26 +31,26 @@ export default function NavMobile() {
     <div className="md:hidden">
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="h-9 w-9">
-            <Menu className="h-5 w-5" />
+          <Button variant="ghost" className="h-10 w-10">
+            <Menu size={36} className="!w-9 !h-9" />
             <span className="sr-only">Toggle menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[350px]">
-          <SheetHeader>
-            <SheetTitle className="text-left">Menu</SheetTitle>
+        <SheetContent side="right" className="w-[85vw] sm:w-[400px] border-l-0 p-0">
+          <SheetHeader className="px-6 pt-8 pb-4">
+            <SheetTitle className="text-left text-3xl font-bold tracking-tight">Menu</SheetTitle>
           </SheetHeader>
-          <div className="flex flex-col gap-6 mt-6">
+          <div className="flex flex-col gap-2 mt-2 h-full overflow-y-auto pb-10">
             {/* Navigation Links */}
-            <nav className="flex flex-col gap-2">
+            <nav className="flex flex-col px-4">
               {/* Home link */}
               <Link
                 href={homeLink.href}
                 onClick={handleLinkClick}
-                className={`px-4 py-3 rounded-lg transition-colors ${
+                className={`px-4 py-4 rounded-xl text-xl transition-colors ${
                   pathname === homeLink.href
-                    ? "bg-primary/10 text-primary font-medium"
-                    : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    ? "bg-primary/5 text-primary font-semibold"
+                    : "text-foreground/80 hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
                 {homeLink.label}
@@ -65,33 +65,33 @@ export default function NavMobile() {
                       pathname.startsWith(`${subItem.href}/`)
                   );
                   return (
-                    <div key={item.label} className="flex flex-col">
+                    <div key={item.label} className="flex flex-col mt-2">
                       <div
-                        className={`px-4 py-2 text-sm font-medium ${
-                          isGroupActive ? "text-primary" : "text-muted-foreground"
-                        }`}
+                        className={`px-4 py-3 text-base font-semibold uppercase tracking-wider text-muted-foreground/70`}
                       >
                         {item.label}
                       </div>
-                      {item.items.map((subItem) => {
-                        const isActive =
-                          pathname === subItem.href ||
-                          pathname.startsWith(`${subItem.href}/`);
-                        return (
-                          <Link
-                            key={subItem.href}
-                            href={subItem.href}
-                            onClick={handleLinkClick}
-                            className={`px-4 py-3 pl-8 rounded-lg transition-colors ${
-                              isActive
-                                ? "bg-primary/10 text-primary font-medium"
-                                : "text-muted-foreground hover:bg-muted hover:text-foreground"
-                            }`}
-                          >
-                            {subItem.label}
-                          </Link>
-                        );
-                      })}
+                      <div className="flex flex-col gap-1">
+                        {item.items.map((subItem) => {
+                          const isActive =
+                            pathname === subItem.href ||
+                            pathname.startsWith(`${subItem.href}/`);
+                          return (
+                            <Link
+                              key={subItem.href}
+                              href={subItem.href}
+                              onClick={handleLinkClick}
+                              className={`px-4 py-4 pl-8 rounded-xl text-lg transition-colors ${
+                                isActive
+                                  ? "bg-primary/5 text-primary font-semibold"
+                                  : "text-foreground/80 hover:bg-muted/50 hover:text-foreground"
+                              }`}
+                            >
+                              {subItem.label}
+                            </Link>
+                          );
+                        })}
+                      </div>
                     </div>
                   );
                 }
@@ -103,10 +103,10 @@ export default function NavMobile() {
                     key={item.href}
                     href={item.href}
                     onClick={handleLinkClick}
-                    className={`px-4 py-3 rounded-lg transition-colors ${
+                    className={`px-4 py-4 rounded-xl text-xl transition-colors ${
                       isActive
-                        ? "bg-primary/10 text-primary font-medium"
-                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                        ? "bg-primary/5 text-primary font-semibold"
+                        : "text-foreground/80 hover:bg-muted/50 hover:text-foreground"
                     }`}
                   >
                     {item.label}
@@ -115,31 +115,24 @@ export default function NavMobile() {
               })}
             </nav>
 
-            {/* Divider */}
-            <div className="h-px bg-border" />
+            <div className="mt-auto pb-8">
+              {/* Divider */}
+              <div className="h-px bg-border/40 my-6 mx-6" />
 
-            {/* Network Select */}
-            <div className="px-4">
-              <p className="text-sm text-muted-foreground mb-2">Network</p>
-              <NetworkSelect />
-            </div>
+              {/* Network Select */}
+              <div className="px-6">
+                <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground/70 mb-4 px-2">Network</p>
+                <NetworkSelect />
+              </div>
 
-            {/* Divider */}
-            <div className="h-px bg-border" />
+              {/* Divider */}
+              <div className="h-px bg-border/40 my-6 mx-6" />
 
-            {/* Theme */}
-            {/* <div className="px-4">
-              <p className="text-sm text-muted-foreground mb-2">Theme</p>
-              <ThemeToggle />
-            </div> */}
-
-            {/* Divider */}
-            {/* <div className="h-px bg-border" /> */}
-
-            {/* Wallet Connector */}
-            <div className="px-4">
-              <p className="text-sm text-muted-foreground mb-2">Wallet</p>
-              <WalletConnector />
+              {/* Wallet Connector */}
+              <div className="px-6">
+                <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground/70 mb-4 px-2">Wallet</p>
+                <WalletConnector />
+              </div>
             </div>
           </div>
         </SheetContent>

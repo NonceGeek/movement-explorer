@@ -12,7 +12,7 @@ export function Logo() {
         color="white"
         className="h-8 w-8"
       />
-      <span className="text-xl font-heading font-bold text-white">
+      <span className="text-2xl font-heading font-bold text-white">
         MoveScan
       </span>
     </Link>

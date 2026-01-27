@@ -91,6 +91,7 @@ export function MobileTransactionCardContent({
                 address={sender}
                 href={`/account/${sender}`}
                 className="text-xs sm:text-sm"
+                showLabel
               />
             ) : (
               <span className="text-muted-foreground text-xs">-</span>
@@ -112,6 +113,7 @@ export function MobileTransactionCardContent({
                 address={counterparty.address}
                 href={`/account/${counterparty.address}`}
                 className="text-xs sm:text-sm"
+                showLabel
               />
             </div>
           </div>

@@ -104,11 +104,11 @@ export default function HomePage() {
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-byzantine-blue-500/15 blur-[100px] rounded-full pointer-events-none" />
 
         {/* Hero Section - Visible on both mobile and desktop */}
-        <section className="relative pt-10 md:pt-10 z-10">
-          <div className="container mx-auto px-4 py-8 md:py-10 relative">
+        <section className="relative pt-10 md:pt-10 z-20">
+          <div className="container mx-auto px-4 py-10 md:py-14 relative">
             <div className="max-w-230 space-y-4">
               {/* Hero Title */}
-              <h1 className="text-2xl md:text-3xl font-semibold text-white">
+              <h1 className="text-3xl md:text-5xl font-semibold text-white">
                 Explore the Movement Network
               </h1>
 

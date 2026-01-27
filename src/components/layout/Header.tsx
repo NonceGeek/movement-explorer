@@ -15,12 +15,18 @@ import { Search } from "lucide-react";
 // Dynamic import to avoid useSearchParams SSR issues
 const NetworkSelect = dynamic(() => import("./NetworkSelect"), { ssr: false });
 
+import { useScrollDirection } from "@/hooks/useScrollDirection";
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearchHeader, setShowSearchHeader] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const scrollThreshold = 180; // Approximate height of hero section
+  const { scrollDirection, scrollY } = useScrollDirection();
+
+  // Hide header on mobile when scrolling down (and not at top)
+  const isHeaderHidden = scrollDirection === "down" && scrollY > 50;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,13 +53,17 @@ export default function Header() {
         "sticky top-0 z-50 w-full border-b backdrop-blur-xl transition-all duration-300",
         "gradient-glass-overlay",
         isScrolled ? "border-border/50" : "border-transparent",
+        // Mobile: slide up when hidden
+        isHeaderHidden ? "translate-y-[-100%]" : "translate-y-0",
+        // Desktop: always visible (reset transform)
+        "md:translate-y-0"
       )}
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-8">
         {/* Mobile Search Header State */}
         <div
           className={cn(
-            "md:hidden flex items-center w-full gap-3 transition-all duration-500 ease-in-out absolute inset-0 px-4",
+            "md:hidden flex items-center w-full gap-3 transition-all duration-300 ease-in-out absolute inset-0 px-4",
             showSearchHeader
               ? "opacity-100 translate-y-0 z-10"
               : "opacity-0 translate-y-full pointer-events-none -z-10",
@@ -72,7 +82,7 @@ export default function Header() {
             showSearchHeader && "md:opacity-100 opacity-0",
           )}
         >
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             {/* Logo */}
             <Logo />
 

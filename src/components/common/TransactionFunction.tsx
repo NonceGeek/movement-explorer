@@ -88,18 +88,17 @@ export function TransactionFunction({
           <Link
             href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex items-center gap-0.5 px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary/20",
+              "inline-flex flex-col gap-0.5 px-2.5 py-1.5 rounded-md bg-primary/10 hover:bg-primary/20",
               "text-xs font-mono transition-colors border border-primary/10",
-              "max-w-[200px] sm:max-w-[400px]",
+              "max-w-[180px] sm:max-w-[280px]",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-muted-foreground truncate shrink">
+            <span className="text-muted-foreground text-[11px] truncate">
               {moduleName}
             </span>
-            <span className="text-muted-foreground/50 shrink-0">::</span>
-            <span className="text-guild-green-500 font-medium truncate shrink-0">
+            <span className="text-guild-green-500 font-medium truncate">
               {functionName}
             </span>
           </Link>
@@ -115,20 +114,20 @@ export function TransactionFunction({
               </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="space-y-1 min-w-0">
+            <div className="flex flex-col gap-3">
+              <div className="space-y-1">
                 <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
                   Module
                 </span>
-                <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 truncate">
+                <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
                   {moduleName}
                 </div>
               </div>
-              <div className="space-y-1 min-w-0">
+              <div className="space-y-1">
                 <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
                   Function
                 </span>
-                <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 truncate">
+                <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
                   {functionName}
                 </div>
               </div>

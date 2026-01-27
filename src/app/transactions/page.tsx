@@ -4,7 +4,7 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { UserTransactions } from "./components/UserTransactions";
 import { AllTransactions } from "./components/AllTransactions";
@@ -59,14 +59,17 @@ function TransactionsContent() {
   return (
     <>
       <div className="flex flex-row justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">
+        <h1 className="text-xl sm:text-3xl font-bold">
           {isUserTransactions ? "User Transactions" : "All Transactions"}
         </h1>
         {isGraphqlClientSupported && (
-          <Button variant="ghost" onClick={toggleTransactionType}>
-            {isUserTransactions
-              ? "View All Transactions"
-              : "View User Transactions"}
+          <Button
+            variant="link"
+            onClick={toggleTransactionType}
+            className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
+          >
+            {isUserTransactions ? "View All Txn" : "View User Txn"}
+            <ArrowRight size={20} strokeWidth={2.5} />
           </Button>
         )}
       </div>

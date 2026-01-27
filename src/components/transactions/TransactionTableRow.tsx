@@ -98,15 +98,13 @@ export function TransactionTableRow({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1.5 text-muted-foreground transition-colors">
+                  <div className="flex items-center justify-center text-muted-foreground transition-colors cursor-help">
                     {typeInfo.icon}
-                    <span className="text-xs font-medium capitalize">
-                      {typeInfo.label}
-                    </span>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-xs max-w-xs">{typeInfo.description}</p>
+                  <p className="text-xs font-medium capitalize">{typeInfo.label}</p>
+                  <p className="text-xs text-muted-foreground max-w-xs">{typeInfo.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -131,7 +129,11 @@ export function TransactionTableRow({
         return (
           <TableCell key={column.key}>
             {sender ? (
-              <CopyableAddress address={sender} href={`/account/${sender}`} />
+              <CopyableAddress
+                address={sender}
+                href={`/account/${sender}`}
+                showLabel
+              />
             ) : (
               <span className="text-muted-foreground transition-colors">-</span>
             )}
@@ -145,6 +147,7 @@ export function TransactionTableRow({
               <CopyableAddress
                 address={counterparty.address}
                 href={`/account/${counterparty.address}`}
+                showLabel
                 icon={
                   counterparty.role === "smartContract" ? (
                     <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -276,15 +279,13 @@ export function TransactionTableRowCells({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex items-center gap-1.5 text-muted-foreground transition-colors">
+                  <div className="flex items-center justify-center text-muted-foreground transition-colors cursor-help">
                     {typeInfo.icon}
-                    <span className="text-xs font-medium capitalize">
-                      {typeInfo.label}
-                    </span>
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p className="text-xs max-w-xs">{typeInfo.description}</p>
+                  <p className="text-xs font-medium capitalize">{typeInfo.label}</p>
+                  <p className="text-xs text-muted-foreground max-w-xs">{typeInfo.description}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

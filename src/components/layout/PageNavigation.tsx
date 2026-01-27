@@ -18,6 +18,8 @@ interface PageNavigationProps {
   hideOnDesktop?: boolean;
 }
 
+import { useScrollDirection } from "@/hooks/useScrollDirection";
+
 export default function PageNavigation({
   className,
   title,
@@ -26,9 +28,11 @@ export default function PageNavigation({
 }: PageNavigationProps) {
   const router = useRouter();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const [isHeaderHidden, setIsHeaderHidden] = useState(false);
-  const lastScrollY = useRef(0);
-  const scrollThreshold = 100;
+  const { scrollDirection, scrollY } = useScrollDirection();
+
+  // Mobile: sticky to top-0 when header is hidden (scroll down), top-16 when header is visible (scroll up)
+  // Desktop: always top-16
+  const isHeaderHidden = scrollDirection === "down" && scrollY > 50;
 
   // Mobile search state
   const [mobileSearchValue, setMobileSearchValue] = useState("");
@@ -72,28 +76,6 @@ export default function PageNavigation({
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Scroll detection
-  useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      
-      if (currentScrollY > scrollThreshold) {
-        if (currentScrollY > lastScrollY.current) {
-          setIsHeaderHidden(true);
-        } else if (currentScrollY < lastScrollY.current) {
-          setIsHeaderHidden(false);
-        }
-      } else {
-        setIsHeaderHidden(false);
-      }
-      
-      lastScrollY.current = currentScrollY;
-    };
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const handleMobileResultClick = (result: SearchResult) => {
     if (result.to) {
       router.push(result.to);
@@ -120,9 +102,9 @@ export default function PageNavigation({
         isHomeMode
           ? "bg-linear-to-b from-black/70 to-transparent backdrop-blur-md"
           : "bg-background/80 backdrop-blur-xl",
-        // Desktop: always top-16, or hidden if hideOnDesktop
+        // Always stick below the global header (h-16) on desktop
+        // Mobile: top-0 if header hidden (scroll down), top-16 if header visible (scroll up)
         hideOnDesktop ? "md:hidden" : "md:top-16",
-        // Mobile: top-0 when header hidden, top-16 when visible
         isHeaderHidden ? "top-0" : "top-16",
         className
       )}

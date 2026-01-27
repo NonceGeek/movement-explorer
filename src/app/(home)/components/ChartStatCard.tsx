@@ -28,10 +28,10 @@ ChartJS.register(
   ChartTooltip
 );
 
-// Chart colors - teal/cyan theme
-const LINE_COLOR = "rgba(45, 212, 191, 0.9)";
-const GRADIENT_START = "rgba(45, 212, 191, 0.35)";
-const GRADIENT_END = "rgba(45, 212, 191, 0.02)";
+// Chart colors - guild-green-500 (#58c589)
+const LINE_COLOR = "rgba(88, 197, 137, 0.9)";
+const GRADIENT_START = "rgba(88, 197, 137, 0.35)";
+const GRADIENT_END = "rgba(88, 197, 137, 0.02)";
 
 export interface ChartStatCardProps {
   label: string;
@@ -95,9 +95,9 @@ export function ChartStatCard({
           autoSkip: true,
           maxTicksLimit: 4,
           maxRotation: 0,
-          color: "rgba(156, 163, 175, 0.6)",
+          color: "rgb(153, 153, 153)",
           font: {
-            size: 10,
+            size: 14,
           },
         },
         border: {
@@ -113,9 +113,9 @@ export function ChartStatCard({
         ticks: {
           autoSkip: true,
           maxTicksLimit: 3,
-          color: "rgba(156, 163, 175, 0.6)",
+          color: "rgb(153, 153, 153)",
           font: {
-            size: 10,
+            size: 14,
           },
           callback: function (tickValue: string | number) {
             return formatYAxisValue(Number(tickValue));
@@ -167,10 +167,10 @@ export function ChartStatCard({
   };
 
   return (
-    <div className="p-4 sm:p-5 h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+    <div className="p-5 md:p-6 h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium tracking-wider">
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium tracking-wider">
           {label.toUpperCase()}
         </span>
         {tooltip && (
@@ -198,7 +198,7 @@ export function ChartStatCard({
         {isLoading ? (
           <EnhancedSkeleton className="h-8 w-24" />
         ) : (
-          <div className="text-[24px] sm:text-[28px] font-semibold font-mono text-foreground leading-tight">
+          <div className="text-3xl sm:text-4xl font-semibold font-mono text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}
           </div>
         )}

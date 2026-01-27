@@ -235,7 +235,7 @@ export function LatestUserTransactions({
   return (
     <>
       <div className="flex flex-row items-center justify-between py-4">
-        <h3 className="flex items-center gap-2 text-base sm:text-xl font-heading font-semibold">
+        <h3 className="flex items-center gap-2 text-xl sm:text-3xl font-heading font-semibold">
           Latest User Transactions
         </h3>
         <Button
@@ -302,7 +302,7 @@ export function LatestUserTransactions({
                       )}
                       <Link
                         href={`/txn/${version}`}
-                        className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-3 sm:p-4 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                        className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4 sm:p-5 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
                       >
                         <MobileTransactionCardContent
                           version={version}

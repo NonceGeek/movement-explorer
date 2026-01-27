@@ -50,10 +50,10 @@ export default function Footer() {
               <Branding
                 theme="industries"
                 variant="logomark"
-                color="color"
+                color="white"
                 className="h-8 w-8"
               />
-              <span className="text-xl font-heading font-bold text-moveus-marigold-500">
+              <span className="text-2xl font-heading font-bold text-white">
                 MoveScan
               </span>
             </Link>

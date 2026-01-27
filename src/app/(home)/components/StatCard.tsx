@@ -8,6 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
+import { RollingNumber } from "@/components/ui/rolling-number";
 
 export interface StatItemProps {
   label: string;
@@ -32,10 +33,10 @@ export function StatItem({
   isLoading,
 }: StatItemProps) {
   return (
-    <div className="p-4 sm:p-5 h-[100px] sm:h-[120px] flex flex-col justify-between">
+    <div className="p-5 md:p-6 h-[110px] sm:h-[140px] flex flex-col justify-between">
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5">
-        <span className="text-[10px] sm:text-[11px] text-muted-foreground font-medium tracking-wider">
+        <span className="text-xs sm:text-sm text-muted-foreground font-medium tracking-wider">
           {label.toUpperCase()}
         </span>
         {tooltip && (
@@ -63,8 +64,12 @@ export function StatItem({
         {isLoading ? (
           <EnhancedSkeleton className="h-6 w-20" />
         ) : (
-          <div className="text-[16px] sm:text-[20px] font-semibold font-mono text-foreground leading-tight">
-            {typeof value === "number" ? formatNumber(value) : value}
+          <div className="text-2xl sm:text-3xl font-semibold font-mono text-foreground leading-tight break-all">
+            {typeof value === "number" ? (
+              <RollingNumber value={value} />
+            ) : (
+              value
+            )}
           </div>
         )}
 
@@ -88,7 +93,7 @@ interface StatsRowProps {
  */
 export function StatsRow({ children }: StatsRowProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 [&>*:not(:last-child)]:border-r [&>*]:border-border/30 [&>*:nth-child(2)]:max-sm:border-r-0 [&>*:nth-child(3)]:max-lg:border-r-0 [&>*:nth-child(n+3)]:max-sm:border-t [&>*:nth-child(n+4)]:sm:max-lg:border-t">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 [&>*]:border-border/30 [&>*:first-child]:col-span-2 sm:[&>*:first-child]:col-span-1 [&>*:nth-child(even)]:border-r [&>*:nth-child(odd)]:border-r-0 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(3n)]:border-r-0 lg:[&>*:nth-child(3n)]:border-r lg:[&>*:nth-child(5n)]:border-r-0 [&>*:nth-last-child(n+3)]:border-b sm:[&>*:nth-last-child(n+3)]:border-b-0 sm:[&>*:nth-last-child(n+4)]:border-b lg:[&>*]:border-b-0 lg:[&>*:nth-child(5n)]:border-r-0">
       {children}
     </div>
   );

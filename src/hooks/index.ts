@@ -20,3 +20,4 @@ export * from "./analytics/useGetTPS";
 export * from "./analytics/useGetTPSByBlockHeight";
 export * from "./common/useGraphqlClient";
 export * from "./common/useViewFunction";
+export * from "./useScrollDirection";

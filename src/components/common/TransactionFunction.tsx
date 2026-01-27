@@ -104,8 +104,36 @@ export function TransactionFunction({
             </span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent>
-          <p className="font-mono text-xs">{functionFullStr}</p>
+        <TooltipContent className="p-3 max-w-[320px] sm:max-w-[400px]">
+          <div className="flex flex-col gap-3">
+            <div className="space-y-1">
+              <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+                Address
+              </span>
+              <div className="font-mono text-xs text-muted-foreground break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
+                {address}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="space-y-1 min-w-0">
+                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+                  Module
+                </span>
+                <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 truncate">
+                  {moduleName}
+                </div>
+              </div>
+              <div className="space-y-1 min-w-0">
+                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+                  Function
+                </span>
+                <div className="font-mono text-xs text-primary font-medium bg-primary/5 p-2 rounded border border-primary/10 truncate">
+                  {functionName}
+                </div>
+              </div>
+            </div>
+          </div>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

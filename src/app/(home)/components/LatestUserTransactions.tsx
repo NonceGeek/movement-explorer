@@ -6,17 +6,6 @@ import { ArrowRight } from "lucide-react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import {
-  StyledTable,
-  StyledTableHeader,
-  StyledTableHeaderRow,
-  StyledTableHead,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { UserTransactionRowCells } from "./UserTransactionRow";
-import { MobileTransactionCardContent } from "./MobileTransactionCard";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
 import { useQueries } from "@tanstack/react-query";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -24,43 +13,46 @@ import { getTransaction } from "@/services";
 import { Types } from "aptos";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
+import { MobileTransactionCardContent } from "./MobileTransactionCard";
+import {
+  TransactionTable,
+  HOME_TRANSACTION_COLUMNS,
+  TransactionRowData,
+} from "@/components/transactions";
 
-// Animation variants for initial load (stagger effect)
+// Animation variants for mobile view
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.06, // Time between each item
-      delayChildren: 0.05, // Initial delay before first item
+      staggerChildren: 0.06,
+      delayChildren: 0.05,
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 16 }, // Shorter distance for smoother feel
+  hidden: { opacity: 0, y: 16 },
   show: {
     opacity: 1,
     y: 0,
     transition: {
       type: "tween",
-      duration: 0.4, // Smooth 400ms duration
-      ease: [0.25, 0.1, 0.25, 1], // Custom easing (ease-out-quad like)
+      duration: 0.4,
+      ease: [0.25, 0.1, 0.25, 1],
     },
   },
 };
 
-// Animation container for updates (with stagger for new items)
 const updateContainerVariants: Variants = {
   animate: {
     transition: {
-      staggerChildren: 0.06, // Slower stagger for updates
+      staggerChildren: 0.06,
     },
   },
 };
 
-// Animation for new items entering during updates
-// Uses custom prop: { index, isNew } for stagger and highlight
 const updateItemVariants: Variants = {
   initial: { opacity: 0, y: -24, scale: 0.96 },
   animate: (custom: { index: number; isNew: boolean }) => ({
@@ -69,26 +61,25 @@ const updateItemVariants: Variants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 200, // Slower spring
-      damping: 22, // Smooth landing
+      stiffness: 200,
+      damping: 22,
       mass: 0.8,
-      delay: custom.index * 0.06, // Slower stagger
+      delay: custom.index * 0.06,
     },
   }),
   exit: {
     opacity: 0,
     x: -30,
     transition: {
-      duration: 0.3, // Slower exit
+      duration: 0.3,
       ease: "easeOut",
     },
   },
 };
 
-// Highlight animation for new items
 const highlightVariants: Variants = {
   initial: {
-    backgroundColor: "rgba(0, 255, 127, 0.15)", // guild-green with alpha
+    backgroundColor: "rgba(0, 255, 127, 0.15)",
     boxShadow: "inset 0 0 0 1px rgba(0, 255, 127, 0.3)",
   },
   animate: {
@@ -139,15 +130,10 @@ export function LatestUserTransactions({
   >([]);
 
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  // Track if initial animation has completed (use state to trigger re-render)
   const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
-
-  // Track newly added versions for highlight effect
   const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
     new Set(),
   );
-
-  // Timestamp display mode: "age" (default) or "dateTime"
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
   // 3. Sync data only when all requests are successful
@@ -160,14 +146,12 @@ export function LatestUserTransactions({
         data: transactionQueries[index].data as Types.Transaction,
       }));
 
-      // Check if versions changed to avoid unnecessary re-renders
       const currentVersions = displayedTransactions
         .map((t) => t.version)
         .join(",");
       const newVersionsStr = newData.map((t) => t.version).join(",");
 
       if (currentVersions !== newVersionsStr) {
-        // Detect newly added versions (only after initial animation completed)
         if (hasAnimatedInitial) {
           const currentVersionSet = new Set(
             displayedTransactions.map((t) => t.version),
@@ -182,7 +166,6 @@ export function LatestUserTransactions({
         }
 
         setDisplayedTransactions(newData);
-        // Mark initial load as complete after first data arrives
         if (isInitialLoad) {
           setIsInitialLoad(false);
         }
@@ -201,12 +184,12 @@ export function LatestUserTransactions({
     if (highlightedVersions.size > 0) {
       const timer = setTimeout(() => {
         setHighlightedVersions(new Set());
-      }, 2000); // Clear highlight after 2 seconds
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [highlightedVersions]);
 
-  // Mark initial animation as complete after a delay
+  // Mark initial animation as complete
   useEffect(() => {
     if (
       !isInitialLoad &&
@@ -215,16 +198,22 @@ export function LatestUserTransactions({
     ) {
       const timer = setTimeout(() => {
         setHasAnimatedInitial(true);
-      }, 800); // Wait for stagger animation to complete
+      }, 800);
       return () => clearTimeout(timer);
     }
   }, [isInitialLoad, displayedTransactions.length, hasAnimatedInitial]);
 
-  // Check if mobile
   const isMobile = useIsMobile();
-
-  // Loading state is strictly for the FIRST load (when we define it as initial load and no data)
   const isLoading = isInitialLoad && displayedTransactions.length === 0;
+
+  // Transform to TransactionRowData format
+  const tableData: TransactionRowData[] = displayedTransactions.map(
+    ({ version, data }) => ({
+      version,
+      transaction: data,
+      isHighlighted: highlightedVersions.has(version),
+    }),
+  );
 
   // Mobile loading skeleton
   const MobileLoadingEnhancedSkeleton = () => (
@@ -235,7 +224,7 @@ export function LatestUserTransactions({
     </div>
   );
 
-  // Mobile view header with Age/UTC toggle
+  // Mobile view header
   const MobileHeader = () => (
     <div className="flex items-center justify-between mb-3">
       <span className="text-sm text-muted-foreground">Time Display</span>
@@ -268,7 +257,6 @@ export function LatestUserTransactions({
           {isLoading ? (
             <MobileLoadingEnhancedSkeleton />
           ) : (
-            // Unified animation container - use different configs based on state
             <motion.div
               className="space-y-3"
               variants={
@@ -304,7 +292,6 @@ export function LatestUserTransactions({
                       }}
                       className="relative"
                     >
-                      {/* Highlight overlay for new items */}
                       {isNew && (
                         <motion.div
                           className="absolute inset-0 rounded-lg pointer-events-none"
@@ -331,114 +318,20 @@ export function LatestUserTransactions({
           )}
         </div>
       ) : (
-        /* Desktop View */
-        <StyledTable>
-          <StyledTableHeader>
-            <StyledTableHeaderRow>
-              <StyledTableHead>Transaction Hash</StyledTableHead>
-              <StyledTableHead>
-                <TimestampModeToggle
-                  mode={timestampMode}
-                  setMode={setTimestampMode}
-                />
-              </StyledTableHead>
-              <StyledTableHead>Sender</StyledTableHead>
-              <StyledTableHead className="hidden md:table-cell">
-                To
-              </StyledTableHead>
-              <StyledTableHead className="hidden sm:table-cell">
-                Function
-              </StyledTableHead>
-              <StyledTableHead className="hidden lg:table-cell text-right">
-                Amount
-              </StyledTableHead>
-              <StyledTableHead className="hidden lg:table-cell text-right">
-                Gas
-              </StyledTableHead>
-            </StyledTableHeaderRow>
-          </StyledTableHeader>
-          {isLoading ? (
-            <TableBody>
-              {Array.from({ length: limit }).map((_, i) => (
-                <TableRow key={i}>
-                  <TableCell colSpan={7}>
-                    <EnhancedSkeleton className="h-8 w-full" />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          ) : (
-            // Unified animation container - use different configs based on state
-            <motion.tbody
-              variants={
-                !hasAnimatedInitial
-                  ? containerVariants
-                  : updateContainerVariants
-              }
-              initial={!hasAnimatedInitial ? "hidden" : false}
-              animate={!hasAnimatedInitial ? "show" : "animate"}
-            >
-              <AnimatePresence mode="popLayout">
-                {displayedTransactions.map(({ version, data }, index) => {
-                  const isNew = highlightedVersions.has(version);
-                  return (
-                    <motion.tr
-                      key={version}
-                      layout={hasAnimatedInitial}
-                      custom={{ index, isNew }}
-                      variants={!hasAnimatedInitial ? itemVariants : undefined}
-                      initial={
-                        !hasAnimatedInitial
-                          ? "hidden"
-                          : isNew
-                            ? {
-                                opacity: 0,
-                                y: -24,
-                                scale: 0.96,
-                                backgroundColor: "rgba(0, 255, 127, 0.12)",
-                              }
-                            : false
-                      }
-                      animate={
-                        !hasAnimatedInitial
-                          ? "show"
-                          : {
-                              opacity: 1,
-                              y: 0,
-                              scale: 1,
-                              backgroundColor: "rgba(0, 0, 0, 0)", // Always animate to transparent
-                              transitionEnd: { backgroundColor: "" },
-                            }
-                      }
-                      exit="exit"
-                      transition={{
-                        layout: { type: "spring", stiffness: 200, damping: 25 },
-                        type: "spring",
-                        stiffness: 200,
-                        damping: 22,
-                        mass: 0.8,
-                        delay: isNew ? index * 0.06 : 0,
-                        backgroundColor: { duration: 2, ease: "easeOut" },
-                      }}
-                      className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
-                    >
-                      <UserTransactionRowCells
-                        version={version}
-                        transactionData={data}
-                        timestampMode={timestampMode}
-                        onToggleTimestampMode={() =>
-                          setTimestampMode((prev) =>
-                            prev === "age" ? "dateTime" : "age",
-                          )
-                        }
-                      />
-                    </motion.tr>
-                  );
-                })}
-              </AnimatePresence>
-            </motion.tbody>
-          )}
-        </StyledTable>
+        /* Desktop View - Use TransactionTable */
+        <TransactionTable
+          data={tableData}
+          columns={HOME_TRANSACTION_COLUMNS}
+          isLoading={isLoading}
+          loadingRowCount={limit}
+          timestampMode={timestampMode}
+          onToggleTimestampMode={() =>
+            setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
+          }
+          animationMode="realtime"
+          highlightedVersions={highlightedVersions}
+          hasAnimatedInitial={hasAnimatedInitial}
+        />
       )}
     </>
   );

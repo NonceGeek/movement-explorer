@@ -1,31 +1,23 @@
 import { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useQueries } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import {
-  StyledTable,
-  StyledTableHeader,
-  StyledTableHeaderRow,
-  StyledTableHead,
-  TableBody,
-} from "@/components/ui/table";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
+import { Types } from "aptos";
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
-import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
-import { UserTransactionRow } from "./UserTransactionRow";
-import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
+import { useGlobalStore } from "@/store/useGlobalStore";
+import { getTransaction } from "@/services";
+import {
+  TransactionTable,
+  TransactionPagination,
+  ALL_TRANSACTION_COLUMNS,
+  TransactionRowData,
+} from "@/components/transactions";
 
 const LIMIT = 20;
 const NUM_PAGES = 100;
 
 export function UserTransactions() {
+  const { aptos_client, network_value } = useGlobalStore();
   const searchParams = useSearchParams();
   const router = useRouter();
   const currentPage = parseInt(searchParams.get("page") ?? "1");
@@ -37,7 +29,22 @@ export function UserTransactions() {
   const startVersion = useGetUserTransactionVersions(1)[0];
   const versions = useGetUserTransactionVersions(LIMIT, startVersion, offset);
 
-  const isLoading = versions.length === 0;
+  // Fetch transaction details for all versions
+  const transactionQueries = useQueries({
+    queries: versions.map((version) => ({
+      queryKey: [
+        "transaction",
+        { txnHashOrVersion: version.toString() },
+        network_value,
+      ],
+      queryFn: () =>
+        getTransaction({ txnHashOrVersion: version.toString() }, aptos_client),
+    })),
+  });
+
+  const isLoading =
+    versions.length === 0 || transactionQueries.some((q) => q.isLoading);
+  const allSuccess = transactionQueries.every((q) => q.isSuccess);
 
   const handlePageChange = (page: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -46,37 +53,14 @@ export function UserTransactions() {
     router.push(`/transactions?${params.toString()}`);
   };
 
-  // Generate page numbers to show
-  const getVisiblePages = () => {
-    const pages: (number | "ellipsis")[] = [];
-    const showPages = 5;
-    const halfShow = Math.floor(showPages / 2);
-
-    let startPage = Math.max(1, currentPage - halfShow);
-    let endPage = Math.min(NUM_PAGES, currentPage + halfShow);
-
-    if (currentPage <= halfShow) {
-      endPage = Math.min(NUM_PAGES, showPages);
-    } else if (currentPage >= NUM_PAGES - halfShow) {
-      startPage = Math.max(1, NUM_PAGES - showPages + 1);
-    }
-
-    if (startPage > 1) {
-      pages.push(1);
-      if (startPage > 2) pages.push("ellipsis");
-    }
-
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(i);
-    }
-
-    if (endPage < NUM_PAGES) {
-      if (endPage < NUM_PAGES - 1) pages.push("ellipsis");
-      pages.push(NUM_PAGES);
-    }
-
-    return pages;
-  };
+  // Transform to TransactionRowData format
+  const tableData: TransactionRowData[] =
+    allSuccess && versions.length > 0
+      ? versions.map((version, index) => ({
+          version,
+          transaction: transactionQueries[index].data as Types.Transaction,
+        }))
+      : [];
 
   if (isLoading) {
     return (
@@ -89,112 +73,24 @@ export function UserTransactions() {
   return (
     <>
       <div className="overflow-x-auto">
-        <StyledTable>
-          <StyledTableHeader>
-            <StyledTableHeaderRow>
-              <StyledTableHead>Transaction Hash</StyledTableHead>
-              <StyledTableHead className="flex items-center">
-                Type
-                <TransactionTypeTooltip />
-              </StyledTableHead>
-              <StyledTableHead>
-                <TimestampModeToggle
-                  mode={timestampMode}
-                  setMode={setTimestampMode}
-                />
-              </StyledTableHead>
-              <StyledTableHead>Sender</StyledTableHead>
-              <StyledTableHead className="hidden md:table-cell">
-                To
-              </StyledTableHead>
-              <StyledTableHead className="hidden sm:table-cell">
-                Function
-              </StyledTableHead>
-              <StyledTableHead className="hidden lg:table-cell text-right">
-                Amount
-              </StyledTableHead>
-              <StyledTableHead className="hidden lg:table-cell text-right">
-                Gas
-              </StyledTableHead>
-            </StyledTableHeaderRow>
-          </StyledTableHeader>
-          <TableBody>
-            {versions.map((version) => (
-              <UserTransactionRow
-                key={version}
-                version={version}
-                timestampMode={timestampMode}
-                onToggleTimestampMode={() =>
-                  setTimestampMode((prev) =>
-                    prev === "age" ? "dateTime" : "age",
-                  )
-                }
-                className="animate-in slide-in-from-top-2 fade-in duration-500"
-              />
-            ))}
-          </TableBody>
-        </StyledTable>
+        <TransactionTable
+          data={tableData}
+          columns={ALL_TRANSACTION_COLUMNS}
+          isLoading={false}
+          timestampMode={timestampMode}
+          onToggleTimestampMode={() =>
+            setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
+          }
+          animationMode="none"
+        />
       </div>
 
       {/* Pagination */}
-      <div className="mt-6 flex justify-center">
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage > 1) handlePageChange(currentPage - 1);
-                }}
-                className={
-                  currentPage === 1
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-
-            {getVisiblePages().map((page, i) =>
-              page === "ellipsis" ? (
-                <PaginationItem key={`ellipsis-${i}`}>
-                  <PaginationEllipsis />
-                </PaginationItem>
-              ) : (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    href="#"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handlePageChange(page);
-                    }}
-                    isActive={page === currentPage}
-                    className="cursor-pointer"
-                  >
-                    {page}
-                  </PaginationLink>
-                </PaginationItem>
-              ),
-            )}
-
-            <PaginationItem>
-              <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage < NUM_PAGES)
-                    handlePageChange(currentPage + 1);
-                }}
-                className={
-                  currentPage === NUM_PAGES
-                    ? "pointer-events-none opacity-50"
-                    : "cursor-pointer"
-                }
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
-      </div>
+      <TransactionPagination
+        currentPage={currentPage}
+        totalPages={NUM_PAGES}
+        onPageChange={handlePageChange}
+      />
     </>
   );
 }

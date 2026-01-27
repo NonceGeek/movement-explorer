@@ -139,7 +139,7 @@ export function UserTransactionRowCells({
         )}
       </TableCell>
       {/* Function */}
-      <TableCell className="hidden sm:table-cell">
+      <TableCell className="hidden sm:table-cell w-[200px]">
         {functionName ? (
           <TransactionFunction transaction={transaction} />
         ) : (

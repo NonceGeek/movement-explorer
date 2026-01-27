@@ -31,7 +31,7 @@ export function CopyableAddress({
   address,
   href,
   className,
-  truncateLength = { start: 8, end: 6 },
+  truncateLength = { start: 6, end: 4 },
   showCopyButton = true,
   showFull = false,
   variant = "default",
@@ -105,7 +105,7 @@ export function CopyableAddress({
                   className={cn(
                     "p-1.5 rounded-md transition-all duration-200",
                     "text-muted-foreground hover:text-foreground",
-                    "hover:bg-muted/50 active:scale-90"
+                    "hover:bg-muted/50 active:scale-90",
                   )}
                   aria-label="Copy address"
                 >
@@ -113,13 +113,13 @@ export function CopyableAddress({
                     <Copy
                       className={cn(
                         "absolute inset-0 h-3.5 w-3.5 transition-all duration-200",
-                        copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                        copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
                       )}
                     />
                     <Check
                       className={cn(
                         "absolute inset-0 h-3.5 w-3.5 text-guild-green-500 transition-all duration-200",
-                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                        copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                       )}
                     />
                   </span>
@@ -140,7 +140,7 @@ export function CopyableAddress({
       className={cn(
         "font-mono text-sm break-all",
         variantStyles[variant],
-        className
+        className,
       )}
     >
       {displayAddress}
@@ -153,7 +153,7 @@ export function CopyableAddress({
       className={cn(
         "font-mono text-sm break-all group-hover:text-white transition-colors",
         variantStyles[variant],
-        className
+        className,
       )}
       onClick={(e) => e.stopPropagation()}
     >
@@ -168,7 +168,7 @@ export function CopyableAddress({
       <div
         className={cn(
           "inline-flex items-center gap-1",
-          showFull && "flex-wrap"
+          showFull && "flex-wrap",
         )}
       >
         {showFull ? (
@@ -194,7 +194,7 @@ export function CopyableAddress({
                   "p-1.5 rounded-md transition-all duration-200",
                   "text-muted-foreground hover:text-foreground",
                   "hover:bg-muted/50 active:scale-90",
-                  "group-hover:text-white/70 group-hover:hover:text-white group-hover:hover:bg-white/10"
+                  "group-hover:text-white/70 group-hover:hover:text-white group-hover:hover:bg-white/10",
                   // "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-1 focus:ring-offset-background"
                 )}
                 aria-label="Copy address"
@@ -203,13 +203,13 @@ export function CopyableAddress({
                   <Copy
                     className={cn(
                       "absolute inset-0 h-3.5 w-3.5 transition-all duration-200",
-                      copied ? "scale-0 opacity-0" : "scale-100 opacity-100"
+                      copied ? "scale-0 opacity-0" : "scale-100 opacity-100",
                     )}
                   />
                   <Check
                     className={cn(
                       "absolute inset-0 h-3.5 w-3.5 text-guild-green-500 transition-all duration-200",
-                      copied ? "scale-100 opacity-100" : "scale-0 opacity-0"
+                      copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                     )}
                   />
                 </span>

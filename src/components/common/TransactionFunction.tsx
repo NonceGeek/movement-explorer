@@ -1,6 +1,12 @@
 import Link from "next/link";
 import { Types } from "aptos";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TransactionFunctionProps {
   transaction: Types.Transaction;
@@ -62,14 +68,23 @@ export function TransactionFunction({
   const [address, moduleName, functionName] = parts;
 
   return (
-    <Link
-      href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
-      className={cn(
-        "px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors inline-block",
-        className,
-      )}
-    >
-      {moduleName}::{functionName}
-    </Link>
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
+            className={cn(
+              "px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors inline-block max-w-40 truncate align-middle",
+              className,
+            )}
+          >
+            {moduleName}::{functionName}
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-mono text-xs">{functionFullStr}</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

@@ -1,4 +1,5 @@
 import { Types } from "aptos";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import {
@@ -24,14 +25,17 @@ import {
 } from "@/constants/transaction";
 import Link from "next/link";
 import { TransactionFunction } from "@/components/common/TransactionFunction";
+import { TimestampToggle } from "@/components/common/TimestampToggle";
 
 export function AllTransactionRow({
   transaction,
   timestampMode = "age",
+  onToggleTimestampMode,
   className,
 }: {
   transaction: Types.Transaction;
   timestampMode?: "age" | "dateTime";
+  onToggleTimestampMode?: () => void;
   className?: string;
 }) {
   const status = "success" in transaction ? transaction.success : true;
@@ -97,12 +101,12 @@ export function AllTransactionRow({
         </TooltipProvider>
       </TableCell>
       {/* Timestamp (Age/UTC) */}
-      <TableCell className="text-muted-foreground text-sm transition-colors whitespace-nowrap">
-        {timestamp
-          ? timestampMode === "age"
-            ? formatAge(timestamp)
-            : formatDateTimeUTC(timestamp)
-          : "-"}
+      <TableCell className="text-muted-foreground text-sm whitespace-nowrap min-w-[120px]">
+        <TimestampToggle
+          timestamp={timestamp}
+          timestampMode={timestampMode}
+          onToggle={onToggleTimestampMode}
+        />
       </TableCell>
       {/* Sender */}
       <TableCell>

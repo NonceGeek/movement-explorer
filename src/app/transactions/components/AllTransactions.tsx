@@ -23,6 +23,7 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransactions, getLedgerInfo } from "@/services";
 import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
 import { AllTransactionRow } from "./AllTransactionRow";
+import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 
 const LIMIT = 20;
 
@@ -122,28 +123,10 @@ export function AllTransactions() {
                 <TransactionTypeTooltip />
               </StyledTableHead>
               <StyledTableHead>
-                <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-                  <button
-                    onClick={() => setTimestampMode("age")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "age"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    Age
-                  </button>
-                  <button
-                    onClick={() => setTimestampMode("dateTime")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "dateTime"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    UTC
-                  </button>
-                </div>
+                <TimestampModeToggle
+                  mode={timestampMode}
+                  setMode={setTimestampMode}
+                />
               </StyledTableHead>
               <StyledTableHead>Sender</StyledTableHead>
               <StyledTableHead className="hidden md:table-cell">
@@ -166,6 +149,11 @@ export function AllTransactions() {
                 key={tx.hash}
                 transaction={tx}
                 timestampMode={timestampMode}
+                onToggleTimestampMode={() =>
+                  setTimestampMode((prev) =>
+                    prev === "age" ? "dateTime" : "age",
+                  )
+                }
                 className="animate-in slide-in-from-top-2 fade-in duration-500"
               />
             ))}

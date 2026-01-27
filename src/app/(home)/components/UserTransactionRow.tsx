@@ -1,4 +1,5 @@
 "use client";
+import { motion, AnimatePresence } from "framer-motion";
 
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -22,11 +23,13 @@ import { formatAge, formatDateTimeUTC } from "@/utils/time";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { Types } from "aptos";
 import { TransactionFunction } from "@/components/common/TransactionFunction";
+import { TimestampToggle } from "@/components/common/TimestampToggle";
 
 export interface UserTransactionRowProps {
   version: number;
   transactionData?: Types.Transaction;
   timestampMode?: "age" | "dateTime";
+  onToggleTimestampMode?: () => void;
   className?: string;
 }
 
@@ -38,6 +41,7 @@ export function UserTransactionRowCells({
   version,
   transactionData,
   timestampMode = "age",
+  onToggleTimestampMode,
 }: Omit<UserTransactionRowProps, "className">) {
   const {
     data: fetchedTransaction,
@@ -92,12 +96,12 @@ export function UserTransactionRowCells({
         </div>
       </TableCell>
       {/* Timestamp */}
-      <TableCell className="text-muted-foreground text-sm transition-colors whitespace-nowrap">
-        {timestamp
-          ? timestampMode === "age"
-            ? formatAge(timestamp)
-            : formatDateTimeUTC(timestamp)
-          : "-"}
+      <TableCell className="text-muted-foreground text-sm whitespace-nowrap min-w-[120px]">
+        <TimestampToggle
+          timestamp={timestamp}
+          timestampMode={timestampMode}
+          onToggle={onToggleTimestampMode}
+        />
       </TableCell>
       {/* Sender */}
       <TableCell>
@@ -165,6 +169,7 @@ export function UserTransactionRow({
   version,
   transactionData,
   timestampMode = "age",
+  onToggleTimestampMode,
   className,
 }: UserTransactionRowProps) {
   const {
@@ -202,6 +207,7 @@ export function UserTransactionRow({
         version={version}
         transactionData={transaction}
         timestampMode={timestampMode}
+        onToggleTimestampMode={onToggleTimestampMode}
       />
     </TableRow>
   );

@@ -99,12 +99,12 @@ export function TransactionFunction({
               {moduleName}
             </span>
             <span className="text-muted-foreground/50 shrink-0">::</span>
-            <span className="text-primary font-medium truncate shrink-0">
+            <span className="text-guild-green-500 font-medium truncate shrink-0">
               {functionName}
             </span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent className="p-3 max-w-[320px] sm:max-w-[400px]">
+        <TooltipContent className="p-3 max-w-80 sm:max-w-100">
           <div className="flex flex-col gap-3">
             <div className="space-y-1">
               <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
@@ -128,7 +128,7 @@ export function TransactionFunction({
                 <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
                   Function
                 </span>
-                <div className="font-mono text-xs text-primary font-medium bg-primary/5 p-2 rounded border border-primary/10 truncate">
+                <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 truncate">
                   {functionName}
                 </div>
               </div>

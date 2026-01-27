@@ -20,6 +20,7 @@ import {
 import useGetUserTransactionVersions from "@/hooks/transactions/useGetUserTransactionVersions";
 import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
 import { UserTransactionRow } from "./UserTransactionRow";
+import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 
 const LIMIT = 20;
 const NUM_PAGES = 100;
@@ -97,28 +98,10 @@ export function UserTransactions() {
                 <TransactionTypeTooltip />
               </StyledTableHead>
               <StyledTableHead>
-                <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-                  <button
-                    onClick={() => setTimestampMode("age")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "age"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    Age
-                  </button>
-                  <button
-                    onClick={() => setTimestampMode("dateTime")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "dateTime"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    UTC
-                  </button>
-                </div>
+                <TimestampModeToggle
+                  mode={timestampMode}
+                  setMode={setTimestampMode}
+                />
               </StyledTableHead>
               <StyledTableHead>Sender</StyledTableHead>
               <StyledTableHead className="hidden md:table-cell">
@@ -141,6 +124,11 @@ export function UserTransactions() {
                 key={version}
                 version={version}
                 timestampMode={timestampMode}
+                onToggleTimestampMode={() =>
+                  setTimestampMode((prev) =>
+                    prev === "age" ? "dateTime" : "age",
+                  )
+                }
                 className="animate-in slide-in-from-top-2 fade-in duration-500"
               />
             ))}

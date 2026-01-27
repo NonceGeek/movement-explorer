@@ -9,7 +9,7 @@ import {
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StyledTableRow, TableCell, TableRow } from "@/components/ui/table";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { formatAge, formatDateTimeUTC } from "@/utils/time";
+import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { cn } from "@/lib/utils";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import {
@@ -28,10 +28,12 @@ import { TransactionFunction } from "@/components/common/TransactionFunction";
 export function UserTransactionRow({
   version,
   timestampMode = "age",
+  onToggleTimestampMode,
   className,
 }: {
   version: number;
   timestampMode?: "age" | "dateTime";
+  onToggleTimestampMode?: () => void;
   className?: string;
 }) {
   const {
@@ -110,11 +112,11 @@ export function UserTransactionRow({
       </TableCell>
       {/* Timestamp (Age/UTC) */}
       <TableCell className="text-muted-foreground text-sm transition-colors whitespace-nowrap">
-        {timestamp
-          ? timestampMode === "age"
-            ? formatAge(timestamp)
-            : formatDateTimeUTC(timestamp)
-          : "-"}
+        <TimestampToggle
+          timestamp={timestamp}
+          timestampMode={timestampMode}
+          onToggle={onToggleTimestampMode}
+        />
       </TableCell>
       {/* Sender */}
       <TableCell>

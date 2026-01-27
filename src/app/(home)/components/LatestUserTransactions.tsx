@@ -23,6 +23,7 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import { Types } from "aptos";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 
 // Animation variants for initial load (stagger effect)
 const containerVariants: Variants = {
@@ -238,28 +239,7 @@ export function LatestUserTransactions({
   const MobileHeader = () => (
     <div className="flex items-center justify-between mb-3">
       <span className="text-sm text-muted-foreground">Time Display</span>
-      <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-        <button
-          onClick={() => setTimestampMode("age")}
-          className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-            timestampMode === "age"
-              ? "bg-guild-green-500 text-black shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          Age
-        </button>
-        <button
-          onClick={() => setTimestampMode("dateTime")}
-          className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-            timestampMode === "dateTime"
-              ? "bg-guild-green-500 text-black shadow-sm"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-          }`}
-        >
-          UTC
-        </button>
-      </div>
+      <TimestampModeToggle mode={timestampMode} setMode={setTimestampMode} />
     </div>
   );
 
@@ -357,28 +337,10 @@ export function LatestUserTransactions({
             <StyledTableHeaderRow>
               <StyledTableHead>Transaction Hash</StyledTableHead>
               <StyledTableHead>
-                <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50">
-                  <button
-                    onClick={() => setTimestampMode("age")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "age"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    Age
-                  </button>
-                  <button
-                    onClick={() => setTimestampMode("dateTime")}
-                    className={`px-3 py-1 text-xs font-medium rounded transition-all ${
-                      timestampMode === "dateTime"
-                        ? "bg-guild-green-500 text-black shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
-                  >
-                    UTC
-                  </button>
-                </div>
+                <TimestampModeToggle
+                  mode={timestampMode}
+                  setMode={setTimestampMode}
+                />
               </StyledTableHead>
               <StyledTableHead>Sender</StyledTableHead>
               <StyledTableHead className="hidden md:table-cell">
@@ -464,6 +426,11 @@ export function LatestUserTransactions({
                         version={version}
                         transactionData={data}
                         timestampMode={timestampMode}
+                        onToggleTimestampMode={() =>
+                          setTimestampMode((prev) =>
+                            prev === "age" ? "dateTime" : "age",
+                          )
+                        }
                       />
                     </motion.tr>
                   );

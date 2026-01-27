@@ -30,21 +30,21 @@ const containerVariants: Variants = {
   show: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.06,  // Time between each item
-      delayChildren: 0.05,    // Initial delay before first item
+      staggerChildren: 0.06, // Time between each item
+      delayChildren: 0.05, // Initial delay before first item
     },
   },
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 16 },  // Shorter distance for smoother feel
+  hidden: { opacity: 0, y: 16 }, // Shorter distance for smoother feel
   show: {
     opacity: 1,
     y: 0,
     transition: {
       type: "tween",
-      duration: 0.4,        // Smooth 400ms duration
-      ease: [0.25, 0.1, 0.25, 1],  // Custom easing (ease-out-quad like)
+      duration: 0.4, // Smooth 400ms duration
+      ease: [0.25, 0.1, 0.25, 1], // Custom easing (ease-out-quad like)
     },
   },
 };
@@ -68,8 +68,8 @@ const updateItemVariants: Variants = {
     scale: 1,
     transition: {
       type: "spring",
-      stiffness: 200,   // Slower spring
-      damping: 22,      // Smooth landing
+      stiffness: 200, // Slower spring
+      damping: 22, // Smooth landing
       mass: 0.8,
       delay: custom.index * 0.06, // Slower stagger
     },
@@ -78,7 +78,7 @@ const updateItemVariants: Variants = {
     opacity: 0,
     x: -30,
     transition: {
-      duration: 0.3,    // Slower exit
+      duration: 0.3, // Slower exit
       ease: "easeOut",
     },
   },
@@ -142,7 +142,9 @@ export function LatestUserTransactions({
   const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
 
   // Track newly added versions for highlight effect
-  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(new Set());
+  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
+    new Set(),
+  );
 
   // Timestamp display mode: "age" (default) or "dateTime"
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
@@ -166,11 +168,13 @@ export function LatestUserTransactions({
       if (currentVersions !== newVersionsStr) {
         // Detect newly added versions (only after initial animation completed)
         if (hasAnimatedInitial) {
-          const currentVersionSet = new Set(displayedTransactions.map((t) => t.version));
+          const currentVersionSet = new Set(
+            displayedTransactions.map((t) => t.version),
+          );
           const newlyAdded = newData
             .filter((t) => !currentVersionSet.has(t.version))
             .map((t) => t.version);
-          
+
           if (newlyAdded.length > 0) {
             setHighlightedVersions(new Set(newlyAdded));
           }
@@ -183,7 +187,13 @@ export function LatestUserTransactions({
         }
       }
     }
-  }, [transactionQueries, userTransactionVersions, displayedTransactions, isInitialLoad, hasAnimatedInitial]);
+  }, [
+    transactionQueries,
+    userTransactionVersions,
+    displayedTransactions,
+    isInitialLoad,
+    hasAnimatedInitial,
+  ]);
 
   // Clear highlight after animation completes
   useEffect(() => {
@@ -197,7 +207,11 @@ export function LatestUserTransactions({
 
   // Mark initial animation as complete after a delay
   useEffect(() => {
-    if (!isInitialLoad && displayedTransactions.length > 0 && !hasAnimatedInitial) {
+    if (
+      !isInitialLoad &&
+      displayedTransactions.length > 0 &&
+      !hasAnimatedInitial
+    ) {
       const timer = setTimeout(() => {
         setHasAnimatedInitial(true);
       }, 800); // Wait for stagger animation to complete
@@ -277,7 +291,11 @@ export function LatestUserTransactions({
             // Unified animation container - use different configs based on state
             <motion.div
               className="space-y-3"
-              variants={!hasAnimatedInitial ? containerVariants : updateContainerVariants}
+              variants={
+                !hasAnimatedInitial
+                  ? containerVariants
+                  : updateContainerVariants
+              }
               initial={!hasAnimatedInitial ? "hidden" : false}
               animate={!hasAnimatedInitial ? "show" : "animate"}
             >
@@ -289,8 +307,16 @@ export function LatestUserTransactions({
                       key={version}
                       layout={hasAnimatedInitial}
                       custom={{ index, isNew }}
-                      variants={!hasAnimatedInitial ? itemVariants : updateItemVariants}
-                      initial={!hasAnimatedInitial ? "hidden" : (isNew ? "initial" : false)}
+                      variants={
+                        !hasAnimatedInitial ? itemVariants : updateItemVariants
+                      }
+                      initial={
+                        !hasAnimatedInitial
+                          ? "hidden"
+                          : isNew
+                            ? "initial"
+                            : false
+                      }
                       animate={!hasAnimatedInitial ? "show" : "animate"}
                       exit="exit"
                       transition={{
@@ -382,7 +408,11 @@ export function LatestUserTransactions({
           ) : (
             // Unified animation container - use different configs based on state
             <motion.tbody
-              variants={!hasAnimatedInitial ? containerVariants : updateContainerVariants}
+              variants={
+                !hasAnimatedInitial
+                  ? containerVariants
+                  : updateContainerVariants
+              }
               initial={!hasAnimatedInitial ? "hidden" : false}
               animate={!hasAnimatedInitial ? "show" : "animate"}
             >
@@ -396,20 +426,26 @@ export function LatestUserTransactions({
                       custom={{ index, isNew }}
                       variants={!hasAnimatedInitial ? itemVariants : undefined}
                       initial={
-                        !hasAnimatedInitial 
-                          ? "hidden" 
-                          : isNew 
-                            ? { opacity: 0, y: -24, scale: 0.96, backgroundColor: "rgba(0, 255, 127, 0.12)" }
+                        !hasAnimatedInitial
+                          ? "hidden"
+                          : isNew
+                            ? {
+                                opacity: 0,
+                                y: -24,
+                                scale: 0.96,
+                                backgroundColor: "rgba(0, 255, 127, 0.12)",
+                              }
                             : false
                       }
                       animate={
-                        !hasAnimatedInitial 
-                          ? "show" 
+                        !hasAnimatedInitial
+                          ? "show"
                           : {
                               opacity: 1,
                               y: 0,
                               scale: 1,
                               backgroundColor: "rgba(0, 0, 0, 0)", // Always animate to transparent
+                              transitionEnd: { backgroundColor: "" },
                             }
                       }
                       exit="exit"

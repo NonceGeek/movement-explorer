@@ -25,6 +25,8 @@ export interface CopyableAddressProps {
   variant?: "default" | "muted" | "hash" | "label";
   /** Show account label (known name, ANS domain) instead of address if available */
   showLabel?: boolean;
+  /** Optional leading icon */
+  icon?: React.ReactNode;
 }
 
 export function CopyableAddress({
@@ -36,19 +38,22 @@ export function CopyableAddress({
   showFull = false,
   variant = "default",
   showLabel = false,
+  icon,
 }: CopyableAddressProps) {
   const [copied, setCopied] = useState(false);
   const accountLabel = useGetAccountLabel(address, showLabel);
 
   // Determine display text
-  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${address.slice(-truncateLength.end)}`;
+  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${
+    truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
+  }`;
   const displayAddress = showFull ? address : truncatedAddress;
 
   // When using label variant with showLabel, delegate to AccountLabelBadge for styling
   const useLabelBadge = variant === "label" && showLabel && accountLabel?.name;
 
   const variantStyles = {
-    default: href ? "text-primary hover:underline" : "",
+    default: href ? "text-primary hover:text-primary/80 transition-colors" : "",
     muted: "text-muted-foreground",
     hash: "text-foreground bg-muted/50 px-2 py-1 rounded-md",
     label: "bg-muted px-3 py-1 rounded-sm hover:opacity-80 transition-opacity",
@@ -138,11 +143,12 @@ export function CopyableAddress({
   const AddressContent = (
     <span
       className={cn(
-        "font-mono text-sm break-all",
+        "font-mono text-sm break-all flex items-center gap-1.5",
         variantStyles[variant],
         className,
       )}
     >
+      {icon}
       {displayAddress}
     </span>
   );
@@ -151,12 +157,13 @@ export function CopyableAddress({
     <Link
       href={href}
       className={cn(
-        "font-mono text-sm break-all group-hover:text-white transition-colors",
+        "font-mono text-sm break-all transition-colors flex items-center gap-1.5",
         variantStyles[variant],
         className,
       )}
       onClick={(e) => e.stopPropagation()}
     >
+      {icon}
       {displayAddress}
     </Link>
   ) : (
@@ -167,8 +174,10 @@ export function CopyableAddress({
     <TooltipProvider>
       <div
         className={cn(
-          "inline-flex items-center gap-1",
+          "inline-flex items-center gap-1 transition-all duration-200 group/address",
           showFull && "flex-wrap",
+          variant === "default" &&
+            "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
         )}
       >
         {showFull ? (
@@ -191,11 +200,10 @@ export function CopyableAddress({
               <button
                 onClick={handleCopy}
                 className={cn(
-                  "p-1.5 rounded-md transition-all duration-200",
-                  "text-muted-foreground hover:text-foreground",
-                  "hover:bg-muted/50 active:scale-90",
-                  "group-hover:text-white/70 group-hover:hover:text-white group-hover:hover:bg-white/10",
-                  // "focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-1 focus:ring-offset-background"
+                  "p-1.5 rounded-md transition-all duration-200 cursor-pointer",
+                  "text-muted-foreground hover:text-primary",
+                  "opacity-0 group-hover/address:opacity-100",
+                  "hover:bg-primary/20 active:scale-90",
                 )}
                 aria-label="Copy address"
               >

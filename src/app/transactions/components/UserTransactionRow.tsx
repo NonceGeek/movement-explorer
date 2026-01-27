@@ -82,7 +82,7 @@ export function UserTransactionRow({
             <CopyableAddress
               address={transaction.hash}
               href={`/txn/${transaction.hash}`}
-              className="text-primary hover:underline font-mono group-hover:text-guild-green-500 transition-colors"
+              className="text-primary hover:underline font-mono transition-colors"
               truncateLength={{ start: 6, end: 6 }}
             />
           ) : (
@@ -95,7 +95,7 @@ export function UserTransactionRow({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <div className="flex items-center gap-1.5 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors">
+              <div className="flex items-center gap-1.5 text-muted-foreground transition-colors">
                 {typeInfo.icon}
                 <span className="text-xs font-medium capitalize">
                   {typeInfo.label}
@@ -109,7 +109,7 @@ export function UserTransactionRow({
         </TooltipProvider>
       </TableCell>
       {/* Timestamp (Age/UTC) */}
-      <TableCell className="text-muted-foreground text-sm group-hover:text-guild-green-500/90 transition-colors whitespace-nowrap">
+      <TableCell className="text-muted-foreground text-sm transition-colors whitespace-nowrap">
         {timestamp
           ? timestampMode === "age"
             ? formatAge(timestamp)
@@ -121,9 +121,7 @@ export function UserTransactionRow({
         {sender ? (
           <CopyableAddress address={sender} href={`/account/${sender}`} />
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Receiver */}
@@ -134,9 +132,9 @@ export function UserTransactionRow({
               <Tooltip>
                 <TooltipTrigger asChild>
                   {counterparty.role === "smartContract" ? (
-                    <FileText className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
+                    <FileText className="h-4 w-4 text-muted-foreground transition-colors" />
                   ) : (
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
+                    <ArrowRight className="h-4 w-4 text-muted-foreground transition-colors" />
                   )}
                 </TooltipTrigger>
                 <TooltipContent>
@@ -152,9 +150,7 @@ export function UserTransactionRow({
             />
           </div>
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Function */}
@@ -162,33 +158,27 @@ export function UserTransactionRow({
         {functionName ? (
           <TransactionFunction transaction={transaction} />
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Amount */}
       <TableCell className="hidden lg:table-cell text-right">
         {amount !== undefined && amount > 0 ? (
-          <span className="font-mono group-hover:text-guild-green-500 transition-colors">
+          <span className="font-mono transition-colors">
             {formatMoveAmount(amount)} MOVE
           </span>
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Gas */}
       <TableCell className="hidden lg:table-cell text-right">
         {gasUsed && gasUnitPrice ? (
-          <span className="font-mono text-sm text-muted-foreground group-hover:text-guild-green-500/80 transition-colors">
+          <span className="font-mono text-sm text-muted-foreground transition-colors">
             {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
           </span>
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
     </StyledTableRow>

@@ -23,7 +23,14 @@ export function TransactionFunction({
 
   if (transaction.payload.type === "script_payload") {
     return (
-      <span className={cn("text-muted-foreground", className)}>Script</span>
+      <span
+        className={cn(
+          "inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs font-mono text-muted-foreground",
+          className,
+        )}
+      >
+        Script
+      </span>
     );
   }
 
@@ -37,7 +44,14 @@ export function TransactionFunction({
       functionFullStr = transaction.payload.transaction_payload.function;
     } else {
       return (
-        <span className={cn("text-muted-foreground", className)}>Multisig</span>
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs font-mono text-muted-foreground",
+            className,
+          )}
+        >
+          Multisig
+        </span>
       );
     }
   } else if ("function" in transaction.payload) {
@@ -74,11 +88,20 @@ export function TransactionFunction({
           <Link
             href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
             className={cn(
-              "px-2 py-1 bg-muted rounded text-xs font-mono group-hover:bg-guild-green-500/20 group-hover:text-guild-green-500 transition-colors inline-block max-w-40 truncate align-middle",
+              "inline-flex items-center gap-0.5 px-2.5 py-1 rounded-md bg-primary/10 hover:bg-primary/20",
+              "text-xs font-mono transition-colors border border-primary/10",
+              "max-w-[200px] sm:max-w-[400px]",
               className,
             )}
+            onClick={(e) => e.stopPropagation()}
           >
-            {moduleName}::{functionName}
+            <span className="text-muted-foreground truncate shrink">
+              {moduleName}
+            </span>
+            <span className="text-muted-foreground/50 shrink-0">::</span>
+            <span className="text-primary font-medium truncate shrink-0">
+              {functionName}
+            </span>
           </Link>
         </TooltipTrigger>
         <TooltipContent>

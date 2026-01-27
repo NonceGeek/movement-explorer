@@ -76,21 +76,23 @@ export function UserTransactionRowCells({
       {/* Version + Status Icon */}
       <TableCell>
         <div className="flex items-center gap-2">
-          {status ? (
-            <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
-          ) : (
-            <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
-          )}
           <CopyableAddress
             address={transaction?.hash || ""}
             href={`/txn/${transaction?.hash}`}
-            className="text-primary hover:underline font-mono group-hover:text-guild-green-500 transition-colors"
-            truncateLength={{ start: 6, end: 6 }}
+            className="text-primary font-mono transition-colors"
+            truncateLength={{ start: 10, end: 0 }}
+            icon={
+              status ? (
+                <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+              ) : (
+                <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+              )
+            }
           />
         </div>
       </TableCell>
       {/* Timestamp */}
-      <TableCell className="text-muted-foreground text-sm group-hover:text-guild-green-500/90 transition-colors whitespace-nowrap">
+      <TableCell className="text-muted-foreground text-sm transition-colors whitespace-nowrap">
         {timestamp
           ? timestampMode === "age"
             ? formatAge(timestamp)
@@ -102,74 +104,53 @@ export function UserTransactionRowCells({
         {sender ? (
           <CopyableAddress address={sender} href={`/account/${sender}`} />
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Receiver */}
       <TableCell className="hidden md:table-cell">
         {counterparty ? (
-          <div className="flex items-center gap-1">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  {counterparty.role === "smartContract" ? (
-                    <FileText className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
-                  ) : (
-                    <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-guild-green-500/90 transition-colors" />
-                  )}
-                </TooltipTrigger>
-                <TooltipContent>
-                  {counterparty.role === "smartContract"
-                    ? "Smart Contract"
-                    : "Receiver"}
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-            <CopyableAddress
-              address={counterparty.address}
-              href={`/account/${counterparty.address}`}
-            />
-          </div>
+          <CopyableAddress
+            address={counterparty.address}
+            href={`/account/${counterparty.address}`}
+            icon={
+              counterparty.role === "smartContract" ? (
+                <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              ) : (
+                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
+              )
+            }
+          />
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Function */}
-      <TableCell className="hidden sm:table-cell w-[200px]">
+      <TableCell className="hidden sm:table-cell w-[300px]">
         {functionName ? (
           <TransactionFunction transaction={transaction} />
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Amount */}
       <TableCell className="hidden lg:table-cell text-right">
         {amount !== undefined && amount > 0 ? (
-          <span className="font-mono group-hover:text-guild-green-500 transition-colors">
+          <span className="font-mono transition-colors">
             {formatMoveAmount(amount)} MOVE
           </span>
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
       {/* Gas */}
       <TableCell className="hidden lg:table-cell text-right">
         {gasUsed && gasUnitPrice ? (
-          <span className="font-mono text-sm text-muted-foreground group-hover:text-guild-green-500/80 transition-colors">
+          <span className="font-mono text-sm text-muted-foreground transition-colors">
             {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
           </span>
         ) : (
-          <span className="text-muted-foreground group-hover:text-guild-green-500/70 transition-colors">
-            -
-          </span>
+          <span className="text-muted-foreground transition-colors">-</span>
         )}
       </TableCell>
     </>

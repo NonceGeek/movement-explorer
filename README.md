@@ -25,7 +25,7 @@ A modern, high-performance blockchain explorer for the Movement Network, built w
 
 Check out our development roadmap for planned features and milestones:
 
-👉 [**View Roadmap / 查看路线图**](./ROADMAP.md)
+👉 [**View Roadmap**](./ROADMAP.md)
 
 - **Phase 1**: MVP Core Features (Basic browsing, Search)
 - **Phase 2**: Feature Enhancement (Deep details, Charts, Animation)

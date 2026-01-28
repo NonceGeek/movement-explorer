@@ -41,6 +41,12 @@ const TOP_USER_TRANSACTIONS_QUERY = gql`
   }
 `;
 
+interface UserTransactionsQueryResponse {
+  user_transactions: {
+    version: any;
+  }[];
+}
+
 interface UserTransactionsProps {
   headerEndDecorator?: React.ReactNode;
 }
@@ -68,13 +74,13 @@ export function UserTransactions({
   const { data: polledLatestVersion } = useQuery({
     queryKey: ["userTransactions", "latest", network_value],
     queryFn: async () => {
-      const response = await apolloClient.query({
+      const response = await apolloClient.query<UserTransactionsQueryResponse>({
         query: TOP_USER_TRANSACTIONS_QUERY,
         variables: { limit: 1 },
         fetchPolicy: "network-only",
       });
-      const versions = response.data.user_transactions.map(
-        (t: { version: any }) => t.version,
+      const versions = (response.data?.user_transactions || []).map(
+        (t) => t.version,
       );
       return versions.length > 0 ? parseInt(versions[0]) : 0;
     },
@@ -123,14 +129,14 @@ export function UserTransactions({
       }
       // Else: First page, no anchor yet (initial load) -> TOP_USER_TRANSACTIONS_QUERY
 
-      const response = await apolloClient.query({
+      const response = await apolloClient.query<UserTransactionsQueryResponse>({
         query,
         variables,
         fetchPolicy: "network-only",
       });
 
-      const versions: number[] = response.data.user_transactions.map(
-        (t: { version: any }) => t.version,
+      const versions: number[] = (response.data?.user_transactions || []).map(
+        (t) => t.version,
       );
 
       if (versions.length === 0) return [];

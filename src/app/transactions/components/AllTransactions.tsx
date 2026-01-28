@@ -3,6 +3,8 @@ import {
   useInfiniteQuery,
   useQuery,
   useIsFetching,
+  UseInfiniteQueryResult,
+  InfiniteData,
 } from "@tanstack/react-query";
 import { Types } from "aptos";
 import { Loader2 } from "lucide-react";
@@ -73,7 +75,10 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     isFetchingNextPage,
     isFetching,
     isLoading: isTxLoading,
-  } = useInfiniteQuery({
+  }: UseInfiniteQueryResult<
+    InfiniteData<Types.Transaction[]>,
+    Error
+  > = useInfiniteQuery({
     queryKey: ["transactions", "infinite", network_value, queryMaxVersion],
     queryFn: async ({ pageParam }) => {
       // Ensure we don't request negative start

@@ -4,10 +4,14 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
-import { Loader2, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { UserTransactions } from "./components/UserTransactions";
 import { AllTransactions } from "./components/AllTransactions";
+import {
+  TransactionTable,
+  ALL_TRANSACTION_COLUMNS,
+} from "@/components/transactions";
 
 function TransactionsContent() {
   const searchParams = useSearchParams();
@@ -47,11 +51,18 @@ function TransactionsContent() {
     setIsUserTransactions(!isUserTransactions);
   };
 
-  // Show loading while determining the type
+  // Show skeleton while determining the type
   if (isUserTransactions === null) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      <div className="overflow-x-auto mt-[60px]">
+        <TransactionTable
+          data={[]}
+          columns={ALL_TRANSACTION_COLUMNS}
+          isLoading={true}
+          loadingRowCount={20}
+          timestampMode="age"
+          onToggleTimestampMode={() => {}}
+        />
       </div>
     );
   }
@@ -86,8 +97,15 @@ export default function TransactionsPage() {
       <div className="container mx-auto px-4 py-8">
         <Suspense
           fallback={
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+            <div className="overflow-x-auto mt-[60px]">
+              <TransactionTable
+                data={[]}
+                columns={ALL_TRANSACTION_COLUMNS}
+                isLoading={true}
+                loadingRowCount={20}
+                timestampMode="age"
+                onToggleTimestampMode={() => {}}
+              />
             </div>
           }
         >

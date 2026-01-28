@@ -30,3 +30,4 @@ export {
   TransactionTableRowCells,
 } from "./TransactionTableRow";
 export { TransactionPagination } from "./TransactionPagination";
+export { NewDataNotification } from "./NewDataNotification";

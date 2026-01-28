@@ -162,7 +162,7 @@ const StyledTableRow = React.forwardRef<
   <TableRow
     ref={ref}
     className={cn(
-      "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
+      "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-16",
       className,
     )}
     {...props}

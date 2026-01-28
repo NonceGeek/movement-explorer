@@ -180,7 +180,7 @@ export function TransactionTable({
                   delay: isNew ? index * 0.06 : 0,
                   backgroundColor: { duration: 2, ease: "easeOut" },
                 }}
-                className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14"
+                className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-16"
               >
                 <TransactionTableRowCells
                   version={version}

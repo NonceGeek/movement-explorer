@@ -17,7 +17,11 @@ import {
 } from "@/components/ui/table";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useIsFetching,
+} from "@tanstack/react-query";
 import { getLedgerInfo, getRecentBlocks } from "@/services";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { Loader2 } from "lucide-react";
@@ -51,6 +55,8 @@ const variants = {
 
 function BlocksContent() {
   const { aptos_client, network_value } = useGlobalStore();
+  const isListFetching =
+    useIsFetching({ queryKey: ["blocks", "infinite", network_value] }) > 0;
 
   // State for manual refresh
   const [frozenMaxHeight, setFrozenMaxHeight] = useState<number>(0);
@@ -63,6 +69,7 @@ function BlocksContent() {
     queryKey: ["ledgerInfo", network_value],
     queryFn: () => getLedgerInfo(aptos_client),
     refetchInterval: POLL_INTERVAL,
+    enabled: !isListFetching,
   });
 
   const latestMaxHeight = ledgerInfo ? parseInt(ledgerInfo.block_height) : 0;

@@ -1,6 +1,10 @@
 import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useIsFetching,
+} from "@tanstack/react-query";
 import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
 import { Types } from "aptos";
@@ -49,12 +53,46 @@ export function UserTransactions({
 
   // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const isListFetching =
+    useIsFetching({
+      queryKey: ["userTransactions", "infinite", network_value],
+    }) > 0;
 
   // State for manual refresh
   const [frozenLatestVersion, setFrozenLatestVersion] = useState<number>(0);
   const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
     new Set(),
   );
+
+  // Poll for the absolute latest version to detect new transactions
+  const { data: polledLatestVersion } = useQuery({
+    queryKey: ["userTransactions", "latest", network_value],
+    queryFn: async () => {
+      const response = await apolloClient.query({
+        query: TOP_USER_TRANSACTIONS_QUERY,
+        variables: { limit: 1 },
+        fetchPolicy: "network-only",
+      });
+      const versions = response.data.user_transactions.map(
+        (t: { version: any }) => t.version,
+      );
+      return versions.length > 0 ? parseInt(versions[0]) : 0;
+    },
+    refetchInterval: POLL_INTERVAL,
+    enabled: !isListFetching,
+  });
+
+  const latestVersionRaw = polledLatestVersion ?? 0;
+
+  // Initialize frozenLatestVersion on first valid load
+  useEffect(() => {
+    if (frozenLatestVersion === 0 && latestVersionRaw > 0) {
+      setFrozenLatestVersion(latestVersionRaw);
+    }
+  }, [latestVersionRaw, frozenLatestVersion]);
+
+  // Use frozen state as the anchor for the list unless it's initial load
+  const anchorVersion = frozenLatestVersion > 0 ? frozenLatestVersion : null;
 
   const {
     data,
@@ -116,27 +154,6 @@ export function UserTransactions({
       return undefined;
     },
     enabled: true, // Always enabled, logic inside queryFn handles null anchor
-  });
-
-  const shouldPoll = !isFetching;
-
-  // Poll for the absolute latest version to detect new transactions
-  // We use react-query wrapping apollo call for polling convenience
-  const { data: polledLatestVersion } = useQuery({
-    queryKey: ["userTransactions", "latest", network_value],
-    queryFn: async () => {
-      const response = await apolloClient.query({
-        query: TOP_USER_TRANSACTIONS_QUERY,
-        variables: { limit: 1 },
-        fetchPolicy: "network-only",
-      });
-      const versions = response.data.user_transactions.map(
-        (t: { version: any }) => t.version,
-      );
-      return versions.length > 0 ? parseInt(versions[0]) : 0;
-    },
-    refetchInterval: POLL_INTERVAL,
-    enabled: shouldPoll,
   });
 
   // Calculate new transactions count

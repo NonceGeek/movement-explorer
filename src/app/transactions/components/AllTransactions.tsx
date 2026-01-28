@@ -1,5 +1,9 @@
 import { useState, useEffect } from "react";
-import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import {
+  useInfiniteQuery,
+  useQuery,
+  useIsFetching,
+} from "@tanstack/react-query";
 import { Types } from "aptos";
 import { Loader2 } from "lucide-react";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -22,6 +26,9 @@ interface AllTransactionsProps {
 export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const { aptos_client, network_value } = useGlobalStore();
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const isListFetching =
+    useIsFetching({ queryKey: ["transactions", "infinite", network_value] }) >
+    0;
 
   // State for manual refresh
   // frozenMaxVersion is the anchor for the current list
@@ -29,6 +36,35 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
     new Set(),
   );
+
+  // Poll ledger info to detect new transactions
+  const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
+    queryKey: ["ledgerInfo", network_value],
+    queryFn: () => getLedgerInfo(aptos_client),
+    refetchInterval: POLL_INTERVAL,
+    enabled: !isListFetching,
+  });
+
+  const latestMaxVersion = ledgerInfo ? parseInt(ledgerInfo.ledger_version) : 0;
+
+  // Initialize frozenMaxVersion once on first load
+  useEffect(() => {
+    if (frozenMaxVersion === 0 && latestMaxVersion > 0) {
+      setFrozenMaxVersion(latestMaxVersion);
+    }
+  }, [latestMaxVersion, frozenMaxVersion]);
+
+  // Calculate new transactions count
+  // If frozenMaxVersion is 0, we don't calculate new count yet to avoid showing banner on init
+  const newCount =
+    frozenMaxVersion > 0 ? Math.max(0, latestMaxVersion - frozenMaxVersion) : 0;
+
+  // Use frozenMaxVersion for the list query to keep it stable
+  // If frozenMaxVersion is 0 (initial), use latestMaxVersion (which might also be 0, but usually not for long)
+  // We use max(0, ver) to be safe
+  const queryMaxVersion =
+    frozenMaxVersion > 0 ? frozenMaxVersion : latestMaxVersion;
+  const initialStart = Math.max(0, queryMaxVersion - LIMIT + 1);
 
   const {
     data,
@@ -62,39 +98,6 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     },
     enabled: queryMaxVersion > 0,
   });
-
-  // Pause polling if we are currently fetching data (e.g. refreshing)
-  // This avoids race conditions and UI flickering
-  const shouldPoll = !isFetching;
-
-  // Poll ledger info to detect new transactions
-  const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
-    queryKey: ["ledgerInfo", network_value],
-    queryFn: () => getLedgerInfo(aptos_client),
-    refetchInterval: POLL_INTERVAL,
-    enabled: shouldPoll,
-  });
-
-  const latestMaxVersion = ledgerInfo ? parseInt(ledgerInfo.ledger_version) : 0;
-
-  // Initialize frozenMaxVersion once on first load
-  useEffect(() => {
-    if (frozenMaxVersion === 0 && latestMaxVersion > 0) {
-      setFrozenMaxVersion(latestMaxVersion);
-    }
-  }, [latestMaxVersion, frozenMaxVersion]);
-
-  // Calculate new transactions count
-  // If frozenMaxVersion is 0, we don't calculate new count yet to avoid showing banner on init
-  const newCount =
-    frozenMaxVersion > 0 ? Math.max(0, latestMaxVersion - frozenMaxVersion) : 0;
-
-  // Use frozenMaxVersion for the list query to keep it stable
-  // If frozenMaxVersion is 0 (initial), use latestMaxVersion (which might also be 0, but usually not for long)
-  // We use max(0, ver) to be safe
-  const queryMaxVersion =
-    frozenMaxVersion > 0 ? frozenMaxVersion : latestMaxVersion;
-  const initialStart = Math.max(0, queryMaxVersion - LIMIT + 1);
 
   const isLoading =
     (isLedgerLoading && frozenMaxVersion === 0) ||

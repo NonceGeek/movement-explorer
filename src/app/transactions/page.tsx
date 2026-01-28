@@ -67,25 +67,24 @@ function TransactionsContent() {
     );
   }
 
+  const headerEndDecorator = isGraphqlClientSupported ? (
+    <Button
+      variant="link"
+      onClick={toggleTransactionType}
+      className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
+    >
+      {isUserTransactions ? "View All Txn" : "View User Txn"}
+      <ArrowRight size={20} strokeWidth={2.5} />
+    </Button>
+  ) : null;
+
   return (
     <>
-      <div className="flex flex-row justify-between items-center mb-6">
-        <h1 className="text-xl sm:text-3xl font-bold">
-          {isUserTransactions ? "User Transactions" : "All Transactions"}
-        </h1>
-        {isGraphqlClientSupported && (
-          <Button
-            variant="link"
-            onClick={toggleTransactionType}
-            className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
-          >
-            {isUserTransactions ? "View All Txn" : "View User Txn"}
-            <ArrowRight size={20} strokeWidth={2.5} />
-          </Button>
-        )}
-      </div>
-
-      {isUserTransactions ? <UserTransactions /> : <AllTransactions />}
+      {isUserTransactions ? (
+        <UserTransactions headerEndDecorator={headerEndDecorator} />
+      ) : (
+        <AllTransactions headerEndDecorator={headerEndDecorator} />
+      )}
     </>
   );
 }

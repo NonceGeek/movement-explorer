@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2 } from "lucide-react";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
 import { Types } from "aptos";
@@ -10,10 +10,12 @@ import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
+  NewDataNotification,
 } from "@/components/transactions";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 const LIMIT = 20;
+const POLL_INTERVAL = 3000;
 
 const USER_TRANSACTIONS_QUERY = gql`
   query UserTransactions($limit: Int, $start_version: bigint) {
@@ -35,72 +37,160 @@ const TOP_USER_TRANSACTIONS_QUERY = gql`
   }
 `;
 
-export function UserTransactions() {
+interface UserTransactionsProps {
+  headerEndDecorator?: React.ReactNode;
+}
+
+export function UserTransactions({
+  headerEndDecorator,
+}: UserTransactionsProps) {
   const { aptos_client, network_value } = useGlobalStore();
   const apolloClient = useApolloClient();
 
-  // Timestamp display mode: "age" (default) or "dateTime"
+  // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
-  const { data, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-    useInfiniteQuery({
-      queryKey: ["userTransactions", "infinite", network_value],
-      queryFn: async ({ pageParam }) => {
-        // Step 1: Fetch Versions via Apollo
-        const query =
-          pageParam === null
-            ? TOP_USER_TRANSACTIONS_QUERY
-            : USER_TRANSACTIONS_QUERY;
+  // State for manual refresh
+  const [frozenLatestVersion, setFrozenLatestVersion] = useState<number>(0);
+  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
+    new Set(),
+  );
 
-        const variables =
-          pageParam === null
-            ? { limit: LIMIT }
-            : { limit: LIMIT, start_version: pageParam };
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isFetching,
+    isLoading,
+  } = useInfiniteQuery({
+    queryKey: ["userTransactions", "infinite", network_value, anchorVersion],
+    queryFn: async ({ pageParam }) => {
+      // Step 1: Fetch Versions via Apollo
+      // If pageParam is null (first page), use anchors.
+      // If anchorVersion is set (manual refresh mode), we start from there.
+      // If anchorVersion is null (initial), we fetch top.
 
-        const response = await apolloClient.query({
-          query,
-          variables,
-          fetchPolicy: "network-only",
-        });
+      let query = TOP_USER_TRANSACTIONS_QUERY;
+      let variables: any = { limit: LIMIT };
 
-        const versions: number[] = response.data.user_transactions.map(
-          (t: { version: any }) => t.version,
-        );
+      if (pageParam !== null) {
+        // Subsequent pages
+        query = USER_TRANSACTIONS_QUERY;
+        variables = { limit: LIMIT, start_version: pageParam };
+      } else if (anchorVersion !== null) {
+        // First page with manual anchor
+        query = USER_TRANSACTIONS_QUERY;
+        variables = { limit: LIMIT, start_version: anchorVersion };
+      }
+      // Else: First page, no anchor yet (initial load) -> TOP_USER_TRANSACTIONS_QUERY
 
-        if (versions.length === 0) return [];
+      const response = await apolloClient.query({
+        query,
+        variables,
+        fetchPolicy: "network-only",
+      });
 
-        // Step 2: Fetch Details via Aptos Client
-        // We fetch details in parallel
-        const details = await Promise.all(
-          versions.map((v) =>
-            getTransaction({ txnHashOrVersion: v }, aptos_client),
-          ),
-        );
+      const versions: number[] = response.data.user_transactions.map(
+        (t: { version: any }) => t.version,
+      );
 
-        return details;
-      },
-      initialPageParam: null as number | null,
-      getNextPageParam: (lastPage) => {
-        if (!lastPage || lastPage.length < LIMIT) return undefined;
-        const lastTx = lastPage[lastPage.length - 1];
-        if ("version" in lastTx) {
-          return parseInt(lastTx.version) - 1;
-        }
-        return undefined;
-      },
-    });
+      if (versions.length === 0) return [];
+
+      // Step 2: Fetch Details via Aptos Client
+      const details = await Promise.all(
+        versions.map((v) =>
+          getTransaction({ txnHashOrVersion: v }, aptos_client),
+        ),
+      );
+
+      return details;
+    },
+    initialPageParam: null as number | null,
+    getNextPageParam: (lastPage) => {
+      if (!lastPage || lastPage.length < LIMIT) return undefined;
+      const lastTx = lastPage[lastPage.length - 1];
+      if ("version" in lastTx) {
+        return parseInt(lastTx.version) - 1;
+      }
+      return undefined;
+    },
+    enabled: true, // Always enabled, logic inside queryFn handles null anchor
+  });
+
+  const shouldPoll = !isFetching;
+
+  // Poll for the absolute latest version to detect new transactions
+  // We use react-query wrapping apollo call for polling convenience
+  const { data: polledLatestVersion } = useQuery({
+    queryKey: ["userTransactions", "latest", network_value],
+    queryFn: async () => {
+      const response = await apolloClient.query({
+        query: TOP_USER_TRANSACTIONS_QUERY,
+        variables: { limit: 1 },
+        fetchPolicy: "network-only",
+      });
+      const versions = response.data.user_transactions.map(
+        (t: { version: any }) => t.version,
+      );
+      return versions.length > 0 ? parseInt(versions[0]) : 0;
+    },
+    refetchInterval: POLL_INTERVAL,
+    enabled: shouldPoll,
+  });
+
+  // Calculate new transactions count
+  const newCount =
+    frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion
+      ? latestVersionRaw - frozenLatestVersion
+      : 0;
+
+  const handleRefresh = () => {
+    const newVersions = new Set<number>();
+    for (let v = frozenLatestVersion + 1; v <= latestVersionRaw; v++) {
+      newVersions.add(v);
+    }
+
+    setHighlightedVersions(newVersions);
+    setFrozenLatestVersion(latestVersionRaw);
+
+    setTimeout(() => {
+      setHighlightedVersions(new Set());
+    }, 2500);
+  };
 
   // Flatten data
   const flatTransactions = data?.pages.flatMap((page) => page) ?? [];
 
   // Transform to TransactionRowData format
-  const tableData: TransactionRowData[] = flatTransactions.map((tx) => ({
-    version: "version" in tx ? parseInt(tx.version) : 0,
-    transaction: tx,
-  }));
+  const tableData: TransactionRowData[] = flatTransactions.map((tx) => {
+    const version = "version" in tx ? parseInt(tx.version) : 0;
+    return {
+      version,
+      transaction: tx,
+      isHighlighted: highlightedVersions.has(version),
+    };
+  });
+
+  // Only show loading spinner on banner if we are refreshing the main list (fetching first page)
+  const isRefreshing = isFetching && !isFetchingNextPage;
 
   return (
     <>
+      <div className="flex flex-row justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-3xl font-bold">User Transactions</h1>
+          <NewDataNotification
+            visible={newCount > 0}
+            count={newCount}
+            onClick={handleRefresh}
+            isLoading={isRefreshing}
+            dataType="txs"
+          />
+        </div>
+        {headerEndDecorator}
+      </div>
+
       <div className="overflow-x-auto">
         <TransactionTable
           data={tableData}
@@ -111,7 +201,7 @@ export function UserTransactions() {
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
-          animationMode="none"
+          animationMode="realtime"
         />
       </div>
 

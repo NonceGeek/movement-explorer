@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowUp } from "lucide-react";
+import { ArrowUp, Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface NewDataNotificationProps {
@@ -8,6 +8,8 @@ interface NewDataNotificationProps {
   count?: number;
   className?: string;
   visible: boolean;
+  isLoading?: boolean;
+  dataType?: string;
 }
 
 export function NewDataNotification({
@@ -15,21 +17,31 @@ export function NewDataNotification({
   count,
   className,
   visible,
+  isLoading,
+  dataType = "data",
 }: NewDataNotificationProps) {
-  if (!visible) return null;
+  if (!visible && !isLoading) return null;
 
   return (
-    <div className="flex justify-center mb-4 animate-in fade-in slide-in-from-top-2">
-      <button
-        onClick={onClick}
-        className={cn(
-          "flex items-center gap-2 px-4 py-2 bg-primary text-primary-foreground rounded-full shadow-lg hover:bg-primary/90 transition-all active:scale-95 text-sm font-medium",
-          className,
-        )}
-      >
-        <ArrowUp size={16} />
-        {count ? `Show ${count} new transactions` : "Show new transactions"}
-      </button>
-    </div>
+    <button
+      onClick={isLoading ? undefined : onClick}
+      disabled={isLoading}
+      className={cn(
+        "flex items-center gap-2 px-3 py-1 bg-primary text-primary-foreground rounded-full shadow-sm hover:bg-primary/90 transition-all active:scale-95 text-xs sm:text-sm font-medium animate-in fade-in zoom-in duration-300 cursor-pointer",
+        isLoading && "opacity-80 cursor-wait",
+        className,
+      )}
+    >
+      {isLoading ? (
+        <Loader2 size={14} className="animate-spin" />
+      ) : (
+        <ArrowUp size={14} />
+      )}
+      {isLoading
+        ? "Refreshing..."
+        : count
+          ? `${count} new ${dataType}`
+          : `New ${dataType}`}
+    </button>
   );
 }

@@ -16,6 +16,8 @@ interface PageNavigationProps {
   showBackButton?: boolean;
   /** 是否在桌面端隐藏，默认 false */
   hideOnDesktop?: boolean;
+  /** 标题右侧的装饰内容 */
+  headerEndDecorator?: React.ReactNode;
 }
 
 import { useScrollDirection } from "@/hooks/useScrollDirection";
@@ -25,6 +27,7 @@ export default function PageNavigation({
   title,
   showBackButton = true,
   hideOnDesktop = false,
+  headerEndDecorator,
 }: PageNavigationProps) {
   const router = useRouter();
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -106,18 +109,23 @@ export default function PageNavigation({
         // Mobile: top-0 if header hidden (scroll down), top-16 if header visible (scroll up)
         hideOnDesktop ? "md:hidden" : "md:top-16",
         isHeaderHidden ? "top-0" : "top-16",
-        className
+        className,
       )}
     >
       <div className="container mx-auto flex h-14 md:h-16 items-center px-4">
         {/* ===== Mobile Layout ===== */}
-        <div className="flex md:hidden items-center w-full gap-2" ref={mobileSearchContainerRef}>
+        <div
+          className="flex md:hidden items-center w-full gap-2"
+          ref={mobileSearchContainerRef}
+        >
           {/* Left: Back/Close button - 仅在 showBackButton 为 true 或搜索展开时显示 */}
           {(showBackButton || isSearchExpanded) && (
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => isSearchExpanded ? handleCloseSearch() : router.back()}
+              onClick={() =>
+                isSearchExpanded ? handleCloseSearch() : router.back()
+              }
               className="shrink-0 text-muted-foreground hover:text-black transition-colors"
             >
               {isSearchExpanded ? (
@@ -133,10 +141,10 @@ export default function PageNavigation({
             {/* Title - visible when search is collapsed and showBackButton is true */}
             <div
               className={cn(
-                "transition-all duration-300 ease-out",
+                "transition-all duration-300 ease-out flex items-center gap-2",
                 isSearchExpanded || !showBackButton
                   ? "opacity-0 scale-95 pointer-events-none absolute inset-0"
-                  : "opacity-100 scale-100"
+                  : "opacity-100 scale-100",
               )}
             >
               {title && (
@@ -144,6 +152,7 @@ export default function PageNavigation({
                   {title}
                 </h1>
               )}
+              {headerEndDecorator}
             </div>
 
             {/* Search Input - visible when search is expanded or no back button (home mode) */}
@@ -152,7 +161,7 @@ export default function PageNavigation({
                 "transition-all duration-300 ease-out",
                 isSearchExpanded || !showBackButton
                   ? "opacity-100 scale-100"
-                  : "opacity-0 scale-95 pointer-events-none absolute inset-0"
+                  : "opacity-0 scale-95 pointer-events-none absolute inset-0",
               )}
             >
               <input
@@ -160,13 +169,17 @@ export default function PageNavigation({
                 type="text"
                 value={mobileSearchValue}
                 onChange={(e) => setMobileSearchValue(e.target.value)}
-                onFocus={() => mobileSearchValue.trim() && results.length > 0 && setShowResults(true)}
+                onFocus={() =>
+                  mobileSearchValue.trim() &&
+                  results.length > 0 &&
+                  setShowResults(true)
+                }
                 placeholder="Search..."
                 className={cn(
                   "w-full h-8 pl-3 pr-3 bg-background/60 border border-guild-green-500/40 rounded-lg",
                   "text-sm text-foreground placeholder:text-muted-foreground/60",
                   "outline-none transition-all duration-200",
-                  "focus:border-guild-green-400 focus:bg-background/80"
+                  "focus:border-guild-green-400 focus:bg-background/80",
                 )}
               />
               {isLoading && (
@@ -178,7 +191,9 @@ export default function PageNavigation({
                 <div className="absolute z-50 w-full mt-2 bg-card/95 backdrop-blur-sm border border-guild-green-500/40 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
                   {results.length === 1 && results[0].type === "none" ? (
                     <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                      <p className="text-sm text-muted-foreground">No results found</p>
+                      <p className="text-sm text-muted-foreground">
+                        No results found
+                      </p>
                     </div>
                   ) : (
                     <ul className="max-h-64 overflow-y-auto divide-y divide-border/30">
@@ -189,16 +204,26 @@ export default function PageNavigation({
                           className={cn(
                             "px-4 py-3 cursor-pointer transition-all duration-150",
                             "hover:bg-guild-green-500/10 text-foreground",
-                            !result.to && "cursor-default text-muted-foreground"
+                            !result.to &&
+                              "cursor-default text-muted-foreground",
                           )}
                         >
                           <div className="flex items-center gap-3">
                             {result.image ? (
-                              <img src={result.image} alt="" className="w-5 h-5 rounded-full" />
+                              <img
+                                src={result.image}
+                                alt=""
+                                className="w-5 h-5 rounded-full"
+                              />
                             ) : (
-                              <CornerDownLeft size={12} className="text-guild-green-400/60" />
+                              <CornerDownLeft
+                                size={12}
+                                className="text-guild-green-400/60"
+                              />
                             )}
-                            <span className="text-sm font-medium truncate">{result.label}</span>
+                            <span className="text-sm font-medium truncate">
+                              {result.label}
+                            </span>
                           </div>
                         </li>
                       ))}
@@ -236,6 +261,7 @@ export default function PageNavigation({
                   {title}
                 </h1>
               )}
+              {headerEndDecorator}
             </div>
             <div className="hidden md:block flex-1" />
             <div className="hidden md:block w-full max-w-xl">

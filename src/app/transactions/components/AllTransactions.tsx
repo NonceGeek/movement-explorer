@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Types } from "aptos";
 import { Loader2 } from "lucide-react";
@@ -8,32 +8,37 @@ import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
+  NewDataNotification,
 } from "@/components/transactions";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 const LIMIT = 20;
+const POLL_INTERVAL = 3000;
 
-export function AllTransactions() {
+interface AllTransactionsProps {
+  headerEndDecorator?: React.ReactNode;
+}
+
+export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const { aptos_client, network_value } = useGlobalStore();
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
-  // Fetch ledger info to get max version
-  const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
-    queryKey: ["ledgerInfo", network_value],
-    queryFn: () => getLedgerInfo(aptos_client),
-  });
-
-  const maxVersion = ledgerInfo ? parseInt(ledgerInfo.ledger_version) : 0;
-  const initialStart = Math.max(0, maxVersion - LIMIT + 1);
+  // State for manual refresh
+  // frozenMaxVersion is the anchor for the current list
+  const [frozenMaxVersion, setFrozenMaxVersion] = useState<number>(0);
+  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
+    new Set(),
+  );
 
   const {
     data,
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    isFetching,
     isLoading: isTxLoading,
   } = useInfiniteQuery({
-    queryKey: ["transactions", "infinite", network_value, maxVersion],
+    queryKey: ["transactions", "infinite", network_value, queryMaxVersion],
     queryFn: async ({ pageParam }) => {
       // Ensure we don't request negative start
       return getTransactions(
@@ -43,32 +48,114 @@ export function AllTransactions() {
     },
     initialPageParam: { start: initialStart, limit: LIMIT },
     getNextPageParam: (lastPage, allPages, lastPageParam) => {
+      // If we don't have a stable anchor yet, don't paginate
+      if (queryMaxVersion === 0) return undefined;
+
       if (lastPageParam.start === 0) return undefined;
 
       const nextStart = lastPageParam.start - LIMIT;
       if (nextStart >= 0) {
         return { start: nextStart, limit: LIMIT };
       }
-      // Partial page at the end (from 0 to lastStart-1)
-      // The limit should be equal to the previous start version to cover 0 to start-1
+      // Partial page at the end
       return { start: 0, limit: lastPageParam.start };
     },
-    enabled: maxVersion > 0,
+    enabled: queryMaxVersion > 0,
   });
 
-  const isLoading = isLedgerLoading || (isTxLoading && maxVersion > 0);
+  // Pause polling if we are currently fetching data (e.g. refreshing)
+  // This avoids race conditions and UI flickering
+  const shouldPoll = !isFetching;
+
+  // Poll ledger info to detect new transactions
+  const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
+    queryKey: ["ledgerInfo", network_value],
+    queryFn: () => getLedgerInfo(aptos_client),
+    refetchInterval: POLL_INTERVAL,
+    enabled: shouldPoll,
+  });
+
+  const latestMaxVersion = ledgerInfo ? parseInt(ledgerInfo.ledger_version) : 0;
+
+  // Initialize frozenMaxVersion once on first load
+  useEffect(() => {
+    if (frozenMaxVersion === 0 && latestMaxVersion > 0) {
+      setFrozenMaxVersion(latestMaxVersion);
+    }
+  }, [latestMaxVersion, frozenMaxVersion]);
+
+  // Calculate new transactions count
+  // If frozenMaxVersion is 0, we don't calculate new count yet to avoid showing banner on init
+  const newCount =
+    frozenMaxVersion > 0 ? Math.max(0, latestMaxVersion - frozenMaxVersion) : 0;
+
+  // Use frozenMaxVersion for the list query to keep it stable
+  // If frozenMaxVersion is 0 (initial), use latestMaxVersion (which might also be 0, but usually not for long)
+  // We use max(0, ver) to be safe
+  const queryMaxVersion =
+    frozenMaxVersion > 0 ? frozenMaxVersion : latestMaxVersion;
+  const initialStart = Math.max(0, queryMaxVersion - LIMIT + 1);
+
+  const isLoading =
+    (isLedgerLoading && frozenMaxVersion === 0) ||
+    (isTxLoading && queryMaxVersion > 0);
+
+  // Handle Refresh Click
+  const handleRefresh = () => {
+    // Determine new versions to highlight
+    // The new versions are typically from (frozenMaxVersion + 1) to latestMaxVersion
+    // But we only show the first page (LIMIT items).
+    // If newCount > LIMIT, we highlight all on page 1 that are > oldFrozen
+
+    const newVersions = new Set<number>();
+    // We can't know exactly which versions are available without fetching,
+    // but we can estimate the range.
+    // Highlighting logic relies on the row data. We can just pass the set of expected version numbers.
+    for (let v = frozenMaxVersion + 1; v <= latestMaxVersion; v++) {
+      newVersions.add(v);
+    }
+
+    setHighlightedVersions(newVersions);
+    setFrozenMaxVersion(latestMaxVersion);
+
+    // Clear highlight after animation (2000ms match the CSS animation)
+    setTimeout(() => {
+      setHighlightedVersions(new Set());
+    }, 2500);
+  };
 
   // Flatten data
   const flatTransactions = data?.pages.flatMap((page) => page) ?? [];
 
   // Transform transactions to TransactionRowData format
-  const tableData: TransactionRowData[] = flatTransactions.map((tx) => ({
-    version: "version" in tx ? parseInt(tx.version) : 0,
-    transaction: tx,
-  }));
+  const tableData: TransactionRowData[] = flatTransactions.map((tx) => {
+    const version = "version" in tx ? parseInt(tx.version) : 0;
+    return {
+      version,
+      transaction: tx,
+      isHighlighted: highlightedVersions.has(version),
+    };
+  });
+
+  // Only show loading spinner on banner if we are refreshing the main list (fetching first page)
+  const isRefreshing = isFetching && !isFetchingNextPage;
 
   return (
     <>
+      <div className="flex flex-row justify-between items-center mb-6">
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl sm:text-3xl font-bold">All Transactions</h1>
+          <NewDataNotification
+            visible={newCount > 0}
+            count={newCount}
+            onClick={handleRefresh}
+            isLoading={isRefreshing}
+            dataType="txs"
+          />
+        </div>
+        {headerEndDecorator}
+      </div>
+
       <div className="overflow-x-auto">
         <TransactionTable
           data={tableData}
@@ -79,7 +166,7 @@ export function AllTransactions() {
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
-          animationMode="none"
+          animationMode="realtime"
         />
       </div>
 

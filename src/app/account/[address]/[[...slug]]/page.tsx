@@ -9,8 +9,10 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useGetAccountResources } from "@/hooks/accounts/useGetAccountResources";
-import { useGetAccountTransactions } from "@/hooks/accounts/useGetAccountTransactions";
+import { useGetAccountTransactionVersions } from "@/hooks/accounts/useGetAccountTransactionVersions";
 import { useGetAccountTokensCount } from "@/hooks/accounts/useGetAccountTokens";
+import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTransactionCount";
+import { UserTransactionRow } from "@/app/transactions/components/UserTransactionRow";
 import { Types } from "aptos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -122,22 +124,35 @@ export default function AccountDetailPage() {
   );
   const tokenData = resources?.find((r) => r.type === "0x4::token::Token");
 
+  const { data: indexerTxCount } = useGetAccountTransactionCount(address);
+
   const currentTxPage = parseInt(searchParams.get("txPage") ?? "1", 10);
   const sequenceNum = accountData
     ? parseInt(accountData.sequence_number, 10)
     : 0;
-  const totalTxPages = Math.max(1, Math.ceil(sequenceNum / TXN_PER_PAGE));
+
+  // Use indexer count if available, otherwise fallback to sequence number (only for accounts)
+  const totalTxCount = indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
+
+  const totalTxPages = Math.max(1, Math.ceil(totalTxCount / TXN_PER_PAGE));
+
+  // For Node API (fallback):
   const pageStarts = sequenceNum
     ? getPageStartSequenceNumbers(sequenceNum)
     : [];
+
+  // start/limit for Node API
   const txStart = pageStarts[currentTxPage - 1];
   const txLimit =
     currentTxPage > 1 && currentTxPage === totalTxPages
       ? pageStarts[currentTxPage - 2]
       : TXN_PER_PAGE;
 
-  const { data: transactions, isLoading: transactionsLoading } =
-    useGetAccountTransactions(address, txStart, txLimit);
+  // offset for Indexer API
+  const txOffset = (currentTxPage - 1) * TXN_PER_PAGE;
+
+  const { data: transactionVersions, isLoading: transactionsLoading } =
+    useGetAccountTransactionVersions(address, TXN_PER_PAGE, txOffset);
 
   const txVisiblePages = getVisiblePages(currentTxPage, totalTxPages);
   const handleTxPageChange = (page: number) => {
@@ -295,7 +310,7 @@ export default function AccountDetailPage() {
                       <EnhancedSkeleton key={i} className="h-12 w-full" />
                     ))}
                   </div>
-                ) : !transactions || transactions.length === 0 ? (
+                ) : !transactionVersions || transactionVersions.length === 0 ? (
                   <p className="text-muted-foreground">No transactions found</p>
                 ) : (
                   <div className="space-y-6">
@@ -315,114 +330,14 @@ export default function AccountDetailPage() {
                           </HeaderRow>
                         </TableHeader>
                         <TableBody>
-                          {transactions.map((tx: Types.Transaction) => {
-                            const version = "version" in tx ? tx.version : null;
-                            const timestamp =
-                              "timestamp" in tx ? tx.timestamp : null;
-                            const status = "success" in tx ? tx.success : true;
-                            const sender = getTransactionSender(tx);
-                            const counterparty = getTransactionCounterparty(tx);
-                            const functionName = getTransactionFunction(tx);
-                            const amountDelta = getCoinBalanceChangeForAccount(
-                              tx,
-                              address,
-                            );
-                            const gasInfo = getGasInfo(tx);
-
-                            return (
-                              <TableRow key={tx.hash}>
-                                <TableCell>
-                                  {version && (
-                                    <a
-                                      href={`/txn/${version}`}
-                                      className="text-primary hover:underline font-mono text-sm"
-                                    >
-                                      {version}
-                                    </a>
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant={
-                                      status ? "secondary" : "destructive"
-                                    }
-                                  >
-                                    {status ? "Success" : "Fail"}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell>
-                                  <Badge
-                                    variant="secondary"
-                                    className="capitalize"
-                                  >
-                                    {getTransactionTypeName(tx)}
-                                  </Badge>
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                                  {timestamp
-                                    ? formatTxTimestamp(timestamp)
-                                    : "-"}
-                                </TableCell>
-                                <TableCell>
-                                  {sender ? (
-                                    <CopyableAddress
-                                      address={sender}
-                                      truncateLength={{ start: 6, end: 4 }}
-                                      showCopyButton={false}
-                                    />
-                                  ) : (
-                                    "-"
-                                  )}
-                                </TableCell>
-                                <TableCell>
-                                  {counterparty ? (
-                                    <CopyableAddress
-                                      address={counterparty.address}
-                                      truncateLength={{ start: 6, end: 4 }}
-                                      showCopyButton={false}
-                                    />
-                                  ) : (
-                                    "-"
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-muted-foreground text-sm">
-                                  {functionName || "-"}
-                                </TableCell>
-                                <TableCell className="text-right font-mono">
-                                  {amountDelta !== undefined ? (
-                                    <span
-                                      className={
-                                        amountDelta > 0
-                                          ? "text-guild-green-500"
-                                          : amountDelta < 0
-                                            ? "text-oracle-orange-500"
-                                            : ""
-                                      }
-                                    >
-                                      {amountDelta > 0
-                                        ? "+"
-                                        : amountDelta < 0
-                                          ? "-"
-                                          : ""}
-                                      {formatMoveAmount(
-                                        amountDelta < 0
-                                          ? BigInt(-amountDelta)
-                                          : BigInt(amountDelta),
-                                      )}
-                                    </span>
-                                  ) : (
-                                    "-"
-                                  )}
-                                </TableCell>
-                                <TableCell className="text-right font-mono text-sm text-muted-foreground">
-                                  {gasInfo
-                                    ? formatMoveAmount(gasInfo.gasFee)
-                                    : "-"}
-                                </TableCell>
-                              </TableRow>
-                            );
-                          })}
+                          {transactionVersions.map((version: number) => (
+                            <UserTransactionRow
+                              key={version}
+                              version={version}
+                            />
+                          ))}
                         </TableBody>
+
                       </Table>
                     </div>
 

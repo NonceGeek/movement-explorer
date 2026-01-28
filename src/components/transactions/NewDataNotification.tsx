@@ -38,7 +38,7 @@ export function NewDataNotification({
         <ArrowUp size={14} />
       )}
       {isLoading
-        ? "Refreshing..."
+        ? ""
         : count
           ? `${count} new ${dataType}`
           : `New ${dataType}`}

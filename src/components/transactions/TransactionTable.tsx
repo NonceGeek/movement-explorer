@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef, useEffect, useMemo } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
@@ -71,6 +72,32 @@ export function TransactionTable({
 }: TransactionTableProps) {
   const columnCount = getColumnCount(columns);
 
+  // Track known versions to detect newly loaded items (for Load More animation)
+  const knownVersionsRef = useRef<Set<number>>(new Set());
+
+  // Compute which versions are newly added (not in the previous render)
+  const newlyAddedVersions = useMemo(() => {
+    const currentVersions = data.map((d) => d.version);
+    const newVersions = new Set<number>();
+
+    // Only compute if we have some known versions (skip initial load)
+    if (knownVersionsRef.current.size > 0) {
+      for (const version of currentVersions) {
+        if (!knownVersionsRef.current.has(version)) {
+          newVersions.add(version);
+        }
+      }
+    }
+
+    return newVersions;
+  }, [data]);
+
+  // Update known versions after render
+  useEffect(() => {
+    const currentVersions = data.map((d) => d.version);
+    knownVersionsRef.current = new Set(currentVersions);
+  }, [data]);
+
   // Loading skeleton
   if (isLoading) {
     return (
@@ -136,35 +163,39 @@ export function TransactionTable({
       >
         <AnimatePresence mode="popLayout">
           {data.map(({ version, transaction }, index) => {
+            // isNew: highlighted versions from manual refresh
+            // isNewlyLoaded: versions from Load More
             const isNew = highlightedVersions.has(version);
+            const isNewlyLoaded = newlyAddedVersions.has(version);
+            const shouldAnimate = isNew || isNewlyLoaded;
             return (
               <motion.tr
                 key={version}
                 layout={hasAnimatedInitial}
-                custom={{ index, isNew }}
+                custom={{ index, isNew: shouldAnimate }}
                 variants={!hasAnimatedInitial ? itemVariants : undefined}
                 initial={
                   !hasAnimatedInitial
                     ? "hidden"
-                    : isNew
+                    : shouldAnimate
                       ? {
-                          opacity: 0,
-                          y: -24,
-                          scale: 0.96,
-                          backgroundColor: "rgba(0, 255, 127, 0.12)",
-                        }
+                        opacity: 0,
+                        y: 24,
+                        scale: 0.96,
+                        backgroundColor: "rgba(0, 255, 127, 0.12)",
+                      }
                       : false
                 }
                 animate={
                   !hasAnimatedInitial
                     ? "show"
                     : {
-                        opacity: 1,
-                        y: 0,
-                        scale: 1,
-                        backgroundColor: "rgba(0, 0, 0, 0)",
-                        transitionEnd: { backgroundColor: "" },
-                      }
+                      opacity: 1,
+                      y: 0,
+                      scale: 1,
+                      backgroundColor: "rgba(0, 0, 0, 0)",
+                      transitionEnd: { backgroundColor: "" },
+                    }
                 }
                 exit={{
                   opacity: 0,
@@ -177,7 +208,7 @@ export function TransactionTable({
                   stiffness: 200,
                   damping: 22,
                   mass: 0.8,
-                  delay: isNew ? index * 0.06 : 0,
+                  delay: shouldAnimate ? index * 0.03 : 0,
                   backgroundColor: { duration: 2, ease: "easeOut" },
                 }}
                 className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-16"

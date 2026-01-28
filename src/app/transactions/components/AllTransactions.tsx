@@ -38,6 +38,10 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
     new Set(),
   );
+  // Track initial load to prevent "Refreshing..." on first mount
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  // Track if initial animation has played
+  const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
 
   // Poll ledger info to detect new transactions
   const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
@@ -145,12 +149,22 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     };
   });
 
+  // Update isFirstLoad when the query is no longer loading initially
+  useEffect(() => {
+    if (!isTxLoading && data) {
+      setIsFirstLoad(false);
+      // Mark initial animation as done after a short delay
+      setTimeout(() => setHasAnimatedInitial(true), 500);
+    }
+  }, [isTxLoading, data]);
+
   // Only show loading spinner on banner if we are refreshing the main list (fetching first page)
-  const isRefreshing = isFetching && !isFetchingNextPage;
+  // and it's NOT the first load (user initiated refresh)
+  const isRefreshing = isFetching && !isFetchingNextPage && !isFirstLoad;
 
   return (
     <>
-      <div className="flex flex-row justify-between items-center mb-6">
+      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">All Transactions</h1>
           <NewDataNotification
@@ -161,10 +175,10 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
             dataType="txs"
           />
         </div>
-        {headerEndDecorator}
+        <div className="self-end sm:self-auto">{headerEndDecorator}</div>
       </div>
 
-      <div className="overflow-x-auto">
+      <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
@@ -175,6 +189,8 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
           animationMode="realtime"
+          hasAnimatedInitial={hasAnimatedInitial}
+          highlightedVersions={highlightedVersions}
         />
       </div>
 

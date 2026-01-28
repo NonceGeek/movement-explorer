@@ -61,7 +61,7 @@ function TransactionsContent() {
           isLoading={true}
           loadingRowCount={20}
           timestampMode="age"
-          onToggleTimestampMode={() => {}}
+          onToggleTimestampMode={() => { }}
         />
       </div>
     );
@@ -103,7 +103,7 @@ export default function TransactionsPage() {
                 isLoading={true}
                 loadingRowCount={20}
                 timestampMode="age"
-                onToggleTimestampMode={() => {}}
+                onToggleTimestampMode={() => { }}
               />
             </div>
           }

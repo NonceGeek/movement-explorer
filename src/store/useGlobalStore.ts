@@ -15,7 +15,7 @@ import {
 } from "../constants";
 
 const HEADERS = {
-  "x-indexer-client": "movement-explorer",
+  // "x-indexer-client": "movement-explorer",
 };
 
 export function getGraphqlURI(network: NetworkName): string | undefined {

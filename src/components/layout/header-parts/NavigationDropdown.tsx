@@ -25,7 +25,7 @@ export function NavigationDropdown({ label, items }: NavigationDropdownProps) {
   const closeTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const isActive = items.some(
-    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`)
+    (item) => pathname === item.href || pathname.startsWith(`${item.href}/`),
   );
 
   const handleOpen = useCallback(() => {
@@ -52,17 +52,25 @@ export function NavigationDropdown({ label, items }: NavigationDropdownProps) {
           "transition-all duration-200 gap-1",
           isActive
             ? "text-primary-foreground bg-primary"
-            : "text-muted-foreground"
+            : "text-muted-foreground",
         )}
       >
         {label}
-        <ChevronDown className={cn("h-3 w-3 transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          className={cn("h-3 w-3 transition-transform", open && "rotate-180")}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        sideOffset={8}
+        sideOffset={12}
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}
+        className={cn(
+          "rounded-2xl p-3 min-w-48 space-y-1.5",
+          "bg-card/95 backdrop-blur-xl",
+          "border border-border/60",
+          "shadow-xl shadow-black/10",
+        )}
       >
         {items.map((item) => {
           const isItemActive =
@@ -72,8 +80,11 @@ export function NavigationDropdown({ label, items }: NavigationDropdownProps) {
               <Link
                 href={item.href}
                 className={cn(
-                  "cursor-pointer",
-                  isItemActive && "bg-primary text-primary-foreground"
+                  "cursor-pointer rounded-xl px-5 py-2.5 text-base font-medium",
+                  "transition-all duration-200 ease-out uppercase",
+                  isItemActive
+                    ? "bg-primary text-primary-foreground"
+                    : "text-foreground/80 hover:text-foreground hover:bg-muted/60",
                 )}
               >
                 {item.label}

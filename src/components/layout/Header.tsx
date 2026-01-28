@@ -26,7 +26,9 @@ export default function Header() {
   const { scrollDirection, scrollY } = useScrollDirection();
 
   // Hide header on mobile when scrolling down (and not at top)
-  const isHeaderHidden = scrollDirection === "down" && scrollY > 50;
+  // Only hide on sub-pages, homepage always stays sticky
+  const isHeaderHidden =
+    !isHomePage && scrollDirection === "down" && scrollY > 50;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -54,9 +56,9 @@ export default function Header() {
         "gradient-glass-overlay",
         isScrolled ? "border-border/50" : "border-transparent",
         // Mobile: slide up when hidden
-        isHeaderHidden ? "translate-y-[-100%]" : "translate-y-0",
+        isHeaderHidden ? "-translate-y-full" : "translate-y-0",
         // Desktop: always visible (reset transform)
-        "md:translate-y-0"
+        "md:translate-y-0",
       )}
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-8">

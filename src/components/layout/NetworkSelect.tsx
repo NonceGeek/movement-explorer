@@ -9,7 +9,7 @@ import {
   defaultNetworkName,
 } from "@/constants";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { ChevronDown, Check } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -27,7 +27,7 @@ function getDisplayNetworkName(networkName: string): string {
   } else if (networkName === "bardock testnet") {
     return "Bardock Testnet";
   } else if (networkName === "mainnet") {
-    return "Mainnet";
+    return "Mainnet Beta";
   }
   return networkName.charAt(0).toUpperCase() + networkName.slice(1);
 }
@@ -96,7 +96,7 @@ export default function NetworkSelect() {
   };
 
   const availableNetworkList = Object.entries(networks).filter(([name]) =>
-    availableNetworks.includes(name)
+    availableNetworks.includes(name),
   );
 
   return (
@@ -110,16 +110,26 @@ export default function NetworkSelect() {
           "rounded-full border-2 border-primary bg-background",
           "text-base font-normal capitalize",
           "hover:bg-primary hover:text-primary-foreground",
-          "transition-all outline-none"
+          "transition-all outline-none",
         )}
       >
         {getDisplayNetworkName(network_name)}
-        <ChevronDown className={cn("h-4 w-4 opacity-50 transition-transform", open && "rotate-180")} />
+        <ChevronDown
+          className={cn(
+            "h-5 w-5 opacity-50 transition-transform",
+            open && "rotate-180",
+          )}
+        />
       </DropdownMenuTrigger>
       <DropdownMenuContent
         align="start"
-        sideOffset={8}
-        className="w-[180px]"
+        sideOffset={12}
+        className={cn(
+          "w-60 rounded-2xl p-3 space-y-1.5",
+          "bg-card/95 backdrop-blur-xl",
+          "border border-border/60",
+          "shadow-xl shadow-black/10",
+        )}
         onMouseEnter={handleOpen}
         onMouseLeave={handleClose}
       >
@@ -128,12 +138,14 @@ export default function NetworkSelect() {
             key={name}
             onClick={() => handleNetworkChange(name)}
             className={cn(
-              "cursor-pointer justify-between",
-              network_name === name && "bg-primary text-primary-foreground"
+              "cursor-pointer rounded-xl px-5 py-2.5 text-base font-medium uppercase",
+              "transition-all duration-200 ease-out",
+              network_name === name
+                ? "bg-primary text-primary-foreground"
+                : "text-foreground/80 hover:text-foreground hover:bg-muted/60",
             )}
           >
             {getDisplayNetworkName(name)}
-            {network_name === name && <Check className="h-4 w-4" />}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

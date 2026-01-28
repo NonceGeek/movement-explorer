@@ -1,7 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useParams,
   usePathname,
@@ -154,6 +154,27 @@ export default function AccountDetailPage() {
   const isDeleted =
     !resourcesLoading && !!resources && resources.length === 0 && !isAccount;
 
+  // Detect if we're on the /account route
+  const isOnAccountRoute = pathname.startsWith("/account/");
+
+  // Auto-redirect from /account to /object if this is an Object but not an Account
+  useEffect(() => {
+    if (!resourcesLoading && isOnAccountRoute && isObject && !isAccount) {
+      // Preserve the slug path when redirecting
+      const slug = params.slug as string[] | undefined;
+      const slugPath = slug ? `/${slug.join("/")}` : "";
+      router.replace(`/object/${address}${slugPath}`);
+    }
+  }, [
+    resourcesLoading,
+    isOnAccountRoute,
+    isObject,
+    isAccount,
+    address,
+    params.slug,
+    router,
+  ]);
+
   // Tabs State
   const [currentTab, setCurrentTab] = useState("transactions");
 
@@ -228,14 +249,18 @@ export default function AccountDetailPage() {
     );
   }
 
+  // Determine the page title based on route and resource type
+  const pageTitle = isObject && !isOnAccountRoute ? "Object" : "Account";
+
   return (
     <>
-      <PageNavigation title="Account" />
+      <PageNavigation title={pageTitle} />
       <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
           <div className="lg:col-span-8 xl:col-span-9 flex flex-col justify-center">
             <AccountTitle
               address={address}
+              isAccount={isAccount}
               isObject={isObject}
               isToken={isToken}
               isDeleted={isDeleted}
@@ -505,9 +530,23 @@ export default function AccountDetailPage() {
           <TabsContent value="modules">
             <ModulesTab
               address={address}
+              isObject={!isOnAccountRoute}
+              initialTab={
+                slug && slug[0] === "modules" && slug.length > 1
+                  ? slug[1]
+                  : undefined
+              }
               initialPackage={initialPackage}
-              initialModule={initialModule}
-              initialFunction={initialFunction}
+              initialModule={
+                slug && slug.length > 2 && slug[0] === "modules"
+                  ? decodeURIComponent(slug[2])
+                  : initialModule
+              }
+              initialFunction={
+                slug && slug.length > 3 && slug[0] === "modules"
+                  ? decodeURIComponent(slug[3])
+                  : initialFunction
+              }
             />
           </TabsContent>
 

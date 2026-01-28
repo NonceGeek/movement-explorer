@@ -7,6 +7,7 @@ import { useGetAccountLabel } from "@/hooks/accounts/useGetAccountLabel";
 
 interface AccountTitleProps {
   address: string;
+  isAccount?: boolean;
   isObject?: boolean;
   isToken?: boolean;
   isDeleted?: boolean;
@@ -14,16 +15,19 @@ interface AccountTitleProps {
 
 export default function AccountTitle({
   address,
+  isAccount = false,
   isObject = false,
   isToken = false,
   isDeleted = false,
 }: AccountTitleProps) {
   const accountLabel = useGetAccountLabel(address);
 
+  // Priority: Token > Object (only if not Account) > Account
   let title = "Account";
   if (isToken) {
     title = isDeleted ? "Deleted Token Object" : "Token Object";
-  } else if (isObject) {
+  } else if (isObject && !isAccount) {
+    // Only show "Object" if it's purely an Object (not also an Account)
     title = isDeleted ? "Deleted Object" : "Object";
   }
 

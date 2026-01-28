@@ -7,12 +7,12 @@ import { TransactionColumnConfig } from "./types";
 // Base columns shared between all transaction tables
 const BASE_COLUMNS: TransactionColumnConfig[] = [
   { key: "hash", label: "Transaction Hash" },
-  { key: "timestamp", label: "Age" }, // Label will be replaced by TimestampModeToggle
+  { key: "function", label: "Function", width: "w-[300px]" },
+  { key: "timestamp", label: "Age" },
   { key: "sender", label: "Sender" },
-  { key: "to", label: "To", hideAt: "md" },
-  { key: "function", label: "Function", hideAt: "sm", width: "w-[300px]" },
-  { key: "amount", label: "Amount", hideAt: "lg", align: "right" },
-  { key: "gas", label: "Gas", hideAt: "lg", align: "right" },
+  { key: "to", label: "To" },
+  { key: "amount", label: "Amount", align: "right" },
+  { key: "gas", label: "Gas", align: "right" },
 ];
 
 /**
@@ -27,13 +27,13 @@ export const HOME_TRANSACTION_COLUMNS: TransactionColumnConfig[] = BASE_COLUMNS;
  */
 export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
   { key: "hash", label: "Transaction Hash" },
+  { key: "function", label: "Function", width: "w-[300px]" },
   { key: "type", label: "Type" }, // Will include TransactionTypeTooltip
   { key: "timestamp", label: "Age" },
   { key: "sender", label: "Sender" },
-  { key: "to", label: "To", hideAt: "md" },
-  { key: "function", label: "Function", hideAt: "sm", width: "w-[300px]" },
-  { key: "amount", label: "Amount", hideAt: "lg", align: "right" },
-  { key: "gas", label: "Gas", hideAt: "lg", align: "right" },
+  { key: "to", label: "To" },
+  { key: "amount", label: "Amount", align: "right" },
+  { key: "gas", label: "Gas", align: "right" },
 ];
 
 /**

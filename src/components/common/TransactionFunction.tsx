@@ -18,7 +18,7 @@ export function TransactionFunction({
   className,
 }: TransactionFunctionProps) {
   if (!("payload" in transaction)) {
-    return null;
+    return "-";
   }
 
   if (transaction.payload.type === "script_payload") {
@@ -57,7 +57,7 @@ export function TransactionFunction({
   } else if ("function" in transaction.payload) {
     functionFullStr = transaction.payload.function;
   } else {
-    return null;
+    return "-";
   }
 
   // Handle Coin Transfer special cases or just treat as normal function
@@ -88,19 +88,16 @@ export function TransactionFunction({
           <Link
             href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex flex-col gap-0.5 px-2.5 py-1.5 rounded-md bg-primary/10 hover:bg-primary/20",
-              "text-xs font-mono transition-colors border border-primary/10",
+              "inline-flex items-center px-2 py-0.5 h-[30px] rounded-md transition-all duration-200",
+              "font-mono text-sm text-primary",
+              "hover:bg-primary/10",
+              "-ml-2 -my-0.5",
               "max-w-[180px] sm:max-w-[280px]",
               className,
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            <span className="text-muted-foreground text-[11px] truncate">
-              {moduleName}
-            </span>
-            <span className="text-guild-green-500 font-medium truncate">
-              {functionName}
-            </span>
+            <span className="truncate">{functionName}</span>
           </Link>
         </TooltipTrigger>
         <TooltipContent className="p-3 max-w-80 sm:max-w-100">
@@ -109,7 +106,7 @@ export function TransactionFunction({
               <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
                 Address
               </span>
-              <div className="font-mono text-xs text-muted-foreground break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
+              <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
                 {address}
               </div>
             </div>

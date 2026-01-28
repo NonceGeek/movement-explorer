@@ -32,6 +32,7 @@ import {
 import {
   InfoItem,
   BalanceChangeTable,
+  BalanceChangeTab,
   ActionsDisplay,
   CollapsibleList,
 } from "../components";
@@ -558,7 +559,8 @@ export default function TransactionDetailPage() {
 
           {/* Balance Change Tab */}
           <TabsContent value="balance">
-            <BalanceChangeTable changes={balanceChanges} />
+            {/* <BalanceChangeTable changes={balanceChanges} /> */}
+            <BalanceChangeTab transaction={tx} />
           </TabsContent>
 
           {/* Events Tab */}

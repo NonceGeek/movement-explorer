@@ -45,7 +45,7 @@ export function getTransactionSender(tx: Types.Transaction): string | null {
 // when the transaction counterparty is a "smartContract",
 //    the transaction is a user interaction (account A interact with smart contract account B)
 export function getTransactionCounterparty(
-  transaction: Types.Transaction
+  transaction: Types.Transaction,
 ): TransactionCounterparty | undefined {
   if (transaction.type !== TransactionTypeName.User) {
     return undefined;
@@ -189,7 +189,7 @@ function getBalanceMap(transaction: Types.Transaction) {
           amount: bigint;
         };
       },
-      event: Types.Event
+      event: Types.Event,
     ) => {
       const addr = standardizeAddress(event.guid.account_address);
 
@@ -310,12 +310,12 @@ function getBalanceMap(transaction: Types.Transaction) {
 
       return balanceMap;
     },
-    {}
+    {},
   );
 }
 
 function getAptChangeData(
-  change: Types.WriteSetChange
+  change: Types.WriteSetChange,
 ): ChangeData | undefined {
   if (
     "address" in change &&
@@ -362,7 +362,7 @@ function isAptEvent(event: Types.Event, transaction: Types.Transaction) {
 
 export function getCoinBalanceChangeForAccount(
   transaction: Types.Transaction,
-  address: string
+  address: string,
 ): bigint {
   const accountToBalance = getBalanceMap(transaction);
   address = standardizeAddress(address);
@@ -376,7 +376,7 @@ export function getCoinBalanceChangeForAccount(
 }
 
 export function getTransactionAmount(
-  transaction: Types.Transaction
+  transaction: Types.Transaction,
 ): bigint | undefined {
   if (transaction.type !== TransactionTypeName.User) {
     return undefined;
@@ -385,7 +385,7 @@ export function getTransactionAmount(
   const accountToBalance = getBalanceMap(transaction);
 
   const [totalDepositAmount, totalWithdrawAmount] = Object.values(
-    accountToBalance
+    accountToBalance,
   ).reduce(
     ([totalDepositAmount, totalWithdrawAmount]: bigint[], value) => {
       if (value.amount > 0) {
@@ -396,7 +396,7 @@ export function getTransactionAmount(
       }
       return [totalDepositAmount, totalWithdrawAmount];
     },
-    [BigInt(0), BigInt(0)]
+    [BigInt(0), BigInt(0)],
   );
 
   return totalDepositAmount > totalWithdrawAmount
@@ -406,7 +406,7 @@ export function getTransactionAmount(
 
 // Get the function name from a transaction
 export function getTransactionFunction(
-  transaction: Types.Transaction
+  transaction: Types.Transaction,
 ): string | null {
   if (!("payload" in transaction)) {
     return null;
@@ -452,7 +452,7 @@ export function getTransactionFunction(
 // Format MOVE amount (default 8 decimals)
 export function formatMoveAmount(
   amount: bigint | number | string,
-  decimals: number = 8
+  decimals: number = 8,
 ): string {
   const amountBigInt = typeof amount === "bigint" ? amount : BigInt(amount);
   const divisor = BigInt(10 ** decimals);
@@ -497,8 +497,48 @@ export function getGasInfo(tx: Types.Transaction): GasInfo | null {
 export type BalanceChange = {
   address: string;
   amount: bigint;
-  type: "Deposit" | "Withdraw";
+  type: string;
+  asset: {
+    decimals: number;
+    symbol: string;
+    type: string;
+    id: string;
+  };
+  known: boolean;
+  isBanned?: boolean;
+  logoUrl?: string;
+  isInPanoraTokenList?: boolean;
 };
+
+export type AggregatedBalance = {
+  address: string;
+  asset: BalanceChange["asset"];
+  totalAmount: bigint;
+  known: boolean;
+  isInPanoraTokenList?: boolean;
+  isBanned?: boolean;
+  logoUrl?: string;
+};
+
+export function getAssetSymbol(
+  panoraSymbol?: string,
+  bridge?: string,
+  symbol?: string,
+): string {
+  if (panoraSymbol) {
+    return panoraSymbol;
+  }
+
+  if (bridge) {
+    return bridge;
+  }
+
+  if (symbol) {
+    return symbol;
+  }
+
+  return "";
+}
 
 // Get balance changes from events (simplified for display)
 export function getBalanceChanges(tx: Types.Transaction): BalanceChange[] {
@@ -511,24 +551,52 @@ export function getBalanceChanges(tx: Types.Transaction): BalanceChange[] {
         address: event.guid.account_address,
         amount: BigInt(event.data.amount),
         type: "Deposit",
+        asset: {
+          decimals: 8,
+          symbol: "MOVE",
+          type: "0x1::aptos_coin::AptosCoin", // Best guess for legacy parser
+          id: "0x1::aptos_coin::AptosCoin",
+        },
+        known: true,
       });
     } else if (event.type === "0x1::coin::WithdrawEvent") {
       changes.push({
         address: event.guid.account_address,
         amount: -BigInt(event.data.amount),
         type: "Withdraw",
+        asset: {
+          decimals: 8,
+          symbol: "MOVE",
+          type: "0x1::aptos_coin::AptosCoin",
+          id: "0x1::aptos_coin::AptosCoin",
+        },
+        known: true,
       });
     } else if (event.type === "0x1::fungible_asset::Deposit") {
       changes.push({
         address: event.data.store || event.guid.account_address,
         amount: BigInt(event.data.amount),
         type: "Deposit",
+        asset: {
+          decimals: 8,
+          symbol: "FA", // Placeholder
+          type: "0x1::fungible_asset::Metadata",
+          id: "0x1::fungible_asset::Metadata",
+        },
+        known: false,
       });
     } else if (event.type === "0x1::fungible_asset::Withdraw") {
       changes.push({
         address: event.data.store || event.guid.account_address,
         amount: -BigInt(event.data.amount),
         type: "Withdraw",
+        asset: {
+          decimals: 8,
+          symbol: "FA",
+          type: "0x1::fungible_asset::Metadata",
+          id: "0x1::fungible_asset::Metadata",
+        },
+        known: false,
       });
     }
   }
@@ -540,7 +608,7 @@ export function getBalanceChanges(tx: Types.Transaction): BalanceChange[] {
 export function getStorageRefund(tx: Types.Transaction): bigint | null {
   const events: Types.Event[] = "events" in tx ? tx.events : [];
   const feeStatement = events.find(
-    (e) => e.type === "0x1::transaction_fee::FeeStatement"
+    (e) => e.type === "0x1::transaction_fee::FeeStatement",
   );
   if (feeStatement?.data?.storage_fee_refund_octas) {
     const refund = BigInt(feeStatement.data.storage_fee_refund_octas);
@@ -558,7 +626,7 @@ export type TransactionAction =
 
 // Parse transaction actions from events
 export function getTransactionActions(
-  tx: Types.Transaction
+  tx: Types.Transaction,
 ): TransactionAction[] {
   const events: Types.Event[] = "events" in tx ? tx.events : [];
   const actions: TransactionAction[] = [];

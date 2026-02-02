@@ -8,7 +8,7 @@ import {
 import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 import { TransactionColumnConfig } from "./types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 interface TransactionTableHeaderProps {
   columns: TransactionColumnConfig[];

@@ -8,7 +8,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BadgeCheck, ShieldAlert, ExternalLink } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 export interface AccountLabelBadgeProps {
   accountLabel: { name: string | null; type: AccountLabelType } | null;

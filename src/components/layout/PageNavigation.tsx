@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Button as DesignButton } from "@movementlabsxyz/movement-design-system";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useSearch, SearchResult } from "@/hooks/common/useSearch";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 interface PageNavigationProps {
   className?: string;

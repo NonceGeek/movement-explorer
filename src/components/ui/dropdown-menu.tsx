@@ -17,7 +17,7 @@ import {
   DropdownMenuRadioGroup as DSDropdownMenuRadioGroup,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const DropdownMenu = DSDropdownMenu;
 

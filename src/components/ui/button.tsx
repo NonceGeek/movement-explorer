@@ -5,7 +5,7 @@ import {
   buttonVariants as dsButtonVariants,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 /**
  * 1. 导出设计系统的原始 variants 工具

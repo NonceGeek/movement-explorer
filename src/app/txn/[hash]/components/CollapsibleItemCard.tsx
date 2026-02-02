@@ -2,7 +2,7 @@
 
 import { ChevronRight, ChevronDown } from "lucide-react";
 import { JsonViewer } from "@/components/ui/json-viewer";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 interface CollapsibleItemCardProps {
   title: string;

@@ -11,7 +11,7 @@ import {
 } from "@movementlabsxyz/movement-design-system";
 import { ChevronRight, ChevronDown } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const Card = React.forwardRef<
   React.ElementRef<typeof DSCard>,

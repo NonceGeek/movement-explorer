@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 interface AbiDisplayProps {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

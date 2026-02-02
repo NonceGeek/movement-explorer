@@ -5,7 +5,7 @@ import {
   AlertDescription as DSAlertDescription,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const Alert = React.forwardRef<
   React.ElementRef<typeof DSAlert>,

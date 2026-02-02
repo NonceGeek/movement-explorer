@@ -10,7 +10,7 @@ import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StyledTableRow, TableCell, TableRow } from "@/components/ui/table";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import {
   getTransactionSender,

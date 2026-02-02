@@ -10,7 +10,7 @@ import {
   DialogClose as DSDialogClose,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const Dialog = DSDialog;
 

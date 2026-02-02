@@ -13,7 +13,7 @@ import { Types } from "aptos";
 import Link from "next/link";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import useSubmitTransaction from "@/hooks/transactions/useSubmitTransaction";
-import { removeSignerParam } from "@/api/viewFunction";
+import { removeSignerParam } from "@/utils";
 import { WalletConnector } from "@/components/wallet/WalletConnector";
 import ModuleSidebar from "./ModuleSidebar";
 import ContractForm, { ContractFormData } from "./ContractForm";
@@ -184,11 +184,10 @@ export default function RunContract({
                 {/* Success Result */}
                 {transactionResponse?.transactionSubmitted && (
                   <Alert
-                    className={`mt-4 ${
-                      isSuccess
+                    className={`mt-4 ${isSuccess
                         ? "bg-green-500/10 border-green-500/20"
                         : "bg-destructive/10 border-destructive/20"
-                    }`}
+                      }`}
                   >
                     {isSuccess ? (
                       <CheckCircle2 className="h-4 w-4 text-green-500" />

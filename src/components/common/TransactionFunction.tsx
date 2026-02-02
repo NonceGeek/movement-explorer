@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Types } from "aptos";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import {
   Tooltip,
   TooltipContent,

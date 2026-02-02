@@ -10,7 +10,7 @@ import {
 } from "@movementlabsxyz/movement-design-system";
 import { ChevronDown, Check } from "lucide-react";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 /**
  * 1. Re-export base components from design system

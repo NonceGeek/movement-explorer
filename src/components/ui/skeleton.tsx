@@ -1,6 +1,6 @@
 import * as React from "react";
 import { Skeleton as DSSkeleton } from "@movementlabsxyz/movement-design-system";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import { cva, type VariantProps } from "class-variance-authority";
 
 /**

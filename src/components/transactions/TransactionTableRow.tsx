@@ -12,7 +12,7 @@ import { StyledTableRow, TableCell } from "@/components/ui/table";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { TransactionFunction } from "@/components/common/TransactionFunction";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import {
   getTransactionSender,
   getTransactionCounterparty,

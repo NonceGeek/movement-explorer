@@ -11,7 +11,7 @@ import {
 import { StyledTableRow, TableCell } from "@/components/ui/table";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import {
   getTransactionSender,
   getTransactionCounterparty,

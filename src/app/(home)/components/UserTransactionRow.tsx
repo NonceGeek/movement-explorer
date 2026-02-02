@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import {
   getTransactionSender,
   getTransactionCounterparty,

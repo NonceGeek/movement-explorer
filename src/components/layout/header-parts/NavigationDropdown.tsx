@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buttonVariants } from "@movementlabsxyz/movement-design-system";
 import { ChevronDown } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import {
   DropdownMenu,
   DropdownMenuTrigger,

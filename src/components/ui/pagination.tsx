@@ -9,7 +9,7 @@ import {
   PaginationEllipsis as DSPaginationEllipsis,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const Pagination = React.forwardRef<
   React.ElementRef<typeof DSPagination>,

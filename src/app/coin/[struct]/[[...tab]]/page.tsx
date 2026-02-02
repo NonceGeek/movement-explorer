@@ -21,7 +21,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 // Tab Components
 import InfoTab, { CoinData } from "../components/InfoTab";

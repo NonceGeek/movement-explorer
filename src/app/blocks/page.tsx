@@ -27,7 +27,7 @@ import { Button } from "@movementlabsxyz/movement-design-system";
 import { Loader2 } from "lucide-react";
 import { NewDataNotification } from "@/components/transactions";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const BLOCKS_COUNT = 20;
 const POLL_INTERVAL = 3000;

@@ -8,10 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Copy, Check, AlertCircle, CheckCircle2 } from "lucide-react";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import { view } from "@/services";
 import {
-  viewFunction,
   encodeInputArgsForViewRequest,
-} from "@/api/viewFunction";
+} from "@/utils";
 import ModuleSidebar from "./ModuleSidebar";
 import ContractForm, { ContractFormData } from "./ContractForm";
 
@@ -78,7 +78,7 @@ export default function ReadContract({
         ),
       };
 
-      const response = await viewFunction(
+      const response = await view(
         viewRequest,
         aptos_client,
         data.ledgerVersion,
@@ -94,8 +94,8 @@ export default function ReadContract({
 
   const resultString = result
     ? result
-        .map((r) => (typeof r === "string" ? r : JSON.stringify(r, null, 2)))
-        .join("\n")
+      .map((r) => (typeof r === "string" ? r : JSON.stringify(r, null, 2)))
+      .join("\n")
     : "";
 
   const handleCopyResult = async () => {

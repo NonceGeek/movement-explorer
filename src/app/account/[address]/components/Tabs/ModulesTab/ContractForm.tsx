@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { removeSignerParam } from "@/api/viewFunction";
+import { removeSignerParam } from "@/utils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Loader2 } from "lucide-react";
 

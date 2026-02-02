@@ -8,7 +8,7 @@ import {
   TooltipProvider as DSTooltipProvider,
 } from "@movementlabsxyz/movement-design-system";
 
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 const TooltipProvider = DSTooltipProvider;
 

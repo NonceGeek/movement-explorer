@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { buttonVariants } from "@movementlabsxyz/movement-design-system";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 
 export interface NavigationLinkProps {
   href: string;

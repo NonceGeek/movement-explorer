@@ -7,7 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NavMobile from "./NavMobile";
 import { Logo, NavigationLink, NavigationDropdown } from "./header-parts";
 import { NAV_ITEMS, isNavDropdown } from "./types";
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils/styling";
 import dynamic from "next/dynamic";
 import { SearchBar } from "@/components/search";
 import { Search } from "lucide-react";

@@ -15,7 +15,7 @@ import { FileCode } from "lucide-react";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { useGetAccountModule } from "@/hooks/accounts/useGetAccountModule";
 import { useGetAccountPackages } from "@/hooks/accounts/useGetAccountPackages";
-import { getBytecodeSizeInKB } from "@/api/viewFunction";
+import { getBytecodeSizeInKB } from "@/utils";
 import AbiDisplay from "./AbiDisplay";
 
 interface ViewCodeProps {

@@ -353,3 +353,12 @@ export function getAssetSymbol(
   }
   return "";
 }
+// ... existing code ...
+
+/**
+ * Remove signer parameters from function params
+ * Signer is automatically populated by the wallet
+ */
+export function removeSignerParam(fn: Types.MoveFunction): string[] {
+  return fn.params.filter((param) => param !== "signer" && param !== "&signer");
+}

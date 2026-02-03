@@ -36,7 +36,7 @@ function CopyButton({ value }: { value: unknown }) {
         console.error("Failed to copy:", err);
       }
     },
-    [value]
+    [value],
   );
 
   return (
@@ -187,8 +187,8 @@ export function JsonViewer({
   return (
     <div
       className={cn(
-        "bg-muted/30 rounded-lg p-4 overflow-x-auto font-mono text-sm",
-        className
+        "bg-muted/30 rounded-lg p-4 overflow-x-auto text-base",
+        className,
       )}
     >
       <JsonNode

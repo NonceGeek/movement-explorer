@@ -22,7 +22,7 @@ export interface TransactionColumnConfig {
   key: TransactionColumnKey;
   label: string | ReactNode;
   hideAt?: "sm" | "md" | "lg"; // Responsive breakpoint to hide column
-  align?: "left" | "right";
+  align?: "left" | "right" | "center";
   width?: string; // e.g., 'w-[300px]'
 }
 

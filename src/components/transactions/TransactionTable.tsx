@@ -9,7 +9,7 @@ import {
   TableCell,
   TableRow,
 } from "@/components/ui/table";
-import { TransactionTableProps, TransactionRowData } from "./types";
+import { TransactionTableProps } from "./types";
 import { TransactionTableHeader } from "./TransactionTableHeader";
 import {
   TransactionTableRow,
@@ -109,9 +109,9 @@ export function TransactionTable({
         />
         <TableBody>
           {Array.from({ length: loadingRowCount }).map((_, i) => (
-            <TableRow key={i}>
+            <TableRow key={i} className="h-16">
               <TableCell colSpan={columnCount}>
-                <EnhancedSkeleton className="h-8 w-full" />
+                <EnhancedSkeleton className="h-13 w-full" />
               </TableCell>
             </TableRow>
           ))}
@@ -179,23 +179,23 @@ export function TransactionTable({
                     ? "hidden"
                     : shouldAnimate
                       ? {
-                        opacity: 0,
-                        y: 24,
-                        scale: 0.96,
-                        backgroundColor: "rgba(0, 255, 127, 0.12)",
-                      }
+                          opacity: 0,
+                          y: 24,
+                          scale: 0.96,
+                          backgroundColor: "rgba(0, 255, 127, 0.12)",
+                        }
                       : false
                 }
                 animate={
                   !hasAnimatedInitial
                     ? "show"
                     : {
-                      opacity: 1,
-                      y: 0,
-                      scale: 1,
-                      backgroundColor: "rgba(0, 0, 0, 0)",
-                      transitionEnd: { backgroundColor: "" },
-                    }
+                        opacity: 1,
+                        y: 0,
+                        scale: 1,
+                        backgroundColor: "rgba(0, 0, 0, 0)",
+                        transitionEnd: { backgroundColor: "" },
+                      }
                 }
                 exit={{
                   opacity: 0,

@@ -28,7 +28,7 @@ export const HOME_TRANSACTION_COLUMNS: TransactionColumnConfig[] = BASE_COLUMNS;
 export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
   { key: "hash", label: "Transaction Hash" },
   { key: "function", label: "Function", width: "w-[300px]" },
-  { key: "type", label: "Type" }, // Will include TransactionTypeTooltip
+  { key: "type", label: "Type", align: "left" },
   { key: "timestamp", label: "Age" },
   { key: "sender", label: "Sender" },
   { key: "to", label: "To" },

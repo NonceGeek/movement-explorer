@@ -9,44 +9,10 @@ import {
   useSearchParams,
 } from "next/navigation";
 import { useGetAccountResources } from "@/hooks/accounts/useGetAccountResources";
-import { useGetAccountTransactionVersions } from "@/hooks/accounts/useGetAccountTransactionVersions";
 import { useGetAccountTokensCount } from "@/hooks/accounts/useGetAccountTokens";
-import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTransactionCount";
-import { UserTransactionRow } from "@/app/transactions/components/UserTransactionRow";
 import { Types } from "aptos";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  TableBody,
-  TableCell,
-  StyledTableRow as TableRow,
-  StyledTable as Table,
-  StyledTableHead as TableHead,
-  StyledTableHeader as TableHeader,
-  StyledTableHeaderRow as HeaderRow,
-} from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import { CopyableAddress } from "@/components/common/CopyableAddress";
-import {
-  formatMoveAmount,
-  getCoinBalanceChangeForAccount,
-  getGasInfo,
-  getTransactionCounterparty,
-  getTransactionFunction,
-  getTransactionSender,
-  getTransactionTypeName,
-  formatTimestamp as formatTxTimestamp,
-} from "@/utils/transaction";
 
 // Components
 import AccountTitle from "../components/AccountTitle";
@@ -56,55 +22,11 @@ import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
 import TokensTab from "../components/Tabs/TokensTab";
 import CoinsTab from "../components/Tabs/CoinsTab";
-
-const TXN_PER_PAGE = 25;
-
-function getPageStartSequenceNumbers(sequenceNum: number): number[] {
-  const pageStarts: number[] = [];
-  const numOfPages = Math.ceil(sequenceNum / TXN_PER_PAGE);
-  let num = sequenceNum;
-  for (let i = 0; i < numOfPages; i++) {
-    num = num - TXN_PER_PAGE;
-    num = num >= 0 ? num : 0;
-    pageStarts.push(num);
-  }
-  return pageStarts;
-}
-
-function getVisiblePages(currentPage: number, totalPages: number) {
-  const pages: (number | "ellipsis")[] = [];
-  const showPages = 5;
-  const halfShow = Math.floor(showPages / 2);
-
-  let startPage = Math.max(1, currentPage - halfShow);
-  let endPage = Math.min(totalPages, currentPage + halfShow);
-
-  if (currentPage <= halfShow) {
-    endPage = Math.min(totalPages, showPages);
-  } else if (currentPage >= totalPages - halfShow) {
-    startPage = Math.max(1, totalPages - showPages + 1);
-  }
-
-  if (startPage > 1) {
-    pages.push(1);
-    if (startPage > 2) pages.push("ellipsis");
-  }
-
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) pages.push("ellipsis");
-    pages.push(totalPages);
-  }
-
-  return pages;
-}
+import TransactionsTab from "../components/Tabs/TransactionsTab";
+import ResourcesTab from "../components/Tabs/ResourcesTab";
 
 export default function AccountDetailPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const router = useRouter();
   const pathname = usePathname();
   const address = params.address as string;
@@ -124,45 +46,7 @@ export default function AccountDetailPage() {
   );
   const tokenData = resources?.find((r) => r.type === "0x4::token::Token");
 
-  const { data: indexerTxCount } = useGetAccountTransactionCount(address);
-
-  const currentTxPage = parseInt(searchParams.get("txPage") ?? "1", 10);
-  const sequenceNum = accountData
-    ? parseInt(accountData.sequence_number, 10)
-    : 0;
-
-  // Use indexer count if available, otherwise fallback to sequence number (only for accounts)
-  const totalTxCount = indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
-
-  const totalTxPages = Math.max(1, Math.ceil(totalTxCount / TXN_PER_PAGE));
-
-  // For Node API (fallback):
-  const pageStarts = sequenceNum
-    ? getPageStartSequenceNumbers(sequenceNum)
-    : [];
-
-  // start/limit for Node API
-  const txStart = pageStarts[currentTxPage - 1];
-  const txLimit =
-    currentTxPage > 1 && currentTxPage === totalTxPages
-      ? pageStarts[currentTxPage - 2]
-      : TXN_PER_PAGE;
-
-  // offset for Indexer API
-  const txOffset = (currentTxPage - 1) * TXN_PER_PAGE;
-
-  const { data: transactionVersions, isLoading: transactionsLoading } =
-    useGetAccountTransactionVersions(address, TXN_PER_PAGE, txOffset);
-
-  const txVisiblePages = getVisiblePages(currentTxPage, totalTxPages);
-  const handleTxPageChange = (page: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("txPage", page.toString());
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
   // Determine if this is an object (for Title)
-  // This logic is simplified; real logic might need checking specific resources
   const isObject = !!objectData;
   const isToken = !!tokenData;
   const isAccount = !!accountData;
@@ -194,11 +78,6 @@ export default function AccountDetailPage() {
   const [currentTab, setCurrentTab] = useState("transactions");
 
   // Handle Deep Linking via Slug
-  // Route: /account/[address]/[[...slug]]
-  // Possible patterns:
-  // - /modules
-  // - /modules/code/[package]/[module]
-  // - /modules/code/[package]/[module]/[function]
   const slug = params.slug as string[] | undefined;
 
   // Derive initial state from slug
@@ -206,41 +85,25 @@ export default function AccountDetailPage() {
     slug && slug.length > 2 && slug[0] === "modules" && slug[1] === "code"
       ? decodeURIComponent(slug[2])
       : undefined;
-  // Module name is just the name, not full path, but let's assume we might get partial or full.
-  // Actually, usually it's just module name if we know the package.
-  // If the link is .../code/0x1::coin/transfer, then package is 0x1::coin (wrong)
-  // Usually link is .../code/package/module/function
 
-  // Let's assume structure: /modules/code/package_name/module_name/function_name
   const initialModule =
     slug && slug.length > 3 && slug[0] === "modules" && slug[1] === "code"
       ? decodeURIComponent(slug[3])
       : undefined;
+
   const initialFunction =
     slug && slug.length > 4 && slug[0] === "modules" && slug[1] === "code"
       ? decodeURIComponent(slug[4])
       : undefined;
 
-  // Set initial tab if slug dictates it
-  if (slug && slug[0] === "modules" && currentTab !== "modules") {
-    // We use a simple check to avoid infinite loops or re-renders if likely
-    // But better to use useEffect or initialize state lazily if possible.
-    // Since this is a Client Component, we can use useEffect (as done below) or just initialize state.
-  }
+  // Handle Tab Change
+  const handleTabChange = (value: string) => {
+    setCurrentTab(value);
 
-  // Better: Initialize state based on params (only on mount)
-  useState(() => {
-    if (slug && slug[0] === "modules") {
-      setCurrentTab("modules");
-    } else if (slug && slug[0]) {
-      // Handle other tabs if they were mapped (e.g. /resources)
-      // For now only modules is explicitly required deep linking
-      const tab = slug[0];
-      if (tabItems.some((t) => t.value === tab)) {
-        setCurrentTab(tab);
-      }
-    }
-  });
+    // Update URL
+    const newPath = `/account/${address}/${value}`;
+    router.push(newPath);
+  };
 
   const tabItems = [
     { value: "transactions", label: "Transactions" },
@@ -251,6 +114,23 @@ export default function AccountDetailPage() {
     { value: "tokens", label: `Tokens (${tokenCount})` },
     { value: "nfts", label: "NFTs" },
   ];
+
+  // Initialize state based on params (only on mount)
+  useState(() => {
+    if (slug && slug.length > 0) {
+      // If slug exists, try to match it with a tab
+      // Special case for modules because it can have sub-routes
+      if (slug[0] === "modules") {
+        setCurrentTab("modules");
+      } else {
+        // Check if the first slug matches any tab value
+        const foundTab = tabItems.find((t) => t.value === slug[0]);
+        if (foundTab) {
+          setCurrentTab(foundTab.value);
+        }
+      }
+    }
+  });
 
   if (resourcesError && !resources) {
     return (
@@ -289,157 +169,21 @@ export default function AccountDetailPage() {
         {/* Tabs */}
         <Tabs
           value={currentTab}
-          onValueChange={setCurrentTab}
+          onValueChange={handleTabChange}
           className="space-y-6"
         >
           <ResponsiveTabsList
             items={tabItems}
             activeTab={currentTab}
-            onTabChange={setCurrentTab}
+            onTabChange={handleTabChange}
           />
 
           <TabsContent value="transactions">
-            <Card>
-              <CardHeader>
-                <CardTitle>Transactions</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {transactionsLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 5 }).map((_, i) => (
-                      <EnhancedSkeleton key={i} className="h-12 w-full" />
-                    ))}
-                  </div>
-                ) : !transactionVersions || transactionVersions.length === 0 ? (
-                  <p className="text-muted-foreground">No transactions found</p>
-                ) : (
-                  <div className="space-y-6">
-                    <div className="overflow-x-auto">
-                      <Table>
-                        <TableHeader>
-                          <HeaderRow>
-                            <TableHead>Version</TableHead>
-                            <TableHead>Status</TableHead>
-                            <TableHead>Type</TableHead>
-                            <TableHead>Timestamp</TableHead>
-                            <TableHead>Sender</TableHead>
-                            <TableHead>Receiver</TableHead>
-                            <TableHead>Function</TableHead>
-                            <TableHead className="text-right">Amount</TableHead>
-                            <TableHead className="text-right">Gas</TableHead>
-                          </HeaderRow>
-                        </TableHeader>
-                        <TableBody>
-                          {transactionVersions.map((version: number) => (
-                            <UserTransactionRow
-                              key={version}
-                              version={version}
-                            />
-                          ))}
-                        </TableBody>
-
-                      </Table>
-                    </div>
-
-                    {totalTxPages > 1 && (
-                      <div className="flex justify-center">
-                        <Pagination>
-                          <PaginationContent>
-                            <PaginationItem>
-                              <PaginationPrevious
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  if (currentTxPage > 1)
-                                    handleTxPageChange(currentTxPage - 1);
-                                }}
-                                className={
-                                  currentTxPage === 1
-                                    ? "pointer-events-none opacity-50"
-                                    : "cursor-pointer"
-                                }
-                              />
-                            </PaginationItem>
-
-                            {txVisiblePages.map((page, i) =>
-                              page === "ellipsis" ? (
-                                <PaginationItem key={`ellipsis-${i}`}>
-                                  <PaginationEllipsis />
-                                </PaginationItem>
-                              ) : (
-                                <PaginationItem key={page}>
-                                  <PaginationLink
-                                    href="#"
-                                    isActive={page === currentTxPage}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleTxPageChange(page);
-                                    }}
-                                  >
-                                    {page}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              ),
-                            )}
-
-                            <PaginationItem>
-                              <PaginationNext
-                                href="#"
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  if (currentTxPage < totalTxPages)
-                                    handleTxPageChange(currentTxPage + 1);
-                                }}
-                                className={
-                                  currentTxPage === totalTxPages
-                                    ? "pointer-events-none opacity-50"
-                                    : "cursor-pointer"
-                                }
-                              />
-                            </PaginationItem>
-                          </PaginationContent>
-                        </Pagination>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <TransactionsTab address={address} accountData={accountData} />
           </TabsContent>
 
           <TabsContent value="resources">
-            <Card>
-              <CardHeader>
-                <CardTitle>Resources ({resources?.length || 0})</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {resourcesLoading ? (
-                  <div className="space-y-3">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <EnhancedSkeleton key={i} className="h-24 w-full" />
-                    ))}
-                  </div>
-                ) : resources && resources.length > 0 ? (
-                  <div className="space-y-4">
-                    {resources.map((resource, i) => (
-                      <div
-                        key={i}
-                        className="border border-border rounded-lg p-4"
-                      >
-                        <p className="text-sm text-muted-foreground mb-2 font-mono break-all">
-                          {resource.type}
-                        </p>
-                        <pre className="bg-muted p-3 rounded text-xs overflow-x-auto max-h-96">
-                          {JSON.stringify(resource.data, null, 2)}
-                        </pre>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-muted-foreground">No resources found</p>
-                )}
-              </CardContent>
-            </Card>
+            <ResourcesTab resources={resources} isLoading={resourcesLoading} />
           </TabsContent>
 
           <TabsContent value="modules">

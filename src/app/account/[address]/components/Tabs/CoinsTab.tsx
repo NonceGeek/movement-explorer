@@ -82,36 +82,34 @@ export default function CoinsTab({ address }: { address: string }) {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-          <CardTitle>Coin Holdings ({filteredCoins.length})</CardTitle>
-          <CoinFilters filter={filter} setFilter={setFilter} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <HeaderRow>
-                <TableHead>Coin</TableHead>
-                <TableHead>Asset Type</TableHead>
-                <TableHead>Asset</TableHead>
-                <TableHead>Verified</TableHead>
-                <TableHead className="text-right">Standard</TableHead>
-                <TableHead className="text-right">Balance</TableHead>
-                <TableHead className="text-right">USD Price</TableHead>
-                <TableHead className="text-right">USD Value</TableHead>
-              </HeaderRow>
-            </TableHeader>
-            <TableBody>
-              {filteredCoins.map((coin) => (
-                <CoinRow key={coin.assetType} coin={coin} />
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      </CardContent>
-    </Card>
+    <>
+
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-start">
+        <CoinFilters filter={filter} setFilter={setFilter} />
+      </div>
+
+      <div className="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <HeaderRow>
+              <TableHead>Coin</TableHead>
+              <TableHead>Asset Type</TableHead>
+              <TableHead>Asset</TableHead>
+              <TableHead>Verified</TableHead>
+              <TableHead className="text-right">Standard</TableHead>
+              <TableHead className="text-right">Balance</TableHead>
+              <TableHead className="text-right">USD Price</TableHead>
+              <TableHead className="text-right">USD Value</TableHead>
+            </HeaderRow>
+          </TableHeader>
+          <TableBody>
+            {filteredCoins.map((coin) => (
+              <CoinRow key={coin.assetType} coin={coin} />
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+    </>
   );
 }

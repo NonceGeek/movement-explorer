@@ -35,8 +35,6 @@ export default function ModulesTabs({
   initialFunction,
 }: ModulesTabsProps) {
   const router = useRouter();
-  const pathname = usePathname();
-  const params = useParams();
   const packages = useGetAccountPackages(address);
 
   // Determine initial tab from slug
@@ -98,7 +96,7 @@ export default function ModulesTabs({
       <Tabs value={currentTab} onValueChange={handleTabChange}>
         <TabsList className="grid w-full grid-cols-4 max-w-md">
           {(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => (
-            <TabsTrigger key={tab} value={tab}>
+            <TabsTrigger key={tab} value={tab} className="cursor-pointer">
               {TAB_LABELS[tab]}
             </TabsTrigger>
           ))}

@@ -30,6 +30,8 @@ export interface CopyableAddressProps {
   showLabel?: boolean;
   /** Optional leading icon */
   icon?: React.ReactNode;
+  /** Custom tooltip text for copy button */
+  copyTooltip?: string;
 }
 
 export function CopyableAddress({
@@ -42,13 +44,15 @@ export function CopyableAddress({
   variant = "default",
   showLabel = false,
   icon,
+  copyTooltip = "Copy address",
 }: CopyableAddressProps) {
   const [copied, setCopied] = useState(false);
   const accountLabel = useGetAccountLabel(address, showLabel);
 
   // Determine display text
-  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
-    }`;
+  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${
+    truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
+  }`;
 
   // Check if this is a verified address and we should show label
   const isVerifiedWithLabel =
@@ -205,7 +209,7 @@ export function CopyableAddress({
           "inline-flex items-center gap-1 transition-all duration-200 group/address",
           showFull && "flex-wrap",
           variant === "default" &&
-          "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
+            "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
         )}
       >
         {showFull ? (
@@ -230,7 +234,6 @@ export function CopyableAddress({
                 className={cn(
                   "p-1.5 rounded-md transition-all duration-200 cursor-pointer",
                   "text-muted-foreground hover:text-guild-green-500",
-                  "opacity-0 group-hover/address:opacity-100",
                   "hover:bg-primary/20 active:scale-90",
                 )}
                 aria-label="Copy address"
@@ -252,7 +255,7 @@ export function CopyableAddress({
               </button>
             </TooltipTrigger>
             <TooltipContent side="top">
-              <p>{copied ? "Copied!" : "Copy address"}</p>
+              <p>{copied ? "Copied!" : copyTooltip}</p>
             </TooltipContent>
           </Tooltip>
         )}

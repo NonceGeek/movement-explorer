@@ -25,7 +25,7 @@ export default function PackagesSidebar({
             key={pkg.name}
             variant="ghost"
             className={cn(
-              "w-full justify-start gap-2 h-auto py-3 px-3",
+              "w-full justify-start gap-2 h-auto py-3 px-3 rounded-lg hover:text-guild-green-200",
               selectedPackageName === pkg.name
                 ? "bg-primary/10 text-primary hover:bg-primary/20"
                 : "text-muted-foreground hover:bg-muted",
@@ -33,7 +33,7 @@ export default function PackagesSidebar({
             onClick={() => onSelectPackage(pkg.name)}
           >
             <Package className="h-4 w-4 shrink-0" />
-            <span className="truncate text-sm font-mono">{pkg.name}</span>
+            <span className="truncate text-sm">{pkg.name}</span>
           </Button>
         ))}
       </div>

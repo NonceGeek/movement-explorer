@@ -71,7 +71,7 @@ function TokenContent() {
   return (
     <>
       <PageNavigation title="Token" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         <TokenHeader
           isLoading={isLoading}
           tokenName={token?.token_name}

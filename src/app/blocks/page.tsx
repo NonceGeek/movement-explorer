@@ -139,7 +139,6 @@ function BlocksContent() {
   };
 
   // Flatten data
-  // Flatten data
   const flatBlocks = data?.pages.flatMap((page) => page) ?? [];
 
   const isRefreshing = isFetching && !isFetchingNextPage;
@@ -147,7 +146,7 @@ function BlocksContent() {
   return (
     <>
       <PageNavigation title="Blocks" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-3xl font-bold">Blocks</h1>
           <NewDataNotification

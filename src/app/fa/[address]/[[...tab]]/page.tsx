@@ -61,7 +61,7 @@ function FAContent() {
   // Validate address format
   if (!isValidAccountAddress(address)) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         <Card className="border-destructive">
           <CardContent className="pt-6">
             <p className="text-destructive">
@@ -114,24 +114,24 @@ function FAContent() {
     },
     ...(isGraphqlSupported
       ? [
-          {
-            value: "holders",
-            label: "Holders",
-            icon: <Users className="h-4 w-4 mr-1" />,
-          },
-          {
-            value: "transactions",
-            label: "Transactions",
-            icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
-          },
-        ]
+        {
+          value: "holders",
+          label: "Holders",
+          icon: <Users className="h-4 w-4 mr-1" />,
+        },
+        {
+          value: "transactions",
+          label: "Transactions",
+          icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
+        },
+      ]
       : []),
   ];
 
   return (
     <>
       <PageNavigation title="Fungible Asset" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">
           {metadata?.icon_uri || coinDescription?.logoUrl ? (

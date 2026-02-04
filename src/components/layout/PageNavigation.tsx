@@ -112,7 +112,7 @@ export default function PageNavigation({
         className,
       )}
     >
-      <div className="container mx-auto flex h-14 md:h-16 items-center px-4">
+      <div className="container max-w-[1440px] mx-auto flex h-14 md:h-16 items-center px-4">
         {/* ===== Mobile Layout ===== */}
         <div
           className="flex md:hidden items-center w-full gap-2"
@@ -205,7 +205,7 @@ export default function PageNavigation({
                             "px-4 py-3 cursor-pointer transition-all duration-150",
                             "hover:bg-guild-green-500/10 text-foreground",
                             !result.to &&
-                              "cursor-default text-muted-foreground",
+                            "cursor-default text-muted-foreground",
                           )}
                         >
                           <div className="flex items-center gap-3">

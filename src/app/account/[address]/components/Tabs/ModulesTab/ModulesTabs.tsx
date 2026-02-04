@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useParams, usePathname } from "next/navigation";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import ViewCode from "./ViewCode";
 import ReadContract from "./ReadContract";
@@ -34,7 +33,6 @@ export default function ModulesTabs({
   initialModule,
   initialFunction,
 }: ModulesTabsProps) {
-  const router = useRouter();
   const packages = useGetAccountPackages(address);
 
   // Determine initial tab from slug
@@ -62,18 +60,28 @@ export default function ModulesTabs({
   const selectedPackage = packages.find((p) => p.name === selectedPackageName);
 
   const handleTabChange = (value: string) => {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+
     const tab = value as ModulesTabValue;
     setCurrentTab(tab);
 
-    // Update URL
+    // Update URL without scrolling
     const basePath = isObject ? "object" : "account";
+    let newPath: string;
     if (tab === "packages") {
-      router.push(`/${basePath}/${address}/modules`);
+      newPath = `/${basePath}/${address}/modules`;
     } else {
-      router.push(
-        `/${basePath}/${address}/modules/${tab}${selectedModuleName ? `/${selectedModuleName}` : ""}`,
-      );
+      newPath = `/${basePath}/${address}/modules/${tab}${selectedModuleName ? `/${selectedModuleName}` : ""}`;
     }
+
+    // Use window.history.pushState to avoid Next.js navigation behavior
+    window.history.pushState(null, '', newPath);
+
+    // Restore scroll position after DOM update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const getModulePath = (
@@ -85,9 +93,20 @@ export default function ModulesTabs({
   };
 
   const handleModuleSelect = (moduleName: string) => {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+
     setSelectedModuleName(moduleName);
     if (currentTab !== "packages") {
-      router.push(getModulePath(moduleName));
+      const newPath = getModulePath(moduleName);
+
+      // Use window.history.pushState to avoid Next.js navigation behavior
+      window.history.pushState(null, '', newPath);
+
+      // Restore scroll position after DOM update
+      requestAnimationFrame(() => {
+        window.scrollTo(0, scrollY);
+      });
     }
   };
 

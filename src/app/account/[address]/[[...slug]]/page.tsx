@@ -15,8 +15,13 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
 
 // Components
-import AccountTitle from "../components/AccountTitle";
-import BalanceCard from "../components/BalanceCard";
+import { AccountHeader, StatsCard, SectionCard, InfoItem, type AccountType } from "@/components/account";
+import { Wallet, Activity, Coins, Image, User, Database, LayoutDashboard, Code, Info } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
+import { useGetPrice } from "@/hooks/useGetPrice";
 import InfoTab from "../components/Tabs/InfoTab";
 import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
@@ -38,6 +43,8 @@ export default function AccountDetailPage() {
   } = useGetAccountResources(address);
 
   const { count: tokenCount } = useGetAccountTokensCount(address);
+  const { data: balance, isLoading: balanceLoading } = useGetUnifiedMOVEBalance(address);
+  const { data: price, isLoading: priceLoading } = useGetPrice();
 
   const accountData = resources?.find((r) => r.type === "0x1::account::Account")
     ?.data as Types.AccountData | undefined;
@@ -52,6 +59,30 @@ export default function AccountDetailPage() {
   const isAccount = !!accountData;
   const isDeleted =
     !resourcesLoading && !!resources && resources.length === 0 && !isAccount;
+
+  // Determine account type for AccountHeader
+  const accountType: AccountType = isToken
+    ? "token"
+    : isObject && !isAccount
+      ? "object"
+      : "account";
+
+  // Format balance
+  const formattedBalance = balance
+    ? (Number(balance) / 100000000).toLocaleString("en-US", {
+      maximumFractionDigits: 2,
+    })
+    : "0";
+
+  const balanceUSD =
+    balance && price
+      ? ((Number(balance) / 100000000) * price).toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
+      : null;
 
   // Detect if we're on the /account route
   const isOnAccountRoute = pathname.startsWith("/account/");
@@ -98,21 +129,62 @@ export default function AccountDetailPage() {
 
   // Handle Tab Change
   const handleTabChange = (value: string) => {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+
     setCurrentTab(value);
 
-    // Update URL
+    // Update URL without scrolling to top
     const newPath = `/account/${address}/${value}`;
-    router.push(newPath);
+
+    // Use window.history.pushState to avoid Next.js navigation behavior
+    window.history.pushState(null, '', newPath);
+
+    // Restore scroll position after a brief delay to ensure layout is complete
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   const tabItems = [
-    { value: "transactions", label: "Transactions" },
-    { value: "resources", label: `Resources (${resources?.length || 0})` },
-    { value: "modules", label: "Modules" },
-    { value: "info", label: "Info" },
-    { value: "coins", label: "Coins" },
-    { value: "tokens", label: `Tokens (${tokenCount})` },
-    { value: "nfts", label: "NFTs" },
+    {
+      value: "transactions",
+      label: "Transactions",
+      icon: <Activity className="h-4 w-4" />,
+      badge: accountData?.sequence_number ? Number(accountData.sequence_number) : undefined,
+    },
+    {
+      value: "resources",
+      label: "Resources",
+      icon: <Database className="h-4 w-4" />,
+      badge: resources?.length || 0,
+    },
+    {
+      value: "modules",
+      label: "Modules",
+      icon: <Code className="h-4 w-4" />,
+    },
+    {
+      value: "info",
+      label: "Info",
+      icon: <Info className="h-4 w-4" />,
+    },
+    {
+      value: "coins",
+      label: "Coins",
+      icon: <Wallet className="h-4 w-4" />,
+    },
+    {
+      value: "tokens",
+      label: "Tokens",
+      icon: <Coins className="h-4 w-4" />,
+      badge: tokenCount || undefined,
+    },
+    {
+      value: "nfts",
+      label: "NFTs",
+      icon: <Image className="h-4 w-4" />,
+    },
   ];
 
   // Initialize state based on params (only on mount)
@@ -150,20 +222,138 @@ export default function AccountDetailPage() {
   return (
     <>
       <PageNavigation title={pageTitle} />
-      <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 mb-8">
-          <div className="lg:col-span-8 xl:col-span-9 flex flex-col justify-center">
-            <AccountTitle
-              address={address}
-              isAccount={isAccount}
-              isObject={isObject}
-              isToken={isToken}
-              isDeleted={isDeleted}
-            />
-          </div>
-          <div className="lg:col-span-4 xl:col-span-3">
-            <BalanceCard address={address} />
-          </div>
+      <div className="container max-w-[1440px] mx-auto px-4 py-8">
+        {/* Hero Header Section */}
+        <div className="mb-6">
+          <AccountHeader
+            address={address}
+            accountType={accountType}
+            isAccount={isAccount}
+            isObject={isObject}
+            isToken={isToken}
+            isDeleted={isDeleted}
+          />
+        </div>
+
+        {/* Stats Dashboard */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {/* MOVE Balance Card */}
+          <StatsCard
+            icon={<Wallet className="h-5 w-5" />}
+            label="MOVE Balance"
+            value={`${formattedBalance} MOVE`}
+            subValue={balanceUSD ? `~${balanceUSD}` : undefined}
+            tooltip="Total MOVE tokens in this account"
+            loading={balanceLoading || priceLoading}
+          />
+
+          {/* Transaction Count Card */}
+          <StatsCard
+            icon={<Activity className="h-5 w-5" />}
+            label="Transactions"
+            value={accountData?.sequence_number ? Number(accountData.sequence_number).toLocaleString() : "0"}
+            tooltip="Total number of transactions from this account"
+            loading={resourcesLoading}
+          />
+
+          {/* Tokens Held Card */}
+          <StatsCard
+            icon={<Coins className="h-5 w-5" />}
+            label="Tokens Held"
+            value={tokenCount || 0}
+            subValue="View collection →"
+            link={`/account/${address}/tokens`}
+            loading={false}
+          />
+
+          {/* NFTs Owned Card */}
+          <StatsCard
+            icon={<Image className="h-5 w-5" />}
+            label="NFTs Owned"
+            value={0}
+            subValue="View gallery →"
+            link={`/account/${address}/nfts`}
+            loading={false}
+          />
+        </div>
+
+        {/* Account Overview */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+          {/* Left: Account Details */}
+          <SectionCard title="Account Details">
+            <div className="space-y-3">
+              <InfoItem
+                label="Account Type"
+                value={
+                  accountType === "token"
+                    ? "Token Object"
+                    : accountType === "object"
+                      ? "Object"
+                      : "Account"
+                }
+                icon={<User className="h-4 w-4" />}
+              />
+              {accountData?.sequence_number && (
+                <InfoItem
+                  label="Sequence Number"
+                  value={accountData.sequence_number}
+                  mono
+                  tooltip="Number of transactions sent from this account"
+                />
+              )}
+              {accountData?.authentication_key && (
+                <InfoItem
+                  label="Authentication Key"
+                  value={accountData.authentication_key}
+                  mono
+                  truncate
+                  copyable
+                  tooltip="Key used to authenticate transactions"
+                />
+              )}
+            </div>
+          </SectionCard>
+
+          {/* Right: Resources Summary */}
+          <SectionCard
+            title={`Resources (${resources?.length || 0})`}
+            headerAction={
+              <Button variant="ghost" size="sm" asChild>
+                <Link href={`#resources`} onClick={() => setCurrentTab("resources")}>
+                  View All →
+                </Link>
+              </Button>
+            }
+          >
+            {resources && resources.length > 0 ? (
+              <div className="space-y-2">
+                {resources.slice(0, 3).map((resource) => (
+                  <div
+                    key={resource.type}
+                    className="flex items-center justify-between p-3 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
+                  >
+                    <code className="text-xs font-mono truncate flex-1">
+                      {resource.type}
+                    </code>
+                  </div>
+                ))}
+                {resources.length > 3 && (
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="w-full mt-2"
+                    onClick={() => setCurrentTab("resources")}
+                  >
+                    + {resources.length - 3} more resources
+                  </Button>
+                )}
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                No resources found
+              </p>
+            )}
+          </SectionCard>
         </div>
 
         {/* Tabs */}

@@ -140,6 +140,7 @@ interface ResponsiveTabItem {
   value: string;
   label: React.ReactNode;
   icon?: React.ReactNode;
+  badge?: number | string;
 }
 
 interface ResponsiveTabsListProps {
@@ -171,8 +172,15 @@ function ResponsiveTabsList({
             variant="primary-line"
             className="shrink-0"
           >
-            {item.icon}
-            {item.label}
+            <span className="flex items-center gap-2">
+              {item.icon}
+              <span>{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded-md font-medium">
+                  {typeof item.badge === "number" ? item.badge.toLocaleString() : item.badge}
+                </span>
+              )}
+            </span>
           </TabsTrigger>
         ))}
       </TabsList>

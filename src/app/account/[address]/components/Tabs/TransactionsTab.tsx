@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useSearchParams, usePathname } from "next/navigation";
 import { useGetAccountTransactionVersions } from "@/hooks/accounts/useGetAccountTransactionVersions";
 import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTransactionCount";
 import {
@@ -22,6 +22,8 @@ import {
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
 } from "@/components/transactions";
+import { EmptyState } from "@/components/account";
+import { Activity } from "lucide-react";
 
 const TXN_PER_PAGE = 25;
 
@@ -78,7 +80,6 @@ export default function TransactionsTab({
   accountData,
 }: TransactionsTabProps) {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
 
   const { data: indexerTxCount } = useGetAccountTransactionCount(address);
@@ -123,9 +124,20 @@ export default function TransactionsTab({
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
   const handleTxPageChange = (page: number) => {
+    // Save current scroll position
+    const scrollY = window.scrollY;
+
     const params = new URLSearchParams(searchParams.toString());
     params.set("txPage", page.toString());
-    router.push(`${pathname}?${params.toString()}`);
+    const newPath = `${pathname}?${params.toString()}`;
+
+    // Use window.history.pushState to avoid Next.js navigation behavior
+    window.history.pushState(null, '', newPath);
+
+    // Restore scroll position after DOM update
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   // Prepare table data
@@ -142,7 +154,11 @@ export default function TransactionsTab({
   return (
     <>
       {!isLoading && (!tableData || tableData.length === 0) ? (
-        <p className="text-muted-foreground">No transactions found</p>
+        <EmptyState
+          icon={<Activity className="h-12 w-12" />}
+          title="No Transactions Yet"
+          description="This account hasn't made any transactions on the network."
+        />
       ) : (
         <div className="space-y-6">
           <div className="overflow-x-auto">

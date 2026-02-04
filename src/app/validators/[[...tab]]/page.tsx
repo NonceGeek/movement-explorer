@@ -103,7 +103,7 @@ export default function ValidatorsPage() {
   return (
     <>
       <PageNavigation title="Validators" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         {/* Staking Promo Banner */}
         <StakingPromo />
 
@@ -208,8 +208,8 @@ export default function ValidatorsPage() {
                   const share =
                     totalVotingPower && BigInt(totalVotingPower) > 0
                       ? (Number(BigInt(validator.voting_power)) /
-                          Number(totalPower)) *
-                        100
+                        Number(totalPower)) *
+                      100
                       : 0;
 
                   return (

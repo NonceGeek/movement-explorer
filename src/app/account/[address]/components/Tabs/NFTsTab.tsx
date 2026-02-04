@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Image as ImageIcon } from "lucide-react";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { EmptyState } from "@/components/account";
 
 interface NFTsTabProps {
   address: string;
@@ -23,11 +24,11 @@ export default function NFTsTab({ address }: NFTsTabProps) {
 
   if (tokens.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">No NFTs found</p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={<ImageIcon className="h-12 w-12" />}
+        title="No NFTs Found"
+        description="This account doesn't currently own any NFTs."
+      />
     );
   }
 

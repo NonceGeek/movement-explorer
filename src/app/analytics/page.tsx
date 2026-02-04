@@ -27,7 +27,7 @@ export default function AnalyticsPage() {
   return (
     <>
       <PageNavigation title="Analytics" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         {/* Network Info Metrics */}
         <NetworkInfo />
 

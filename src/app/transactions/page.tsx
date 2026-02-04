@@ -93,7 +93,7 @@ export default function TransactionsPage() {
   return (
     <>
       <PageNavigation title="Transactions" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         <Suspense
           fallback={
             <div className="overflow-x-auto mt-[60px]">

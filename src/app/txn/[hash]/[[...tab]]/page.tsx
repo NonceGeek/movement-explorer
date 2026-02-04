@@ -301,7 +301,7 @@ export default function TransactionDetailPage() {
   return (
     <>
       <PageNavigation title="Transaction Details" />
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
         {/* Transaction Hash with Status */}
         <div className="flex items-center gap-4 mb-6">
           <CopyableAddress
@@ -515,44 +515,44 @@ export default function TransactionDetailPage() {
                   eventRootHash ||
                   accumulatorRootHash ||
                   signature) && (
-                  <SectionCard title="Advanced" defaultCollapsed>
-                    {stateChangeHash && (
-                      <InfoItem label="State Change Hash">
-                        <CopyableAddress
-                          address={stateChangeHash}
-                          showFull
-                          variant="hash"
-                        />
-                      </InfoItem>
-                    )}
-                    {eventRootHash && (
-                      <InfoItem label="Event Root Hash">
-                        <CopyableAddress
-                          address={eventRootHash}
-                          showFull
-                          variant="hash"
-                        />
-                      </InfoItem>
-                    )}
-                    {accumulatorRootHash && (
-                      <InfoItem label="Accumulator Root Hash">
-                        <CopyableAddress
-                          address={accumulatorRootHash}
-                          showFull
-                          variant="hash"
-                        />
-                      </InfoItem>
-                    )}
-                    {signature && (
-                      <div className="space-y-1">
-                        <p className="text-sm text-muted-foreground">
-                          Signature
-                        </p>
-                        <JsonViewer data={signature} initialDepth={1} />
-                      </div>
-                    )}
-                  </SectionCard>
-                )}
+                    <SectionCard title="Advanced" defaultCollapsed>
+                      {stateChangeHash && (
+                        <InfoItem label="State Change Hash">
+                          <CopyableAddress
+                            address={stateChangeHash}
+                            showFull
+                            variant="hash"
+                          />
+                        </InfoItem>
+                      )}
+                      {eventRootHash && (
+                        <InfoItem label="Event Root Hash">
+                          <CopyableAddress
+                            address={eventRootHash}
+                            showFull
+                            variant="hash"
+                          />
+                        </InfoItem>
+                      )}
+                      {accumulatorRootHash && (
+                        <InfoItem label="Accumulator Root Hash">
+                          <CopyableAddress
+                            address={accumulatorRootHash}
+                            showFull
+                            variant="hash"
+                          />
+                        </InfoItem>
+                      )}
+                      {signature && (
+                        <div className="space-y-1">
+                          <p className="text-sm text-muted-foreground">
+                            Signature
+                          </p>
+                          <JsonViewer data={signature} initialDepth={1} />
+                        </div>
+                      )}
+                    </SectionCard>
+                  )}
               </div>
             )}
           </TabsContent>

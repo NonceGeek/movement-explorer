@@ -12,6 +12,8 @@ import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useCoinData } from "./coins/useCoinData";
 import { CoinRow } from "./coins/CoinRow";
 import { CoinFilters } from "./coins/CoinFilters";
+import { EmptyState } from "@/components/account";
+import { Wallet } from "lucide-react";
 
 export default function CoinsTab({ address }: { address: string }) {
   const { filteredCoins, isLoading, filter, setFilter } = useCoinData(address);
@@ -73,11 +75,11 @@ export default function CoinsTab({ address }: { address: string }) {
 
   if (!filteredCoins.length && filter === "all") {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">No coin holdings found</p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={<Wallet className="h-12 w-12" />}
+        title="No Coins Held"
+        description="This account doesn't currently hold any coins."
+      />
     );
   }
 

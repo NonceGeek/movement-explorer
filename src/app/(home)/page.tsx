@@ -77,7 +77,7 @@ export default function HomePage() {
   const isAnalyticsLoading = !analyticsData;
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen max-w-[1440px] mx-auto">
       {/* Hero + Stats Section with Dotted Background */}
       <div className="relative overflow-hidden">
         {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}

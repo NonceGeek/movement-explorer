@@ -271,20 +271,12 @@ export default function BlockDetailPage() {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList className="mb-6">
-            <TabsTrigger
-              value="overview"
-              variant="interactive"
-              className="gap-2"
-            >
+          <TabsList variant="line" className="mb-6">
+            <TabsTrigger value="overview" variant="line" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger
-              value="transactions"
-              variant="interactive"
-              className="gap-2"
-            >
+            <TabsTrigger value="transactions" variant="line" className="gap-2">
               <FileText className="h-4 w-4" />
               Transactions
             </TabsTrigger>

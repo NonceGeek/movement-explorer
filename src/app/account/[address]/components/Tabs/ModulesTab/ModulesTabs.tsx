@@ -94,9 +94,14 @@ export default function ModulesTabs({
   return (
     <div className="space-y-6">
       <Tabs value={currentTab} onValueChange={handleTabChange}>
-        <TabsList className="grid w-full grid-cols-4 max-w-md">
+        <TabsList variant="line" className="w-full">
           {(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => (
-            <TabsTrigger key={tab} value={tab} className="cursor-pointer">
+            <TabsTrigger
+              key={tab}
+              value={tab}
+              variant="line"
+              className="cursor-pointer"
+            >
               {TAB_LABELS[tab]}
             </TabsTrigger>
           ))}

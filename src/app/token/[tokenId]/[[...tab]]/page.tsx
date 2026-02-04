@@ -85,12 +85,20 @@ function TokenContent() {
           onValueChange={handleTabChange}
           className="w-full"
         >
-          <TabsList>
-            <TabsTrigger value="overview" className="flex items-center gap-2">
+          <TabsList variant="line">
+            <TabsTrigger
+              value="overview"
+              variant="line"
+              className="flex items-center gap-2"
+            >
               <BarChart2 className="h-4 w-4" />
               Overview
             </TabsTrigger>
-            <TabsTrigger value="activities" className="flex items-center gap-2">
+            <TabsTrigger
+              value="activities"
+              variant="line"
+              className="flex items-center gap-2"
+            >
               <Activity className="h-4 w-4" />
               Activities
             </TabsTrigger>

@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
 import { useParams, useSearchParams, useRouter } from "next/navigation";
@@ -301,7 +302,7 @@ export default function TransactionDetailPage() {
   return (
     <>
       <PageNavigation title="Transaction Details" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         {/* Transaction Hash with Status */}
         <div className="flex items-center gap-4 mb-6">
           <CopyableAddress
@@ -605,7 +606,7 @@ export default function TransactionDetailPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageContainer>
     </>
   );
 }

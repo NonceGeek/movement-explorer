@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { Suspense, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
@@ -93,7 +94,7 @@ export default function TransactionsPage() {
   return (
     <>
       <PageNavigation title="Transactions" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         <Suspense
           fallback={
             <div className="overflow-x-auto mt-[60px]">
@@ -110,7 +111,7 @@ export default function TransactionsPage() {
         >
           <TransactionsContent />
         </Suspense>
-      </div>
+      </PageContainer>
     </>
   );
 }

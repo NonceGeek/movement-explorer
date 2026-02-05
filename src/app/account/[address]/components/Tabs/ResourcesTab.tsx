@@ -2,6 +2,8 @@
 
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { JsonViewer } from "@/components/ui/json-viewer";
+import { EmptyState } from "..";
+import { Database } from "lucide-react";
 import { Types } from "aptos";
 
 interface ResourcesTabProps {
@@ -33,7 +35,11 @@ export default function ResourcesTab({
           ))}
         </div>
       ) : (
-        <p className="text-muted-foreground">No resources found</p>
+        <EmptyState
+          icon={<Database className="h-12 w-12" />}
+          title="No Resources Found"
+          description="This account doesn't have any on-chain resources."
+        />
       )}
     </>
   );

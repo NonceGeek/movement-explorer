@@ -5,7 +5,9 @@ import { Types } from "aptos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Copy, Check, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Copy, Check, AlertCircle, CheckCircle2, Eye } from "lucide-react";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "../..";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { view } from "@/services";
@@ -106,21 +108,27 @@ export default function ReadContract({
 
   if (modulesLoading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">Loading modules...</p>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-1 space-y-2">
+          <EnhancedSkeleton className="h-8 w-32 mb-2" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <EnhancedSkeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+        <div className="md:col-span-3">
+          <EnhancedSkeleton className="h-48 w-full" />
+        </div>
+      </div>
     );
   }
 
   if (!modules || modules.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">No modules found</p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={<Eye className="h-12 w-12" />}
+        title="No Modules Found"
+        description="This account doesn't have any deployed modules."
+      />
     );
   }
 

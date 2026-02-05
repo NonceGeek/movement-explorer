@@ -18,7 +18,10 @@ import {
   Key,
   Coins,
   Database,
+  User,
+  ArrowLeftRight,
 } from "lucide-react";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { Types } from "aptos";
 import { cn } from "@/utils/styling";
 
@@ -28,6 +31,8 @@ export interface AccountOverviewProps {
   balanceUSD: string | null;
   formattedBalance: string;
   accountData: Types.AccountData | undefined;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  objectData?: any;
   tokenCount: number;
   resourceCount: number;
   isLoading: boolean;
@@ -40,6 +45,7 @@ export function AccountOverview({
   balanceUSD,
   formattedBalance,
   accountData,
+  objectData,
   tokenCount,
   resourceCount,
   isLoading,
@@ -148,6 +154,34 @@ export function AccountOverview({
                     </Tooltip>
                   </TooltipProvider>
                 </div>
+              </div>
+            )}
+            {/* Object Owner */}
+            {objectData?.data?.owner && (
+              <div className="flex items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                  <User className="h-3 w-3" />
+                  Owner
+                </span>
+                <div className="min-w-0">
+                  <CopyableAddress
+                    address={objectData.data.owner}
+                    showCopyButton
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+            )}
+            {/* Object Transferrable */}
+            {objectData && (
+              <div className="flex items-center justify-between">
+                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                  <ArrowLeftRight className="h-3 w-3" />
+                  Transferrable
+                </span>
+                <span className="text-sm font-medium">
+                  {objectData.data?.allow_ungated_transfer ? "Yes" : "No"}
+                </span>
               </div>
             )}
           </div>

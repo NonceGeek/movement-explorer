@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/pagination";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { EmptyState } from "@/components/account";
+import { EmptyState } from "..";
 import { Coins } from "lucide-react";
 
 const LIMIT = 20;

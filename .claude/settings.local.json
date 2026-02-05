@@ -4,7 +4,11 @@
       "Bash(npx tsc:*)",
       "Bash(git diff:*)",
       "Bash(grep:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(tree:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:github.com)",
+      "Bash(pnpm install:*)"
     ]
   }
 }

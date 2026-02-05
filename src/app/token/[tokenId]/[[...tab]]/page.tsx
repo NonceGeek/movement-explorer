@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useParams, useRouter, usePathname } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -71,7 +72,7 @@ function TokenContent() {
   return (
     <>
       <PageNavigation title="Token" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         <TokenHeader
           isLoading={isLoading}
           tokenName={token?.token_name}
@@ -139,7 +140,7 @@ function TokenContent() {
             <ActivitiesTab tokenId={tokenId} />
           </TabsContent>
         </Tabs>
-      </div>
+      </PageContainer>
     </>
   );
 }

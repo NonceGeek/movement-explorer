@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useState } from "react";
 import { useGetAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -27,7 +28,7 @@ export default function AnalyticsPage() {
   return (
     <>
       <PageNavigation title="Analytics" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         {/* Network Info Metrics */}
         <NetworkInfo />
 
@@ -77,7 +78,7 @@ export default function AnalyticsPage() {
             />
           </div>
         )}
-      </div>
+      </PageContainer>
     </>
   );
 }

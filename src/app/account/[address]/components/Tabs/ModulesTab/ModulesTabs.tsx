@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "../..";
+import { Code } from "lucide-react";
 import ViewCode from "./ViewCode";
 import ReadContract from "./ReadContract";
 import RunContract from "./RunContract";
@@ -33,7 +36,8 @@ export default function ModulesTabs({
   initialModule,
   initialFunction,
 }: ModulesTabsProps) {
-  const packages = useGetAccountPackages(address);
+  const { packages, isLoading: packagesLoading } =
+    useGetAccountPackages(address);
 
   // Determine initial tab from slug
   const getInitialTab = (): ModulesTabValue => {
@@ -109,6 +113,41 @@ export default function ModulesTabs({
       });
     }
   };
+
+  if (packagesLoading) {
+    return (
+      <div className="space-y-6">
+        {/* Tab bar skeleton */}
+        <div className="flex gap-4 border-b border-border pb-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <EnhancedSkeleton key={i} className="h-8 w-20" />
+          ))}
+        </div>
+        {/* Content skeleton: sidebar + main */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <div className="md:col-span-1 space-y-2">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <EnhancedSkeleton key={i} className="h-10 w-full" />
+            ))}
+          </div>
+          <div className="md:col-span-3 space-y-4">
+            <EnhancedSkeleton className="h-24 w-full" />
+            <EnhancedSkeleton className="h-48 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (packages.length === 0) {
+    return (
+      <EmptyState
+        icon={<Code className="h-12 w-12" />}
+        title="No Modules Found"
+        description="This account doesn't have any deployed modules."
+      />
+    );
+  }
 
   return (
     <div className="space-y-6">

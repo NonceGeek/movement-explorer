@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Suspense, useMemo } from "react";
@@ -162,7 +163,7 @@ function ValidatorContent() {
   return (
     <>
       <PageNavigation title="Validator" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
@@ -549,7 +550,7 @@ function ValidatorContent() {
             <MyDepositsSection validatorAddress={addressHex} />
           </>
         )}
-      </div>
+      </PageContainer>
     </>
   );
 }

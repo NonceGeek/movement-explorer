@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { useCoinData } from "./coins/useCoinData";
 import { CoinRow } from "./coins/CoinRow";
 import { CoinFilters } from "./coins/CoinFilters";
-import { EmptyState } from "@/components/account";
+import { EmptyState } from "..";
 import { Wallet } from "lucide-react";
 
 export default function CoinsTab({ address }: { address: string }) {

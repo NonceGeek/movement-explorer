@@ -22,7 +22,7 @@ import {
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
 } from "@/components/transactions";
-import { EmptyState } from "@/components/account";
+import { EmptyState } from "..";
 import { Activity } from "lucide-react";
 
 const TXN_PER_PAGE = 25;

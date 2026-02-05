@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useParams, useRouter } from "next/navigation";
 import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
@@ -158,7 +159,7 @@ function CoinContent() {
   return (
     <>
       <PageNavigation title="Coin" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">
           {coinDescription?.logoUrl ? (
@@ -277,7 +278,7 @@ function CoinContent() {
             </>
           )}
         </Tabs>
-      </div>
+      </PageContainer>
     </>
   );
 }

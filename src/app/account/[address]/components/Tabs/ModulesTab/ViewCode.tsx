@@ -12,6 +12,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { FileCode } from "lucide-react";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "../..";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { useGetAccountModule } from "@/hooks/accounts/useGetAccountModule";
 import { useGetAccountPackages } from "@/hooks/accounts/useGetAccountPackages";
@@ -33,7 +35,7 @@ export default function ViewCode({
 }: ViewCodeProps) {
   const router = useRouter();
   const { data: modules, isLoading } = useGetAccountModules(address);
-  const packages = useGetAccountPackages(address);
+  const { packages } = useGetAccountPackages(address);
 
   // Get module names from packages (which have source code)
   const moduleNames = useMemo(() => {
@@ -64,21 +66,28 @@ export default function ViewCode({
 
   if (isLoading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">Loading modules...</p>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-1 space-y-2">
+          <EnhancedSkeleton className="h-8 w-24 mb-2" />
+          {Array.from({ length: 5 }).map((_, i) => (
+            <EnhancedSkeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+        <div className="md:col-span-3 space-y-4">
+          <EnhancedSkeleton className="h-16 w-full" />
+          <EnhancedSkeleton className="h-64 w-full" />
+        </div>
+      </div>
     );
   }
 
   if (!modules || modules.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">No modules found</p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={<FileCode className="h-12 w-12" />}
+        title="No Modules Found"
+        description="This account doesn't have any deployed modules."
+      />
     );
   }
 

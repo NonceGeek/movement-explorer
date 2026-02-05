@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useGetBlockByHeight } from "@/hooks/blocks/useGetBlock";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -265,7 +266,7 @@ export default function BlockDetailPage() {
   return (
     <>
       <PageNavigation title="Block" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         <Tabs
           value={currentTab}
           onValueChange={handleTabChange}
@@ -417,7 +418,7 @@ export default function BlockDetailPage() {
             )}
           </TabsContent>
         </Tabs>
-      </div>
+      </PageContainer>
     </>
   );
 }

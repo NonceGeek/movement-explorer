@@ -12,6 +12,7 @@ import { useGetAccountResources } from "@/hooks/accounts/useGetAccountResources"
 import { useGetAccountTokensCount } from "@/hooks/accounts/useGetAccountTokens";
 import { Types } from "aptos";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageContainer } from "@/components/layout";
 import {
   Tabs,
   TabsContent,
@@ -24,19 +25,10 @@ import {
   AccountHeader,
   AccountOverview,
   type AccountType,
-} from "@/components/account";
-import {
-  Wallet,
-  Activity,
-  Coins,
-  Image,
-  Database,
-  Code,
-  Info,
-} from "lucide-react";
+} from "../components";
+import { Wallet, Activity, Coins, Image, Database, Code } from "lucide-react";
 import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
 import { useGetPrice } from "@/hooks/useGetPrice";
-import InfoTab from "../components/Tabs/InfoTab";
 import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
 import TokensTab from "../components/Tabs/TokensTab";
@@ -161,7 +153,7 @@ export default function AccountDetailPage() {
     });
   };
 
-  // Tab order: Transactions → Coins → Tokens → NFTs → Resources → Modules → Info
+  // Tab order: Transactions → Coins → Tokens → NFTs → Resources → Modules
   const tabItems = [
     {
       value: "transactions",
@@ -197,11 +189,6 @@ export default function AccountDetailPage() {
       value: "modules",
       label: "Modules",
       icon: <Code className="h-4 w-4" />,
-    },
-    {
-      value: "info",
-      label: "Info",
-      icon: <Info className="h-4 w-4" />,
     },
   ];
 
@@ -240,7 +227,7 @@ export default function AccountDetailPage() {
   return (
     <>
       <PageNavigation title={pageTitle} />
-      <div className="container max-w-[1440px] mx-auto px-4 py-8">
+      <PageContainer>
         {/* Hero Header Section */}
         <div className="mb-6">
           <AccountHeader
@@ -260,6 +247,7 @@ export default function AccountDetailPage() {
           balanceUSD={balanceUSD}
           formattedBalance={formattedBalance}
           accountData={accountData}
+          objectData={objectData}
           tokenCount={tokenCount || 0}
           resourceCount={resources?.length || 0}
           isLoading={balanceLoading || priceLoading || resourcesLoading}
@@ -325,16 +313,8 @@ export default function AccountDetailPage() {
               }
             />
           </TabsContent>
-
-          <TabsContent value="info">
-            <InfoTab
-              address={address}
-              accountData={accountData}
-              objectData={objectData}
-            />
-          </TabsContent>
         </Tabs>
-      </div>
+      </PageContainer>
     </>
   );
 }

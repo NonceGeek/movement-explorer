@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -103,7 +104,7 @@ export default function ValidatorsPage() {
   return (
     <>
       <PageNavigation title="Validators" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         {/* Staking Promo Banner */}
         <StakingPromo />
 
@@ -255,7 +256,7 @@ export default function ValidatorsPage() {
             </StyledTable>
           </div>
         )}
-      </div>
+      </PageContainer>
     </>
   );
 }

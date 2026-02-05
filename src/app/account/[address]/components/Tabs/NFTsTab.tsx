@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Image as ImageIcon, LayoutGrid, List } from "lucide-react";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { EmptyState } from "@/components/account";
+import { EmptyState } from "..";
 import { cn } from "@/utils/styling";
 
 type ViewMode = "grid" | "list";

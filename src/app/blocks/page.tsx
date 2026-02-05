@@ -1,6 +1,7 @@
 "use client";
 
 import PageNavigation from "@/components/layout/PageNavigation";
+import { PageContainer } from "@/components/layout";
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Types } from "aptos";
@@ -146,7 +147,7 @@ function BlocksContent() {
   return (
     <>
       <PageNavigation title="Blocks" />
-      <div className="container mx-auto px-4 py-8 max-w-[1440px]">
+      <PageContainer>
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-3xl font-bold">Blocks</h1>
           <NewDataNotification
@@ -267,7 +268,7 @@ function BlocksContent() {
             )}
           </>
         )}
-      </div>
+      </PageContainer>
     </>
   );
 }

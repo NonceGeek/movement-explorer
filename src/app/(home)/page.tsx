@@ -8,6 +8,7 @@ import { StatItem, StatsRow } from "./components/StatCard";
 import { ChartStatCard } from "./components/ChartStatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
 import { useGetPeakTPS, useGetAnalyticsData } from "@/hooks";
+import { PageContainer } from "@/components/layout";
 
 export default function HomePage() {
   const { aptos_client, network_value } = useGlobalStore();
@@ -77,7 +78,7 @@ export default function HomePage() {
   const isAnalyticsLoading = !analyticsData;
 
   return (
-    <div className="min-h-screen max-w-[1440px] mx-auto">
+    <PageContainer className="min-h-screen">
       {/* Hero + Stats Section with Dotted Background */}
       <div className="relative overflow-hidden">
         {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}
@@ -189,6 +190,6 @@ export default function HomePage() {
       <div className="container mx-auto px-4 pb-12">
         <LatestUserTransactions limit={10} />
       </div>
-    </div>
+    </PageContainer>
   );
 }

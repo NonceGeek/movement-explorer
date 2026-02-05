@@ -1,4 +1,3 @@
-import { Types } from "aptos";
 import { useGetAccountResources } from "./useGetAccountResources";
 import { orderBy } from "lodash";
 
@@ -21,7 +20,7 @@ export type PackageMetadata = {
 };
 
 export function useGetAccountPackages(address: string) {
-  const { data: resources } = useGetAccountResources(address);
+  const { data: resources, isLoading } = useGetAccountResources(address);
 
   const registry = resources?.find(
     (r) => r.type === "0x1::code::PackageRegistry",
@@ -44,5 +43,5 @@ export function useGetAccountPackages(address: string) {
       };
     }) || [];
 
-  return orderBy(packages, "name");
+  return { packages: orderBy(packages, "name"), isLoading };
 }

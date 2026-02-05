@@ -4,7 +4,9 @@ import { useState, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import { AlertCircle, CheckCircle2, ExternalLink, Play } from "lucide-react";
+import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { EmptyState } from "../..";
 import {
   useWallet,
   InputTransactionData,
@@ -126,21 +128,27 @@ export default function RunContract({
 
   if (modulesLoading) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">Loading modules...</p>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div className="md:col-span-1 space-y-2">
+          <EnhancedSkeleton className="h-8 w-32 mb-2" />
+          {Array.from({ length: 4 }).map((_, i) => (
+            <EnhancedSkeleton key={i} className="h-8 w-full" />
+          ))}
+        </div>
+        <div className="md:col-span-3">
+          <EnhancedSkeleton className="h-48 w-full" />
+        </div>
+      </div>
     );
   }
 
   if (!modules || modules.length === 0) {
     return (
-      <Card>
-        <CardContent className="pt-6">
-          <p className="text-muted-foreground">No modules found</p>
-        </CardContent>
-      </Card>
+      <EmptyState
+        icon={<Play className="h-12 w-12" />}
+        title="No Modules Found"
+        description="This account doesn't have any deployed modules."
+      />
     );
   }
 

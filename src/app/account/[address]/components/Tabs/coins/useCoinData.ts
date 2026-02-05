@@ -113,10 +113,17 @@ export function useCoinData(address: string) {
     }
   }, [coins, filter]);
 
+  // Calculate total USD value of all coins (not filtered)
+  const totalUsdValue = useMemo(() => {
+    return coins.reduce((sum, coin) => sum + (coin.usdValue ?? 0), 0);
+  }, [coins]);
+
   return {
     filteredCoins,
     isLoading,
     filter,
     setFilter,
+    totalUsdValue,
+    coins, // expose raw coins for checking if user has any coins at all
   };
 }

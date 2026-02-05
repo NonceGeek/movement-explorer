@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npx tsc:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(grep:*)",
+      "Bash(ls:*)"
     ]
   }
 }

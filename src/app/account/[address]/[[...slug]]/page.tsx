@@ -12,14 +12,28 @@ import { useGetAccountResources } from "@/hooks/accounts/useGetAccountResources"
 import { useGetAccountTokensCount } from "@/hooks/accounts/useGetAccountTokens";
 import { Types } from "aptos";
 import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
+import {
+  Tabs,
+  TabsContent,
+  PillTabsList,
+  ResponsiveTabsList,
+} from "@/components/ui/tabs";
 
 // Components
-import { AccountHeader, StatsCard, SectionCard, InfoItem, type AccountType } from "@/components/account";
-import { Wallet, Activity, Coins, Image, User, Database, LayoutDashboard, Code, Info } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import Link from "next/link";
+import {
+  AccountHeader,
+  AccountOverview,
+  type AccountType,
+} from "@/components/account";
+import {
+  Wallet,
+  Activity,
+  Coins,
+  Image,
+  Database,
+  Code,
+  Info,
+} from "lucide-react";
 import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
 import { useGetPrice } from "@/hooks/useGetPrice";
 import InfoTab from "../components/Tabs/InfoTab";
@@ -43,7 +57,8 @@ export default function AccountDetailPage() {
   } = useGetAccountResources(address);
 
   const { count: tokenCount } = useGetAccountTokensCount(address);
-  const { data: balance, isLoading: balanceLoading } = useGetUnifiedMOVEBalance(address);
+  const { data: balance, isLoading: balanceLoading } =
+    useGetUnifiedMOVEBalance(address);
   const { data: price, isLoading: priceLoading } = useGetPrice();
 
   const accountData = resources?.find((r) => r.type === "0x1::account::Account")
@@ -70,18 +85,18 @@ export default function AccountDetailPage() {
   // Format balance
   const formattedBalance = balance
     ? (Number(balance) / 100000000).toLocaleString("en-US", {
-      maximumFractionDigits: 2,
-    })
+        maximumFractionDigits: 2,
+      })
     : "0";
 
   const balanceUSD =
     balance && price
       ? ((Number(balance) / 100000000) * price).toLocaleString("en-US", {
-        style: "currency",
-        currency: "USD",
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-      })
+          style: "currency",
+          currency: "USD",
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
+        })
       : null;
 
   // Detect if we're on the /account route
@@ -138,7 +153,7 @@ export default function AccountDetailPage() {
     const newPath = `/account/${address}/${value}`;
 
     // Use window.history.pushState to avoid Next.js navigation behavior
-    window.history.pushState(null, '', newPath);
+    window.history.pushState(null, "", newPath);
 
     // Restore scroll position after a brief delay to ensure layout is complete
     requestAnimationFrame(() => {
@@ -146,28 +161,15 @@ export default function AccountDetailPage() {
     });
   };
 
+  // Tab order: Transactions → Coins → Tokens → NFTs → Resources → Modules → Info
   const tabItems = [
     {
       value: "transactions",
       label: "Transactions",
       icon: <Activity className="h-4 w-4" />,
-      badge: accountData?.sequence_number ? Number(accountData.sequence_number) : undefined,
-    },
-    {
-      value: "resources",
-      label: "Resources",
-      icon: <Database className="h-4 w-4" />,
-      badge: resources?.length || 0,
-    },
-    {
-      value: "modules",
-      label: "Modules",
-      icon: <Code className="h-4 w-4" />,
-    },
-    {
-      value: "info",
-      label: "Info",
-      icon: <Info className="h-4 w-4" />,
+      badge: accountData?.sequence_number
+        ? Number(accountData.sequence_number)
+        : undefined,
     },
     {
       value: "coins",
@@ -184,6 +186,22 @@ export default function AccountDetailPage() {
       value: "nfts",
       label: "NFTs",
       icon: <Image className="h-4 w-4" />,
+    },
+    {
+      value: "resources",
+      label: "Resources",
+      icon: <Database className="h-4 w-4" />,
+      badge: resources?.length || 0,
+    },
+    {
+      value: "modules",
+      label: "Modules",
+      icon: <Code className="h-4 w-4" />,
+    },
+    {
+      value: "info",
+      label: "Info",
+      icon: <Info className="h-4 w-4" />,
     },
   ];
 
@@ -235,126 +253,18 @@ export default function AccountDetailPage() {
           />
         </div>
 
-        {/* Stats Dashboard */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          {/* MOVE Balance Card */}
-          <StatsCard
-            icon={<Wallet className="h-5 w-5" />}
-            label="MOVE Balance"
-            value={`${formattedBalance} MOVE`}
-            subValue={balanceUSD ? `~${balanceUSD}` : undefined}
-            tooltip="Total MOVE tokens in this account"
-            loading={balanceLoading || priceLoading}
-          />
-
-          {/* Transaction Count Card */}
-          <StatsCard
-            icon={<Activity className="h-5 w-5" />}
-            label="Transactions"
-            value={accountData?.sequence_number ? Number(accountData.sequence_number).toLocaleString() : "0"}
-            tooltip="Total number of transactions from this account"
-            loading={resourcesLoading}
-          />
-
-          {/* Tokens Held Card */}
-          <StatsCard
-            icon={<Coins className="h-5 w-5" />}
-            label="Tokens Held"
-            value={tokenCount || 0}
-            subValue="View collection →"
-            link={`/account/${address}/tokens`}
-            loading={false}
-          />
-
-          {/* NFTs Owned Card */}
-          <StatsCard
-            icon={<Image className="h-5 w-5" />}
-            label="NFTs Owned"
-            value={0}
-            subValue="View gallery →"
-            link={`/account/${address}/nfts`}
-            loading={false}
-          />
-        </div>
-
-        {/* Account Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* Left: Account Details */}
-          <SectionCard title="Account Details">
-            <div className="space-y-3">
-              <InfoItem
-                label="Account Type"
-                value={
-                  accountType === "token"
-                    ? "Token Object"
-                    : accountType === "object"
-                      ? "Object"
-                      : "Account"
-                }
-                icon={<User className="h-4 w-4" />}
-              />
-              {accountData?.sequence_number && (
-                <InfoItem
-                  label="Sequence Number"
-                  value={accountData.sequence_number}
-                  mono
-                  tooltip="Number of transactions sent from this account"
-                />
-              )}
-              {accountData?.authentication_key && (
-                <InfoItem
-                  label="Authentication Key"
-                  value={accountData.authentication_key}
-                  mono
-                  truncate
-                  copyable
-                  tooltip="Key used to authenticate transactions"
-                />
-              )}
-            </div>
-          </SectionCard>
-
-          {/* Right: Resources Summary */}
-          <SectionCard
-            title={`Resources (${resources?.length || 0})`}
-            headerAction={
-              <Button variant="ghost" size="sm" asChild>
-                <Link href={`#resources`} onClick={() => setCurrentTab("resources")}>
-                  View All →
-                </Link>
-              </Button>
-            }
-          >
-            {resources && resources.length > 0 ? (
-              <div className="space-y-2">
-                {resources.slice(0, 3).map((resource) => (
-                  <div
-                    key={resource.type}
-                    className="flex items-center justify-between p-3 rounded-md bg-muted/30 hover:bg-muted/50 transition-colors"
-                  >
-                    <code className="text-xs font-mono truncate flex-1">
-                      {resource.type}
-                    </code>
-                  </div>
-                ))}
-                {resources.length > 3 && (
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="w-full mt-2"
-                    onClick={() => setCurrentTab("resources")}
-                  >
-                    + {resources.length - 3} more resources
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                No resources found
-              </p>
-            )}
-          </SectionCard>
-        </div>
+        {/* Account Overview - Etherscan Style Three Columns */}
+        <AccountOverview
+          address={address}
+          balance={balance}
+          balanceUSD={balanceUSD}
+          formattedBalance={formattedBalance}
+          accountData={accountData}
+          tokenCount={tokenCount || 0}
+          resourceCount={resources?.length || 0}
+          isLoading={balanceLoading || priceLoading || resourcesLoading}
+          onTabChange={handleTabChange}
+        />
 
         {/* Tabs */}
         <Tabs
@@ -362,6 +272,11 @@ export default function AccountDetailPage() {
           onValueChange={handleTabChange}
           className="space-y-6"
         >
+          {/* <PillTabsList
+            items={tabItems}
+            activeTab={currentTab}
+            onTabChange={handleTabChange}
+          /> */}
           <ResponsiveTabsList
             items={tabItems}
             activeTab={currentTab}
@@ -370,6 +285,18 @@ export default function AccountDetailPage() {
 
           <TabsContent value="transactions">
             <TransactionsTab address={address} accountData={accountData} />
+          </TabsContent>
+
+          <TabsContent value="coins">
+            <CoinsTab address={address} />
+          </TabsContent>
+
+          <TabsContent value="tokens">
+            <TokensTab address={address} />
+          </TabsContent>
+
+          <TabsContent value="nfts">
+            <NFTsTab address={address} />
           </TabsContent>
 
           <TabsContent value="resources">
@@ -405,17 +332,6 @@ export default function AccountDetailPage() {
               accountData={accountData}
               objectData={objectData}
             />
-          </TabsContent>
-
-          <TabsContent value="coins">
-            <CoinsTab address={address} />
-          </TabsContent>
-
-          <TabsContent value="nfts">
-            <NFTsTab address={address} />
-          </TabsContent>
-          <TabsContent value="tokens">
-            <TokensTab address={address} />
           </TabsContent>
         </Tabs>
       </div>

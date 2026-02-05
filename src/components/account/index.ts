@@ -5,3 +5,4 @@ export { InfoItem, type InfoItemProps } from "./InfoItem";
 export { EmptyState, type EmptyStateProps } from "./EmptyState";
 export { CopyButton, type CopyButtonProps } from "./CopyButton";
 export { AccountHeader, type AccountHeaderProps } from "./AccountHeader";
+export { AccountOverview, type AccountOverviewProps } from "./AccountOverview";

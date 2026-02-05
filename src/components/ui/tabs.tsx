@@ -14,7 +14,7 @@ const Tabs = DSTabs;
 
 const LineTabsContext = React.createContext<string | null>(null);
 
-export type TabsListVariant = "default" | "line" | "primary-line";
+export type TabsListVariant = "default" | "line" | "primary-line" | "pill";
 
 interface TabsListProps extends React.ComponentPropsWithoutRef<
   typeof DSTabsList
@@ -36,6 +36,8 @@ const TabsList = React.forwardRef<
           "bg-muted/30 p-1.5 px-2 gap-4 border-b border-border/50 w-full justify-start rounded-lg rounded-b-none h-auto",
         variant === "primary-line" &&
           "bg-transparent gap-1 border-b border-border/30 w-full justify-start rounded-none h-12 p-0",
+        variant === "pill" &&
+          "bg-transparent gap-2 border-b border-border/50 w-full justify-start rounded-none h-auto p-0 pb-4 flex-wrap",
         className,
       )}
       {...props}
@@ -54,7 +56,7 @@ const TabsList = React.forwardRef<
 });
 TabsList.displayName = "TabsList";
 
-export type TabsTriggerVariant = "default" | "interactive" | "line" | "primary-line";
+export type TabsTriggerVariant = "default" | "interactive" | "line" | "primary-line" | "pill";
 
 interface TabsTriggerProps extends React.ComponentPropsWithoutRef<
   typeof DSTabsTrigger
@@ -108,6 +110,8 @@ const TabsTrigger = React.forwardRef<
           "relative rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary hover:text-foreground transition-colors",
         isPrimaryLine &&
           "relative rounded-none border-b-3 border-transparent bg-transparent px-4 py-3 shadow-none data-[state=active]:border-transparent data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer",
+        variant === "pill" &&
+          "rounded-full px-4 py-2 text-sm font-medium border border-border bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:hover:bg-primary/90 transition-all cursor-pointer shadow-none",
         className,
       )}
       {...props}
@@ -188,4 +192,45 @@ function ResponsiveTabsList({
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, ResponsiveTabsList };
+/**
+ * Horizontal pill-style tabs
+ * Features: rounded pill buttons, active state with primary background
+ */
+function PillTabsList({
+  items,
+  className,
+}: ResponsiveTabsListProps) {
+  return (
+    <div
+      className={cn(
+        "sticky top-0 z-10 bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/60 py-2",
+        className,
+      )}
+    >
+      <TabsList
+        variant="pill"
+        className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {items.map((item) => (
+          <TabsTrigger
+            key={item.value}
+            value={item.value}
+            variant="pill"
+            className="shrink-0"
+          >
+            <span className="flex items-center gap-1.5">
+              <span>{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="text-xs bg-background/20 px-1.5 py-0.5 rounded font-medium">
+                  {typeof item.badge === "number" ? item.badge.toLocaleString() : item.badge}
+                </span>
+              )}
+            </span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </div>
+  );
+}
+
+export { Tabs, TabsList, TabsTrigger, TabsContent, ResponsiveTabsList, PillTabsList };

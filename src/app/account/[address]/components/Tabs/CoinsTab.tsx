@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import {
   TableBody,
   StyledTable as Table,
@@ -9,6 +10,7 @@ import {
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { useCoinData } from "./coins/useCoinData";
 import { CoinRow } from "./coins/CoinRow";
 import { CoinFilters } from "./coins/CoinFilters";
@@ -16,7 +18,22 @@ import { EmptyState } from "@/components/account";
 import { Wallet } from "lucide-react";
 
 export default function CoinsTab({ address }: { address: string }) {
-  const { filteredCoins, isLoading, filter, setFilter } = useCoinData(address);
+  const { filteredCoins, isLoading, filter, setFilter, totalUsdValue, coins } = useCoinData(address);
+  const [hideLowValue, setHideLowValue] = useState(false);
+
+  // Apply "Hide Low Value" filter (< $1)
+  const displayedCoins = useMemo(() => {
+    if (!hideLowValue) return filteredCoins;
+    return filteredCoins.filter((coin) => (coin.usdValue ?? 0) >= 1);
+  }, [filteredCoins, hideLowValue]);
+
+  // Format total USD value
+  const formattedTotalValue = totalUsdValue.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   if (isLoading) {
     return (
@@ -30,50 +47,8 @@ export default function CoinsTab({ address }: { address: string }) {
     );
   }
 
-  if (!filteredCoins.length && filter === "all") {
-    // Only show empty state if on "all" filter and really no coins.
-    // Wait, original logic was checking `!coins.length` before filtering.
-    // But useCoinData returns filteredCoins.
-    // If I want to match original behavior "No coin holdings found" only when user has NO coins at all,
-    // I should probably check that in the hook or expose `coins` from hook.
-    // But `filteredCoins` is what we display.
-    // If user has coins but filters them out, we usually show empty table or "No results".
-    // Original logic:
-    // if (!coins.length) { return ... "No coin holdings found" }
-    // So I need access to raw coins length or check inside hook.
-    // Let's assume if filteredCoins is empty and filter is 'all', it means no coins.
-    // Actually, let's just use filteredCoins.length check for now, or improve UI later.
-    // Strict adherence to original:
-    // Original checked `!coins.length`.
-    // I should expose `hasCoins` from hook.
-    // Let's update `useCoinData` to return `hasCoins` or just `coins` length?
-    // Nah, let's keep it simple. If `filteredCoins` is empty, show empty state?
-    // No, if I filter by "Verified" and found none, I should probably show "No verified coins found" or just empty table.
-    // Original code showed "No coin holdings found" only if `coins` (unfiltered) was empty.
-    // For now I will use filteredCoins length. The original code's behavior for "have coins but none match filter" was to show the table with empty body or filtered list (which would be empty).
-    // Let's replicate that.
-    // Wait, original code:
-    // if (!coins.length) { return <Card>... No coin holdings found ...</Card> }
-    // return <Card> ... <Table> ... </Card>
-    // So if I have unverified coins but select "Verified" filter, `coins.length` is > 0, so it renders table.
-    // `filteredCoins` would be empty, so table body is empty.
-    // So I need `coins` from hook or a `hasCoins` boolean.
-  }
-
-  // Modifying logic slightly to be safe: rendering the table if we have data or if we are filtering.
-  // Actually, let's look at `useCoinData` again. I didn't return `coins`.
-  // I will assume for now that if filteredCoins is empty AND filter is 'all', it is truly empty.
-  // But if filter is 'verified', it might just be hidden.
-  // So strict parity requires `coins` length.
-  // I will update the hook in a sec if I can, or just trust `filteredCoins.length === 0` is okay.
-  // If I have coins but none verified, and I click "Verified", filteredCoins is empty.
-  // If I render the table with empty body, that's fine.
-  // But if I have NO coins at all, I want the nice "No coin holdings found" card.
-
-  // Im going to check `filteredCoins.length === 0` inside the component.
-  // If `filter === 'all'` and `filteredCoins.length === 0`, then we have no coins.
-
-  if (!filteredCoins.length && filter === "all") {
+  // Show empty state only if user has no coins at all
+  if (!coins.length) {
     return (
       <EmptyState
         icon={<Wallet className="h-12 w-12" />}
@@ -84,12 +59,35 @@ export default function CoinsTab({ address }: { address: string }) {
   }
 
   return (
-    <>
-
-      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-start">
+    <div className="space-y-4">
+      {/* Header with Total Value and Controls */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        {/* Left: Filters */}
         <CoinFilters filter={filter} setFilter={setFilter} />
+
+        {/* Right: Total Value + Hide Low Value */}
+        <div className="flex items-center gap-4">
+          {/* Hide Low Value Toggle */}
+          <Button
+            variant={hideLowValue ? "default" : "outline"}
+            size="sm"
+            onClick={() => setHideLowValue(!hideLowValue)}
+            className="text-xs"
+          >
+            {hideLowValue ? "✓ " : ""}Hide Low Value
+          </Button>
+
+          {/* Total Value */}
+          <div className="text-right">
+            <span className="text-sm text-muted-foreground">Total Value: </span>
+            <span className="text-lg font-semibold text-primary">
+              {formattedTotalValue}
+            </span>
+          </div>
+        </div>
       </div>
 
+      {/* Table */}
       <div className="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -105,13 +103,20 @@ export default function CoinsTab({ address }: { address: string }) {
             </HeaderRow>
           </TableHeader>
           <TableBody>
-            {filteredCoins.map((coin) => (
-              <CoinRow key={coin.assetType} coin={coin} />
-            ))}
+            {displayedCoins.length > 0 ? (
+              displayedCoins.map((coin) => (
+                <CoinRow key={coin.assetType} coin={coin} />
+              ))
+            ) : (
+              <tr>
+                <td colSpan={8} className="text-center py-8 text-muted-foreground">
+                  No coins match the current filters.
+                </td>
+              </tr>
+            )}
           </TableBody>
         </Table>
       </div>
-
-    </>
+    </div>
   );
 }

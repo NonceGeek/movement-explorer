@@ -151,6 +151,10 @@ export default function TransactionsTab({
 
   const isLoading = transactionsLoading || detailsLoading;
 
+  // Calculate pagination info for display
+  const startIndex = txOffset + 1;
+  const endIndex = Math.min(txOffset + TXN_PER_PAGE, totalTxCount);
+
   return (
     <>
       {!isLoading && (!tableData || tableData.length === 0) ? (
@@ -160,7 +164,20 @@ export default function TransactionsTab({
           description="This account hasn't made any transactions on the network."
         />
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* Pagination Info - Etherscan Style */}
+          {totalTxCount > 0 && (
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">
+                Showing {startIndex.toLocaleString()} to {endIndex.toLocaleString()} of{" "}
+                <span className="font-medium text-foreground">
+                  {totalTxCount.toLocaleString()}
+                </span>{" "}
+                transactions
+              </p>
+            </div>
+          )}
+
           <div className="overflow-x-auto">
             <TransactionTable
               data={tableData}

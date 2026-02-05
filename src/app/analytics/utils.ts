@@ -1,9 +1,12 @@
 import { DailyAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
 
-// Chart colors
-export const COLOR = "rgba(129, 140, 248, 0.6)";
-export const BACKGROUND_COLOR = "rgba(129, 140, 248, 0.4)";
-export const HIGHLIGHT_COLOR = "#A5B4FC";
+// Chart colors - Guild Green (Movement brand color)
+// Keeping brand identity while applying Etherscan-style design
+export const COLOR = "rgba(88, 197, 137, 0.9)"; // Guild Green line color
+export const BACKGROUND_COLOR = "rgba(88, 197, 137, 0.4)"; // Gradient start - more visible
+export const BACKGROUND_COLOR_END = "rgba(88, 197, 137, 0)"; // Gradient end - fully transparent
+export const HIGHLIGHT_COLOR = "#6bd69b"; // Lighter green for hover
+export const GRID_LINE_COLOR = "rgba(156, 163, 175, 0.15)"; // Subtle grid lines
 
 // Number formatter with K/M/G suffixes
 export function numberFormatter(num: number, digits: number): string {

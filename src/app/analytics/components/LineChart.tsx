@@ -12,7 +12,13 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import { BACKGROUND_COLOR, COLOR, HIGHLIGHT_COLOR } from "../utils";
+import {
+  BACKGROUND_COLOR,
+  BACKGROUND_COLOR_END,
+  COLOR,
+  HIGHLIGHT_COLOR,
+  GRID_LINE_COLOR,
+} from "../utils";
 
 ChartJS.register(
   CategoryScale,
@@ -34,10 +40,17 @@ type LineChartProps = {
   decimals?: number;
 };
 
+/**
+ * LineChart - Enhanced with Etherscan-style gradients and improved tooltips
+ * Features:
+ * - Guild Green gradient fills
+ * - Subtle dashed grid lines
+ * - Enhanced tooltips with context
+ */
 export default function LineChart({
   labels,
   dataset,
-  fill,
+  fill = true, // Enable gradient fill by default (Etherscan style)
   tooltipsLabelFunc,
 }: LineChartProps) {
   const options = {
@@ -45,6 +58,7 @@ export default function LineChart({
     maintainAspectRatio: false,
     interaction: {
       intersect: false,
+      mode: "index" as const, // Show tooltip for all datasets at same index
     },
     plugins: {
       title: {
@@ -55,6 +69,12 @@ export default function LineChart({
       },
       tooltip: {
         usePointStyle: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        padding: 12,
+        borderColor: "rgba(88, 197, 137, 0.3)",
+        borderWidth: 1,
         callbacks: {
           label: tooltipsLabelFunc,
         },
@@ -63,13 +83,19 @@ export default function LineChart({
     scales: {
       x: {
         grid: {
-          display: false,
+          display: true, // Show grid lines (Etherscan style)
+          color: GRID_LINE_COLOR,
+          lineWidth: 1,
+          drawTicks: false,
         },
         ticks: {
           autoSkip: true,
           maxTicksLimit: 4,
           maxRotation: 0,
           color: "rgba(156, 163, 175, 0.8)",
+        },
+        border: {
+          display: false,
         },
       },
       y: {
@@ -79,6 +105,12 @@ export default function LineChart({
           color: "rgba(156, 163, 175, 0.8)",
         },
         grid: {
+          display: true, // Show grid lines (Etherscan style)
+          color: GRID_LINE_COLOR,
+          lineWidth: 1,
+          drawTicks: false,
+        },
+        border: {
           display: false,
         },
       },
@@ -89,7 +121,9 @@ export default function LineChart({
         pointBackgroundColor: HIGHLIGHT_COLOR,
         borderWidth: 0,
         radius: 3,
-        hoverRadius: 4,
+        hoverRadius: 5,
+        hoverBorderWidth: 2,
+        hoverBorderColor: "#fff",
       },
     },
   };
@@ -102,8 +136,26 @@ export default function LineChart({
         fill: fill,
         data: dataset,
         borderColor: COLOR,
-        backgroundColor: BACKGROUND_COLOR,
-        tension: 0.4,
+        // Gradient fill (Etherscan style)
+        backgroundColor: (context: any) => {
+          if (!fill) return undefined;
+          const ctx = context.chart.ctx;
+          const chartArea = context.chart.chartArea;
+          if (!chartArea) return undefined;
+
+          // Create gradient from top to bottom of chart area
+          const gradient = ctx.createLinearGradient(
+            0,
+            chartArea.top,
+            0,
+            chartArea.bottom
+          );
+          gradient.addColorStop(0, BACKGROUND_COLOR); // Top: more opaque
+          gradient.addColorStop(1, BACKGROUND_COLOR_END); // Bottom: transparent
+          return gradient;
+        },
+        tension: 0.4, // Smooth curves
+        borderWidth: 2,
       },
     ],
   };

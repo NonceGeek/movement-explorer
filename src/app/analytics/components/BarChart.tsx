@@ -10,7 +10,12 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import { BACKGROUND_COLOR } from "../utils";
+import {
+  BACKGROUND_COLOR,
+  BACKGROUND_COLOR_END,
+  COLOR,
+  GRID_LINE_COLOR,
+} from "../utils";
 
 ChartJS.register(
   CategoryScale,
@@ -26,12 +31,20 @@ type BarChartProps = {
   dataset: number[];
 };
 
+/**
+ * BarChart - Enhanced with Etherscan-style gradients
+ * Features:
+ * - Guild Green gradient bar fills
+ * - Subtle grid lines
+ * - Enhanced tooltips
+ */
 export default function BarChart({ labels, dataset }: BarChartProps) {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
       intersect: false,
+      mode: "index" as const,
     },
     plugins: {
       title: {
@@ -42,6 +55,12 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
       },
       tooltip: {
         usePointStyle: true,
+        backgroundColor: "rgba(0, 0, 0, 0.8)",
+        titleColor: "#fff",
+        bodyColor: "#fff",
+        padding: 12,
+        borderColor: "rgba(88, 197, 137, 0.3)",
+        borderWidth: 1,
         labelPointStyle: {
           pointStyle: "circle" as const,
           rotation: 0,
@@ -51,13 +70,19 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
     scales: {
       x: {
         grid: {
-          display: false,
+          display: true, // Show grid lines (Etherscan style)
+          color: GRID_LINE_COLOR,
+          lineWidth: 1,
+          drawTicks: false,
         },
         ticks: {
           autoSkip: true,
           maxTicksLimit: 4,
           maxRotation: 0,
           color: "rgba(156, 163, 175, 0.8)",
+        },
+        border: {
+          display: false,
         },
       },
       y: {
@@ -67,6 +92,12 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
           color: "rgba(156, 163, 175, 0.8)",
         },
         grid: {
+          display: true, // Show grid lines (Etherscan style)
+          color: GRID_LINE_COLOR,
+          lineWidth: 1,
+          drawTicks: false,
+        },
+        border: {
           display: false,
         },
       },
@@ -79,7 +110,18 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
       {
         label: "",
         data: dataset,
-        backgroundColor: BACKGROUND_COLOR,
+        // Gradient fill for bars (Etherscan style)
+        backgroundColor: (context: any) => {
+          const ctx = context.chart.ctx;
+          const gradient = ctx.createLinearGradient(0, 0, 0, 200);
+          gradient.addColorStop(0, BACKGROUND_COLOR); // Top: more opaque
+          gradient.addColorStop(1, BACKGROUND_COLOR_END); // Bottom: transparent
+          return gradient;
+        },
+        borderColor: COLOR,
+        borderWidth: 1.5,
+        borderRadius: 4, // Rounded bars for modern look
+        borderSkipped: false,
       },
     ],
   };

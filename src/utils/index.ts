@@ -64,8 +64,20 @@ export function getLocalStorageWithExpiry(key: string) {
 }
 
 export async function fetchJsonResponse(url: string) {
-  const response = await fetch(url);
-  return await response.json();
+  try {
+    const response = await fetch(url, {
+      signal: AbortSignal.timeout(5000), // 5 second timeout
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    // Silently fail for network errors - caller should handle
+    throw error;
+  }
 }
 
 /**

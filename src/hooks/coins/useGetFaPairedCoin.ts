@@ -10,7 +10,7 @@ const TEXT_DECODER = new TextDecoder();
 
 export function useGetFaPairedCoin(
   address: string
-): UseQueryResult<string | undefined, ResponseError> {
+): UseQueryResult<string | null, ResponseError> {
   const { network_value, aptos_client } = useGlobalStore();
   const request: Types.ViewRequest = {
     function: "0x1::coin::paired_coin",
@@ -18,9 +18,9 @@ export function useGetFaPairedCoin(
     arguments: [address],
   };
 
-  return useQuery<string | undefined, ResponseError>({
+  return useQuery<string | null, ResponseError>({
     queryKey: ["pairedCoin", address, network_value],
-    queryFn: async () => {
+    queryFn: async (): Promise<string | null> => {
       if (isValidAccountAddress(address)) {
         const data = await view(request, aptos_client);
         if (data !== undefined) {
@@ -43,7 +43,7 @@ export function useGetFaPairedCoin(
           }
         }
       }
-      return undefined;
+      return null;
     },
   });
 }

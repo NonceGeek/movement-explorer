@@ -282,12 +282,19 @@ export function AssetOverview({
                   <EnhancedSkeleton className="h-4 w-24" />
                 ) : (
                   <a
-                    href={websiteUrl}
+                    href={websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-primary hover:underline flex items-center gap-1 truncate max-w-[150px]"
                   >
-                    {new URL(websiteUrl).hostname}
+                    {(() => {
+                      try {
+                        const url = websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`;
+                        return new URL(url).hostname;
+                      } catch {
+                        return websiteUrl;
+                      }
+                    })()}
                     <ExternalLink className="h-3 w-3 shrink-0" />
                   </a>
                 )}

@@ -65,12 +65,9 @@ async function fetchMNSName(
     const { name } = await fetchJsonResponse(nameUrl);
     return name ?? null;
   } catch (error) {
-    console.warn(
-      "ERROR! Couldn't find MNS name for %s on %s",
-      address,
-      networkName,
-      error,
-    );
+    // Silently handle MNS API errors - service may be temporarily unavailable
+    // This is a known issue: MNS API endpoint is unstable and often fails with ERR_CONNECTION_CLOSED
+    // See: movement-exploreer-document/known-issues/known-issues.md
     return null;
   }
 }
@@ -89,6 +86,7 @@ export function useGetAccountLabel(
 
   const { data } = useQuery<AccountLabel | null>({
     queryKey: ["accountLabel", address, networkName],
+    retry: 1, // Only retry once for MNS API failures
     queryFn: async (): Promise<AccountLabel | null> => {
       try {
         const standardizedAddress = standardizeAddress(address);

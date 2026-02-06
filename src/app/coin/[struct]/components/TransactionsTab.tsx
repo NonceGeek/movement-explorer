@@ -1,138 +1,179 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import { useSearchParams, usePathname } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
 import {
-  TableBody,
-  TableCell,
-  StyledTableRow as TableRow,
-  StyledTable as Table,
-  StyledTableHead as TableHead,
-  StyledTableHeader as TableHeader,
-  StyledTableHeaderRow as HeaderRow,
-} from "@/components/ui/table";
-import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { CopyableAddress } from "@/components/common/CopyableAddress";
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import { useGlobalStore } from "@/store/useGlobalStore";
+import { getTransaction } from "@/services";
+import {
+  TransactionTable,
+  ALL_TRANSACTION_COLUMNS,
+  TransactionRowData,
+} from "@/components/transactions";
 import { useGetCoinActivities } from "@/hooks/coins/useGetCoinActivities";
-import { formatTimestamp } from "@/utils/transaction";
-import { toast } from "@movementlabsxyz/movement-design-system";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Activity } from "lucide-react";
+
+const TXN_PER_PAGE = 10;
 
 interface TransactionsTabProps {
   struct: string;
 }
 
 export default function TransactionsTab({ struct }: TransactionsTabProps) {
-  const { isLoading, error, data: activities } = useGetCoinActivities(struct);
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { aptos_client } = useGlobalStore();
 
-  // Show toast when error occurs
-  useEffect(() => {
-    if (error) {
-      toast.error({
-        title: "Failed to load transactions",
-        description: error.message,
-      });
-    }
-  }, [error]);
+  const currentPage = parseInt(searchParams.get("txPage") ?? "1", 10);
+  const offset = (currentPage - 1) * TXN_PER_PAGE;
 
-  if (isLoading) {
+  // Timestamp display mode
+  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+
+  // Fetch one extra to check if there's a next page
+  const {
+    isLoading: activitiesLoading,
+    error: activitiesError,
+    data: activities,
+  } = useGetCoinActivities(struct, offset, TXN_PER_PAGE + 1);
+
+  const hasNextPage = activities && activities.length > TXN_PER_PAGE;
+  const displayActivities = activities?.slice(0, TXN_PER_PAGE);
+  const transactionVersions = displayActivities?.map(
+    (a) => a.transaction_version
+  );
+
+  // Fetch full transaction details
+  const { data: transactions, isLoading: detailsLoading } = useQuery({
+    queryKey: ["coinTransactionsDetails", struct, transactionVersions],
+    queryFn: async () => {
+      if (!transactionVersions || transactionVersions.length === 0) return [];
+
+      const details = await Promise.all(
+        transactionVersions.map((v) =>
+          getTransaction({ txnHashOrVersion: v }, aptos_client)
+        )
+      );
+      return details;
+    },
+    enabled: !!transactionVersions && transactionVersions.length > 0,
+  });
+
+  const isLoading = activitiesLoading || detailsLoading;
+
+  const handlePageChange = (page: number) => {
+    const scrollY = window.scrollY;
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("txPage", page.toString());
+    const newPath = `${pathname}?${params.toString()}`;
+    window.history.pushState(null, "", newPath);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
+  };
+
+  if (activitiesError) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <EnhancedSkeleton key={i} className="h-12 w-full" />
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <AlertCircle className="h-12 w-12 text-destructive mb-4" />
+        <p className="text-lg font-medium text-destructive mb-2">
+          Failed to load transactions
+        </p>
+        <p className="text-sm text-muted-foreground max-w-md">
+          {activitiesError.message}
+        </p>
+      </div>
     );
   }
 
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <AlertCircle className="h-12 w-12 text-destructive mb-4" />
-            <p className="text-lg font-medium text-destructive mb-2">
-              Failed to load transactions
-            </p>
-            <p className="text-sm text-muted-foreground max-w-md">
-              {error.message}
-            </p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Prepare table data
+  const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
+    const version = "version" in tx ? parseInt(tx.version) : 0;
+    return {
+      version,
+      transaction: tx,
+    };
+  });
 
-  if (!activities || activities.length === 0) {
+  const hasPagination = currentPage > 1 || hasNextPage;
+
+  if (!isLoading && (!tableData || tableData.length === 0)) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Transactions</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <p className="text-muted-foreground">No transactions found</p>
-          </div>
-        </CardContent>
-      </Card>
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <Activity className="h-12 w-12 text-muted-foreground mb-4" />
+        <p className="text-lg font-medium mb-2">No Transactions Yet</p>
+        <p className="text-sm text-muted-foreground">
+          No transactions found for this token.
+        </p>
+      </div>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle>Recent Transactions</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <HeaderRow>
-                <TableHead>Version</TableHead>
-                <TableHead>Timestamp</TableHead>
-                <TableHead>Address</TableHead>
-              </HeaderRow>
-            </TableHeader>
-            <TableBody>
-              {activities.map((activity) => (
-                <TableRow key={activity.transaction_version}>
-                  <TableCell>
-                    <Link
-                      href={`/txn/${activity.transaction_version}`}
-                      className="text-primary hover:underline font-mono"
-                    >
-                      {activity.transaction_version}
-                    </Link>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground text-sm whitespace-nowrap">
-                    {formatTimestamp(activity.transaction_timestamp)}
-                  </TableCell>
-                  <TableCell>
-                    <CopyableAddress
-                      address={activity.owner_address}
-                      href={`/account/${activity.owner_address}`}
-                      variant="label"
-                      showLabel
-                      truncateLength={{ start: 8, end: 6 }}
-                    />
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    <div className="space-y-4">
+      <div className="overflow-x-auto">
+        <TransactionTable
+          data={tableData}
+          columns={ALL_TRANSACTION_COLUMNS}
+          isLoading={isLoading}
+          loadingRowCount={TXN_PER_PAGE}
+          timestampMode={timestampMode}
+          onToggleTimestampMode={() =>
+            setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
+          }
+        />
+      </div>
+
+      {!isLoading && hasPagination && (
+        <div className="flex justify-center">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (currentPage > 1) handlePageChange(currentPage - 1);
+                  }}
+                  className={
+                    currentPage === 1
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+
+              <PaginationItem>
+                <span className="px-4 py-2 text-sm text-muted-foreground">
+                  Page {currentPage}
+                </span>
+              </PaginationItem>
+
+              <PaginationItem>
+                <PaginationNext
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (hasNextPage) handlePageChange(currentPage + 1);
+                  }}
+                  className={
+                    !hasNextPage
+                      ? "pointer-events-none opacity-50"
+                      : "cursor-pointer"
+                  }
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
         </div>
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 }

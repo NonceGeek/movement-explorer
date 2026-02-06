@@ -7,14 +7,14 @@ import { Suspense, useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
+import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
 import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { useGetFASupply } from "@/hooks/coins/useGetFASupply";
 import { useGetFaPairedCoin } from "@/hooks/coins/useGetFaPairedCoin";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidAccountAddress, getAssetSymbol } from "@/utils";
-import { Coins, Info, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
+import { Coins, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
 import {
   Tooltip,
@@ -24,7 +24,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/styling";
 
-import InfoTab from "../components/InfoTab";
+import { FAOverview } from "../components/FAOverview";
 import HoldersTab from "../components/HoldersTab";
 import TransactionsTab from "../components/TransactionsTab";
 
@@ -33,8 +33,9 @@ function FAContent() {
   const router = useRouter();
   const address = params.address as string;
   const tabSlug = params.tab as string[] | undefined;
-  const initialTab = tabSlug ? tabSlug[0] : "info";
   const isGraphqlSupported = useGetIsGraphqlClientSupported();
+  const defaultTab = isGraphqlSupported ? "holders" : "";
+  const initialTab = tabSlug && tabSlug[0] !== "info" ? tabSlug[0] : defaultTab;
   const [currentTab, setCurrentTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
 
@@ -44,10 +45,15 @@ function FAContent() {
   };
 
   useEffect(() => {
+    // Redirect legacy /info URLs
+    if (tabSlug && tabSlug[0] === "info") {
+      router.replace(`/fa/${address}${isGraphqlSupported ? "/holders" : ""}`);
+      return;
+    }
     if (tabSlug && tabSlug[0] !== currentTab) {
       setCurrentTab(tabSlug[0]);
     }
-  }, [tabSlug]);
+  }, [tabSlug, address, router, isGraphqlSupported]);
 
   const handleCopyAddress = async () => {
     try {
@@ -107,14 +113,9 @@ function FAContent() {
     }
   }, [displaySymbol, address]);
 
-  const tabItems = [
-    {
-      value: "info",
-      label: "Info",
-      icon: <Info className="h-4 w-4 mr-1" />,
-    },
-    ...(isGraphqlSupported
-      ? [
+  // Build tab items (only when GraphQL is supported)
+  const tabItems = isGraphqlSupported
+    ? [
         {
           value: "holders",
           label: "Holders",
@@ -126,8 +127,7 @@ function FAContent() {
           icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
         },
       ]
-      : []),
-  ];
+    : [];
 
   return (
     <>
@@ -216,47 +216,44 @@ function FAContent() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={currentTab}
-          onValueChange={handleTabChange}
-          className="space-y-6"
-        >
-          <ResponsiveTabsList
-            items={tabItems}
-            activeTab={currentTab}
-            onTabChange={handleTabChange}
-          />
+        {/* Overview Card */}
+        <FAOverview
+          address={address}
+          metadata={metadata}
+          supply={supply}
+          pairedCoin={pairedCoin}
+          coinDescription={coinDescription}
+          displaySymbol={displaySymbol}
+          isLoading={isLoading}
+        />
 
-          <TabsContent value="info">
-            <InfoTab
-              address={address}
-              metadata={metadata}
-              supply={supply}
-              pairedCoin={pairedCoin}
-              coinDescription={coinDescription}
-              displaySymbol={displaySymbol}
-              isLoading={isLoading}
+        {/* Tabs (only when GraphQL is supported) */}
+        {isGraphqlSupported && tabItems.length > 0 && (
+          <Tabs
+            value={currentTab}
+            onValueChange={handleTabChange}
+            className="space-y-6"
+          >
+            <CompactTabsList
+              items={tabItems}
+              activeTab={currentTab}
+              onTabChange={handleTabChange}
             />
-          </TabsContent>
 
-          {isGraphqlSupported && (
-            <>
-              <TabsContent value="holders">
-                <HoldersTab
-                  address={address}
-                  metadata={metadata}
-                  coinDescription={coinDescription}
-                  displaySymbol={displaySymbol}
-                />
-              </TabsContent>
+            <TabsContent value="holders">
+              <HoldersTab
+                address={address}
+                metadata={metadata}
+                coinDescription={coinDescription}
+                displaySymbol={displaySymbol}
+              />
+            </TabsContent>
 
-              <TabsContent value="transactions">
-                <TransactionsTab address={address} />
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
+            <TabsContent value="transactions">
+              <TransactionsTab address={address} />
+            </TabsContent>
+          </Tabs>
+        )}
       </PageContainer>
     </>
   );

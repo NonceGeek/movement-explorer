@@ -233,4 +233,41 @@ function PillTabsList({
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent, ResponsiveTabsList, PillTabsList };
+/**
+ * Compact left-aligned tabs (content-based width)
+ * Industry standard for detail pages
+ */
+function CompactTabsList({
+  items,
+  className,
+}: ResponsiveTabsListProps) {
+  return (
+    <div className={cn("flex justify-start border-b border-border/30", className)}>
+      <TabsList
+        variant="primary-line"
+        className="!w-auto !inline-flex gap-0 h-auto p-0 bg-transparent border-b-0 rounded-none"
+      >
+        {items.map((item) => (
+          <TabsTrigger
+            key={item.value}
+            value={item.value}
+            variant="primary-line"
+            className="px-5 py-2.5 text-sm"
+          >
+            <span className="flex items-center gap-1.5">
+              {item.icon}
+              <span>{item.label}</span>
+              {item.badge !== undefined && (
+                <span className="ml-1 text-xs bg-muted px-1.5 py-0.5 rounded font-medium">
+                  {typeof item.badge === "number" ? item.badge.toLocaleString() : item.badge}
+                </span>
+              )}
+            </span>
+          </TabsTrigger>
+        ))}
+      </TabsList>
+    </div>
+  );
+}
+
+export { Tabs, TabsList, TabsTrigger, TabsContent, ResponsiveTabsList, PillTabsList, CompactTabsList };

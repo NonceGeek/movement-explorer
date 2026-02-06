@@ -9,7 +9,8 @@ export type FAActivity = {
 
 export function useGetCoinActivities(
   asset: string,
-  offset?: number
+  offset: number = 0,
+  limit: number = 25
 ): {
   isLoading: boolean;
   error: Error | undefined;
@@ -20,14 +21,14 @@ export function useGetCoinActivities(
   }>(
     // Exclude gas fees from the list
     gql`
-      query GetFungibleAssetActivities($asset: String, $offset: Int) {
+      query GetFungibleAssetActivities($asset: String, $offset: Int, $limit: Int) {
         fungible_asset_activities(
           where: {
             asset_type: { _eq: $asset }
             type: { _neq: "0x1::aptos_coin::GasFeeEvent" }
           }
           offset: $offset
-          limit: 100
+          limit: $limit
           order_by: { transaction_version: desc }
           distinct_on: transaction_version
         ) {
@@ -37,7 +38,7 @@ export function useGetCoinActivities(
         }
       }
     `,
-    { variables: { asset, offset: offset ?? 0 } }
+    { variables: { asset, offset, limit } }
   );
 
   return {

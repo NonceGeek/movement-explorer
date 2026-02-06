@@ -133,7 +133,7 @@ export default function InfoTab({
           <span className="text-muted-foreground">Object Details</span>
           <CopyableAddress
             address={address}
-            href={`/account/${address}`}
+            href={`/object/${address}`}
             variant="label"
             showLabel
             truncateLength={{ start: 8, end: 6 }}

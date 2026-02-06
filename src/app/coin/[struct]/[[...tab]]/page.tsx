@@ -7,14 +7,14 @@ import { Suspense, useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
+import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
 import { useGetAccountResource } from "@/hooks/accounts/useGetAccountResource";
 import { useGetCoinSupplyLimit } from "@/hooks/coins/useGetCoinSupplyLimit";
 import { useGetCoinPairedFa } from "@/hooks/coins/useGetCoinPairedFa";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidStruct, getAssetSymbol } from "@/utils";
-import { Coins, Info, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
+import { Coins, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
 import {
   Tooltip,
@@ -24,8 +24,9 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/styling";
 
-// Tab Components
-import InfoTab, { CoinData } from "../components/InfoTab";
+// Components
+import { CoinData } from "../components/InfoTab";
+import { CoinOverview } from "../components/CoinOverview";
 import HoldersTab from "../components/HoldersTab";
 import TransactionsTab from "../components/TransactionsTab";
 
@@ -34,8 +35,9 @@ function CoinContent() {
   const router = useRouter();
   const struct = decodeURIComponent(params.struct as string);
   const tabSlug = params.tab as string[] | undefined;
-  const initialTab = tabSlug ? tabSlug[0] : "info";
   const isGraphqlSupported = useGetIsGraphqlClientSupported();
+  const defaultTab = isGraphqlSupported ? "holders" : "";
+  const initialTab = tabSlug && tabSlug[0] !== "info" ? tabSlug[0] : defaultTab;
   const [currentTab, setCurrentTab] = useState(initialTab);
   const [copied, setCopied] = useState(false);
 
@@ -45,10 +47,15 @@ function CoinContent() {
   };
 
   useEffect(() => {
+    // Redirect legacy /info URLs
+    if (tabSlug && tabSlug[0] === "info") {
+      router.replace(`/coin/${encodeURIComponent(struct)}${isGraphqlSupported ? "/holders" : ""}`);
+      return;
+    }
     if (tabSlug && tabSlug[0] !== currentTab) {
       setCurrentTab(tabSlug[0]);
     }
-  }, [tabSlug]);
+  }, [tabSlug, struct, router, isGraphqlSupported]);
 
   const handleCopyStruct = async () => {
     try {
@@ -133,15 +140,9 @@ function CoinContent() {
     }
   }, [displaySymbol, struct]);
 
-  // Build tab items based on GraphQL support
-  const tabItems = [
-    {
-      value: "info",
-      label: "Info",
-      icon: <Info className="h-4 w-4 mr-1" />,
-    },
-    ...(isGraphqlSupported
-      ? [
+  // Build tab items (only when GraphQL is supported)
+  const tabItems = isGraphqlSupported
+    ? [
         {
           value: "holders",
           label: "Holders",
@@ -153,8 +154,7 @@ function CoinContent() {
           icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
         },
       ]
-      : []),
-  ];
+    : [];
 
   return (
     <>
@@ -243,41 +243,39 @@ function CoinContent() {
           </div>
         </div>
 
-        {/* Tabs */}
-        <Tabs
-          value={currentTab}
-          onValueChange={handleTabChange}
-          className="space-y-6"
-        >
-          <ResponsiveTabsList
-            items={tabItems}
-            activeTab={currentTab}
-            onTabChange={handleTabChange}
-          />
+        {/* Overview Card */}
+        <CoinOverview
+          struct={struct}
+          coinData={coinData}
+          coinDescription={coinDescription}
+          supplyInfo={supplyInfo}
+          pairedFa={pairedFa}
+          displaySymbol={displaySymbol}
+          isLoading={isLoading}
+        />
 
-          <TabsContent value="info">
-            <InfoTab
-              struct={struct}
-              coinData={coinData}
-              coinDescription={coinDescription}
-              supplyInfo={supplyInfo}
-              pairedFa={pairedFa}
-              isLoading={isLoading}
+        {/* Tabs (only when GraphQL is supported) */}
+        {isGraphqlSupported && tabItems.length > 0 && (
+          <Tabs
+            value={currentTab}
+            onValueChange={handleTabChange}
+            className="space-y-6"
+          >
+            <CompactTabsList
+              items={tabItems}
+              activeTab={currentTab}
+              onTabChange={handleTabChange}
             />
-          </TabsContent>
 
-          {isGraphqlSupported && (
-            <>
-              <TabsContent value="holders">
-                <HoldersTab struct={struct} coinData={coinData} />
-              </TabsContent>
+            <TabsContent value="holders">
+              <HoldersTab struct={struct} coinData={coinData} />
+            </TabsContent>
 
-              <TabsContent value="transactions">
-                <TransactionsTab struct={struct} />
-              </TabsContent>
-            </>
-          )}
-        </Tabs>
+            <TabsContent value="transactions">
+              <TransactionsTab struct={struct} />
+            </TabsContent>
+          </Tabs>
+        )}
       </PageContainer>
     </>
   );

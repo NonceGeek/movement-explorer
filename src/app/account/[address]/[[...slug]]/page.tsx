@@ -26,12 +26,11 @@ import {
   AccountOverview,
   type AccountType,
 } from "../components";
-import { Wallet, Activity, Coins, Image, Database, Code } from "lucide-react";
+import { Wallet, Activity, Image, Database, Code } from "lucide-react";
 import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
 import { useGetPrice } from "@/hooks/useGetPrice";
 import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
-import TokensTab from "../components/Tabs/TokensTab";
 import CoinsTab from "../components/Tabs/CoinsTab";
 import TransactionsTab from "../components/Tabs/TransactionsTab";
 import ResourcesTab from "../components/Tabs/ResourcesTab";
@@ -153,7 +152,7 @@ export default function AccountDetailPage() {
     });
   };
 
-  // Tab order: Transactions → Coins → Tokens → NFTs → Resources → Modules
+  // Tab order: Transactions → Coins → NFTs → Resources → Modules
   const tabItems = [
     {
       value: "transactions",
@@ -169,15 +168,10 @@ export default function AccountDetailPage() {
       icon: <Wallet className="h-4 w-4" />,
     },
     {
-      value: "tokens",
-      label: "Tokens",
-      icon: <Coins className="h-4 w-4" />,
-      badge: tokenCount || undefined,
-    },
-    {
       value: "nfts",
       label: "NFTs",
       icon: <Image className="h-4 w-4" />,
+      badge: tokenCount || undefined,
     },
     {
       value: "resources",
@@ -277,10 +271,6 @@ export default function AccountDetailPage() {
 
           <TabsContent value="coins">
             <CoinsTab address={address} />
-          </TabsContent>
-
-          <TabsContent value="tokens">
-            <TokensTab address={address} />
           </TabsContent>
 
           <TabsContent value="nfts">

@@ -221,7 +221,7 @@ function FAContent() {
           address={address}
           metadata={metadata}
           supply={supply}
-          pairedCoin={pairedCoin}
+          pairedCoin={pairedCoin ?? undefined}
           coinDescription={coinDescription}
           displaySymbol={displaySymbol}
           isLoading={isLoading}

@@ -15,7 +15,11 @@ export const badgeVariants = dsBadgeVariants;
 /**
  * 2. 定义自定义 Variants 类型
  */
-export type CustomBadgeVariant = "custom-example" | "success" | "error"; // 占位符，可扩展
+export type CustomBadgeVariant =
+  | "custom-example"
+  | "success"
+  | "error"
+  | "warning";
 
 /**
  * 3. 组合最终的 Variant 类型 (Design System + Custom)
@@ -46,6 +50,10 @@ function Badge({ className, variant, asChild = false, ...props }: BadgeProps) {
   } else if (variant === "error") {
     resolvedVariant = "default";
     customClassName = "bg-red-500/10 text-red-600 hover:bg-red-500/20";
+  } else if (variant === "warning") {
+    resolvedVariant = "default";
+    customClassName =
+      "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20";
   } else {
     resolvedVariant = variant as VariantProps<
       typeof dsBadgeVariants

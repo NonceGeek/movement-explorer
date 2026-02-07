@@ -2,9 +2,8 @@
 
 import { useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StakeOperationDialog } from "./StakeOperationDialog";
 import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
@@ -32,18 +31,18 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   if (!connected) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5" />
+      <Card className="bg-card border-border mb-6">
+        <div className="border-b border-border/50 py-4 px-6">
+          <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
+            <Coins className="h-5 w-5 text-primary" />
             My Deposits
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground text-center py-8">
+          </h2>
+        </div>
+        <div className="px-6 py-8">
+          <p className="text-muted-foreground text-center text-sm">
             Connect your wallet to view and manage your deposits
           </p>
-        </CardContent>
+        </div>
       </Card>
     );
   }
@@ -65,97 +64,115 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Coins className="h-5 w-5" />
-            My Deposits
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="space-y-4">
-              <EnhancedSkeleton className="h-12 w-full" />
-              <EnhancedSkeleton className="h-10 w-full" />
-            </div>
-          ) : (
-            <div className="space-y-6">
-              {/* Deposit Summary */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                    <Lock className="h-4 w-4 text-green-500" />
-                    Active Stake
-                  </div>
-                  <p className="text-xl font-bold">
-                    {formatMoveAmount(activeStake)} MOVE
-                  </p>
-                </div>
-
-                <div className="p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                    <Unlock className="h-4 w-4 text-yellow-500" />
-                    Pending Inactive
-                  </div>
-                  <p className="text-xl font-bold">
-                    {formatMoveAmount(pendingInactiveStake)} MOVE
-                  </p>
-                </div>
-
-                <div className="p-4 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm mb-1">
-                    <ArrowDownToLine className="h-4 w-4 text-blue-500" />
-                    Withdrawable
-                  </div>
-                  <p className="text-xl font-bold">
-                    {formatMoveAmount(inactiveStake)} MOVE
-                  </p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-wrap gap-3">
-                <Button onClick={() => openDialog(StakeOperation.STAKE)}>
+      <Card className="bg-card border-border mb-6">
+        {/* Header with title and action buttons */}
+        <div className="border-b border-border/50 py-4 px-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" />
+              My Deposits
+            </h2>
+            {!isLoading && (
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => openDialog(StakeOperation.STAKE)}
+                >
                   Stake
                 </Button>
-
                 {activeStake > BigInt(0) && (
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => openDialog(StakeOperation.UNLOCK)}
                   >
                     Unstake
                   </Button>
                 )}
-
                 {pendingInactiveStake > BigInt(0) && (
                   <Button
                     variant="outline"
+                    size="sm"
                     onClick={() => openDialog(StakeOperation.REACTIVATE)}
                   >
                     Reactivate
                   </Button>
                 )}
-
                 {inactiveStake > BigInt(0) && (
                   <Button
                     variant="secondary"
+                    size="sm"
                     onClick={() => openDialog(StakeOperation.WITHDRAW)}
                   >
                     Withdraw
                   </Button>
                 )}
               </div>
+            )}
+          </div>
+        </div>
 
-              {!hasDeposit && (
-                <p className="text-muted-foreground text-sm">
-                  You have no deposits in this validator. Click "Stake" to get
-                  started.
+        {/* Deposit Summary - 3-column grid */}
+        {isLoading ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="px-5 py-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <EnhancedSkeleton className="h-3.5 w-3.5 rounded-full" />
+                  <EnhancedSkeleton className="h-3 w-20" />
+                </div>
+                <EnhancedSkeleton className="h-6 w-28 mt-2" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+              <div className="px-5 py-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Lock className="h-3.5 w-3.5 text-green-500" />
+                  <span className="text-xs text-muted-foreground">
+                    Active Stake
+                  </span>
+                </div>
+                <p className="text-lg font-semibold font-mono tabular-nums">
+                  {formatMoveAmount(activeStake)} MOVE
                 </p>
-              )}
+              </div>
+              <div className="px-5 py-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <Unlock className="h-3.5 w-3.5 text-yellow-500" />
+                  <span className="text-xs text-muted-foreground">
+                    Pending Inactive
+                  </span>
+                </div>
+                <p className="text-lg font-semibold font-mono tabular-nums">
+                  {formatMoveAmount(pendingInactiveStake)} MOVE
+                </p>
+              </div>
+              <div className="px-5 py-4">
+                <div className="flex items-center gap-2 mb-1">
+                  <ArrowDownToLine className="h-3.5 w-3.5 text-blue-500" />
+                  <span className="text-xs text-muted-foreground">
+                    Withdrawable
+                  </span>
+                </div>
+                <p className="text-lg font-semibold font-mono tabular-nums">
+                  {formatMoveAmount(inactiveStake)} MOVE
+                </p>
+              </div>
             </div>
-          )}
-        </CardContent>
+
+            {!hasDeposit && (
+              <div className="px-5 py-3 border-t border-border/40">
+                <p className="text-muted-foreground text-sm">
+                  You have no deposits in this validator. Click &quot;Stake&quot;
+                  to get started.
+                </p>
+              </div>
+            )}
+          </>
+        )}
       </Card>
 
       <StakeOperationDialog

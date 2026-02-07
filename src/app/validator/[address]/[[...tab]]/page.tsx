@@ -3,40 +3,60 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useParams } from "next/navigation";
-import Link from "next/link";
-import { Suspense, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Suspense, useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { useGetValidators } from "@/hooks/validators/useGetValidators";
-import { useGetValidatorSet } from "@/hooks/validators/useGetValidatorSet";
-import { useGetStakingRewardsRate } from "@/hooks/validators/useGetStakingRewardsRate";
-import { useGetDelegationNodeInfo } from "@/hooks/validators/useGetDelegationNodeInfo";
-import { useGetNumberOfDelegators } from "@/hooks/validators/useGetNumberOfDelegators";
-import { useGetAccountResource } from "@/hooks/accounts/useGetAccountResource";
-import { standardizeAddress } from "@/utils";
-import { formatMoveAmount } from "@/utils/transaction";
-import {
-  CheckCircle2,
-  XCircle,
-  Users,
-  Coins,
-  TrendingUp,
-  Clock,
-  Server,
-  Percent,
-  Award,
-  HelpCircle,
-} from "lucide-react";
-import { MyDepositsSection } from "../components/MyDepositsSection";
-import { TimeDurationIntervalBar } from "../components/TimeDurationIntervalBar";
-import { calculateNetworkPercentage, getValidatorStatus } from "../utils";
+import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  useGetValidators,
+  ValidatorData,
+} from "@/hooks/validators/useGetValidators";
+import { useGetValidatorSet } from "@/hooks/validators/useGetValidatorSet";
+import { useGetStakingRewardsRate } from "@/hooks/validators/useGetStakingRewardsRate";
+import { useGetDelegationNodeInfo } from "@/hooks/validators/useGetDelegationNodeInfo";
+import { useGetNumberOfDelegators } from "@/hooks/validators/useGetNumberOfDelegators";
+import { useGetDelegatedStakingPoolList } from "@/hooks/validators/useGetDelegatedStakingPoolList";
+import { useGetAccountResource } from "@/hooks/accounts/useGetAccountResource";
+import { useGetAccountAPTBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
+import { useGetDelegatorStakeInfo } from "@/hooks/staking/useGetDelegatorStakeInfo";
+import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
+import { useWallet } from "@aptos-labs/wallet-adapter-react";
+import { standardizeAddress } from "@/utils";
+import { formatMoveAmount } from "@/utils/transaction";
+import { OCTA } from "@/constants/addresses";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { ValidatorStatusBadge } from "@/app/validators/components/ValidatorStatusBadge";
+import { WalletModal } from "@movementlabsxyz/movement-design-system";
+import { StakeOperationDialog } from "../components/StakeOperationDialog";
+import { MyDepositsSection } from "../components/MyDepositsSection";
+import { CommissionChangeBanner } from "../components/CommissionChangeBanner";
+import { StakeOperationActivities } from "../components/StakeOperationActivities";
+import { TimeDurationIntervalBar } from "../components/TimeDurationIntervalBar";
+import { calculateNetworkPercentage, getValidatorStatus } from "../utils";
+import {
+  Server,
+  Coins,
+  Percent,
+  Award,
+  Users,
+  TrendingUp,
+  Database,
+  BarChart3,
+  Activity,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  ArrowUpCircle,
+  HelpCircle,
+} from "lucide-react";
+
+const MINIMUM_MOVE_IN_POOL = 11;
+const NETWORK_LIMIT_PERCENT = 30;
 
 interface StakePoolData {
   active: { value: string };
@@ -59,6 +79,15 @@ function ValidatorContent() {
       return address;
     }
   }, [address]);
+
+  // Wallet state
+  const { connected, account } = useWallet();
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [walletModalOpen, setWalletModalOpen] = useState(false);
+
+  const walletAddress = account?.address?.toString() || "";
+  const balance = useGetAccountAPTBalance(walletAddress);
+  const userBalance = balance?.data ? BigInt(balance.data) : BigInt(0);
 
   // Fetch validators list
   const { validators } = useGetValidators();
@@ -87,10 +116,40 @@ function ValidatorContent() {
   const { delegatorBalance, loading: isLoadingDelegators } =
     useGetNumberOfDelegators(addressHex);
 
-  const isLoading = isLoadingStakePool || isLoadingDelegationInfo;
+  // Fetch delegated staking pool list for non-active validator fallback
+  const { delegatedStakingPools, loading: isLoadingPools } =
+    useGetDelegatedStakingPoolList();
 
-  // Find validator in list
+  const isLoading = isLoadingStakePool || isLoadingDelegationInfo || isLoadingPools;
+
+  // Find validator in active validator list
   const validator = validators.find((v) => v.owner_address === addressHex);
+
+  // Non-active validator fallback
+  const delegationValidator = useMemo((): ValidatorData | undefined => {
+    if (validator) return validator;
+
+    const pool = delegatedStakingPools.find(
+      (p) => standardizeAddress(p.staking_pool_address) === addressHex,
+    );
+
+    if (pool) {
+      return {
+        owner_address: addressHex,
+        operator_address:
+          pool.current_staking_pool?.operator_address || addressHex,
+        voting_power: "0",
+        governance_voting_record: "",
+        last_epoch: 0,
+        last_epoch_performance: "",
+        liveness: 0,
+        rewards_growth: 0,
+        apt_rewards_distributed: 0,
+      };
+    }
+
+    return undefined;
+  }, [validator, delegatedStakingPools, addressHex]);
 
   const stakePoolData = stakePool as { data: StakePoolData } | undefined;
 
@@ -121,436 +180,423 @@ function ValidatorContent() {
     ? BigInt(stakePoolData.data.inactive.value)
     : BigInt(0);
 
-  // Calculate performance
-  const rewardsGrowth = validator?.rewards_growth ?? 0;
+  // Performance
+  const rewardsGrowth = delegationValidator?.rewards_growth ?? 0;
 
-  // Validator status from chain
+  // Validator status
   const validatorStatusText = validatorStatusFromChain
     ? getValidatorStatus(Number(validatorStatusFromChain[0]))
     : undefined;
 
-  // Use validator status or fall back to basic active check
   const displayStatus =
     validatorStatusText ||
-    (validator && BigInt(validator.voting_power || 0) > 0
+    (delegationValidator && BigInt(delegationValidator.voting_power || 0) > 0
       ? "Active"
       : "Inactive");
 
-  // Get status badge variant
-  const getStatusVariant = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "default";
-      case "Pending Active":
-        return "secondary";
-      case "Pending Inactive":
-        return "outline";
-      case "Inactive":
-        return "destructive";
-      default:
-        return "secondary";
-    }
-  };
-
   // Network percentage
-  const networkPercentage = validator?.voting_power
-    ? calculateNetworkPercentage(validator.voting_power, totalVotingPower)
+  const networkPercentage = delegationValidator?.voting_power
+    ? calculateNetworkPercentage(
+        delegationValidator.voting_power,
+        totalVotingPower,
+      )
     : "0.00";
 
   // Rewards earned
-  const rewardsEarned = validator?.apt_rewards_distributed ?? 0;
+  const rewardsEarned = delegationValidator?.apt_rewards_distributed ?? 0;
+
+  // Stake button logic
+  const networkPct = parseFloat(networkPercentage);
+  const isOverNetworkLimit = networkPct >= NETWORK_LIMIT_PERCENT;
+  const isBalanceInsufficient =
+    connected && userBalance < BigInt(MINIMUM_MOVE_IN_POOL * OCTA);
+
+  const handleStakeClick = () => {
+    if (!connected) {
+      setWalletModalOpen(true);
+      return;
+    }
+    setDialogOpen(true);
+  };
+
+  const getTooltipText = (): string | null => {
+    if (isOverNetworkLimit) {
+      return `This validator has ${networkPercentage}% of the network stake, exceeding the ${NETWORK_LIMIT_PERCENT}% limit.`;
+    }
+    if (isBalanceInsufficient) {
+      return `Insufficient balance. Minimum ${MINIMUM_MOVE_IN_POOL} MOVE required.`;
+    }
+    return null;
+  };
+
+  const tooltipText = getTooltipText();
+  const isStakeDisabled = isOverNetworkLimit || !!isBalanceInsufficient;
+
+  const stakeButton = (
+    <Button
+      onClick={handleStakeClick}
+      disabled={isStakeDisabled}
+      className="gap-2"
+      size="sm"
+    >
+      <ArrowUpCircle className="h-4 w-4" />
+      Stake
+    </Button>
+  );
+
+  const renderStakeButton = () => {
+    if (isOverNetworkLimit) return null;
+    if (tooltipText) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0}>{stakeButton}</span>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>{tooltipText}</p>
+          </TooltipContent>
+        </Tooltip>
+      );
+    }
+    return stakeButton;
+  };
 
   return (
     <>
       <PageNavigation title="Validator" />
       <PageContainer>
-        {/* Header */}
-        <div className="flex items-center gap-4 mb-6">
-          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-            <Server className="w-6 h-6 text-primary" />
-          </div>
-          <div className="flex-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-3xl font-bold">Validator</h1>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-6 w-20" />
-              ) : (
-                <Badge variant={getStatusVariant(displayStatus)}>
-                  {displayStatus}
-                </Badge>
-              )}
-            </div>
-            <Link
-              href={`/account/${addressHex}`}
-              className="text-muted-foreground font-mono text-sm hover:text-primary hover:underline"
-            >
-              {addressHex}
-            </Link>
-          </div>
-        </div>
+        {/* Commission Change Banner */}
+        <CommissionChangeBanner
+          validatorAddress={addressHex}
+          currentCommission={commission}
+        />
 
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="pt-6">
-                  <EnhancedSkeleton className="h-8 w-24 mb-2" />
-                  <EnhancedSkeleton className="h-6 w-32" />
-                </CardContent>
-              </Card>
-            ))}
+          <div className="space-y-6">
+            {/* Overview Card Skeleton */}
+            <Card className="bg-card border-border overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+                <div className="flex items-center gap-3">
+                  <EnhancedSkeleton className="w-10 h-10 rounded-full" />
+                  <div>
+                    <div className="flex items-center gap-2 mb-1">
+                      <EnhancedSkeleton className="h-6 w-24" />
+                      <EnhancedSkeleton className="h-5 w-16 rounded-full" />
+                    </div>
+                    <EnhancedSkeleton className="h-4 w-48" />
+                  </div>
+                </div>
+                <EnhancedSkeleton className="h-8 w-20 rounded-md" />
+              </div>
+              {/* 3-Column Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+                {Array.from({ length: 3 }).map((_, col) => (
+                  <div key={col} className="px-5 py-4 space-y-3">
+                    <EnhancedSkeleton className="h-3 w-28" />
+                    <div className="space-y-2.5">
+                      {Array.from({ length: 3 }).map((_, row) => (
+                        <div key={row} className="flex items-center justify-between">
+                          <EnhancedSkeleton className="h-3 w-20" />
+                          <EnhancedSkeleton className="h-4 w-24" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            {/* Staking Breakdown Skeleton */}
+            <Card className="bg-card border-border">
+              <div className="border-b border-border/50 py-4 px-6">
+                <EnhancedSkeleton className="h-6 w-40" />
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <div key={i} className="px-5 py-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <EnhancedSkeleton className="h-3.5 w-3.5 rounded-full" />
+                      <EnhancedSkeleton className="h-3 w-20" />
+                    </div>
+                    <EnhancedSkeleton className="h-6 w-28 mt-2" />
+                  </div>
+                ))}
+              </div>
+            </Card>
           </div>
         ) : (
           <>
-            {/* Stats Cards - Updated to match source project */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-              {/* Delegated Stake Amount */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <Coins className="h-4 w-4" />
-                    <span className="text-sm">Delegated Stake Amount</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-3 w-3" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          The total amount of delegated stake in this stake pool
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
+            {/* Etherscan-style Overview Card */}
+            <Card className="bg-card border-border mb-6 overflow-hidden">
+              {/* Card Header */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Server className="w-5 h-5 text-primary" />
                   </div>
-                  <p className="text-2xl font-bold">
-                    {validator?.voting_power
-                      ? formatMoveAmount(BigInt(validator.voting_power))
-                      : "0"}{" "}
-                    MOVE
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Of Network */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <Percent className="h-4 w-4" />
-                    <span className="text-sm">Of Network</span>
-                  </div>
-                  <p className="text-2xl font-bold">{networkPercentage}%</p>
-                </CardContent>
-              </Card>
-
-              {/* Rewards Earned So Far */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <Award className="h-4 w-4" />
-                    <span className="text-sm">Rewards Earned So Far</span>
-                    <Tooltip>
-                      <TooltipTrigger>
-                        <HelpCircle className="h-3 w-3" />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          Amount of rewards earned by this stake pool to date
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </div>
-                  <p className="text-2xl font-bold">
-                    {rewardsEarned.toFixed(0)} MOVE
-                  </p>
-                </CardContent>
-              </Card>
-
-              {/* Last Epoch */}
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="flex items-center gap-2 text-muted-foreground mb-2">
-                    <Clock className="h-4 w-4" />
-                    <span className="text-sm">Last Active Epoch</span>
-                  </div>
-                  <p className="text-2xl font-bold">
-                    {validator?.last_epoch ?? "-"}
-                  </p>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Detail Cards - Updated structure to match source project */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Left Panel */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Validator Details</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Operator Address */}
-                  {stakePoolData?.data?.operator_address && (
-                    <div className="flex justify-between items-center py-2 border-b">
-                      <span className="text-muted-foreground">Operator</span>
-                      <Link
-                        href={`/account/${stakePoolData.data.operator_address}`}
-                        className="text-primary hover:underline font-mono text-sm"
-                      >
-                        {stakePoolData.data.operator_address.slice(0, 10)}...
-                        {stakePoolData.data.operator_address.slice(-8)}
-                      </Link>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h1 className="text-xl font-heading font-bold">
+                        Validator
+                      </h1>
+                      <ValidatorStatusBadge status={displayStatus} />
                     </div>
-                  )}
-
-                  {/* Number of Delegators */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Number of Delegators
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Number of owner accounts who have delegated stake to
-                            this stake pool + reward account(s)
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>
-                      {isLoadingDelegators ? (
-                        <EnhancedSkeleton className="h-4 w-8" />
-                      ) : (
-                        delegatorBalance
-                      )}
-                    </span>
-                  </div>
-
-                  {/* Compound Rewards */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Compound Rewards
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            The expected APR for staking rewards, compounded
-                            daily
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>{rewardsRateYearly ?? "-"}% APR</span>
-                  </div>
-
-                  {/* Operator Commission */}
-                  <div className="flex justify-between items-center py-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Operator Commission
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            % of staking reward paid out to operator as
-                            commission
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>
-                      {commission !== undefined ? `${commission}%` : "-"}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Right Panel */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Stake Pool Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Stake Pool Address */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <span className="text-muted-foreground">
-                      Stake Pool Address
-                    </span>
-                    <Link
+                    <CopyableAddress
+                      address={addressHex}
                       href={`/account/${addressHex}`}
-                      className="text-primary hover:underline font-mono text-sm"
-                    >
-                      {addressHex.slice(0, 10)}...{addressHex.slice(-8)}
-                    </Link>
-                  </div>
-
-                  {/* Rewards Performance */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Rewards Performance
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Measures how well a validator has performed compared
-                            to the network average
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>{rewardsGrowth.toFixed(2)}%</span>
-                  </div>
-
-                  {/* Last Epoch Performance */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">
-                        Last Epoch Performance
-                      </span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            Number of successful vs failed proposals in the last
-                            epoch
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <span>{validator?.last_epoch_performance || "-"}</span>
-                  </div>
-
-                  {/* Next Unlock */}
-                  <div className="flex justify-between items-center py-2">
-                    <div className="flex items-center gap-1">
-                      <span className="text-muted-foreground">Next Unlock</span>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="h-3 w-3 text-muted-foreground" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>
-                            When tokens will be available for removal from the
-                            stake pool
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </div>
-                    <TimeDurationIntervalBar
-                      timestamp={
-                        stakePoolData?.data?.locked_until_secs
-                          ? parseInt(stakePoolData.data.locked_until_secs)
-                          : undefined
-                      }
+                      showCopyButton
+                      truncateLength={{ start: 10, end: 8 }}
+                      className="text-xs"
                     />
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+                <div className="shrink-0">{renderStakeButton()}</div>
+              </div>
 
-              {/* Staking Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Staking Breakdown</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  {/* Active */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-green-500" />
-                      <span className="text-muted-foreground">Active</span>
-                    </div>
-                    <span className="font-mono">
-                      {formatMoveAmount(activeStake)} MOVE
-                    </span>
-                  </div>
-
-                  {/* Pending Active */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-yellow-500" />
-                      <span className="text-muted-foreground">
-                        Pending Active
+              {/* 3-Column Grid Body */}
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+                {/* Column 1: Staking Overview */}
+                <div className="px-5 py-4 space-y-3">
+                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                    Staking Overview
+                  </h3>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Coins className="h-3 w-3" />
+                        Delegated Stake
+                      </span>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {formatMoveAmount(
+                          BigInt(delegationValidator?.voting_power || "0"),
+                        )}{" "}
+                        MOVE
                       </span>
                     </div>
-                    <span className="font-mono">
-                      {formatMoveAmount(pendingActive)} MOVE
-                    </span>
-                  </div>
-
-                  {/* Pending Inactive */}
-                  <div className="flex justify-between items-center py-2 border-b">
-                    <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4 text-orange-500" />
-                      <span className="text-muted-foreground">
-                        Pending Inactive
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Percent className="h-3 w-3" />
+                        Network Share
+                      </span>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {networkPercentage}%
                       </span>
                     </div>
-                    <span className="font-mono">
-                      {formatMoveAmount(pendingInactive)} MOVE
-                    </span>
-                  </div>
-
-                  {/* Inactive */}
-                  <div className="flex justify-between items-center py-2">
-                    <div className="flex items-center gap-2">
-                      <XCircle className="h-4 w-4 text-gray-500" />
-                      <span className="text-muted-foreground">Inactive</span>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Award className="h-3 w-3" />
+                        Rewards Earned
+                      </span>
+                      <span className="text-sm font-semibold tabular-nums">
+                        {rewardsEarned.toFixed(0)} MOVE
+                      </span>
                     </div>
-                    <span className="font-mono">
-                      {formatMoveAmount(inactive)} MOVE
-                    </span>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
 
-              {/* Performance */}
-              {validator && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Performance</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-1 gap-4">
-                      {/* Liveness */}
-                      <div>
-                        <p className="text-muted-foreground text-sm mb-2">
-                          Liveness
-                        </p>
-                        <div className="flex items-center gap-2">
-                          <Progress
-                            value={(validator.liveness || 0) * 100}
-                            className="flex-1"
-                          />
-                          <span className="text-sm font-mono">
-                            {((validator.liveness || 0) * 100).toFixed(1)}%
-                          </span>
-                        </div>
+                {/* Column 2: Validator Details */}
+                <div className="px-5 py-4 space-y-3">
+                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                    Validator Details
+                  </h3>
+                  <div className="space-y-2.5">
+                    {stakePoolData?.data?.operator_address && (
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                          <Users className="h-3 w-3" />
+                          Operator
+                        </span>
+                        <CopyableAddress
+                          address={stakePoolData.data.operator_address}
+                          href={`/account/${stakePoolData.data.operator_address}`}
+                          showCopyButton
+                          truncateLength={{ start: 6, end: 4 }}
+                          className="text-xs"
+                        />
                       </div>
+                    )}
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Users className="h-3 w-3" />
+                        Delegators
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {isLoadingDelegators ? (
+                          <EnhancedSkeleton className="h-4 w-8" />
+                        ) : (
+                          delegatorBalance
+                        )}
+                      </span>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Percent className="h-3 w-3" />
+                        Commission
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {commission !== undefined ? `${commission}%` : "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <TrendingUp className="h-3 w-3" />
+                        Compound Rewards
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {rewardsRateYearly ?? "-"}% APR
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Column 3: Stake Pool Info */}
+                <div className="px-5 py-4 space-y-3">
+                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                    Stake Pool Info
+                  </h3>
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
+                        <Database className="h-3 w-3" />
+                        Pool Address
+                      </span>
+                      <CopyableAddress
+                        address={addressHex}
+                        href={`/account/${addressHex}`}
+                        showCopyButton
+                        truncateLength={{ start: 6, end: 4 }}
+                        className="text-xs"
+                      />
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <BarChart3 className="h-3 w-3" />
+                        Rewards Perf.
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {rewardsGrowth.toFixed(2)}%
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Activity className="h-3 w-3" />
+                        Last Epoch Perf.
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {delegationValidator?.last_epoch_performance || "-"}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Clock className="h-3 w-3" />
+                        Last Active Epoch
+                      </span>
+                      <span className="text-sm font-medium tabular-nums">
+                        {delegationValidator?.last_epoch ?? "-"}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Staking Breakdown */}
+            <Card className="bg-card border-border mb-6">
+              <div className="border-b border-border/50 py-4 px-6">
+                <h2 className="text-lg font-heading font-semibold">
+                  Staking Breakdown
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
+                    <span className="text-xs text-muted-foreground">
+                      Active
+                    </span>
+                  </div>
+                  <p className="text-lg font-semibold font-mono tabular-nums">
+                    {formatMoveAmount(activeStake)} MOVE
+                  </p>
+                </div>
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="h-3.5 w-3.5 text-yellow-500" />
+                    <span className="text-xs text-muted-foreground">
+                      Pending Active
+                    </span>
+                  </div>
+                  <p className="text-lg font-semibold font-mono tabular-nums">
+                    {formatMoveAmount(pendingActive)} MOVE
+                  </p>
+                </div>
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <Clock className="h-3.5 w-3.5 text-orange-500" />
+                    <span className="text-xs text-muted-foreground">
+                      Pending Inactive
+                    </span>
+                  </div>
+                  <p className="text-lg font-semibold font-mono tabular-nums">
+                    {formatMoveAmount(pendingInactive)} MOVE
+                  </p>
+                </div>
+                <div className="px-5 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <XCircle className="h-3.5 w-3.5 text-gray-500" />
+                    <span className="text-xs text-muted-foreground">
+                      Inactive
+                    </span>
+                  </div>
+                  <p className="text-lg font-semibold font-mono tabular-nums">
+                    {formatMoveAmount(inactive)} MOVE
+                  </p>
+                </div>
+              </div>
+              {stakePoolData?.data?.locked_until_secs && (
+                <div className="border-t border-border/40 px-5 py-3 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                    <Clock className="h-3 w-3" />
+                    Next Unlock
+                    <Tooltip>
+                      <TooltipTrigger>
+                        <HelpCircle className="h-3 w-3" />
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>
+                          When tokens will be available for removal from the
+                          stake pool
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </span>
+                  <TimeDurationIntervalBar
+                    timestamp={parseInt(stakePoolData.data.locked_until_secs)}
+                  />
+                </div>
               )}
-            </div>
+            </Card>
 
             {/* My Deposits Section */}
             <MyDepositsSection validatorAddress={addressHex} />
+
+            {/* Staking Activity History */}
+            <StakeOperationActivities validatorAddress={addressHex} />
           </>
         )}
       </PageContainer>
+
+      {walletModalOpen && (
+        <WalletModal onClose={() => setWalletModalOpen(false)} />
+      )}
+
+      <StakeOperationDialog
+        isOpen={dialogOpen}
+        onClose={() => setDialogOpen(false)}
+        operation={StakeOperation.STAKE}
+        validatorAddress={addressHex}
+      />
     </>
   );
 }
@@ -559,24 +605,55 @@ export default function ValidatorDetailPage() {
   return (
     <Suspense
       fallback={
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex items-center gap-4 mb-6">
-            <EnhancedSkeleton className="w-12 h-12 rounded-full" />
-            <div>
-              <EnhancedSkeleton className="h-9 w-48 mb-2" />
-              <EnhancedSkeleton className="h-5 w-64" />
+        <div className="container mx-auto px-4 py-8 space-y-6">
+          {/* Overview Card Skeleton */}
+          <Card className="bg-card border-border overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+              <div className="flex items-center gap-3">
+                <EnhancedSkeleton className="w-10 h-10 rounded-full" />
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <EnhancedSkeleton className="h-6 w-24" />
+                    <EnhancedSkeleton className="h-5 w-16 rounded-full" />
+                  </div>
+                  <EnhancedSkeleton className="h-4 w-48" />
+                </div>
+              </div>
+              <EnhancedSkeleton className="h-8 w-20 rounded-md" />
             </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <Card key={i}>
-                <CardContent className="pt-6">
-                  <EnhancedSkeleton className="h-8 w-24 mb-2" />
-                  <EnhancedSkeleton className="h-6 w-32" />
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+              {Array.from({ length: 3 }).map((_, col) => (
+                <div key={col} className="px-5 py-4 space-y-3">
+                  <EnhancedSkeleton className="h-3 w-28" />
+                  <div className="space-y-2.5">
+                    {Array.from({ length: 3 }).map((_, row) => (
+                      <div key={row} className="flex items-center justify-between">
+                        <EnhancedSkeleton className="h-3 w-20" />
+                        <EnhancedSkeleton className="h-4 w-24" />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+          {/* Staking Breakdown Skeleton */}
+          <Card className="bg-card border-border">
+            <div className="border-b border-border/50 py-4 px-6">
+              <EnhancedSkeleton className="h-6 w-40" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="px-5 py-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <EnhancedSkeleton className="h-3.5 w-3.5 rounded-full" />
+                    <EnhancedSkeleton className="h-3 w-20" />
+                  </div>
+                  <EnhancedSkeleton className="h-6 w-28 mt-2" />
+                </div>
+              ))}
+            </div>
+          </Card>
         </div>
       }
     >

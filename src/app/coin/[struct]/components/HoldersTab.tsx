@@ -85,7 +85,7 @@ export default function HoldersTab({ struct, coinData }: HoldersTabProps) {
         <TableBody>
           {holders.map((holder, index) => (
             <TableRow key={holder.owner_address}>
-              <TableCell className="font-mono text-muted-foreground">
+              <TableCell className="font-mono tabular-nums text-muted-foreground">
                 #{index + 1}
               </TableCell>
               <TableCell>
@@ -97,7 +97,7 @@ export default function HoldersTab({ struct, coinData }: HoldersTabProps) {
                   truncateLength={{ start: 8, end: 6 }}
                 />
               </TableCell>
-              <TableCell className="text-right font-mono">
+              <TableCell className="text-right font-mono tabular-nums">
                 {holder.amount_v2 != null
                   ? formatMoveAmount(BigInt(holder.amount_v2), decimals)
                   : "0"}{" "}

@@ -101,7 +101,7 @@ export function DoubleMetricCard({
               <div className="text-xl font-medium">{data1}</div>
               {trend1 !== undefined && <TrendIndicator value={trend1} />}
             </div>
-            <div className="text-[10px] text-muted-foreground">{label1}</div>
+            <div className="text-xs text-muted-foreground">{label1}</div>
           </div>
           {data2 && (
             <div className="w-1/2">
@@ -109,7 +109,7 @@ export function DoubleMetricCard({
                 <div className="text-xl font-medium">{data2}</div>
                 {trend2 !== undefined && <TrendIndicator value={trend2} />}
               </div>
-              <div className="text-[10px] text-muted-foreground">{label2}</div>
+              <div className="text-xs text-muted-foreground">{label2}</div>
             </div>
           )}
         </div>

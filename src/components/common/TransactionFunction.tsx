@@ -103,7 +103,7 @@ export function TransactionFunction({
         <TooltipContent className="p-3 max-w-80 sm:max-w-100">
           <div className="flex flex-col gap-3">
             <div className="space-y-1">
-              <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+              <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                 Address
               </span>
               <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
@@ -113,7 +113,7 @@ export function TransactionFunction({
 
             <div className="flex flex-col gap-3">
               <div className="space-y-1">
-                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                   Module
                 </span>
                 <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
@@ -121,7 +121,7 @@ export function TransactionFunction({
                 </div>
               </div>
               <div className="space-y-1">
-                <span className="text-[10px] uppercase text-muted-foreground font-bold tracking-wider">
+                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                   Function
                 </span>
                 <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">

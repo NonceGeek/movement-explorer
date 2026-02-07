@@ -149,7 +149,7 @@ export default function InfoTab({
         {/* Decimals */}
         <div className="flex justify-between items-center py-2 border-b">
           <span className="text-muted-foreground">Decimals</span>
-          <span className="font-mono">{coinData.data.decimals}</span>
+          <span className="font-mono tabular-nums">{coinData.data.decimals}</span>
         </div>
 
         {/* Total Supply */}
@@ -158,7 +158,7 @@ export default function InfoTab({
           <div className="flex items-center gap-2">
             {supply !== null ? (
               <>
-                <span className="font-mono">
+                <span className="font-mono tabular-nums">
                   {formatMoveAmount(supply)} {coinData.data.symbol}
                 </span>
                 <SupplyIcon supplyType={supplyType} />

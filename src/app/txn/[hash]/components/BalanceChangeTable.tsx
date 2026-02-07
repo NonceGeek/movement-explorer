@@ -104,7 +104,7 @@ export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
                   {change.known && (
                     <Badge
                       variant="outline"
-                      className="text-[10px] h-5 px-1 bg-blue-50 text-blue-700 border-blue-200"
+                      className="text-xs h-5 px-1 bg-blue-50 text-blue-700 border-blue-200"
                     >
                       Verified
                     </Badge>

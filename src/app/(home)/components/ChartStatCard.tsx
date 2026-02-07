@@ -198,7 +198,7 @@ export function ChartStatCard({
         {isLoading ? (
           <EnhancedSkeleton className="h-8 w-24" />
         ) : (
-          <div className="text-3xl sm:text-4xl font-semibold font-mono text-foreground leading-tight">
+          <div className="text-3xl sm:text-4xl font-semibold font-mono tabular-nums text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}
           </div>
         )}

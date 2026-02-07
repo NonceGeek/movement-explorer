@@ -358,7 +358,7 @@ function ValidatorContent() {
               <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
                 {/* Column 1: Staking Overview */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                     Staking Overview
                   </h3>
                   <div className="space-y-2.5">
@@ -397,7 +397,7 @@ function ValidatorContent() {
 
                 {/* Column 2: Validator Details */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                     Validator Details
                   </h3>
                   <div className="space-y-2.5">
@@ -452,7 +452,7 @@ function ValidatorContent() {
 
                 {/* Column 3: Stake Pool Info */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
                     Stake Pool Info
                   </h3>
                   <div className="space-y-2.5">

@@ -287,10 +287,10 @@
   --opacity-9: 0.9;
   --opacity-10: 1; */
   
-  /* Font families */
+  /* Font families (Plan B: Inter for body, TWK Everett for heading, TWK Everett Mono for code) */
   --font-heading: "TWK Everett", sans-serif;
-  --font-body: "Neue Haas Unica Pro", sans-serif;
-  --font-mono: "TWK Everett Mono", monospace;
+  --font-body: var(--font-inter, "Inter"), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "TWK Everett Mono", "Consolas", "Menlo", monospace;
   
   /* Container configuration */
   --container-center: true;
@@ -645,6 +645,6 @@
   }
   body {
     @apply bg-background text-foreground;
-    font-family: var(--font-family-body);
+    font-family: var(--font-body);
   }
 }

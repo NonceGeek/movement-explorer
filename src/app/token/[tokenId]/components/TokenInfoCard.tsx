@@ -100,7 +100,7 @@ export function TokenInfoCard({ token, tokenId }: TokenInfoCardProps) {
             <span className="text-muted-foreground">
               Largest Property Version
             </span>
-            <span className="font-mono">
+            <span className="font-mono tabular-nums">
               {token.largest_property_version_v1}
             </span>
           </div>
@@ -110,7 +110,7 @@ export function TokenInfoCard({ token, tokenId }: TokenInfoCardProps) {
         {token.current_collection?.current_supply !== undefined && (
           <div className="flex justify-between items-center py-2 border-b">
             <span className="text-muted-foreground">Supply</span>
-            <span className="font-mono">
+            <span className="font-mono tabular-nums">
               {token.current_collection.current_supply}
             </span>
           </div>
@@ -122,7 +122,7 @@ export function TokenInfoCard({ token, tokenId }: TokenInfoCardProps) {
           token.current_collection.max_supply !== undefined && (
             <div className="flex justify-between items-center py-2 border-b">
               <span className="text-muted-foreground">Maximum</span>
-              <span className="font-mono">
+              <span className="font-mono tabular-nums">
                 {token.current_collection.max_supply}
               </span>
             </div>
@@ -134,7 +134,7 @@ export function TokenInfoCard({ token, tokenId }: TokenInfoCardProps) {
             <span className="text-muted-foreground">Last Transaction</span>
             <Link
               href={`/txn/${token.last_transaction_version}`}
-              className="text-primary hover:underline font-mono"
+              className="text-primary hover:underline font-mono tabular-nums"
             >
               {token.last_transaction_version}
             </Link>

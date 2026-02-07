@@ -64,7 +64,7 @@ export function StatItem({
         {isLoading ? (
           <EnhancedSkeleton className="h-6 w-20" />
         ) : (
-          <div className="text-2xl sm:text-3xl font-semibold font-mono text-foreground leading-tight break-all">
+          <div className="text-2xl sm:text-3xl font-semibold font-mono tabular-nums text-foreground leading-tight break-all">
             {typeof value === "number" ? (
               <RollingNumber value={value} />
             ) : (
@@ -74,7 +74,7 @@ export function StatItem({
         )}
 
         {/* Sub Label - always takes space for alignment */}
-        <div className="text-[9px] text-muted-foreground/70 uppercase tracking-wider mt-1 h-3">
+        <div className="text-xs text-muted-foreground/70 uppercase tracking-wider mt-1 h-4">
           {subLabel || "\u00A0"}
         </div>
       </div>

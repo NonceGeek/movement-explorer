@@ -50,12 +50,12 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
       <TableCell className="text-right uppercase">
         {coin.tokenStandard}
       </TableCell>
-      <TableCell className="text-right font-mono">
+      <TableCell className="text-right font-mono tabular-nums">
         {coin.amount.toLocaleString("en-US", {
           maximumFractionDigits: coin.decimals,
         })}
       </TableCell>
-      <TableCell className="text-right font-mono">
+      <TableCell className="text-right font-mono tabular-nums">
         {coin.usdPrice !== null
           ? coin.usdPrice.toLocaleString("en-US", {
               style: "currency",
@@ -63,7 +63,7 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
             })
           : "-"}
       </TableCell>
-      <TableCell className="text-right font-mono">
+      <TableCell className="text-right font-mono tabular-nums">
         {coin.usdValue !== null
           ? coin.usdValue.toLocaleString("en-US", {
               style: "currency",

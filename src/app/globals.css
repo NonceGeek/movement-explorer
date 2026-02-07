@@ -18,10 +18,10 @@
  * - Protocol Pink: bg-protocol-pink-500 (#ce52b4)
  * - Oracle Orange (Destructive): bg-oracle-orange-500 (#ea5330)
  * 
- * 字体:
+ * 字体 (Typography - Plan B):
  * - font-heading: TWK Everett (标题)
- * - font-body: Neue Haas Unica Pro (正文)
- * - font-mono: TWK Everett Mono (代码)
+ * - font-body: Inter (正文) — via next/font/google
+ * - font-mono: JetBrains Mono (代码/地址) — via next/font/google
  */
 
 @layer base {
@@ -30,6 +30,11 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  /* Disable ligatures for all monospace text (critical for blockchain addresses/hashes) */
+  .font-mono {
+    font-variant-ligatures: none;
+    font-feature-settings: "liga" 0;
   }
 }
 

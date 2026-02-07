@@ -206,7 +206,7 @@ function BlocksContent() {
                           <TableCell>
                             <Link
                               href={`/block/${block.block_height}`}
-                              className="text-primary hover:underline font-mono"
+                              className="text-primary hover:underline font-mono tabular-nums"
                             >
                               {block.block_height}
                             </Link>
@@ -220,13 +220,13 @@ function BlocksContent() {
                               {block.block_hash.slice(-8)}
                             </span>
                           </TableCell>
-                          <TableCell className="text-right font-mono">
+                          <TableCell className="text-right font-mono tabular-nums">
                             {getTransactionCount(block)}
                           </TableCell>
                           <TableCell className="text-right">
                             <Link
                               href={`/txn/${block.first_version}`}
-                              className="text-primary hover:underline font-mono"
+                              className="text-primary hover:underline font-mono tabular-nums"
                             >
                               {block.first_version}
                             </Link>
@@ -234,7 +234,7 @@ function BlocksContent() {
                           <TableCell className="text-right">
                             <Link
                               href={`/txn/${block.last_version}`}
-                              className="text-primary hover:underline font-mono"
+                              className="text-primary hover:underline font-mono tabular-nums"
                             >
                               {block.last_version}
                             </Link>

@@ -107,7 +107,7 @@ export default function InfoTab({
 
         <div className="flex justify-between items-center py-2 border-b">
           <span className="text-muted-foreground">Decimals</span>
-          <span className="font-mono">{decimals}</span>
+          <span className="font-mono tabular-nums">{decimals}</span>
         </div>
 
         <div className="flex justify-between items-center py-2 border-b">
@@ -115,7 +115,7 @@ export default function InfoTab({
           <div className="flex items-center gap-2">
             {supply !== null ? (
               <>
-                <span className="font-mono">
+                <span className="font-mono tabular-nums">
                   {formatMoveAmount(supply, decimals)} {symbol}
                 </span>
                 <SupplyIcon hasSupply />

@@ -145,7 +145,7 @@ export function AllTransactionRow({
       {/* Amount */}
       <TableCell className="hidden lg:table-cell text-right">
         {amount !== undefined && amount > 0 ? (
-          <span className="font-mono transition-colors">
+          <span className="font-mono tabular-nums transition-colors">
             {formatMoveAmount(amount)} MOVE
           </span>
         ) : (
@@ -155,7 +155,7 @@ export function AllTransactionRow({
       {/* Gas */}
       <TableCell className="hidden lg:table-cell text-right">
         {gasUsed && gasUnitPrice ? (
-          <span className="font-mono text-sm text-muted-foreground transition-colors">
+          <span className="font-mono tabular-nums text-sm text-muted-foreground transition-colors">
             {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
           </span>
         ) : (

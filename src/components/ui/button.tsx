@@ -53,7 +53,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         "bg-yellow-400 hover:bg-yellow-500 text-black border-2 border-yellow-600 shadow-lg";
     } else if (variant === "super-danger") {
       resolvedVariant = "destructive";
-      customClassName = "animate-pulse border-4 border-red-900 font-black";
+      customClassName = "animate-pulse border-4 border-red-900 font-bold";
     } else {
       // 如果不是自定义的，就认为是 Design System 原有的
       resolvedVariant = variant as VariantProps<

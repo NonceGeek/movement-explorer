@@ -92,7 +92,7 @@ export function AssetOverview({
       <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
         {/* Column 1: Overview */}
         <div className="px-5 py-4 space-y-3">
-          <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
             Overview
           </h3>
           <div className="space-y-2.5">
@@ -162,7 +162,7 @@ export function AssetOverview({
 
         {/* Column 2: Token Info */}
         <div className="px-5 py-4 space-y-3">
-          <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
             Token Info
           </h3>
           <div className="space-y-2.5">
@@ -208,7 +208,7 @@ export function AssetOverview({
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="text-[10px] px-1.5 py-0"
+                      className="text-xs px-1.5 py-0"
                     >
                       {tag}
                     </Badge>
@@ -216,7 +216,7 @@ export function AssetOverview({
                   {displayTags.length > 3 && (
                     <Badge
                       variant="secondary"
-                      className="text-[10px] px-1.5 py-0"
+                      className="text-xs px-1.5 py-0"
                     >
                       +{displayTags.length - 3}
                     </Badge>
@@ -229,7 +229,7 @@ export function AssetOverview({
 
         {/* Column 3: More Info */}
         <div className="px-5 py-4 space-y-3">
-          <h3 className="text-[11px] font-medium text-muted-foreground uppercase tracking-widest">
+          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
             More Info
           </h3>
           <div className="space-y-2.5">

@@ -278,7 +278,7 @@ export default function ValidatorsPage() {
 
   return (
     <>
-      <PageNavigation title="Validators" />
+      <PageNavigation />
       <PageContainer>
         {/* Staking Promo Banner */}
         <StakingPromo />

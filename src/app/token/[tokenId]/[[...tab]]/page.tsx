@@ -71,7 +71,7 @@ function TokenContent() {
 
   return (
     <>
-      <PageNavigation title="Token" />
+      <PageNavigation />
       <PageContainer>
         <TokenHeader
           isLoading={isLoading}

@@ -265,7 +265,7 @@ export default function BlockDetailPage() {
 
   return (
     <>
-      <PageNavigation title="Block" />
+      <PageNavigation />
       <PageContainer>
         <Tabs
           value={currentTab}

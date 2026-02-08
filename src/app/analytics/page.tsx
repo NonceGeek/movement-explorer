@@ -122,7 +122,7 @@ export default function AnalyticsPage() {
 
   return (
     <>
-      <PageNavigation title="Analytics" />
+      <PageNavigation />
 
       <PageContainer>
         {/* Page Title */}

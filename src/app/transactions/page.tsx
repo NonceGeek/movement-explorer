@@ -93,7 +93,7 @@ function TransactionsContent() {
 export default function TransactionsPage() {
   return (
     <>
-      <PageNavigation title="Transactions" />
+      <PageNavigation />
       <PageContainer>
         <Suspense
           fallback={

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { WalletConnector } from "@/components/wallet";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,20 +15,12 @@ import { Search } from "lucide-react";
 // Dynamic import to avoid useSearchParams SSR issues
 const NetworkSelect = dynamic(() => import("./NetworkSelect"), { ssr: false });
 
-import { useScrollDirection } from "@/hooks/useScrollDirection";
-
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showSearchHeader, setShowSearchHeader] = useState(false);
   const pathname = usePathname();
   const isHomePage = pathname === "/";
   const scrollThreshold = 180; // Approximate height of hero section
-  const { scrollDirection, scrollY } = useScrollDirection();
-
-  // Hide header on mobile when scrolling down (and not at top)
-  // Only hide on sub-pages, homepage always stays sticky
-  const isHeaderHidden =
-    !isHomePage && scrollDirection === "down" && scrollY > 50;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,13 +44,11 @@ export default function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b backdrop-blur-xl transition-all duration-300",
+        "z-50 w-full border-b backdrop-blur-xl transition-all duration-300",
         "gradient-glass-overlay",
+        // Only sticky on homepage; on sub-pages it scrolls away naturally
+        isHomePage ? "sticky top-0" : "relative",
         isScrolled ? "border-border/50" : "border-transparent",
-        // Mobile: slide up when hidden
-        isHeaderHidden ? "-translate-y-full" : "translate-y-0",
-        // Desktop: always visible (reset transform)
-        "md:translate-y-0",
       )}
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-8">

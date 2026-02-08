@@ -263,7 +263,7 @@ function ValidatorContent() {
 
   return (
     <>
-      <PageNavigation title="Validator" />
+      <PageNavigation />
       <PageContainer>
         {/* Commission Change Banner */}
         <CommissionChangeBanner

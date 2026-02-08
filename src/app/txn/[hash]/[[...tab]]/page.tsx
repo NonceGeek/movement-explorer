@@ -238,7 +238,7 @@ export default function TransactionDetailPage() {
   if (isLoading) {
     return (
       <>
-        <PageNavigation title="Transaction Details" />
+        <PageNavigation />
         <div className="container mx-auto px-4 py-8">
           <div className="space-y-4">
             <EnhancedSkeleton className="h-10 w-64" />
@@ -255,7 +255,7 @@ export default function TransactionDetailPage() {
   if (isNotFound || (!tx && !isLoading)) {
     return (
       <>
-        <PageNavigation title="Transaction Details" />
+        <PageNavigation />
         <div className="container mx-auto px-4 py-8">
           <Card className="border-border">
             <CardContent className="pt-6">
@@ -283,7 +283,7 @@ export default function TransactionDetailPage() {
   if (error || !tx) {
     return (
       <>
-        <PageNavigation title="Transaction Details" />
+        <PageNavigation />
         <div className="container mx-auto px-4 py-8">
           <Card className="border-destructive">
             <CardContent className="pt-6">
@@ -301,7 +301,7 @@ export default function TransactionDetailPage() {
 
   return (
     <>
-      <PageNavigation title="Transaction Details" />
+      <PageNavigation />
       <PageContainer>
         {/* Transaction Hash with Status */}
         <div className="flex items-center gap-4 mb-6">

@@ -158,7 +158,7 @@ function CoinContent() {
 
   return (
     <>
-      <PageNavigation title="Coin" />
+      <PageNavigation />
       <PageContainer>
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">

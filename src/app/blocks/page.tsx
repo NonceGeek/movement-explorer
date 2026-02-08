@@ -146,7 +146,7 @@ function BlocksContent() {
 
   return (
     <>
-      <PageNavigation title="Blocks" />
+      <PageNavigation />
       <PageContainer>
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-3xl font-bold">Blocks</h1>

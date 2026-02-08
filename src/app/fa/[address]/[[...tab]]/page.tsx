@@ -131,7 +131,7 @@ function FAContent() {
 
   return (
     <>
-      <PageNavigation title="Fungible Asset" />
+      <PageNavigation />
       <PageContainer>
         {/* Header */}
         <div className="flex items-start gap-4 mb-6">

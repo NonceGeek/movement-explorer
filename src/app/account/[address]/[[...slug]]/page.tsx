@@ -215,12 +215,9 @@ export default function AccountDetailPage() {
     );
   }
 
-  // Determine the page title based on route and resource type
-  const pageTitle = isObject && !isOnAccountRoute ? "Object" : "Account";
-
   return (
     <>
-      <PageNavigation title={pageTitle} />
+      <PageNavigation />
       <PageContainer>
         {/* Hero Header Section */}
         <div className="mb-6">

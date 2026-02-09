@@ -4,14 +4,14 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
-import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo } from "react";
 import { Types } from "aptos";
 import { Card, CardContent, SectionCard } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, ResponsiveTabsList } from "@/components/ui/tabs";
+import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
 import {
   Search,
   LayoutDashboard,
@@ -44,7 +44,6 @@ import JsonViewer from "@/components/ui/json-viewer";
 export default function TransactionDetailPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const hash = params.hash as string;
   const tabSlug = params.tab as string[] | undefined;
   const initialTab = tabSlug ? tabSlug[0] : "overview";
@@ -54,15 +53,14 @@ export default function TransactionDetailPage() {
   const [currentTab, setCurrentTab] = useState(initialTab);
 
   const handleTabChange = (value: string) => {
+    const scrollY = window.scrollY;
     setCurrentTab(value);
-    router.push(`/txn/${hash}/${value}`);
+    window.history.pushState(null, "", `/txn/${hash}/${value}`);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
-  useEffect(() => {
-    if (tabSlug && tabSlug[0] !== currentTab) {
-      setCurrentTab(tabSlug[0]);
-    }
-  }, [tabSlug]);
 
   const { data: tx, isLoading, error } = useGetTransaction(hash);
 
@@ -319,9 +317,9 @@ export default function TransactionDetailPage() {
         <Tabs
           value={currentTab}
           onValueChange={handleTabChange}
-          className="space-y-4"
+          className="space-y-3"
         >
-          <ResponsiveTabsList
+          <CompactTabsList
             items={tabItems}
             activeTab={currentTab}
             onTabChange={setCurrentTab}

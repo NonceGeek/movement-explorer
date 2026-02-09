@@ -37,88 +37,85 @@ export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
   }
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-0">
-        <Table>
-          <TableHeader>
-            <HeaderRow>
-              <TableHead className="w-[30%]">Account</TableHead>
-              <TableHead className="w-[15%]">Type</TableHead>
-              <TableHead className="w-[20%]">Asset</TableHead>
-              <TableHead className="w-[10%]">Verified</TableHead>
-              <TableHead className="text-right w-[25%]">Change</TableHead>
-            </HeaderRow>
-          </TableHeader>
-          <TableBody>
-            {changes.map((change, i) => (
-              <TableRow key={i}>
-                <TableCell>
-                  <CopyableAddress
-                    address={change.address}
-                    href={`/account/${change.address}`}
-                    truncateLength={{ start: 6, end: 4 }}
-                  />
-                </TableCell>
-                <TableCell>
-                  <Badge
-                    variant={
-                      change.type === "Deposit"
-                        ? "success"
-                        : change.type === "Withdraw"
-                          ? "secondary" // "secondary" often used for withdraw/negative or neutral
-                          : change.type === "Gas Fee"
-                            ? "warning"
-                            : change.type === "Storage Refund"
-                              ? "success"
-                              : "outline"
-                    }
-                    className="font-medium whitespace-nowrap"
+    <Table>
+      <TableHeader>
+        <HeaderRow>
+          <TableHead className="w-[30%]">Account</TableHead>
+          <TableHead className="w-[15%]">Type</TableHead>
+          <TableHead className="w-[20%]">Asset</TableHead>
+          <TableHead className="w-[10%]">Verified</TableHead>
+          <TableHead className="text-right w-[25%]">Change</TableHead>
+        </HeaderRow>
+      </TableHeader>
+      <TableBody>
+        {changes.map((change, i) => (
+          <TableRow key={i}>
+            <TableCell>
+              <CopyableAddress
+                address={change.address}
+                href={`/account/${change.address}`}
+                truncateLength={{ start: 6, end: 4 }}
+              />
+            </TableCell>
+            <TableCell>
+              <Badge
+                variant={
+                  change.type === "Deposit"
+                    ? "success"
+                    : change.type === "Withdraw"
+                      ? "secondary" // "secondary" often used for withdraw/negative or neutral
+                      : change.type === "Gas Fee"
+                        ? "warning"
+                        : change.type === "Storage Refund"
+                          ? "success"
+                          : "outline"
+                }
+                className="font-medium whitespace-nowrap"
+              >
+                {change.type}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex items-center gap-2">
+                {/* Placeholder for Logo if we had one */}
+                <div className="flex flex-col">
+                  <span
+                    className="font-medium text-sm truncate max-w-[150px]"
+                    title={change.asset.symbol}
                   >
-                    {change.type}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    {/* Placeholder for Logo if we had one */}
-                    <div className="flex flex-col">
-                      <span
-                        className="font-medium text-sm truncate max-w-[150px]"
-                        title={change.asset.symbol}
-                      >
-                        {/* TODO: Add logic to display panora symbol or bridge info */}
-                        {change.asset.symbol}
-                      </span>
-                      <span
-                        className="text-xs text-muted-foreground truncate max-w-[150px]"
-                        title={change.asset.id}
-                      >
-                        {change.asset.id.split("::").length > 1
-                          ? change.asset.id.split("::")[1]
-                          : "FA"}
-                      </span>
-                    </div>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {/* Verification Badge Placeholder */}
-                  {change.known && (
-                    <Badge
-                      variant="outline"
-                      className="text-xs h-5 px-1 bg-blue-50 text-blue-700 border-blue-200"
-                    >
-                      Verified
-                    </Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right font-mono text-sm">
-                  <AmountCell change={change} />
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </CardContent>
-    </Card>
+                    {/* TODO: Add logic to display panora symbol or bridge info */}
+                    {change.asset.symbol}
+                  </span>
+                  <span
+                    className="text-xs text-muted-foreground truncate max-w-[150px]"
+                    title={change.asset.id}
+                  >
+                    {change.asset.id.split("::").length > 1
+                      ? change.asset.id.split("::")[1]
+                      : "FA"}
+                  </span>
+                </div>
+              </div>
+            </TableCell>
+            <TableCell>
+              {/* Verification Badge Placeholder */}
+              {change.known && (
+                <Badge
+                  variant="outline"
+                  className="text-xs h-5 px-1 bg-blue-50 text-blue-700 border-blue-200"
+                >
+                  Verified
+                </Badge>
+              )}
+            </TableCell>
+            <TableCell className="text-right font-mono text-sm">
+              <AmountCell change={change} />
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+
   );
 }
 

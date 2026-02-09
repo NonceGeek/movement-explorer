@@ -3,7 +3,7 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useGetBlockByHeight } from "@/hooks/blocks/useGetBlock";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent } from "@/components/ui/card";
 import {
@@ -43,7 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 function formatTimestamp(timestamp: string): string {
   const date = new Date(parseInt(timestamp) / 1000);
@@ -202,7 +202,6 @@ function ContentRow({ title, value }: ContentRowProps) {
 
 export default function BlockDetailPage() {
   const params = useParams();
-  const router = useRouter();
   const height = parseInt(params.height as string);
   const tabSlug = params.tab as string[] | undefined;
   const initialTab = tabSlug ? tabSlug[0] : "overview";
@@ -210,15 +209,14 @@ export default function BlockDetailPage() {
   const [currentTab, setCurrentTab] = useState(initialTab);
 
   const handleTabChange = (value: string) => {
+    const scrollY = window.scrollY;
     setCurrentTab(value);
-    router.push(`/block/${height}/${value}`);
+    window.history.pushState(null, "", `/block/${height}/${value}`);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
-  useEffect(() => {
-    if (tabSlug && tabSlug[0] !== currentTab) {
-      setCurrentTab(tabSlug[0]);
-    }
-  }, [tabSlug]);
 
   const {
     data: block,

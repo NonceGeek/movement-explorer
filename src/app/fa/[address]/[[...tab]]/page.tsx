@@ -40,18 +40,18 @@ function FAContent() {
   const [copied, setCopied] = useState(false);
 
   const handleTabChange = (value: string) => {
+    const scrollY = window.scrollY;
     setCurrentTab(value);
-    router.push(`/fa/${address}/${value}`);
+    window.history.pushState(null, "", `/fa/${address}/${value}`);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   useEffect(() => {
     // Redirect legacy /info URLs
     if (tabSlug && tabSlug[0] === "info") {
       router.replace(`/fa/${address}${isGraphqlSupported ? "/holders" : ""}`);
-      return;
-    }
-    if (tabSlug && tabSlug[0] !== currentTab) {
-      setCurrentTab(tabSlug[0]);
     }
   }, [tabSlug, address, router, isGraphqlSupported]);
 
@@ -116,17 +116,17 @@ function FAContent() {
   // Build tab items (only when GraphQL is supported)
   const tabItems = isGraphqlSupported
     ? [
-        {
-          value: "holders",
-          label: "Holders",
-          icon: <Users className="h-4 w-4 mr-1" />,
-        },
-        {
-          value: "transactions",
-          label: "Transactions",
-          icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
-        },
-      ]
+      {
+        value: "holders",
+        label: "Holders",
+        icon: <Users className="h-4 w-4 mr-1" />,
+      },
+      {
+        value: "transactions",
+        label: "Transactions",
+        icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
+      },
+    ]
     : [];
 
   return (
@@ -232,7 +232,7 @@ function FAContent() {
           <Tabs
             value={currentTab}
             onValueChange={handleTabChange}
-            className="space-y-6"
+            className="space-y-3"
           >
             <CompactTabsList
               items={tabItems}

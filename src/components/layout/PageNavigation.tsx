@@ -9,7 +9,6 @@ import { useSearch, SearchResult } from "@/hooks/common/useSearch";
 import { cn } from "@/utils/styling";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import dynamic from "next/dynamic";
-import NavMobile from "./NavMobile";
 
 const NetworkBadge = dynamic(() => import("./NetworkBadge"), { ssr: false });
 
@@ -231,8 +230,6 @@ export default function PageNavigation({
             <Search className="h-4 w-4 text-muted-foreground" />
           </Button>
 
-          {/* Mobile Hamburger Menu */}
-          <NavMobile />
         </div>
 
         {/* ===== Desktop Layout ===== */}

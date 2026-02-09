@@ -42,18 +42,18 @@ function CoinContent() {
   const [copied, setCopied] = useState(false);
 
   const handleTabChange = (value: string) => {
+    const scrollY = window.scrollY;
     setCurrentTab(value);
-    router.push(`/coin/${struct}/${value}`);
+    window.history.pushState(null, "", `/coin/${struct}/${value}`);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
   useEffect(() => {
     // Redirect legacy /info URLs
     if (tabSlug && tabSlug[0] === "info") {
       router.replace(`/coin/${encodeURIComponent(struct)}${isGraphqlSupported ? "/holders" : ""}`);
-      return;
-    }
-    if (tabSlug && tabSlug[0] !== currentTab) {
-      setCurrentTab(tabSlug[0]);
     }
   }, [tabSlug, struct, router, isGraphqlSupported]);
 
@@ -143,17 +143,17 @@ function CoinContent() {
   // Build tab items (only when GraphQL is supported)
   const tabItems = isGraphqlSupported
     ? [
-        {
-          value: "holders",
-          label: "Holders",
-          icon: <Users className="h-4 w-4 mr-1" />,
-        },
-        {
-          value: "transactions",
-          label: "Transactions",
-          icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
-        },
-      ]
+      {
+        value: "holders",
+        label: "Holders",
+        icon: <Users className="h-4 w-4 mr-1" />,
+      },
+      {
+        value: "transactions",
+        label: "Transactions",
+        icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
+      },
+    ]
     : [];
 
   return (
@@ -259,7 +259,7 @@ function CoinContent() {
           <Tabs
             value={currentTab}
             onValueChange={handleTabChange}
-            className="space-y-6"
+            className="space-y-3"
           >
             <CompactTabsList
               items={tabItems}

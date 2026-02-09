@@ -23,11 +23,13 @@ export function LayoutBackground({ children }: LayoutBackgroundProps) {
         aria-hidden="true"
       />
 
-      {/* Layer 2: Fixed dotted pattern - above gradient, below content */}
-      <div
-        className="fixed inset-0 pointer-events-none bg-dotted-pattern bg-dotted-pattern-mask z-10"
-        aria-hidden="true"
-      />
+      {/* Layer 2: Fixed dotted pattern - only on home page */}
+      {pathname === "/" && (
+        <div
+          className="fixed inset-0 pointer-events-none bg-dotted-pattern bg-dotted-pattern-mask z-10"
+          aria-hidden="true"
+        />
+      )}
 
       {/* Layer 3: Fixed glow effects at top */}
       <div

@@ -2,8 +2,8 @@
 
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
-import { useParams, useRouter, usePathname } from "next/navigation";
-import { Suspense, useState, useEffect } from "react";
+import { useParams } from "next/navigation";
+import { Suspense, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -18,7 +18,6 @@ import { ActivitiesTab } from "../components/ActivitiesTab";
 
 function TokenContent() {
   const params = useParams();
-  const router = useRouter();
   const tokenId = decodeURIComponent(params.tokenId as string);
   const tabSlug = params.tab as string[] | undefined;
   const initialTab = tabSlug ? tabSlug[0] : "overview";
@@ -26,15 +25,14 @@ function TokenContent() {
   const [currentTab, setCurrentTab] = useState(initialTab);
 
   const handleTabChange = (value: string) => {
+    const scrollY = window.scrollY;
     setCurrentTab(value);
-    router.push(`/token/${tokenId}/${value}`);
+    window.history.pushState(null, "", `/token/${tokenId}/${value}`);
+    requestAnimationFrame(() => {
+      window.scrollTo(0, scrollY);
+    });
   };
 
-  useEffect(() => {
-    if (tabSlug && tabSlug[0] !== currentTab) {
-      setCurrentTab(tabSlug[0]);
-    }
-  }, [tabSlug]);
 
   const { data, isLoading, error } = useGetTokenData(tokenId);
 

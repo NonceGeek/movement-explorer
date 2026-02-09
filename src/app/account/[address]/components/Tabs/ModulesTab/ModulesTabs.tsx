@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "../..";
 import { Code } from "lucide-react";
@@ -150,22 +150,18 @@ export default function ModulesTabs({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <Tabs value={currentTab} onValueChange={handleTabChange}>
-        <TabsList variant="line" className="w-full">
-          {(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => (
-            <TabsTrigger
-              key={tab}
-              value={tab}
-              variant="line"
-              className="cursor-pointer"
-            >
-              {TAB_LABELS[tab]}
-            </TabsTrigger>
-          ))}
-        </TabsList>
+        <PillTabsList
+          items={(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => ({
+            value: tab,
+            label: TAB_LABELS[tab],
+          }))}
+          activeTab={currentTab}
+          onTabChange={handleTabChange}
+        />
 
-        <TabsContent value="packages" className="mt-6">
+        <TabsContent value="packages" className="mt-2">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div className="md:col-span-1">
               <PackagesSidebar
@@ -187,7 +183,7 @@ export default function ModulesTabs({
           </div>
         </TabsContent>
 
-        <TabsContent value="code" className="mt-6">
+        <TabsContent value="code" className="mt-2">
           <ViewCode
             address={address}
             isObject={isObject}
@@ -196,7 +192,7 @@ export default function ModulesTabs({
           />
         </TabsContent>
 
-        <TabsContent value="view" className="mt-6">
+        <TabsContent value="view" className="mt-2">
           <ReadContract
             address={address}
             isObject={isObject}
@@ -206,7 +202,7 @@ export default function ModulesTabs({
           />
         </TabsContent>
 
-        <TabsContent value="run" className="mt-6">
+        <TabsContent value="run" className="mt-2">
           <RunContract
             address={address}
             isObject={isObject}

@@ -17,7 +17,7 @@ import {
   Tabs,
   TabsContent,
   PillTabsList,
-  ResponsiveTabsList,
+  CompactTabsList,
 } from "@/components/ui/tabs";
 
 // Components
@@ -76,18 +76,18 @@ export default function AccountDetailPage() {
   // Format balance
   const formattedBalance = balance
     ? (Number(balance) / 100000000).toLocaleString("en-US", {
-        maximumFractionDigits: 2,
-      })
+      maximumFractionDigits: 2,
+    })
     : "0";
 
   const balanceUSD =
     balance && price
       ? ((Number(balance) / 100000000) * price).toLocaleString("en-US", {
-          style: "currency",
-          currency: "USD",
-          minimumFractionDigits: 2,
-          maximumFractionDigits: 2,
-        })
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      })
       : null;
 
   // Detect if we're on the /account route
@@ -141,7 +141,8 @@ export default function AccountDetailPage() {
     setCurrentTab(value);
 
     // Update URL without scrolling to top
-    const newPath = `/account/${address}/${value}`;
+    const basePath = isObject && !isAccount ? "object" : "account";
+    const newPath = `/${basePath}/${address}/${value}`;
 
     // Use window.history.pushState to avoid Next.js navigation behavior
     window.history.pushState(null, "", newPath);
@@ -249,14 +250,14 @@ export default function AccountDetailPage() {
         <Tabs
           value={currentTab}
           onValueChange={handleTabChange}
-          className="space-y-6"
+          className="space-y-3"
         >
           {/* <PillTabsList
             items={tabItems}
             activeTab={currentTab}
             onTabChange={handleTabChange}
           /> */}
-          <ResponsiveTabsList
+          <CompactTabsList
             items={tabItems}
             activeTab={currentTab}
             onTabChange={handleTabChange}

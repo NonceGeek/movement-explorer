@@ -78,7 +78,7 @@ export default function HomePage() {
   const isAnalyticsLoading = !analyticsData;
 
   return (
-    <PageContainer className="min-h-screen">
+    <PageContainer className="min-h-screen pt-0 sm:pt-0">
       {/* Hero + Stats Section with Dotted Background */}
       <div className="relative overflow-hidden">
         {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}
@@ -128,7 +128,7 @@ export default function HomePage() {
         </section>
 
         {/* Network Stats */}
-        <div className="container mx-auto px-4 py-6 sm:py-8 relative z-10 space-y-3">
+        <div className="relative z-10 space-y-3">
           {/* Row 1: 5 Stat Items */}
           <StatsRow>
             <StatItem
@@ -187,9 +187,7 @@ export default function HomePage() {
       </div>
 
       {/* Latest User Transactions */}
-      <div className="container mx-auto px-4 pb-12">
-        <LatestUserTransactions limit={10} />
-      </div>
+      <LatestUserTransactions limit={10} />
     </PageContainer>
   );
 }

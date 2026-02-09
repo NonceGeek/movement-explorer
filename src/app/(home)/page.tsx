@@ -78,10 +78,10 @@ export default function HomePage() {
   const isAnalyticsLoading = !analyticsData;
 
   return (
-    <PageContainer className="min-h-screen pt-0 sm:pt-0">
-      {/* Hero + Stats Section with Dotted Background */}
+    <div className="min-h-screen">
+      {/* Hero + Stats Section with Dotted Background - Full Width */}
       <div className="relative overflow-hidden">
-        {/* Dotted Background Pattern - uses mask to fade edges without affecting original gradient */}
+        {/* Dotted Background Pattern - Full width, no container constraints */}
         <div
           className="absolute inset-0 pointer-events-none"
           style={{
@@ -91,11 +91,11 @@ export default function HomePage() {
             `,
             backgroundSize: "24px 24px, 24px 24px",
             backgroundPosition: "0 0, 12px 12px",
-            maskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%), 
-                        linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)`,
+            maskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%),
+                        linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)`,
             maskComposite: "intersect",
-            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%), 
-                              linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)`,
+            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%),
+                              linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)`,
             WebkitMaskComposite: "source-in",
           }}
         />
@@ -104,9 +104,9 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-guild-green-500/20 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-byzantine-blue-500/15 blur-[100px] rounded-full pointer-events-none" />
 
-        {/* Hero Section - Visible on both mobile and desktop */}
+        {/* Hero Section - Content with container */}
         <section className="relative pt-10 md:pt-10 z-20">
-          <div className="container mx-auto px-4 py-10 md:py-14 relative">
+          <div className="container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 md:py-14 relative">
             <div className="max-w-230 space-y-4">
               {/* Hero Title */}
               <h1 className="text-3xl md:text-5xl font-semibold text-white">
@@ -118,17 +118,12 @@ export default function HomePage() {
                 variant="hero-subtle"
                 placeholder="Search by Address / Txn Hash / Block / Token"
               />
-
-              {/* Subtitle */}
-              {/* <p className="text-sm text-muted-foreground">
-                The next-generation high-performance blockchain explorer powered by Move
-              </p> */}
             </div>
           </div>
         </section>
 
-        {/* Network Stats */}
-        <div className="relative z-10 space-y-3">
+        {/* Network Stats - Content with container */}
+        <div className="relative z-10 container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 space-y-3">
           {/* Row 1: 5 Stat Items */}
           <StatsRow>
             <StatItem
@@ -187,7 +182,9 @@ export default function HomePage() {
       </div>
 
       {/* Latest User Transactions */}
-      <LatestUserTransactions limit={10} />
-    </PageContainer>
+      <PageContainer>
+        <LatestUserTransactions limit={10} />
+      </PageContainer>
+    </div>
   );
 }

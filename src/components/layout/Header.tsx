@@ -45,10 +45,10 @@ export default function Header() {
     <header
       className={cn(
         "z-50 w-full border-b backdrop-blur-xl transition-all duration-300",
-        "gradient-glass-overlay",
+        "bg-card/50",
+        "border-border/40",
         // Only sticky on homepage; on sub-pages it scrolls away naturally
         isHomePage ? "sticky top-0" : "relative",
-        isScrolled ? "border-border/50" : "border-transparent",
       )}
     >
       <div className="mx-auto flex h-16 items-center justify-between px-4 md:px-8">

@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Loader2, CornerDownLeft } from "lucide-react";
+import { Search, X, Loader2, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Button as DesignButton } from "@movementlabsxyz/movement-design-system";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useSearch, SearchResult } from "@/hooks/common/useSearch";
 import { cn } from "@/utils/styling";
@@ -96,12 +95,12 @@ export default function PageNavigation({
     <nav
       className={cn(
         "sticky top-0 z-40 w-full transition-all duration-300",
-        "bg-background/80 backdrop-blur-xl",
+        "bg-transparent backdrop-blur-xl",
         hideOnDesktop && "md:hidden",
         className,
       )}
     >
-      <div className="container max-w-[1440px] mx-auto flex h-14 md:h-16 items-center px-4">
+      <div className="container max-w-[1440px] mx-auto flex h-14 md:h-16 items-center px-4 sm:px-6 lg:px-12">
         {/* ===== Mobile Layout ===== */}
         <div
           className="flex md:hidden items-center w-full gap-2"
@@ -113,9 +112,9 @@ export default function PageNavigation({
               variant="ghost"
               size="icon"
               onClick={handleCloseSearch}
-              className="shrink-0 text-muted-foreground hover:text-black transition-colors"
+              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
             >
-              <X className="h-5 w-5" />
+              <X className="h-4 w-4" />
             </Button>
           )}
 
@@ -137,7 +136,11 @@ export default function PageNavigation({
           <div className="flex-1 min-w-0 relative">
             {/* Search Input - visible when search is expanded */}
             {isSearchExpanded && (
-              <div className="transition-all duration-300 ease-out">
+              <div className="relative">
+                <Search
+                  size={14}
+                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                />
                 <input
                   ref={mobileInputRef}
                   type="text"
@@ -149,55 +152,61 @@ export default function PageNavigation({
                     setShowResults(true)
                   }
                   placeholder="Search..."
-                  className={cn(
-                    "w-full h-8 pl-3 pr-3 bg-background/60 border border-guild-green-500/40 rounded-lg",
-                    "text-sm text-foreground placeholder:text-muted-foreground/60",
-                    "outline-none transition-all duration-200",
-                    "focus:border-guild-green-400 focus:bg-background/80",
-                  )}
+                  className="w-full h-8 pl-8 pr-8 bg-muted/50 border border-border/60 rounded-md text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors duration-200 focus:border-primary/50 focus:bg-muted/70"
                 />
                 {isLoading && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground animate-spin" />
                 )}
 
-                {/* Mobile search results dropdown */}
+                {/* Mobile search results dropdown - Etherscan style */}
                 {showResults && results.length > 0 && (
-                  <div className="absolute z-50 w-full mt-2 bg-card/95 backdrop-blur-sm border border-guild-green-500/40 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="absolute z-50 w-full mt-1 bg-card border border-border/60 rounded-md shadow-md overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
                     {results.length === 1 && results[0].type === "none" ? (
-                      <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                        <p className="text-sm text-muted-foreground">
-                          No results found
-                        </p>
+                      <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
+                        <Search size={14} />
+                        <span>No results found</span>
                       </div>
                     ) : (
-                      <ul className="max-h-64 overflow-y-auto divide-y divide-border/30">
+                      <ul className="max-h-64 overflow-y-auto">
                         {results.map((result, index) => (
                           <li
                             key={`${result.to}-${index}`}
                             onClick={() => handleMobileResultClick(result)}
                             className={cn(
-                              "px-4 py-3 cursor-pointer transition-all duration-150",
-                              "hover:bg-guild-green-500/10 text-foreground",
-                              !result.to &&
-                              "cursor-default text-muted-foreground",
+                              "px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-border/30 last:border-b-0",
+                              "hover:bg-muted/50",
+                              !result.to && "cursor-default opacity-60",
                             )}
                           >
-                            <div className="flex items-center gap-3">
-                              {result.image ? (
-                                <img
-                                  src={result.image}
-                                  alt=""
-                                  className="w-5 h-5 rounded-full"
-                                />
-                              ) : (
-                                <CornerDownLeft
-                                  size={12}
-                                  className="text-guild-green-400/60"
-                                />
+                            <div className="flex items-center justify-between gap-2">
+                              <div className="flex items-center gap-2 min-w-0">
+                                {result.image ? (
+                                  <img
+                                    src={result.image}
+                                    alt=""
+                                    className="w-4 h-4 rounded-full shrink-0"
+                                  />
+                                ) : (
+                                  <ArrowRight
+                                    size={12}
+                                    className="text-muted-foreground shrink-0"
+                                  />
+                                )}
+                                <span className="text-sm truncate">
+                                  {result.label}
+                                </span>
+                              </div>
+                              {result.type && result.type !== "none" && (
+                                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                                  {result.type === "account"
+                                    ? "Address"
+                                    : result.type === "transaction"
+                                      ? "Txn"
+                                      : result.type === "block"
+                                        ? "Block"
+                                        : result.type}
+                                </span>
                               )}
-                              <span className="text-sm font-medium truncate">
-                                {result.label}
-                              </span>
                             </div>
                           </li>
                         ))}
@@ -213,13 +222,14 @@ export default function PageNavigation({
           {!isSearchExpanded && headerEndDecorator}
 
           {/* Right: Search button */}
-          <DesignButton
-            variant="glow"
+          <Button
+            variant="outline"
+            size="icon"
             onClick={() => setIsSearchExpanded(true)}
-            className="shrink-0 w-8! h-8! max-w-none! p-0! rounded-lg! shadow-[2px_2px_0_0_#0337FF]! hover:shadow-[-2px_-2px_0_0_#0337FF]! transition-all duration-200"
+            className="shrink-0 h-8 w-8 border-border/60 hover:bg-muted/50 transition-colors"
           >
-            <Search className="h-4 w-4" />
-          </DesignButton>
+            <Search className="h-4 w-4 text-muted-foreground" />
+          </Button>
 
           {/* Mobile Hamburger Menu */}
           <NavMobile />

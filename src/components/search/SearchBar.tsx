@@ -321,14 +321,29 @@ export function SearchBar({
     );
   }
 
-  // Navigation variant - for PageNavigation bar
+  // Navigation variant - Etherscan style for PageNavigation bar
   if (variant === "navigation") {
+    // Helper to get type label for Etherscan-style display
+    const getTypeLabel = (type: string) => {
+      const labels: Record<string, string> = {
+        account: "Address",
+        transaction: "Txn",
+        block: "Block",
+        token: "Token",
+        none: "",
+      };
+      return labels[type] || type;
+    };
+
     return (
       <div ref={containerRef} className="relative w-full">
-        <form
-          onSubmit={handleSubmit}
-          className="relative group flex items-center"
-        >
+        <form onSubmit={handleSubmit} className="relative flex items-center">
+          {/* Search icon on left */}
+          <Search
+            size={16}
+            className="absolute left-3 text-muted-foreground pointer-events-none"
+          />
+
           <input
             ref={inputRef}
             type="text"
@@ -339,63 +354,63 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="w-full h-12 pl-5 pr-14 bg-background/40 backdrop-blur-sm border border-guild-green-500/40 rounded-xl text-base text-foreground placeholder:text-muted-foreground/60 outline-none transition-all duration-300 ease-out focus:border-guild-green-400 focus:bg-background/60 shadow-[0_0_0_0_rgba(88,197,137,0.4)] focus:shadow-[4px_4px_0_0_rgba(88,197,137,0.4)] focus:-translate-y-0.5"
+            className="w-full h-10 pl-9 pr-20 bg-muted/50 border border-border/60 rounded-lg text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors duration-200 focus:border-primary/50 focus:bg-muted/70"
           />
 
-          <Button
+          <button
             type="submit"
-            variant="glow"
             disabled={isLoading}
-            className="absolute right-1.5 w-9 h-9 p-0 rounded-lg! shadow-[2px_2px_0_0_#0337FF]! hover:shadow-[-2px_-2px_0_0_#0337FF]! transition-all duration-200"
+            className="absolute right-1 h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-md transition-colors duration-150 disabled:opacity-50"
           >
             {isLoading ? (
-              <Loader2 size={16} className="animate-spin" />
+              <Loader2 size={14} className="animate-spin" />
             ) : (
-              <Search size={16} />
+              "Search"
             )}
-          </Button>
+          </button>
         </form>
 
-        {/* Results dropdown */}
+        {/* Results dropdown - Etherscan style */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border border-guild-green-500/40 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-1 bg-card border border-border/60 rounded-lg shadow-md overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
             {results.length === 1 && results[0].type === "none" ? (
-              <div className="flex flex-col items-center justify-center py-6 px-4 text-center">
-                <SearchX size={24} className="text-guild-green-400/50 mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  No results found
-                </p>
+              <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
+                <SearchX size={16} />
+                <span>No results found</span>
               </div>
             ) : (
-              <ul className="max-h-64 overflow-y-auto divide-y divide-border/30">
+              <ul className="max-h-72 overflow-y-auto">
                 {results.map((result, index) => (
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-3 cursor-pointer transition-all duration-150 ${
+                    className={`px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-border/30 last:border-b-0 ${
                       index === selectedIndex
-                        ? "bg-guild-green-500/15 text-guild-green-300"
-                        : "hover:bg-guild-green-500/10 text-foreground"
-                    } ${
-                      !result.to ? "cursor-default text-muted-foreground" : ""
-                    }`}
+                        ? "bg-primary/10"
+                        : "hover:bg-muted/50"
+                    } ${!result.to ? "cursor-default opacity-60" : ""}`}
                   >
-                    <div className="flex items-center gap-3">
-                      {result.image ? (
-                        <img
-                          src={result.image}
-                          alt=""
-                          className="w-5 h-5 rounded-full"
-                        />
-                      ) : (
-                        <CornerDownLeft
-                          size={12}
-                          className="text-guild-green-400/60"
-                        />
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {result.image ? (
+                          <img
+                            src={result.image}
+                            alt=""
+                            className="w-5 h-5 rounded-full shrink-0"
+                          />
+                        ) : (
+                          <ArrowRight
+                            size={14}
+                            className="text-muted-foreground shrink-0"
+                          />
+                        )}
+                        <span className="text-sm truncate">{result.label}</span>
+                      </div>
+                      {result.type && result.type !== "none" && (
+                        <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                          {getTypeLabel(result.type)}
+                        </span>
                       )}
-                      <span className="text-sm font-medium truncate">
-                        {result.label}
-                      </span>
                     </div>
                   </li>
                 ))}

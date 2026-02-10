@@ -235,7 +235,7 @@ export function LatestUserTransactions({
   return (
     <>
       <div className="flex flex-row items-center justify-between py-4">
-        <h3 className="flex items-center gap-2 text-xl sm:text-3xl font-heading font-semibold">
+        <h3 className="flex items-center gap-2 text-xl sm:text-2xl font-heading font-semibold">
           Latest User Transactions
         </h3>
         <Button

@@ -167,10 +167,10 @@ export function ChartStatCard({
   };
 
   return (
-    <div className="p-5 md:p-6 h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+    <div className="p-4 md:p-5 h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
       {/* Header: Label & Tooltip */}
-      <div className="flex items-center gap-1.5 mb-2">
-        <span className="text-xs sm:text-sm text-muted-foreground font-medium tracking-wider">
+      <div className="flex items-center gap-1.5 mb-1.5">
+        <span className="text-xs text-muted-foreground font-medium tracking-wider">
           {label.toUpperCase()}
         </span>
         {tooltip && (
@@ -194,11 +194,11 @@ export function ChartStatCard({
       </div>
 
       {/* Value */}
-      <div className="mb-3">
+      <div className="mb-2">
         {isLoading ? (
           <EnhancedSkeleton className="h-8 w-24" />
         ) : (
-          <div className="text-3xl sm:text-4xl font-semibold font-mono tabular-nums text-foreground leading-tight">
+          <div className="text-2xl font-bold font-mono tabular-nums text-foreground leading-tight">
             {typeof value === "number" ? formatNumber(value) : value}
           </div>
         )}

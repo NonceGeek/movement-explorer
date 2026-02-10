@@ -33,10 +33,10 @@ export function StatItem({
   isLoading,
 }: StatItemProps) {
   return (
-    <div className="p-5 md:p-6 h-[110px] sm:h-[140px] flex flex-col justify-between">
+    <div className="p-4 md:p-5 h-[100px] sm:h-[120px] flex flex-col justify-between">
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5">
-        <span className="text-xs sm:text-sm text-muted-foreground font-medium tracking-wider">
+        <span className="text-xs text-muted-foreground font-medium tracking-wider">
           {label.toUpperCase()}
         </span>
         {tooltip && (
@@ -64,7 +64,7 @@ export function StatItem({
         {isLoading ? (
           <EnhancedSkeleton className="h-6 w-20" />
         ) : (
-          <div className="text-2xl sm:text-3xl font-semibold font-mono tabular-nums text-foreground leading-tight break-all">
+          <div className="text-2xl font-bold font-mono tabular-nums text-foreground leading-tight break-all">
             {typeof value === "number" ? (
               <RollingNumber value={value} />
             ) : (

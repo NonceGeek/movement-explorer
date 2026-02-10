@@ -106,10 +106,10 @@ export default function HomePage() {
 
         {/* Hero Section - Content with container */}
         <section className="relative pt-10 md:pt-10 z-20">
-          <div className="container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-10 md:py-14 relative">
-            <div className="max-w-230 space-y-4">
+          <div className="container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8 md:py-10 relative">
+            <div className="max-w-230 space-y-3">
               {/* Hero Title */}
-              <h1 className="text-3xl md:text-5xl font-semibold text-white">
+              <h1 className="text-2xl md:text-[32px] md:leading-tight font-semibold text-white font-heading">
                 Explore the Movement Network
               </h1>
 

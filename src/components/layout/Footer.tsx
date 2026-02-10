@@ -59,7 +59,7 @@ export default function Footer() {
             </Link>
             <p className="text-sm text-muted-foreground leading-relaxed max-w-xs">
               Explore the Movement Network with the most comprehensive
-              blockchain explorer powered by Move.
+              blockchain explorer powered by Movement.
             </p>
           </div>
 

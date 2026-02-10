@@ -4,11 +4,12 @@ import { useQuery } from "@tanstack/react-query";
 import { getLedgerInfo } from "@/services/general";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { SearchBar } from "@/components/search";
-import { StatItem, StatsRow } from "./components/StatCard";
-import { ChartStatCard } from "./components/ChartStatCard";
 import { LatestUserTransactions } from "./components/LatestUserTransactions";
 import { useGetPeakTPS, useGetAnalyticsData } from "@/hooks";
+import { useGetPriceWithMarketCap } from "@/hooks/useGetPrice";
 import { PageContainer } from "@/components/layout";
+import { CoreMetricsGrid } from "./components/CoreMetricsGrid";
+import { TransactionHistoryChart } from "./components/TransactionHistoryChart";
 
 export default function HomePage() {
   const { aptos_client, network_value } = useGlobalStore();
@@ -24,23 +25,20 @@ export default function HomePage() {
   const analyticsData = useGetAnalyticsData();
   const { peakTps } = useGetPeakTPS();
 
+  // Price and Market Cap data
+  const { data: priceData, isLoading: priceLoading } = useGetPriceWithMarketCap();
+
   // Real data from APIs
   const totalTransactions = ledgerInfo?.ledger_version
     ? parseInt(ledgerInfo.ledger_version)
     : 0;
 
   const totalAccounts = analyticsData?.total_accounts?.[0]?.total_accounts ?? 0;
-  const totalContracts =
-    analyticsData?.cumulative_deployers?.[0]?.cumulative_contracts_deployed ??
-    0;
-  const totalDeployers =
-    analyticsData?.cumulative_deployers?.[0]?.cumulative_contract_deployers ??
-    0;
 
-  // Daily Active Users (latest)
-  const dailyActiveUsers =
-    analyticsData?.daily_active_users?.slice(-1)[0]?.daily_active_user_count ??
-    0;
+  // Latest average gas price
+  const avgGasPrice =
+    analyticsData?.daily_average_gas_unit_price?.slice(-1)[0]
+      ?.avg_gas_unit_price;
 
   // Extract chart data (last 14 days)
   const CHART_DAYS = 14;
@@ -51,29 +49,15 @@ export default function HomePage() {
     return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
   };
 
-  // Contract Deployers chart data
-  const deployersChartData =
-    analyticsData?.daily_contract_deployers
-      ?.slice(-CHART_DAYS)
-      .map((d) => d.distinct_deployers) ?? [];
-  const deployersChartLabels =
-    analyticsData?.daily_contract_deployers
-      ?.slice(-CHART_DAYS)
-      .map((d) => formatDateLabel(d.date)) ?? [];
-
-  // Daily User Transactions chart data
-  const dailyTxnsChartData =
+  // Transaction History chart data (14 days)
+  const txHistoryChartData =
     analyticsData?.daily_user_transactions
       ?.slice(-CHART_DAYS)
       .map((d) => d.num_user_transactions) ?? [];
-  const dailyTxnsChartLabels =
+  const txHistoryChartLabels =
     analyticsData?.daily_user_transactions
       ?.slice(-CHART_DAYS)
       .map((d) => formatDateLabel(d.date)) ?? [];
-  // Get latest daily transactions value for display
-  const latestDailyTxns =
-    analyticsData?.daily_user_transactions?.slice(-1)[0]
-      ?.num_user_transactions ?? 0;
 
   const isAnalyticsLoading = !analyticsData;
 
@@ -123,60 +107,31 @@ export default function HomePage() {
         </section>
 
         {/* Network Stats - Content with container */}
-        <div className="relative z-10 container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 space-y-3">
-          {/* Row 1: 5 Stat Items */}
-          <StatsRow>
-            <StatItem
-              label="Total Transactions"
-              value={totalTransactions}
-              tooltip="Total number of transactions on the Movement network."
-              isLoading={ledgerLoading}
-            />
-            <StatItem
-              label="Max TPS"
-              value={peakTps ?? "-"}
-              subLabel="Peak Last 30 Days"
-              tooltip="The highest count of user transactions within any two-block interval on a given day, divided by the duration of that interval."
-              isLoading={!peakTps && isAnalyticsLoading}
-            />
-            <StatItem
-              label="Total Accounts"
-              value={totalAccounts}
-              tooltip="Total number of accounts created on the Movement network."
-              isLoading={isAnalyticsLoading}
-            />
-            <StatItem
-              label="Contracts Deployed"
-              value={totalContracts}
-              tooltip="Total number of smart contracts deployed on the network."
-              isLoading={isAnalyticsLoading}
-            />
-            <StatItem
-              label="Daily Active Users"
-              value={dailyActiveUsers}
-              tooltip="Number of unique addresses that signed transactions today."
-              isLoading={isAnalyticsLoading}
-            />
-          </StatsRow>
+        <div className="relative z-10 container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12">
+          {/* Desktop: 2 rows - Metrics on left (60%), Chart on right (40%) */}
+          {/* Mobile/Tablet: Stacked vertically */}
+          <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4 lg:gap-6">
+            {/* Left: 6 Core Metrics Grid */}
+            <div className="min-w-0">
+              <CoreMetricsGrid
+                movePrice={priceData?.price ?? undefined}
+                marketCap={priceData?.marketCap ?? undefined}
+                totalTransactions={totalTransactions}
+                totalAccounts={totalAccounts}
+                peakTps={peakTps}
+                avgGasPrice={avgGasPrice}
+                isLoading={ledgerLoading || isAnalyticsLoading || priceLoading}
+              />
+            </div>
 
-          {/* Row 2: 2 Chart Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <ChartStatCard
-              label="Contract Deployers"
-              value={totalDeployers}
-              tooltip="Total number of unique addresses that have deployed contracts."
-              isLoading={isAnalyticsLoading}
-              chartData={deployersChartData}
-              chartLabels={deployersChartLabels}
-            />
-            <ChartStatCard
-              label="Daily User Transactions"
-              value={latestDailyTxns}
-              tooltip="Number of user transactions in the last 24 hours."
-              isLoading={isAnalyticsLoading}
-              chartData={dailyTxnsChartData}
-              chartLabels={dailyTxnsChartLabels}
-            />
+            {/* Right: Transaction History Chart */}
+            <div className="w-full lg:w-[400px] xl:w-[480px] h-[240px]">
+              <TransactionHistoryChart
+                chartData={txHistoryChartData}
+                chartLabels={txHistoryChartLabels}
+                isLoading={isAnalyticsLoading}
+              />
+            </div>
           </div>
         </div>
       </div>

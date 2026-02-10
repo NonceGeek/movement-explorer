@@ -2,6 +2,11 @@ import { useQuery } from "@tanstack/react-query";
 
 const COINGECKO_API_ENDPOINT = "https://api.coingecko.com/api/v3/simple/price";
 
+export interface PriceData {
+  price: number | null;
+  marketCap: number | null;
+}
+
 /**
  * Fetches the USD price for a cryptocurrency using its CoinGecko ID.
  *
@@ -47,6 +52,59 @@ export function useGetPrice(coinId: string = "movement") {
   return useQuery({
     queryKey: ["price", coinId],
     queryFn: () => getPrice(coinId),
+    refetchInterval: 60000, // Refetch every minute
+  });
+}
+
+/**
+ * Fetches the USD price and market cap for a cryptocurrency using its CoinGecko ID.
+ *
+ * @param coinId - The CoinGecko ID of the cryptocurrency (defaults to "movement")
+ * @returns Object containing price and marketCap, or null values if the fetch fails
+ */
+export async function getPriceWithMarketCap(
+  coinId: string = "movement",
+): Promise<PriceData> {
+  const query = {
+    ids: coinId,
+    vs_currencies: "usd",
+    include_market_cap: "true",
+  };
+
+  const queryString = new URLSearchParams(query);
+  const url = `${COINGECKO_API_ENDPOINT}?${queryString}`;
+
+  try {
+    const response = await fetch(url, {
+      method: "GET",
+    });
+
+    if (!response.ok) {
+      console.error(`HTTP error! Status: ${response.status}`);
+      return { price: null, marketCap: null };
+    }
+
+    const data = await response.json();
+    return {
+      price: Number(data[coinId]?.usd || 0) || null,
+      marketCap: Number(data[coinId]?.usd_market_cap || 0) || null,
+    };
+  } catch (error) {
+    console.error(`Error fetching ${coinId} data from CoinGecko:`, error);
+    return { price: null, marketCap: null };
+  }
+}
+
+/**
+ * React Query hook to fetch USD price and market cap for a cryptocurrency.
+ *
+ * @param coinId - The CoinGecko ID of the cryptocurrency (defaults to "movement")
+ * @returns React Query result object containing price and market cap data
+ */
+export function useGetPriceWithMarketCap(coinId: string = "movement") {
+  return useQuery({
+    queryKey: ["priceWithMarketCap", coinId],
+    queryFn: () => getPriceWithMarketCap(coinId),
     refetchInterval: 60000, // Refetch every minute
   });
 }

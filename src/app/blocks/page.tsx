@@ -3,6 +3,7 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Types } from "aptos";
 import { Suspense } from "react";
@@ -14,6 +15,7 @@ import {
   StyledTableRow,
   TableBody,
   TableCell,
+  TableRow,
 } from "@/components/ui/table";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -26,16 +28,13 @@ import { getLedgerInfo, getRecentBlocks } from "@/services";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { Loader2 } from "lucide-react";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { TimestampToggle } from "@/components/common/TimestampToggle";
+import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 
 const BLOCKS_COUNT = 20;
 const POLL_INTERVAL = 3000;
-
-function getAgeInSeconds(blockTimestamp: string): string {
-  const blockTime = parseInt(blockTimestamp) / 1000; // microseconds to milliseconds
-  const now = Date.now();
-  const ageSeconds = Math.floor((now - blockTime) / 1000);
-  return ageSeconds.toString();
-}
+const COLUMN_COUNT = 6;
 
 function getTransactionCount(block: Types.Block): string {
   return (
@@ -46,7 +45,9 @@ function getTransactionCount(block: Types.Block): string {
 }
 
 function BlocksContent() {
+  const router = useRouter();
   const { aptos_client, network_value } = useGlobalStore();
+  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const isListFetching =
     useIsFetching({ queryKey: ["blocks", "infinite", network_value] }) > 0;
 
@@ -87,13 +88,10 @@ function BlocksContent() {
   } = useInfiniteQuery({
     queryKey: ["blocks", "infinite", network_value, queryMaxHeight],
     queryFn: async ({ pageParam }) => {
-      // getRecentBlocks fetches 'count' blocks ending at 'currentBlockHeight' (descending)
-      // So pageParam is the starting height (highest height for this page)
       return getRecentBlocks(pageParam, BLOCKS_COUNT, aptos_client);
     },
     initialPageParam: queryMaxHeight,
     getNextPageParam: (lastPage) => {
-      // If we don't have a stable anchor yet, don't paginate
       if (queryMaxHeight === 0) return undefined;
 
       const lastBlock = lastPage[lastPage.length - 1];
@@ -133,99 +131,118 @@ function BlocksContent() {
             isLoading={isRefreshing}
           />
         </div>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <EnhancedSkeleton key={i} className="h-16 w-full" />
-            ))}
-          </div>
-        ) : (
-          <>
-            <div className="overflow-x-auto">
-              <StyledTable>
-                <StyledTableHeader>
-                  <StyledTableHeaderRow>
-                    <StyledTableHead>Block</StyledTableHead>
-                    <StyledTableHead>Age</StyledTableHead>
-                    <StyledTableHead>Hash</StyledTableHead>
-                    <StyledTableHead className="text-right">
-                      Transactions
-                    </StyledTableHead>
-                    <StyledTableHead className="text-right">
-                      First Version
-                    </StyledTableHead>
-                    <StyledTableHead className="text-right">
-                      Last Version
-                    </StyledTableHead>
-                  </StyledTableHeaderRow>
-                </StyledTableHeader>
-                <TableBody>
-                    {flatBlocks.map((block: Types.Block) => (
-                        <StyledTableRow
-                          key={block.block_height}
-                        >
-                          <TableCell>
-                            <Link
-                              href={`/block/${block.block_height}`}
-                              className="text-primary hover:underline font-mono tabular-nums"
-                            >
-                              {block.block_height}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {getAgeInSeconds(block.block_timestamp)}s ago
-                          </TableCell>
-                          <TableCell>
-                            <span className="font-mono text-sm">
-                              {block.block_hash.slice(0, 10)}...
-                              {block.block_hash.slice(-8)}
-                            </span>
-                          </TableCell>
-                          <TableCell className="text-right font-mono tabular-nums">
-                            {getTransactionCount(block)}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Link
-                              href={`/txn/${block.first_version}`}
-                              className="text-primary hover:underline font-mono tabular-nums"
-                            >
-                              {block.first_version}
-                            </Link>
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Link
-                              href={`/txn/${block.last_version}`}
-                              className="text-primary hover:underline font-mono tabular-nums"
-                            >
-                              {block.last_version}
-                            </Link>
-                          </TableCell>
-                        </StyledTableRow>
-                    ))}
-                </TableBody>
-              </StyledTable>
-            </div>
 
-            {hasNextPage && (
-              <div className="flex justify-center mt-6">
-                <Button
-                  variant="outline"
-                  onClick={() => fetchNextPage()}
-                  disabled={isFetchingNextPage}
-                  className="w-full sm:w-auto min-w-[200px]"
-                >
-                  {isFetchingNextPage ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Loading...
-                    </>
-                  ) : (
-                    "Load More"
-                  )}
-                </Button>
-              </div>
-            )}
-          </>
+        <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <StyledTable>
+            <StyledTableHeader>
+              <StyledTableHeaderRow>
+                <StyledTableHead>Height</StyledTableHead>
+                <StyledTableHead>Hash</StyledTableHead>
+                <StyledTableHead>
+                  <TimestampModeToggle
+                    mode={timestampMode}
+                    setMode={setTimestampMode}
+                  />
+                </StyledTableHead>
+                <StyledTableHead className="text-right">
+                  Transactions
+                </StyledTableHead>
+                <StyledTableHead className="text-right">
+                  First Version
+                </StyledTableHead>
+                <StyledTableHead className="text-right">
+                  Last Version
+                </StyledTableHead>
+              </StyledTableHeaderRow>
+            </StyledTableHeader>
+            <TableBody>
+              {isLoading
+                ? Array.from({ length: BLOCKS_COUNT }).map((_, i) => (
+                    <TableRow key={i} className="h-16">
+                      <TableCell colSpan={COLUMN_COUNT}>
+                        <EnhancedSkeleton className="h-13 w-full" />
+                      </TableCell>
+                    </TableRow>
+                  ))
+                : flatBlocks.map((block: Types.Block) => (
+                    <StyledTableRow
+                      key={block.block_height}
+                      className="animate-in slide-in-from-top-2 fade-in duration-500 cursor-pointer"
+                      onClick={(e) => {
+                        const target = e.target as HTMLElement;
+                        if (target.closest('a, button, [role="button"]')) return;
+                        router.push(`/block/${block.block_height}`);
+                      }}
+                    >
+                      <TableCell>
+                        <Link
+                          href={`/block/${block.block_height}`}
+                          className="text-primary hover:underline font-mono tabular-nums"
+                        >
+                          {block.block_height}
+                        </Link>
+                      </TableCell>
+                      <TableCell>
+                        <CopyableAddress
+                          address={block.block_hash}
+                          truncateLength={{ start: 10, end: 8 }}
+                          copyTooltip="Copy hash"
+                        />
+                      </TableCell>
+                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap min-w-[120px]">
+                        <TimestampToggle
+                          timestamp={block.block_timestamp}
+                          timestampMode={timestampMode}
+                          onToggle={() =>
+                            setTimestampMode((prev) =>
+                              prev === "age" ? "dateTime" : "age",
+                            )
+                          }
+                        />
+                      </TableCell>
+                      <TableCell className="text-right font-mono tabular-nums">
+                        {getTransactionCount(block)}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/txn/${block.first_version}`}
+                          className="text-primary hover:underline font-mono tabular-nums"
+                        >
+                          {block.first_version}
+                        </Link>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Link
+                          href={`/txn/${block.last_version}`}
+                          className="text-primary hover:underline font-mono tabular-nums"
+                        >
+                          {block.last_version}
+                        </Link>
+                      </TableCell>
+                    </StyledTableRow>
+                  ))}
+            </TableBody>
+          </StyledTable>
+        </div>
+
+        {!isLoading && hasNextPage && (
+          <div className="flex justify-center mt-6">
+            <Button
+              variant="outline"
+              onClick={() => fetchNextPage()}
+              disabled={isFetchingNextPage}
+              className="w-full sm:w-auto min-w-[200px]"
+            >
+              {isFetchingNextPage ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Loading...
+                </>
+              ) : (
+                "Load More"
+              )}
+            </Button>
+          </div>
         )}
       </PageContainer>
     </>

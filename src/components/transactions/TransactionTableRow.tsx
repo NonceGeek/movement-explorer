@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
 import {
   Tooltip,
@@ -33,9 +34,20 @@ export function TransactionTableRow({
   className,
   ...props
 }: TransactionTableRowProps) {
-  return (
-    <StyledTableRow className={className}>
+  const router = useRouter();
+  const txHash = props.transaction.hash || props.version;
 
+  const handleRowClick = (e: React.MouseEvent) => {
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button, [role="button"]')) return;
+    router.push(`/txn/${txHash}`);
+  };
+
+  return (
+    <StyledTableRow
+      className={cn("cursor-pointer", className)}
+      onClick={handleRowClick}
+    >
       <TransactionTableRowCells {...props} />
     </StyledTableRow>
   );

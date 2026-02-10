@@ -10,7 +10,6 @@ import {
 import { TransactionTableProps } from "./types";
 import { TransactionTableHeader } from "./TransactionTableHeader";
 import { TransactionTableRow } from "./TransactionTableRow";
-import { getColumnCount } from "./columnPresets";
 
 /**
  * Unified Transaction Table Component
@@ -25,7 +24,6 @@ export function TransactionTable({
   timestampMode,
   onToggleTimestampMode,
 }: TransactionTableProps) {
-  const columnCount = getColumnCount(columns);
 
   // Loading skeleton
   if (isLoading) {
@@ -39,9 +37,11 @@ export function TransactionTable({
         <TableBody>
           {Array.from({ length: loadingRowCount }).map((_, i) => (
             <TableRow key={i} className="h-16">
-              <TableCell colSpan={columnCount}>
-                <EnhancedSkeleton className="h-13 w-full" />
-              </TableCell>
+              {columns.map((col) => (
+                <TableCell key={col.key} className={col.width || ""}>
+                  <EnhancedSkeleton className="h-8 w-full" />
+                </TableCell>
+              ))}
             </TableRow>
           ))}
         </TableBody>

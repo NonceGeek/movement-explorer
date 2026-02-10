@@ -6,13 +6,13 @@ import { TransactionColumnConfig } from "./types";
 
 // Base columns shared between all transaction tables
 const BASE_COLUMNS: TransactionColumnConfig[] = [
-  { key: "hash", label: "Transaction Hash" },
-  { key: "function", label: "Function", width: "w-[300px]" },
-  { key: "timestamp", label: "Age" },
-  { key: "sender", label: "Sender" },
-  { key: "to", label: "To" },
-  { key: "amount", label: "Amount", align: "right" },
-  { key: "gas", label: "Gas", align: "right" },
+  { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
+  { key: "function", label: "Function", width: "w-[120px]" },
+  { key: "timestamp", label: "Age", width: "w-[155px]" },
+  { key: "sender", label: "Sender", width: "w-[145px]" },
+  { key: "to", label: "To", width: "w-[150px]" },
+  { key: "amount", label: "Amount", align: "right", width: "w-[150px]" },
+  { key: "gas", label: "Gas", align: "right", width: "w-[150px]" },
 ];
 
 /**
@@ -26,14 +26,14 @@ export const HOME_TRANSACTION_COLUMNS: TransactionColumnConfig[] = BASE_COLUMNS;
  * Used by: AllTransactions, UserTransactions
  */
 export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
-  { key: "hash", label: "Transaction Hash" },
-  { key: "function", label: "Function", width: "w-[300px]" },
-  { key: "type", label: "Type", align: "left" },
-  { key: "timestamp", label: "Age" },
-  { key: "sender", label: "Sender" },
-  { key: "to", label: "To" },
-  { key: "amount", label: "Amount", align: "right" },
-  { key: "gas", label: "Gas", align: "right" },
+  { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
+  { key: "function", label: "Function", width: "w-[120px]" },
+  { key: "type", label: "Type", align: "left", width: "w-[80px]" },
+  { key: "timestamp", label: "Age", width: "w-[155px]" },
+  { key: "sender", label: "Sender", width: "w-[145px]" },
+  { key: "to", label: "To", width: "w-[150px]" },
+  { key: "amount", label: "Amount", align: "right", width: "w-[130px]" },
+  { key: "gas", label: "Gas", align: "right", width: "w-[100px]" },
 ];
 
 /**

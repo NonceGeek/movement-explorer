@@ -16,7 +16,7 @@ export function TimestampToggle({
 }: TimestampToggleProps) {
   return (
     <div
-      className="cursor-pointer hover:text-foreground/80 hover:bg-muted/50 px-2 py-1 rounded transition-colors inline-block"
+      className="cursor-pointer hover:text-foreground/80 hover:bg-muted/50 py-1 rounded transition-colors inline-block"
       onClick={onToggle}
       role="button"
       tabIndex={0}

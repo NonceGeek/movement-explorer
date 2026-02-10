@@ -100,7 +100,7 @@ export function TransactionTableRowCells({
     switch (column.key) {
       case "hash":
         return (
-          <TableCell key={column.key}>
+          <TableCell key={column.key} className={widthClass}>
             <div className="flex items-center gap-2">
               <CopyableAddress
                 address={transaction.hash || ""}
@@ -121,7 +121,7 @@ export function TransactionTableRowCells({
 
       case "type":
         return (
-          <TableCell key={column.key} className={cn(hideClass, alignClass)}>
+          <TableCell key={column.key} className={cn(hideClass, alignClass, widthClass)}>
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -151,7 +151,7 @@ export function TransactionTableRowCells({
         return (
           <TableCell
             key={column.key}
-            className="text-muted-foreground text-sm whitespace-nowrap min-w-[120px]"
+            className={cn("text-muted-foreground text-sm whitespace-nowrap", widthClass)}
           >
             <TimestampToggle
               timestamp={timestamp}
@@ -163,7 +163,7 @@ export function TransactionTableRowCells({
 
       case "sender":
         return (
-          <TableCell key={column.key}>
+          <TableCell key={column.key} className={widthClass}>
             {sender ? (
               <CopyableAddress address={sender} href={`/account/${sender}`} />
             ) : (
@@ -174,7 +174,7 @@ export function TransactionTableRowCells({
 
       case "to":
         return (
-          <TableCell key={column.key} className={cn(hideClass)}>
+          <TableCell key={column.key} className={cn(hideClass, widthClass)}>
             {counterparty ? (
               <CopyableAddress
                 address={counterparty.address}
@@ -206,7 +206,7 @@ export function TransactionTableRowCells({
 
       case "amount":
         return (
-          <TableCell key={column.key} className={cn(hideClass, alignClass)}>
+          <TableCell key={column.key} className={cn(hideClass, alignClass, widthClass)}>
             {amount !== undefined && amount > 0 ? (
               <span className="font-mono transition-colors">
                 {formatMoveAmount(amount)} MOVE
@@ -219,7 +219,7 @@ export function TransactionTableRowCells({
 
       case "gas":
         return (
-          <TableCell key={column.key} className={cn(hideClass, alignClass)}>
+          <TableCell key={column.key} className={cn(hideClass, alignClass, widthClass)}>
             {gasUsed && gasUnitPrice ? (
               <span className="font-mono text-sm text-muted-foreground transition-colors">
                 {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}

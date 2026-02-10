@@ -88,11 +88,10 @@ export function TransactionFunction({
           <Link
             href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex items-center px-2 py-0.5 h-[30px] rounded-md transition-all duration-200",
+              "inline-flex items-center py-0.5 h-[30px] rounded-md transition-all duration-200",
               "font-mono text-sm text-primary",
               "hover:bg-primary/10",
-              "-ml-2 -my-0.5",
-              "max-w-[180px] sm:max-w-[280px]",
+              "max-w-[180px]",
               className,
             )}
             onClick={(e) => e.stopPropagation()}

@@ -50,9 +50,8 @@ export function CopyableAddress({
   const accountLabel = useGetAccountLabel(address, showLabel);
 
   // Determine display text
-  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${
-    truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
-  }`;
+  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
+    }`;
 
   // Check if this is a verified address and we should show label
   const isVerifiedWithLabel =
@@ -209,7 +208,7 @@ export function CopyableAddress({
           "inline-flex items-center gap-1 transition-all duration-200 group/address",
           showFull && "flex-wrap",
           variant === "default" &&
-            "hover:bg-primary/10 rounded-md px-2 py-0.5 -ml-2 -my-0.5",
+          "hover:bg-primary/10 rounded-md pl-2 py-0.5",
         )}
       >
         {showFull ? (

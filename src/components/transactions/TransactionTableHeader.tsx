@@ -35,11 +35,15 @@ export function TransactionTableHeader({
   const renderHeaderCell = (column: TransactionColumnConfig) => {
     const hideClass = getHideClass(column.hideAt);
     const alignClass = column.align === "right" ? "text-right" : "";
+    const widthClass = column.width || "";
 
     switch (column.key) {
       case "type":
         return (
-          <StyledTableHead key={column.key} className="flex items-center">
+          <StyledTableHead
+            key={column.key}
+            className={cn("flex items-center", widthClass)}
+          >
             Type
             <TransactionTypeTooltip />
           </StyledTableHead>
@@ -47,7 +51,7 @@ export function TransactionTableHeader({
 
       case "timestamp":
         return (
-          <StyledTableHead key={column.key}>
+          <StyledTableHead key={column.key} className={widthClass}>
             <TimestampModeToggle
               mode={timestampMode}
               setMode={onToggleTimestampMode}
@@ -59,7 +63,7 @@ export function TransactionTableHeader({
         return (
           <StyledTableHead
             key={column.key}
-            className={cn(hideClass, alignClass)}
+            className={cn(hideClass, alignClass, widthClass)}
           >
             {column.label}
           </StyledTableHead>

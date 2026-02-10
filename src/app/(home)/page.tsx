@@ -26,7 +26,8 @@ export default function HomePage() {
   const { peakTps } = useGetPeakTPS();
 
   // Price and Market Cap data
-  const { data: priceData, isLoading: priceLoading } = useGetPriceWithMarketCap();
+  const { data: priceData, isLoading: priceLoading } =
+    useGetPriceWithMarketCap();
 
   // Real data from APIs
   const totalTransactions = ledgerInfo?.ledger_version
@@ -36,9 +37,10 @@ export default function HomePage() {
   const totalAccounts = analyticsData?.total_accounts?.[0]?.total_accounts ?? 0;
 
   // Latest average gas price
-  const avgGasPrice =
+  const avgGasPriceRaw =
     analyticsData?.daily_average_gas_unit_price?.slice(-1)[0]
       ?.avg_gas_unit_price;
+  const avgGasPrice = avgGasPriceRaw ? Number(avgGasPriceRaw) : undefined;
 
   // Extract chart data (last 14 days)
   const CHART_DAYS = 14;
@@ -125,7 +127,7 @@ export default function HomePage() {
             </div>
 
             {/* Right: Transaction History Chart */}
-            <div className="w-full lg:w-[400px] xl:w-[480px] h-[240px]">
+            <div className="w-full lg:w-100 xl:w-[480px] h-60">
               <TransactionHistoryChart
                 chartData={txHistoryChartData}
                 chartLabels={txHistoryChartLabels}

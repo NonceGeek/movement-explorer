@@ -8,7 +8,6 @@ export type {
   TransactionColumnKey,
   TransactionColumnConfig,
   TransactionRowData,
-  TableAnimationMode,
   TransactionTableProps,
   TransactionTableRowProps,
   TransactionPaginationProps,
@@ -30,4 +29,4 @@ export {
   TransactionTableRowCells,
 } from "./TransactionTableRow";
 export { TransactionPagination } from "./TransactionPagination";
-export { NewDataNotification } from "./NewDataNotification";
+export { NewDataNotification } from "../common/NewDataNotification";

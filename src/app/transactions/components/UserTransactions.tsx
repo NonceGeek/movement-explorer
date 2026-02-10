@@ -4,18 +4,18 @@ import {
   useInfiniteQuery,
   useQuery,
   useIsFetching,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
-import { Types } from "aptos";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
-  NewDataNotification,
 } from "@/components/transactions";
+import { NewDataNotification } from "@/components/common/NewDataNotification";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 const LIMIT = 20;
@@ -66,13 +66,8 @@ export function UserTransactions({
 
   // State for manual refresh
   const [frozenLatestVersion, setFrozenLatestVersion] = useState<number>(0);
-  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
-    new Set(),
-  );
   // Track initial load to prevent "Refreshing..." on first mount
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-  // Track if initial animation has played
-  const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
 
   // Poll for the absolute latest version to detect new transactions
   const { data: polledLatestVersion } = useQuery({
@@ -164,26 +159,14 @@ export function UserTransactions({
       return undefined;
     },
     enabled: true, // Always enabled, logic inside queryFn handles null anchor
+    placeholderData: keepPreviousData,
   });
 
-  // Calculate new transactions count
-  const newCount =
-    frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion
-      ? latestVersionRaw - frozenLatestVersion
-      : 0;
+  const hasNewData =
+    frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion;
 
   const handleRefresh = () => {
-    const newVersions = new Set<number>();
-    for (let v = frozenLatestVersion + 1; v <= latestVersionRaw; v++) {
-      newVersions.add(v);
-    }
-
-    setHighlightedVersions(newVersions);
     setFrozenLatestVersion(latestVersionRaw);
-
-    setTimeout(() => {
-      setHighlightedVersions(new Set());
-    }, 2500);
   };
 
   // Flatten data
@@ -195,7 +178,6 @@ export function UserTransactions({
     return {
       version,
       transaction: tx,
-      isHighlighted: highlightedVersions.has(version),
     };
   });
 
@@ -203,8 +185,6 @@ export function UserTransactions({
   useEffect(() => {
     if (!isLoading && data) {
       setIsFirstLoad(false);
-      // Mark initial animation as done after a short delay
-      setTimeout(() => setHasAnimatedInitial(true), 500);
     }
   }, [isLoading, data]);
 
@@ -218,11 +198,9 @@ export function UserTransactions({
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">User Transactions</h1>
           <NewDataNotification
-            visible={newCount > 0}
-            count={newCount}
+            visible={hasNewData}
             onClick={handleRefresh}
             isLoading={isRefreshing}
-            dataType="txs"
           />
         </div>
         <div className="self-end sm:self-auto">{headerEndDecorator}</div>
@@ -238,9 +216,6 @@ export function UserTransactions({
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
-          animationMode="realtime"
-          hasAnimatedInitial={hasAnimatedInitial}
-          highlightedVersions={highlightedVersions}
         />
       </div>
 

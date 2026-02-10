@@ -5,20 +5,16 @@ import { cn } from "@/utils/styling";
 
 interface NewDataNotificationProps {
   onClick: () => void;
-  count?: number;
   className?: string;
   visible: boolean;
   isLoading?: boolean;
-  dataType?: string;
 }
 
 export function NewDataNotification({
   onClick,
-  count,
   className,
   visible,
   isLoading,
-  dataType = "data",
 }: NewDataNotificationProps) {
   if (!visible && !isLoading) return null;
 
@@ -37,11 +33,7 @@ export function NewDataNotification({
       ) : (
         <ArrowUp size={14} />
       )}
-      {isLoading
-        ? ""
-        : count
-          ? `${count} new ${dataType}`
-          : `New ${dataType}`}
+      New
     </button>
   );
 }

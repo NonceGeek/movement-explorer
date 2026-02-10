@@ -6,15 +6,14 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Types } from "aptos";
 import { Suspense } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   StyledTable,
   StyledTableHeader,
   StyledTableHeaderRow,
   StyledTableHead,
+  StyledTableRow,
   TableBody,
   TableCell,
-  TableRow,
 } from "@/components/ui/table";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -26,9 +25,7 @@ import {
 import { getLedgerInfo, getRecentBlocks } from "@/services";
 import { Button } from "@movementlabsxyz/movement-design-system";
 import { Loader2 } from "lucide-react";
-import { NewDataNotification } from "@/components/transactions";
-import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@/utils/styling";
+import { NewDataNotification } from "@/components/common/NewDataNotification";
 
 const BLOCKS_COUNT = 20;
 const POLL_INTERVAL = 3000;
@@ -48,12 +45,6 @@ function getTransactionCount(block: Types.Block): string {
   ).toString();
 }
 
-const variants = {
-  initial: { backgroundColor: "rgba(34, 197, 94, 0.1)" },
-  animate: { backgroundColor: "rgba(34, 197, 94, 0)" },
-  exit: { opacity: 0 },
-};
-
 function BlocksContent() {
   const { aptos_client, network_value } = useGlobalStore();
   const isListFetching =
@@ -61,9 +52,6 @@ function BlocksContent() {
 
   // State for manual refresh
   const [frozenMaxHeight, setFrozenMaxHeight] = useState<number>(0);
-  const [highlightedBlocks, setHighlightedBlocks] = useState<Set<number>>(
-    new Set(),
-  );
 
   // Poll ledger info to detect new blocks
   const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
@@ -82,9 +70,8 @@ function BlocksContent() {
     }
   }, [latestMaxHeight, frozenMaxHeight]);
 
-  // Calculate new blocks count
-  const newCount =
-    frozenMaxHeight > 0 ? Math.max(0, latestMaxHeight - frozenMaxHeight) : 0;
+  const hasNewData =
+    frozenMaxHeight > 0 && latestMaxHeight > frozenMaxHeight;
 
   // Use frozenMaxHeight for the list query to keep it stable
   const queryMaxHeight =
@@ -105,7 +92,7 @@ function BlocksContent() {
       return getRecentBlocks(pageParam, BLOCKS_COUNT, aptos_client);
     },
     initialPageParam: queryMaxHeight,
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
+    getNextPageParam: (lastPage) => {
       // If we don't have a stable anchor yet, don't paginate
       if (queryMaxHeight === 0) return undefined;
 
@@ -126,17 +113,7 @@ function BlocksContent() {
     (isBlocksLoading && queryMaxHeight > 0);
 
   const handleRefresh = () => {
-    const newBlocksSet = new Set<number>();
-    for (let h = frozenMaxHeight + 1; h <= latestMaxHeight; h++) {
-      newBlocksSet.add(h);
-    }
-
-    setHighlightedBlocks(newBlocksSet);
     setFrozenMaxHeight(latestMaxHeight);
-
-    setTimeout(() => {
-      setHighlightedBlocks(new Set());
-    }, 2500);
   };
 
   // Flatten data
@@ -151,11 +128,9 @@ function BlocksContent() {
         <div className="flex items-center gap-3 mb-6">
           <h1 className="text-xl sm:text-3xl font-bold">Blocks</h1>
           <NewDataNotification
-            visible={newCount > 0}
-            count={newCount}
+            visible={hasNewData}
             onClick={handleRefresh}
             isLoading={isRefreshing}
-            dataType="blocks"
           />
         </div>
         {isLoading ? (
@@ -185,23 +160,9 @@ function BlocksContent() {
                   </StyledTableHeaderRow>
                 </StyledTableHeader>
                 <TableBody>
-                  <AnimatePresence>
-                    {flatBlocks.map((block: Types.Block) => {
-                      const height = parseInt(block.block_height);
-                      const isHighlighted = highlightedBlocks.has(height);
-
-                      return (
-                        <motion.tr
+                    {flatBlocks.map((block: Types.Block) => (
+                        <StyledTableRow
                           key={block.block_height}
-                          initial={isHighlighted ? "initial" : false}
-                          animate={isHighlighted ? "animate" : false}
-                          variants={variants}
-                          transition={{ duration: 2, ease: "easeOut" }}
-                          className={cn(
-                            "border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted",
-                            // Also add a subtle green bg via class if preferred, but motion handles it
-                          )}
-                          style={{ height: "64px" }} // Match transaction table row height
                         >
                           <TableCell>
                             <Link
@@ -239,10 +200,8 @@ function BlocksContent() {
                               {block.last_version}
                             </Link>
                           </TableCell>
-                        </motion.tr>
-                      );
-                    })}
-                  </AnimatePresence>
+                        </StyledTableRow>
+                    ))}
                 </TableBody>
               </StyledTable>
             </div>

@@ -3,6 +3,7 @@ import {
   useInfiniteQuery,
   useQuery,
   useIsFetching,
+  keepPreviousData,
   UseInfiniteQueryResult,
   InfiniteData,
 } from "@tanstack/react-query";
@@ -14,8 +15,8 @@ import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
-  NewDataNotification,
 } from "@/components/transactions";
+import { NewDataNotification } from "@/components/common/NewDataNotification";
 import { Button } from "@movementlabsxyz/movement-design-system";
 
 const LIMIT = 20;
@@ -35,13 +36,8 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   // State for manual refresh
   // frozenMaxVersion is the anchor for the current list
   const [frozenMaxVersion, setFrozenMaxVersion] = useState<number>(0);
-  const [highlightedVersions, setHighlightedVersions] = useState<Set<number>>(
-    new Set(),
-  );
   // Track initial load to prevent "Refreshing..." on first mount
   const [isFirstLoad, setIsFirstLoad] = useState(true);
-  // Track if initial animation has played
-  const [hasAnimatedInitial, setHasAnimatedInitial] = useState(false);
 
   // Poll ledger info to detect new transactions
   const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
@@ -60,10 +56,8 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     }
   }, [latestMaxVersion, frozenMaxVersion]);
 
-  // Calculate new transactions count
-  // If frozenMaxVersion is 0, we don't calculate new count yet to avoid showing banner on init
-  const newCount =
-    frozenMaxVersion > 0 ? Math.max(0, latestMaxVersion - frozenMaxVersion) : 0;
+  const hasNewData =
+    frozenMaxVersion > 0 && latestMaxVersion > frozenMaxVersion;
 
   // Use frozenMaxVersion for the list query to keep it stable
   // If frozenMaxVersion is 0 (initial), use latestMaxVersion (which might also be 0, but usually not for long)
@@ -106,34 +100,15 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
       return { start: 0, limit: lastPageParam.start };
     },
     enabled: queryMaxVersion > 0,
+    placeholderData: keepPreviousData,
   });
 
   const isLoading =
     (isLedgerLoading && frozenMaxVersion === 0) ||
     (isTxLoading && queryMaxVersion > 0);
 
-  // Handle Refresh Click
   const handleRefresh = () => {
-    // Determine new versions to highlight
-    // The new versions are typically from (frozenMaxVersion + 1) to latestMaxVersion
-    // But we only show the first page (LIMIT items).
-    // If newCount > LIMIT, we highlight all on page 1 that are > oldFrozen
-
-    const newVersions = new Set<number>();
-    // We can't know exactly which versions are available without fetching,
-    // but we can estimate the range.
-    // Highlighting logic relies on the row data. We can just pass the set of expected version numbers.
-    for (let v = frozenMaxVersion + 1; v <= latestMaxVersion; v++) {
-      newVersions.add(v);
-    }
-
-    setHighlightedVersions(newVersions);
     setFrozenMaxVersion(latestMaxVersion);
-
-    // Clear highlight after animation (2000ms match the CSS animation)
-    setTimeout(() => {
-      setHighlightedVersions(new Set());
-    }, 2500);
   };
 
   // Flatten data
@@ -145,7 +120,6 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     return {
       version,
       transaction: tx,
-      isHighlighted: highlightedVersions.has(version),
     };
   });
 
@@ -153,8 +127,6 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   useEffect(() => {
     if (!isTxLoading && data) {
       setIsFirstLoad(false);
-      // Mark initial animation as done after a short delay
-      setTimeout(() => setHasAnimatedInitial(true), 500);
     }
   }, [isTxLoading, data]);
 
@@ -168,11 +140,9 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">All Transactions</h1>
           <NewDataNotification
-            visible={newCount > 0}
-            count={newCount}
+            visible={hasNewData}
             onClick={handleRefresh}
             isLoading={isRefreshing}
-            dataType="txs"
           />
         </div>
         <div className="self-end sm:self-auto">{headerEndDecorator}</div>
@@ -188,9 +158,6 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
-          animationMode="realtime"
-          hasAnimatedInitial={hasAnimatedInitial}
-          highlightedVersions={highlightedVersions}
         />
       </div>
 

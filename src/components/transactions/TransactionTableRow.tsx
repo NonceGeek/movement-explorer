@@ -31,13 +31,11 @@ import { TransactionTableRowProps, TransactionColumnConfig } from "./types";
  */
 export function TransactionTableRow({
   className,
-  isHighlighted,
   ...props
 }: TransactionTableRowProps) {
   return (
-    <StyledTableRow
-      className={cn(isHighlighted && "bg-guild-green-500/10", className)}
-    >
+    <StyledTableRow className={className}>
+
       <TransactionTableRowCells {...props} />
     </StyledTableRow>
   );

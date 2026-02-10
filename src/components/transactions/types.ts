@@ -30,11 +30,7 @@ export interface TransactionColumnConfig {
 export interface TransactionRowData {
   version: number;
   transaction: Types.Transaction;
-  isHighlighted?: boolean;
 }
-
-// Animation mode for table
-export type TableAnimationMode = "none" | "stagger" | "realtime";
 
 // Main table props
 export interface TransactionTableProps {
@@ -45,12 +41,6 @@ export interface TransactionTableProps {
   // Timestamp
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode: () => void;
-  // Animation (for home page)
-  animationMode?: TableAnimationMode;
-  highlightedVersions?: Set<number>;
-  hasAnimatedInitial?: boolean;
-  // Callbacks
-  onAnimationComplete?: () => void;
 }
 
 // Row props
@@ -61,7 +51,6 @@ export interface TransactionTableRowProps {
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode?: () => void;
   className?: string;
-  isHighlighted?: boolean;
 }
 
 // Pagination props

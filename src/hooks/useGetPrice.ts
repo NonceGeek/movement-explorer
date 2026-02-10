@@ -5,6 +5,7 @@ const COINGECKO_API_ENDPOINT = "https://api.coingecko.com/api/v3/simple/price";
 export interface PriceData {
   price: number | null;
   marketCap: number | null;
+  priceChange24h: number | null; // 24-hour price change percentage
 }
 
 /**
@@ -69,6 +70,7 @@ export async function getPriceWithMarketCap(
     ids: coinId,
     vs_currencies: "usd",
     include_market_cap: "true",
+    include_24hr_change: "true", // Include 24-hour price change percentage
   };
 
   const queryString = new URLSearchParams(query);
@@ -81,17 +83,18 @@ export async function getPriceWithMarketCap(
 
     if (!response.ok) {
       console.error(`HTTP error! Status: ${response.status}`);
-      return { price: null, marketCap: null };
+      return { price: null, marketCap: null, priceChange24h: null };
     }
 
     const data = await response.json();
     return {
       price: Number(data[coinId]?.usd || 0) || null,
       marketCap: Number(data[coinId]?.usd_market_cap || 0) || null,
+      priceChange24h: Number(data[coinId]?.usd_24h_change || 0) || null,
     };
   } catch (error) {
     console.error(`Error fetching ${coinId} data from CoinGecko:`, error);
-    return { price: null, marketCap: null };
+    return { price: null, marketCap: null, priceChange24h: null };
   }
 }
 

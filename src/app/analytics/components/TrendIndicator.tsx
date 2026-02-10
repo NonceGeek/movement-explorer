@@ -30,11 +30,11 @@ export default function TrendIndicator({
   return (
     <div
       className={cn(
-        "inline-flex items-center gap-0.5 text-xs font-semibold",
+        "inline-flex items-center gap-0.5 text-base font-semibold",
         isPositive
           ? "text-guild-green-500 dark:text-guild-green-400"
           : "text-oracle-orange-500 dark:text-oracle-orange-400",
-        className
+        className,
       )}
     >
       {isPositive ? (

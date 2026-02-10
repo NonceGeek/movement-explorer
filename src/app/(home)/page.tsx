@@ -42,6 +42,16 @@ export default function HomePage() {
       ?.avg_gas_unit_price;
   const avgGasPrice = avgGasPriceRaw ? Number(avgGasPriceRaw) : undefined;
 
+  // Calculate if Peak TPS is a new high
+  const historicalTpsData = analyticsData?.daily_max_tps_15_blocks ?? [];
+  const recentTpsValues = historicalTpsData
+    .slice(-30)
+    .map((d) => d.max_tps_15_blocks);
+  const historicalMax =
+    recentTpsValues.length > 0 ? Math.max(...recentTpsValues) : 0;
+  const isPeakTpsNewHigh =
+    peakTps !== undefined && peakTps > 0 && peakTps >= historicalMax;
+
   // Extract chart data (last 14 days)
   const CHART_DAYS = 14;
 
@@ -117,10 +127,12 @@ export default function HomePage() {
             <div className="min-w-0">
               <CoreMetricsGrid
                 movePrice={priceData?.price ?? undefined}
+                priceChange24h={priceData?.priceChange24h ?? undefined}
                 marketCap={priceData?.marketCap ?? undefined}
                 totalTransactions={totalTransactions}
                 totalAccounts={totalAccounts}
                 peakTps={peakTps}
+                isPeakTpsNewHigh={isPeakTpsNewHigh}
                 avgGasPrice={avgGasPrice}
                 isLoading={ledgerLoading || isAnalyticsLoading || priceLoading}
               />

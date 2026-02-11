@@ -25,6 +25,7 @@ import {
 } from "@tanstack/react-query";
 import { getLedgerInfo, getRecentBlocks } from "@/services";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
+import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
@@ -214,9 +215,20 @@ function BlocksContent() {
           onPageChange={handlePageChange}
           blocks={tableData}
           isLoading={isLoading}
+          infoText={
+            queryMaxHeight > 0 && (
+              <>
+                Network Height{" "}
+                <span className="font-medium text-foreground">
+                  #{queryMaxHeight.toLocaleString()}
+                </span>
+              </>
+            )
+          }
         />
 
-        <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <TableLoadingBar visible={isFetching && !isLoading} />
           <StyledTable>
             <StyledTableHeader>
               <StyledTableHeaderRow>
@@ -269,11 +281,12 @@ function BlocksContent() {
                       <TableCell>
                         <CopyableAddress
                           address={block.block_hash}
+                          className="text-primary"
                           truncateLength={{ start: 10, end: 8 }}
                           copyTooltip="Copy hash"
                         />
                       </TableCell>
-                      <TableCell className="text-muted-foreground text-sm whitespace-nowrap min-w-[120px]">
+                      <TableCell className="text-foreground/80 text-sm whitespace-nowrap min-w-[120px]">
                         <TimestampToggle
                           timestamp={block.block_timestamp}
                           timestampMode={timestampMode}

@@ -28,6 +28,7 @@ export interface BlockTableToolbarProps {
   blocks: BlockRowData[];
   isLoading?: boolean;
   className?: string;
+  infoText?: React.ReactNode;
 }
 
 /**

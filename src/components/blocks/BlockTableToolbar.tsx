@@ -12,11 +12,18 @@ export interface BlockTableToolbarProps {
   blocks: BlockRowData[];
   isLoading?: boolean;
   className?: string;
+  infoText?: React.ReactNode;
 }
 
 /**
  * Top toolbar for block table
- * [First] [Previous] Page X [Next] [Last]   [Download Page Data]
+ *
+ * Mobile:
+ *   [infoText]              [Download]
+ *       [<< < Page X > >>]
+ *
+ * Desktop:
+ *   [infoText]   [Download] [<< < Page X > >>]
  */
 export function BlockTableToolbar({
   currentPage,
@@ -25,22 +32,32 @@ export function BlockTableToolbar({
   blocks,
   isLoading = false,
   className,
+  infoText,
 }: BlockTableToolbarProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-3",
-        className
-      )}
-    >
-      <TablePagination
-        currentPage={currentPage}
-        hasNextPage={hasNextPage}
-        onPageChange={onPageChange}
-        disabled={isLoading}
-      />
+  const paginationProps = {
+    currentPage,
+    hasNextPage,
+    onPageChange,
+    disabled: isLoading,
+  };
 
-      <DownloadBlockData blocks={blocks} disabled={isLoading} />
+  return (
+    <div className={cn("py-3 flex flex-col gap-3", className)}>
+      {/* Row 1: info text + download (+ pagination on desktop) */}
+      <div className="flex items-center justify-between">
+        {infoText && (
+          <div className="text-sm text-muted-foreground">{infoText}</div>
+        )}
+        <div className="flex items-center gap-3 ml-auto">
+          <DownloadBlockData blocks={blocks} disabled={isLoading} />
+          <TablePagination {...paginationProps} className="hidden sm:flex" />
+        </div>
+      </div>
+
+      {/* Row 2: pagination (mobile only) */}
+      <div className="flex sm:hidden">
+        <TablePagination {...paginationProps} />
+      </div>
     </div>
   );
 }

@@ -146,7 +146,7 @@ const StyledTableHead = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <TableHead
     ref={ref}
-    className={cn("text-muted-foreground font-normal", className)}
+    className={cn("text-white font-normal", className)}
     {...props}
   />
 ));

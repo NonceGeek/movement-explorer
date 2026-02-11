@@ -24,10 +24,11 @@ import {
   TransactionTableFooter,
 } from "@/components/transactions";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
+import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 
 const POLL_INTERVAL = 3000;
+const MAX_PAGES = 100;
 
-// Query with limit+1 to determine hasNextPage
 const USER_TRANSACTIONS_QUERY = gql`
   query UserTransactions($limit: Int!, $offset: Int!) {
     user_transactions(
@@ -75,9 +76,12 @@ export function UserTransactions({
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
-  // Get page from URL or default to 1
+  // Get page from URL or default to 1, capped at MAX_PAGES
   const pageParam = searchParams.get("page");
-  const currentPage = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+  const currentPage = Math.min(
+    MAX_PAGES,
+    pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1
+  );
 
   // Get limit from URL or use store value
   const limitParam = searchParams.get("limit");
@@ -122,7 +126,6 @@ export function UserTransactions({
     frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion;
 
   // Fetch transactions for current page
-  // Request limit + 1 to determine if there's a next page
   const {
     data: fetchedData,
     isLoading: isTxLoading,
@@ -138,8 +141,7 @@ export function UserTransactions({
     ],
     queryFn: async () => {
       const offset = (currentPage - 1) * currentLimit;
-      // Request one extra to check if there's a next page
-      const requestLimit = currentLimit + 1;
+      const requestLimit = currentLimit;
 
       // Step 1: Fetch versions via GraphQL
       const response = await apolloClient.query<UserTransactionsQueryResponse>({
@@ -152,14 +154,11 @@ export function UserTransactions({
         parseInt(t.version)
       );
 
-      // Check if there's a next page
-      const hasNextPage = allVersions.length > currentLimit;
-
       // Only use the first currentLimit versions for display
       const versions = allVersions.slice(0, currentLimit);
 
       if (versions.length === 0) {
-        return { transactions: [], hasNextPage: false };
+        return { transactions: [] };
       }
 
       // Step 2: Fetch full transaction details via Aptos client
@@ -169,14 +168,13 @@ export function UserTransactions({
         )
       );
 
-      return { transactions: details, hasNextPage };
+      return { transactions: details };
     },
     enabled: frozenLatestVersion > 0 || latestVersionRaw > 0,
     placeholderData: keepPreviousData,
   });
 
   const transactions = fetchedData?.transactions ?? [];
-  const hasNextPage = fetchedData?.hasNextPage ?? false;
 
   const isLoading =
     isTxLoading && (frozenLatestVersion > 0 || latestVersionRaw > 0);
@@ -233,7 +231,7 @@ export function UserTransactions({
 
   return (
     <>
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
+      <div className="mb-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">User Transactions</h1>
           <NewDataNotification
@@ -242,20 +240,30 @@ export function UserTransactions({
             isLoading={isRefreshing}
           />
         </div>
-        <div className="self-end sm:self-auto">{headerEndDecorator}</div>
+        {headerEndDecorator}
       </div>
 
       {/* Top Toolbar */}
       <TransactionTableToolbar
         currentPage={currentPage}
-        hasNextPage={hasNextPage}
+        totalPages={MAX_PAGES}
         onPageChange={handlePageChange}
         transactions={tableData}
         isLoading={isLoading}
+        infoText={
+          <>
+            (Showing the last{" "}
+            <span className="font-medium text-foreground">
+              {(MAX_PAGES * currentLimit).toLocaleString()}
+            </span>{" "}
+            records)
+          </>
+        }
       />
 
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <TableLoadingBar visible={isFetching && !isLoading} />
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
@@ -271,7 +279,7 @@ export function UserTransactions({
       {/* Bottom Footer */}
       <TransactionTableFooter
         currentPage={currentPage}
-        hasNextPage={hasNextPage}
+        totalPages={MAX_PAGES}
         onPageChange={handlePageChange}
         pageSize={currentLimit}
         onPageSizeChange={handlePageSizeChange}

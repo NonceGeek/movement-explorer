@@ -1,7 +1,7 @@
 "use client";
 import { motion, AnimatePresence } from "framer-motion";
 
-import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { FileText, ArrowRight, CircleCheckBig, XCircle } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { TableCell, TableRow } from "@/components/ui/table";
 import {
@@ -87,7 +87,7 @@ export function UserTransactionRowCells({
             truncateLength={{ start: 10, end: 0 }}
             icon={
               status ? (
-                <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+                <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
               ) : (
                 <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
               )

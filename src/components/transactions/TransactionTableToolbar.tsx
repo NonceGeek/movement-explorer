@@ -13,11 +13,18 @@ export interface TransactionTableToolbarProps {
   transactions: TransactionRowData[];
   isLoading?: boolean;
   className?: string;
+  infoText?: React.ReactNode;
 }
 
 /**
  * Top toolbar for transaction table
- * [First] [Previous] Page X of Y [Next] [Last]   [Download Page Data]
+ *
+ * Mobile:
+ *   [infoText]              [Download]
+ *       [<< < Page X of Y > >>]
+ *
+ * Desktop:
+ *   [infoText]   [Download] [<< < Page X of Y > >>]
  */
 export function TransactionTableToolbar({
   currentPage,
@@ -27,23 +34,33 @@ export function TransactionTableToolbar({
   transactions,
   isLoading = false,
   className,
+  infoText,
 }: TransactionTableToolbarProps) {
-  return (
-    <div
-      className={cn(
-        "flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-3",
-        className
-      )}
-    >
-      <TablePagination
-        currentPage={currentPage}
-        totalPages={totalPages}
-        hasNextPage={hasNextPage}
-        onPageChange={onPageChange}
-        disabled={isLoading}
-      />
+  const paginationProps = {
+    currentPage,
+    totalPages,
+    hasNextPage,
+    onPageChange,
+    disabled: isLoading,
+  };
 
-      <DownloadPageData transactions={transactions} disabled={isLoading} />
+  return (
+    <div className={cn("py-3 flex flex-col gap-3", className)}>
+      {/* Row 1: info text + download (+ pagination on desktop) */}
+      <div className="flex items-center justify-between">
+        {infoText && (
+          <div className="text-sm text-muted-foreground">{infoText}</div>
+        )}
+        <div className="flex items-center gap-3 ml-auto">
+          <DownloadPageData transactions={transactions} disabled={isLoading} />
+          <TablePagination {...paginationProps} className="hidden sm:flex" />
+        </div>
+      </div>
+
+      {/* Row 2: pagination (mobile only) */}
+      <div className="flex sm:hidden">
+        <TablePagination {...paginationProps} />
+      </div>
     </div>
   );
 }

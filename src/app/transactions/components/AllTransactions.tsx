@@ -22,6 +22,7 @@ import {
   TransactionTableFooter,
 } from "@/components/transactions";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
+import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 
 const POLL_INTERVAL = 3000;
 
@@ -91,7 +92,6 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   );
 
   // Fetch transactions for current page
-  // Request limit + 1 to determine if there's a next page
   const {
     data: fetchedData,
     isLoading: isTxLoading,
@@ -107,24 +107,23 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
     ],
     queryFn: async () => {
       const start = getStartForPage(currentPage);
-      // Request one extra to check if there's a next page
-      const requestLimit = currentLimit + 1;
-      const actualLimit = Math.min(requestLimit, start + requestLimit);
       const transactions = await getTransactions(
-        { start: Math.max(0, start), limit: actualLimit },
+        { start: Math.max(0, start), limit: currentLimit },
         aptos_client
       );
-      return {
-        transactions,
-        hasNextPage: start > 0, // Has next page if we can go further back
-      };
+      return { transactions };
     },
     enabled: queryMaxVersion > 0,
     placeholderData: keepPreviousData,
   });
 
   const transactions = fetchedData?.transactions ?? [];
-  const hasNextPage = fetchedData?.hasNextPage ?? false;
+
+  // Calculate real total pages from ledger version
+  const totalPages =
+    queryMaxVersion > 0
+      ? Math.ceil(queryMaxVersion / currentLimit)
+      : undefined;
 
   const isLoading =
     (isLedgerLoading && frozenMaxVersion === 0) ||
@@ -185,7 +184,7 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
 
   return (
     <>
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
+      <div className="mb-4">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">All Transactions</h1>
           <NewDataNotification
@@ -194,20 +193,32 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
             isLoading={isRefreshing}
           />
         </div>
-        <div className="self-end sm:self-auto">{headerEndDecorator}</div>
+        {headerEndDecorator}
       </div>
 
       {/* Top Toolbar */}
       <TransactionTableToolbar
         currentPage={currentPage}
-        hasNextPage={hasNextPage}
+        totalPages={totalPages}
         onPageChange={handlePageChange}
         transactions={tableData}
         isLoading={isLoading}
+        infoText={
+          queryMaxVersion > 0 && (
+            <>
+              More than{" "}
+              <span className="font-medium text-foreground">
+                {queryMaxVersion.toLocaleString()}
+              </span>{" "}
+              transactions found
+            </>
+          )
+        }
       />
 
       {/* Table */}
-      <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+      <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        <TableLoadingBar visible={isFetching && !isLoading} />
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
@@ -223,7 +234,7 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
       {/* Bottom Footer */}
       <TransactionTableFooter
         currentPage={currentPage}
-        hasNextPage={hasNextPage}
+        totalPages={totalPages}
         onPageChange={handlePageChange}
         pageSize={currentLimit}
         onPageSizeChange={handlePageSizeChange}

@@ -1,5 +1,5 @@
 import { Types } from "aptos";
-import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { FileText, ArrowRight, CircleCheckBig, XCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -76,7 +76,7 @@ export function UserTransactionRow({
       <TableCell>
         <div className="flex items-center gap-2">
           {status ? (
-            <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+            <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
           ) : (
             <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
           )}

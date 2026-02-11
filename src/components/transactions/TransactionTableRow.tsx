@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FileText, ArrowRight, CheckCircle2, XCircle } from "lucide-react";
+import { FileText, ArrowRight, CircleCheckBig, XCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -109,7 +109,7 @@ export function TransactionTableRowCells({
                 truncateLength={{ start: 10, end: 0 }}
                 icon={
                   status ? (
-                    <CheckCircle2 className="h-4 w-4 text-guild-green-500 shrink-0" />
+                    <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
                   ) : (
                     <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
                   )
@@ -127,7 +127,7 @@ export function TransactionTableRowCells({
                 <TooltipTrigger asChild>
                   <div
                     className={cn(
-                      "flex items-center text-muted-foreground transition-colors cursor-default",
+                      "flex items-center text-foreground/80 transition-colors cursor-default",
                       justifyClass,
                     )}
                   >
@@ -151,7 +151,7 @@ export function TransactionTableRowCells({
         return (
           <TableCell
             key={column.key}
-            className={cn("text-muted-foreground text-sm whitespace-nowrap", widthClass)}
+            className={cn("text-foreground/80 text-sm whitespace-nowrap", widthClass)}
           >
             <TimestampToggle
               timestamp={timestamp}
@@ -165,7 +165,7 @@ export function TransactionTableRowCells({
         return (
           <TableCell key={column.key} className={widthClass}>
             {sender ? (
-              <CopyableAddress address={sender} href={`/account/${sender}`} />
+              <CopyableAddress address={sender} href={`/account/${sender}`} className="text-primary" />
             ) : (
               <span className="text-muted-foreground transition-colors">-</span>
             )}
@@ -179,6 +179,7 @@ export function TransactionTableRowCells({
               <CopyableAddress
                 address={counterparty.address}
                 href={`/account/${counterparty.address}`}
+                className="text-primary"
                 icon={
                   counterparty.role === "smartContract" ? (
                     <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />
@@ -221,7 +222,7 @@ export function TransactionTableRowCells({
         return (
           <TableCell key={column.key} className={cn(hideClass, alignClass, widthClass)}>
             {gasUsed && gasUnitPrice ? (
-              <span className="font-mono text-sm text-muted-foreground transition-colors">
+              <span className="font-mono text-sm text-foreground/70 transition-colors">
                 {formatMoveAmount(BigInt(gasUsed) * BigInt(gasUnitPrice))}
               </span>
             ) : (

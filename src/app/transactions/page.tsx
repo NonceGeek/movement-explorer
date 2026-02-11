@@ -75,10 +75,10 @@ function TransactionsContent() {
     <Button
       variant="link"
       onClick={toggleTransactionType}
-      className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
+      className="text-guild-green-500 hover:text-guild-green-400 gap-1 h-auto p-0 text-xs sm:text-sm sm:font-bold"
     >
       {isUserTransactions ? "View All Txn" : "View User Txn"}
-      <ArrowRight size={20} strokeWidth={2.5} />
+      <ArrowRight size={14} strokeWidth={2.5} className="sm:size-4" />
     </Button>
   ) : null;
 

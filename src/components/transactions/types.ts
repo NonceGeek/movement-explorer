@@ -53,9 +53,59 @@ export interface TransactionTableRowProps {
   className?: string;
 }
 
-// Pagination props
+// Pagination props (legacy)
 export interface TransactionPaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
+}
+
+// Table pagination props
+export interface TablePaginationProps {
+  currentPage: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  onPageChange: (page: number) => void;
+  onFirstPage?: () => void;
+  onLastPage?: () => void;
+  className?: string;
+  disabled?: boolean;
+}
+
+// Page size selector props
+export interface PageSizeSelectorProps {
+  value: number;
+  onChange: (size: number) => void;
+  className?: string;
+  disabled?: boolean;
+}
+
+// Download page data props
+export interface DownloadPageDataProps {
+  transactions: TransactionRowData[];
+  disabled?: boolean;
+  className?: string;
+}
+
+// Transaction table toolbar props
+export interface TransactionTableToolbarProps {
+  currentPage: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  onPageChange: (page: number) => void;
+  transactions: TransactionRowData[];
+  isLoading?: boolean;
+  className?: string;
+}
+
+// Transaction table footer props
+export interface TransactionTableFooterProps {
+  currentPage: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  onPageChange: (page: number) => void;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+  isLoading?: boolean;
+  className?: string;
 }

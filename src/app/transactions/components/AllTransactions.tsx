@@ -1,25 +1,28 @@
-import { useState, useEffect } from "react";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import {
-  useInfiniteQuery,
   useQuery,
   useIsFetching,
   keepPreviousData,
-  UseInfiniteQueryResult,
-  InfiniteData,
 } from "@tanstack/react-query";
-import { Types } from "aptos";
-import { Loader2 } from "lucide-react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import {
+  useTransactionPaginationStore,
+  PageSize,
+  DEFAULT_PAGE_SIZE,
+} from "@/store/useTransactionPaginationStore";
 import { getTransactions, getLedgerInfo } from "@/services";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
+  TransactionTableToolbar,
+  TransactionTableFooter,
 } from "@/components/transactions";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
-import { Button } from "@movementlabsxyz/movement-design-system";
 
-const LIMIT = 20;
 const POLL_INTERVAL = 3000;
 
 interface AllTransactionsProps {
@@ -28,16 +31,28 @@ interface AllTransactionsProps {
 
 export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const { aptos_client, network_value } = useGlobalStore();
-  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const isListFetching =
-    useIsFetching({ queryKey: ["transactions", "infinite", network_value] }) >
-    0;
+  const { pageSize, setPageSize } = useTransactionPaginationStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  // State for manual refresh
-  // frozenMaxVersion is the anchor for the current list
+  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+
+  // Get page from URL or default to 1
+  const pageParam = searchParams.get("page");
+  const currentPage = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+
+  // Get limit from URL or use store value
+  const limitParam = searchParams.get("limit");
+  const currentLimit: PageSize = limitParam
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
+    : pageSize;
+
+  // Frozen version for stable pagination
   const [frozenMaxVersion, setFrozenMaxVersion] = useState<number>(0);
-  // Track initial load to prevent "Refreshing..." on first mount
   const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  const isListFetching =
+    useIsFetching({ queryKey: ["transactions", "paged", network_value] }) > 0;
 
   // Poll ledger info to detect new transactions
   const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
@@ -59,84 +74,118 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
   const hasNewData =
     frozenMaxVersion > 0 && latestMaxVersion > frozenMaxVersion;
 
-  // Use frozenMaxVersion for the list query to keep it stable
-  // If frozenMaxVersion is 0 (initial), use latestMaxVersion (which might also be 0, but usually not for long)
-  // We use max(0, ver) to be safe
   const queryMaxVersion =
     frozenMaxVersion > 0 ? frozenMaxVersion : latestMaxVersion;
-  const initialStart = Math.max(0, queryMaxVersion - LIMIT + 1);
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching,
-    isLoading: isTxLoading,
-  }: UseInfiniteQueryResult<
-    InfiniteData<Types.Transaction[]>,
-    Error
-  > = useInfiniteQuery({
-    queryKey: ["transactions", "infinite", network_value, queryMaxVersion],
-    queryFn: async ({ pageParam }) => {
-      // Ensure we don't request negative start
-      return getTransactions(
-        { start: pageParam.start, limit: pageParam.limit },
-        aptos_client,
-      );
+  // Calculate start position for current page (descending order)
+  const getStartForPage = useCallback(
+    (page: number) => {
+      if (queryMaxVersion === 0) return 0;
+      // Page 1 shows newest transactions (highest versions)
+      // Page 2 shows older transactions, etc.
+      const startVersion =
+        queryMaxVersion - (page - 1) * currentLimit - currentLimit + 1;
+      return Math.max(0, startVersion);
     },
-    initialPageParam: { start: initialStart, limit: LIMIT },
-    getNextPageParam: (lastPage, allPages, lastPageParam) => {
-      // If we don't have a stable anchor yet, don't paginate
-      if (queryMaxVersion === 0) return undefined;
+    [queryMaxVersion, currentLimit]
+  );
 
-      if (lastPageParam.start === 0) return undefined;
-
-      const nextStart = lastPageParam.start - LIMIT;
-      if (nextStart >= 0) {
-        return { start: nextStart, limit: LIMIT };
-      }
-      // Partial page at the end
-      return { start: 0, limit: lastPageParam.start };
+  // Fetch transactions for current page
+  // Request limit + 1 to determine if there's a next page
+  const {
+    data: fetchedData,
+    isLoading: isTxLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      "transactions",
+      "paged",
+      network_value,
+      queryMaxVersion,
+      currentPage,
+      currentLimit,
+    ],
+    queryFn: async () => {
+      const start = getStartForPage(currentPage);
+      // Request one extra to check if there's a next page
+      const requestLimit = currentLimit + 1;
+      const actualLimit = Math.min(requestLimit, start + requestLimit);
+      const transactions = await getTransactions(
+        { start: Math.max(0, start), limit: actualLimit },
+        aptos_client
+      );
+      return {
+        transactions,
+        hasNextPage: start > 0, // Has next page if we can go further back
+      };
     },
     enabled: queryMaxVersion > 0,
     placeholderData: keepPreviousData,
   });
 
+  const transactions = fetchedData?.transactions ?? [];
+  const hasNextPage = fetchedData?.hasNextPage ?? false;
+
   const isLoading =
     (isLedgerLoading && frozenMaxVersion === 0) ||
     (isTxLoading && queryMaxVersion > 0);
 
-  const handleRefresh = () => {
-    setFrozenMaxVersion(latestMaxVersion);
-  };
+  // Transform transactions to table data (reverse to show newest first, take only currentLimit)
+  const tableData: TransactionRowData[] = transactions
+    .slice(0, currentLimit)
+    .reverse()
+    .map((tx) => {
+      const version = "version" in tx ? parseInt(tx.version) : 0;
+      return { version, transaction: tx };
+    });
 
-  // Flatten data
-  const flatTransactions = data?.pages.flatMap((page) => page) ?? [];
-
-  // Transform transactions to TransactionRowData format
-  const tableData: TransactionRowData[] = flatTransactions.map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return {
-      version,
-      transaction: tx,
-    };
-  });
-
-  // Update isFirstLoad when the query is no longer loading initially
+  // Update isFirstLoad
   useEffect(() => {
-    if (!isTxLoading && data) {
+    if (!isTxLoading && transactions.length > 0) {
       setIsFirstLoad(false);
     }
-  }, [isTxLoading, data]);
+  }, [isTxLoading, transactions]);
 
-  // Only show loading spinner on banner if we are refreshing the main list (fetching first page)
-  // and it's NOT the first load (user initiated refresh)
-  const isRefreshing = isFetching && !isFetchingNextPage && !isFirstLoad;
+  const isRefreshing = isFetching && !isFirstLoad;
+
+  // URL sync handlers
+  const updateURL = useCallback(
+    (page: number, limit: PageSize) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
+      router.push(`/transactions?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1) {
+        updateURL(page, currentLimit);
+      }
+    },
+    [currentLimit, updateURL]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: PageSize) => {
+      setPageSize(size);
+      // Reset to page 1 when changing page size
+      updateURL(1, size);
+    },
+    [setPageSize, updateURL]
+  );
+
+  const handleRefresh = () => {
+    setFrozenMaxVersion(latestMaxVersion);
+    // Reset to page 1 on refresh
+    updateURL(1, currentLimit);
+  };
 
   return (
     <>
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
+      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">All Transactions</h1>
           <NewDataNotification
@@ -148,12 +197,22 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
         <div className="self-end sm:self-auto">{headerEndDecorator}</div>
       </div>
 
+      {/* Top Toolbar */}
+      <TransactionTableToolbar
+        currentPage={currentPage}
+        hasNextPage={hasNextPage}
+        onPageChange={handlePageChange}
+        transactions={tableData}
+        isLoading={isLoading}
+      />
+
+      {/* Table */}
       <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
           isLoading={isLoading}
-          loadingRowCount={LIMIT}
+          loadingRowCount={currentLimit}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
@@ -161,25 +220,15 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
         />
       </div>
 
-      {hasNextPage && (
-        <div className="flex justify-center mt-6">
-          <Button
-            variant="outline"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="w-full sm:w-auto min-w-[200px]"
-          >
-            {isFetchingNextPage ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Load More"
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Bottom Footer */}
+      <TransactionTableFooter
+        currentPage={currentPage}
+        hasNextPage={hasNextPage}
+        onPageChange={handlePageChange}
+        pageSize={currentLimit}
+        onPageSizeChange={handlePageSizeChange}
+        isLoading={isLoading}
+      />
     </>
   );
 }

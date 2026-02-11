@@ -11,6 +11,11 @@ export type {
   TransactionTableProps,
   TransactionTableRowProps,
   TransactionPaginationProps,
+  TablePaginationProps,
+  PageSizeSelectorProps,
+  DownloadPageDataProps,
+  TransactionTableToolbarProps,
+  TransactionTableFooterProps,
 } from "./types";
 
 // Column presets
@@ -29,4 +34,9 @@ export {
   TransactionTableRowCells,
 } from "./TransactionTableRow";
 export { TransactionPagination } from "./TransactionPagination";
+export { TablePagination } from "./TablePagination";
+export { PageSizeSelector } from "./PageSizeSelector";
+export { DownloadPageData } from "./DownloadPageData";
+export { TransactionTableToolbar } from "./TransactionTableToolbar";
+export { TransactionTableFooter } from "./TransactionTableFooter";
 export { NewDataNotification } from "../common/NewDataNotification";

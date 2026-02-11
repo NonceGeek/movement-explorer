@@ -2,11 +2,10 @@
 
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Types } from "aptos";
-import { Suspense } from "react";
 import {
   StyledTable,
   StyledTableHeader,
@@ -20,19 +19,26 @@ import {
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
-  useInfiniteQuery,
   useQuery,
   useIsFetching,
+  keepPreviousData,
 } from "@tanstack/react-query";
 import { getLedgerInfo, getRecentBlocks } from "@/services";
-import { Button } from "@movementlabsxyz/movement-design-system";
-import { Loader2 } from "lucide-react";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
+import {
+  useBlocksPaginationStore,
+  PageSize,
+  DEFAULT_PAGE_SIZE,
+} from "@/store/useBlocksPaginationStore";
+import {
+  BlockTableToolbar,
+  BlockTableFooter,
+  BlockRowData,
+} from "@/components/blocks";
 
-const BLOCKS_COUNT = 20;
 const POLL_INTERVAL = 3000;
 const COLUMN_COUNT = 6;
 
@@ -46,13 +52,27 @@ function getTransactionCount(block: Types.Block): string {
 
 function BlocksContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { aptos_client, network_value } = useGlobalStore();
+  const { pageSize, setPageSize } = useBlocksPaginationStore();
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const isListFetching =
-    useIsFetching({ queryKey: ["blocks", "infinite", network_value] }) > 0;
+
+  // Get page from URL or default to 1
+  const pageParam = searchParams.get("page");
+  const currentPage = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+
+  // Get limit from URL or use store value
+  const limitParam = searchParams.get("limit");
+  const currentLimit: PageSize = limitParam
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
+    : pageSize;
 
   // State for manual refresh
   const [frozenMaxHeight, setFrozenMaxHeight] = useState<number>(0);
+  const [isFirstLoad, setIsFirstLoad] = useState(true);
+
+  const isListFetching =
+    useIsFetching({ queryKey: ["blocks", "paged", network_value] }) > 0;
 
   // Poll ledger info to detect new blocks
   const { data: ledgerInfo, isLoading: isLedgerLoading } = useQuery({
@@ -78,46 +98,101 @@ function BlocksContent() {
   const queryMaxHeight =
     frozenMaxHeight > 0 ? frozenMaxHeight : latestMaxHeight;
 
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching,
-    isLoading: isBlocksLoading,
-  } = useInfiniteQuery({
-    queryKey: ["blocks", "infinite", network_value, queryMaxHeight],
-    queryFn: async ({ pageParam }) => {
-      return getRecentBlocks(pageParam, BLOCKS_COUNT, aptos_client);
+  // Calculate start height for current page (descending order)
+  const getStartHeightForPage = useCallback(
+    (page: number) => {
+      if (queryMaxHeight === 0) return 0;
+      // Page 1 shows newest blocks (highest heights)
+      // Page 2 shows older blocks, etc.
+      return queryMaxHeight - (page - 1) * currentLimit;
     },
-    initialPageParam: queryMaxHeight,
-    getNextPageParam: (lastPage) => {
-      if (queryMaxHeight === 0) return undefined;
+    [queryMaxHeight, currentLimit]
+  );
 
-      const lastBlock = lastPage[lastPage.length - 1];
-      if (!lastBlock) return undefined;
-
-      const nextStart = parseInt(lastBlock.block_height) - 1;
-      if (nextStart >= 0) {
-        return nextStart;
-      }
-      return undefined;
+  // Fetch blocks for current page
+  const {
+    data: fetchedData,
+    isLoading: isBlocksLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      "blocks",
+      "paged",
+      network_value,
+      queryMaxHeight,
+      currentPage,
+      currentLimit,
+    ],
+    queryFn: async () => {
+      const startHeight = getStartHeightForPage(currentPage);
+      const blocks = await getRecentBlocks(startHeight, currentLimit, aptos_client);
+      // Has next page if we can go further back (lowest block height > 0)
+      const lowestHeight = startHeight - currentLimit + 1;
+      return {
+        blocks,
+        hasNextPage: lowestHeight > 0,
+      };
     },
     enabled: queryMaxHeight > 0,
+    placeholderData: keepPreviousData,
   });
+
+  const blocks = fetchedData?.blocks ?? [];
+  const hasNextPage = fetchedData?.hasNextPage ?? false;
 
   const isLoading =
     (isLedgerLoading && frozenMaxHeight === 0) ||
     (isBlocksLoading && queryMaxHeight > 0);
 
+  // Transform blocks to table data
+  const tableData: BlockRowData[] = blocks.map((block) => ({
+    blockHeight: parseInt(block.block_height),
+    block,
+  }));
+
+  // Update isFirstLoad
+  useEffect(() => {
+    if (!isBlocksLoading && blocks.length > 0) {
+      setIsFirstLoad(false);
+    }
+  }, [isBlocksLoading, blocks]);
+
+  const isRefreshing = isFetching && !isFirstLoad;
+
+  // URL sync handlers
+  const updateURL = useCallback(
+    (page: number, limit: PageSize) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
+      router.push(`/blocks?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1) {
+        updateURL(page, currentLimit);
+      }
+    },
+    [currentLimit, updateURL]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: PageSize) => {
+      setPageSize(size);
+      // Reset to page 1 when changing page size
+      updateURL(1, size);
+    },
+    [setPageSize, updateURL]
+  );
+
   const handleRefresh = () => {
     setFrozenMaxHeight(latestMaxHeight);
+    // Reset to page 1 on refresh
+    updateURL(1, currentLimit);
   };
-
-  // Flatten data
-  const flatBlocks = data?.pages.flatMap((page) => page) ?? [];
-
-  const isRefreshing = isFetching && !isFetchingNextPage;
 
   return (
     <>
@@ -131,6 +206,15 @@ function BlocksContent() {
             isLoading={isRefreshing}
           />
         </div>
+
+        {/* Top Toolbar */}
+        <BlockTableToolbar
+          currentPage={currentPage}
+          hasNextPage={hasNextPage}
+          onPageChange={handlePageChange}
+          blocks={tableData}
+          isLoading={isLoading}
+        />
 
         <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           <StyledTable>
@@ -157,14 +241,14 @@ function BlocksContent() {
             </StyledTableHeader>
             <TableBody>
               {isLoading
-                ? Array.from({ length: BLOCKS_COUNT }).map((_, i) => (
+                ? Array.from({ length: currentLimit }).map((_, i) => (
                     <TableRow key={i} className="h-16">
                       <TableCell colSpan={COLUMN_COUNT}>
                         <EnhancedSkeleton className="h-13 w-full" />
                       </TableCell>
                     </TableRow>
                   ))
-                : flatBlocks.map((block: Types.Block) => (
+                : blocks.map((block: Types.Block) => (
                     <StyledTableRow
                       key={block.block_height}
                       className="animate-in slide-in-from-top-2 fade-in duration-500 cursor-pointer"
@@ -225,25 +309,15 @@ function BlocksContent() {
           </StyledTable>
         </div>
 
-        {!isLoading && hasNextPage && (
-          <div className="flex justify-center mt-6">
-            <Button
-              variant="outline"
-              onClick={() => fetchNextPage()}
-              disabled={isFetchingNextPage}
-              className="w-full sm:w-auto min-w-[200px]"
-            >
-              {isFetchingNextPage ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Loading...
-                </>
-              ) : (
-                "Load More"
-              )}
-            </Button>
-          </div>
-        )}
+        {/* Bottom Footer */}
+        <BlockTableFooter
+          currentPage={currentPage}
+          hasNextPage={hasNextPage}
+          onPageChange={handlePageChange}
+          pageSize={currentLimit}
+          onPageSizeChange={handlePageSizeChange}
+          isLoading={isLoading}
+        />
       </PageContainer>
     </>
   );

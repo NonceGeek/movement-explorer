@@ -13,6 +13,7 @@ import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
 } from "@/components/transactions";
+import { DEFAULT_PAGE_SIZE } from "@/store/useTransactionPaginationStore";
 
 function TransactionsContent() {
   const searchParams = useSearchParams();
@@ -42,12 +43,14 @@ function TransactionsContent() {
   }, [typeParam, isGraphqlClientSupported, router, searchParams]);
 
   const toggleTransactionType = () => {
-    const params = new URLSearchParams();
+    const params = new URLSearchParams(searchParams.toString());
     if (isUserTransactions) {
       params.set("type", "all");
     } else {
       params.set("type", "user");
     }
+    // Reset to page 1 when switching types, but keep limit
+    params.set("page", "1");
     router.push(`/transactions?${params.toString()}`);
     setIsUserTransactions(!isUserTransactions);
   };
@@ -60,7 +63,7 @@ function TransactionsContent() {
           data={[]}
           columns={ALL_TRANSACTION_COLUMNS}
           isLoading={true}
-          loadingRowCount={20}
+          loadingRowCount={DEFAULT_PAGE_SIZE}
           timestampMode="age"
           onToggleTimestampMode={() => { }}
         />
@@ -102,7 +105,7 @@ export default function TransactionsPage() {
                 data={[]}
                 columns={ALL_TRANSACTION_COLUMNS}
                 isLoading={true}
-                loadingRowCount={20}
+                loadingRowCount={DEFAULT_PAGE_SIZE}
                 timestampMode="age"
                 onToggleTimestampMode={() => { }}
               />

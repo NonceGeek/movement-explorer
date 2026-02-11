@@ -1,41 +1,48 @@
-import { useState, useEffect } from "react";
-import { Loader2 } from "lucide-react";
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
 import {
-  useInfiniteQuery,
   useQuery,
   useIsFetching,
   keepPreviousData,
 } from "@tanstack/react-query";
 import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
+import { useSearchParams, useRouter } from "next/navigation";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import {
+  useTransactionPaginationStore,
+  PageSize,
+  DEFAULT_PAGE_SIZE,
+} from "@/store/useTransactionPaginationStore";
 import { getTransaction } from "@/services";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
   TransactionRowData,
+  TransactionTableToolbar,
+  TransactionTableFooter,
 } from "@/components/transactions";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
-import { Button } from "@movementlabsxyz/movement-design-system";
 
-const LIMIT = 20;
 const POLL_INTERVAL = 3000;
 
+// Query with limit+1 to determine hasNextPage
 const USER_TRANSACTIONS_QUERY = gql`
-  query UserTransactions($limit: Int, $start_version: bigint) {
+  query UserTransactions($limit: Int!, $offset: Int!) {
     user_transactions(
       limit: $limit
+      offset: $offset
       order_by: { version: desc }
-      where: { version: { _lte: $start_version } }
     ) {
       version
     }
   }
 `;
 
-const TOP_USER_TRANSACTIONS_QUERY = gql`
-  query UserTransactions($limit: Int) {
-    user_transactions(limit: $limit, order_by: { version: desc }) {
+const TOP_USER_TRANSACTION_QUERY = gql`
+  query TopUserTransaction {
+    user_transactions(limit: 1, order_by: { version: desc }) {
       version
     }
   }
@@ -43,7 +50,13 @@ const TOP_USER_TRANSACTIONS_QUERY = gql`
 
 interface UserTransactionsQueryResponse {
   user_transactions: {
-    version: any;
+    version: string;
+  }[];
+}
+
+interface TopUserTransactionResponse {
+  user_transactions: {
+    version: string;
   }[];
 }
 
@@ -56,32 +69,41 @@ export function UserTransactions({
 }: UserTransactionsProps) {
   const { aptos_client, network_value } = useGlobalStore();
   const apolloClient = useApolloClient();
+  const { pageSize, setPageSize } = useTransactionPaginationStore();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
-  // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const isListFetching =
-    useIsFetching({
-      queryKey: ["userTransactions", "infinite", network_value],
-    }) > 0;
 
-  // State for manual refresh
+  // Get page from URL or default to 1
+  const pageParam = searchParams.get("page");
+  const currentPage = pageParam ? Math.max(1, parseInt(pageParam) || 1) : 1;
+
+  // Get limit from URL or use store value
+  const limitParam = searchParams.get("limit");
+  const currentLimit: PageSize = limitParam
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
+    : pageSize;
+
+  // Frozen version for stable pagination
   const [frozenLatestVersion, setFrozenLatestVersion] = useState<number>(0);
-  // Track initial load to prevent "Refreshing..." on first mount
   const [isFirstLoad, setIsFirstLoad] = useState(true);
 
-  // Poll for the absolute latest version to detect new transactions
+  const isListFetching =
+    useIsFetching({
+      queryKey: ["userTransactions", "paged", network_value],
+    }) > 0;
+
+  // Poll for the latest version to detect new transactions
   const { data: polledLatestVersion } = useQuery({
     queryKey: ["userTransactions", "latest", network_value],
     queryFn: async () => {
-      const response = await apolloClient.query<UserTransactionsQueryResponse>({
-        query: TOP_USER_TRANSACTIONS_QUERY,
-        variables: { limit: 1 },
+      const response = await apolloClient.query<TopUserTransactionResponse>({
+        query: TOP_USER_TRANSACTION_QUERY,
         fetchPolicy: "network-only",
       });
-      const versions = (response.data?.user_transactions || []).map(
-        (t) => t.version,
-      );
-      return versions.length > 0 ? parseInt(versions[0]) : 0;
+      const versions = response.data?.user_transactions || [];
+      return versions.length > 0 ? parseInt(versions[0].version) : 0;
     },
     refetchInterval: POLL_INTERVAL,
     enabled: !isListFetching,
@@ -96,105 +118,122 @@ export function UserTransactions({
     }
   }, [latestVersionRaw, frozenLatestVersion]);
 
-  // Use frozen state as the anchor for the list unless it's initial load
-  const anchorVersion = frozenLatestVersion > 0 ? frozenLatestVersion : null;
-
-  const {
-    data,
-    fetchNextPage,
-    hasNextPage,
-    isFetchingNextPage,
-    isFetching,
-    isLoading,
-  } = useInfiniteQuery({
-    queryKey: ["userTransactions", "infinite", network_value, anchorVersion],
-    queryFn: async ({ pageParam }) => {
-      // Step 1: Fetch Versions via Apollo
-      // If pageParam is null (first page), use anchors.
-      // If anchorVersion is set (manual refresh mode), we start from there.
-      // If anchorVersion is null (initial), we fetch top.
-
-      let query = TOP_USER_TRANSACTIONS_QUERY;
-      let variables: any = { limit: LIMIT };
-
-      if (pageParam !== null) {
-        // Subsequent pages
-        query = USER_TRANSACTIONS_QUERY;
-        variables = { limit: LIMIT, start_version: pageParam };
-      } else if (anchorVersion !== null) {
-        // First page with manual anchor
-        query = USER_TRANSACTIONS_QUERY;
-        variables = { limit: LIMIT, start_version: anchorVersion };
-      }
-      // Else: First page, no anchor yet (initial load) -> TOP_USER_TRANSACTIONS_QUERY
-
-      const response = await apolloClient.query<UserTransactionsQueryResponse>({
-        query,
-        variables,
-        fetchPolicy: "network-only",
-      });
-
-      const versions: number[] = (response.data?.user_transactions || []).map(
-        (t) => t.version,
-      );
-
-      if (versions.length === 0) return [];
-
-      // Step 2: Fetch Details via Aptos Client
-      const details = await Promise.all(
-        versions.map((v) =>
-          getTransaction({ txnHashOrVersion: v }, aptos_client),
-        ),
-      );
-
-      return details;
-    },
-    initialPageParam: null as number | null,
-    getNextPageParam: (lastPage) => {
-      if (!lastPage || lastPage.length < LIMIT) return undefined;
-      const lastTx = lastPage[lastPage.length - 1];
-      if ("version" in lastTx) {
-        return parseInt(lastTx.version) - 1;
-      }
-      return undefined;
-    },
-    enabled: true, // Always enabled, logic inside queryFn handles null anchor
-    placeholderData: keepPreviousData,
-  });
-
   const hasNewData =
     frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion;
 
-  const handleRefresh = () => {
-    setFrozenLatestVersion(latestVersionRaw);
-  };
+  // Fetch transactions for current page
+  // Request limit + 1 to determine if there's a next page
+  const {
+    data: fetchedData,
+    isLoading: isTxLoading,
+    isFetching,
+  } = useQuery({
+    queryKey: [
+      "userTransactions",
+      "paged",
+      network_value,
+      frozenLatestVersion,
+      currentPage,
+      currentLimit,
+    ],
+    queryFn: async () => {
+      const offset = (currentPage - 1) * currentLimit;
+      // Request one extra to check if there's a next page
+      const requestLimit = currentLimit + 1;
 
-  // Flatten data
-  const flatTransactions = data?.pages.flatMap((page) => page) ?? [];
+      // Step 1: Fetch versions via GraphQL
+      const response = await apolloClient.query<UserTransactionsQueryResponse>({
+        query: USER_TRANSACTIONS_QUERY,
+        variables: { limit: requestLimit, offset },
+        fetchPolicy: "network-only",
+      });
 
-  // Transform to TransactionRowData format
-  const tableData: TransactionRowData[] = flatTransactions.map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return {
-      version,
-      transaction: tx,
-    };
+      const allVersions = (response.data?.user_transactions || []).map((t) =>
+        parseInt(t.version)
+      );
+
+      // Check if there's a next page
+      const hasNextPage = allVersions.length > currentLimit;
+
+      // Only use the first currentLimit versions for display
+      const versions = allVersions.slice(0, currentLimit);
+
+      if (versions.length === 0) {
+        return { transactions: [], hasNextPage: false };
+      }
+
+      // Step 2: Fetch full transaction details via Aptos client
+      const details = await Promise.all(
+        versions.map((v) =>
+          getTransaction({ txnHashOrVersion: v }, aptos_client)
+        )
+      );
+
+      return { transactions: details, hasNextPage };
+    },
+    enabled: frozenLatestVersion > 0 || latestVersionRaw > 0,
+    placeholderData: keepPreviousData,
   });
 
-  // Update isFirstLoad when the query is no longer loading initially
+  const transactions = fetchedData?.transactions ?? [];
+  const hasNextPage = fetchedData?.hasNextPage ?? false;
+
+  const isLoading =
+    isTxLoading && (frozenLatestVersion > 0 || latestVersionRaw > 0);
+
+  // Transform to table data
+  const tableData: TransactionRowData[] = transactions.map((tx) => {
+    const version = "version" in tx ? parseInt(tx.version) : 0;
+    return { version, transaction: tx };
+  });
+
+  // Update isFirstLoad
   useEffect(() => {
-    if (!isLoading && data) {
+    if (!isTxLoading && transactions.length > 0) {
       setIsFirstLoad(false);
     }
-  }, [isLoading, data]);
+  }, [isTxLoading, transactions]);
 
-  // Only show loading spinner on banner if we are refreshing the main list (fetching first page)
-  // and it's NOT the first load (user initiated refresh)
-  const isRefreshing = isFetching && !isFetchingNextPage && !isFirstLoad;
+  const isRefreshing = isFetching && !isFirstLoad;
+
+  // URL sync handlers
+  const updateURL = useCallback(
+    (page: number, limit: PageSize) => {
+      const params = new URLSearchParams(searchParams.toString());
+      params.set("page", page.toString());
+      params.set("limit", limit.toString());
+      router.push(`/transactions?${params.toString()}`, { scroll: false });
+    },
+    [router, searchParams]
+  );
+
+  const handlePageChange = useCallback(
+    (page: number) => {
+      if (page >= 1) {
+        updateURL(page, currentLimit);
+      }
+    },
+    [currentLimit, updateURL]
+  );
+
+  const handlePageSizeChange = useCallback(
+    (size: PageSize) => {
+      setPageSize(size);
+      // Reset to page 1 when changing page size
+      updateURL(1, size);
+    },
+    [setPageSize, updateURL]
+  );
+
+  const handleRefresh = () => {
+    setFrozenLatestVersion(latestVersionRaw);
+    // Reset to page 1 on refresh
+    updateURL(1, currentLimit);
+  };
 
   return (
     <>
-      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 sm:gap-0">
+      <div className="flex flex-col-reverse sm:flex-row justify-between items-start sm:items-center mb-4 gap-4 sm:gap-0">
         <div className="flex items-center gap-3">
           <h1 className="text-xl sm:text-3xl font-bold">User Transactions</h1>
           <NewDataNotification
@@ -206,12 +245,22 @@ export function UserTransactions({
         <div className="self-end sm:self-auto">{headerEndDecorator}</div>
       </div>
 
+      {/* Top Toolbar */}
+      <TransactionTableToolbar
+        currentPage={currentPage}
+        hasNextPage={hasNextPage}
+        onPageChange={handlePageChange}
+        transactions={tableData}
+        isLoading={isLoading}
+      />
+
+      {/* Table */}
       <div className="overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
           isLoading={isLoading}
-          loadingRowCount={LIMIT}
+          loadingRowCount={currentLimit}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
@@ -219,25 +268,15 @@ export function UserTransactions({
         />
       </div>
 
-      {hasNextPage && (
-        <div className="flex justify-center mt-6">
-          <Button
-            variant="outline"
-            onClick={() => fetchNextPage()}
-            disabled={isFetchingNextPage}
-            className="w-full sm:w-auto min-w-[200px]"
-          >
-            {isFetchingNextPage ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Loading...
-              </>
-            ) : (
-              "Load More"
-            )}
-          </Button>
-        </div>
-      )}
+      {/* Bottom Footer */}
+      <TransactionTableFooter
+        currentPage={currentPage}
+        hasNextPage={hasNextPage}
+        onPageChange={handlePageChange}
+        pageSize={currentLimit}
+        onPageSizeChange={handlePageSizeChange}
+        isLoading={isLoading}
+      />
     </>
   );
 }

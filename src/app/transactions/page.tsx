@@ -9,6 +9,7 @@ import { ArrowRight } from "lucide-react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { UserTransactions } from "./components/UserTransactions";
 import { AllTransactions } from "./components/AllTransactions";
+import { BlockTransactions } from "./components/BlockTransactions";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
@@ -20,6 +21,11 @@ function TransactionsContent() {
   const router = useRouter();
   const isGraphqlClientSupported = useGetIsGraphqlClientSupported();
 
+  // Check for block filter
+  const blockParam = searchParams.get("block");
+  const blockHeight = blockParam ? parseInt(blockParam) : null;
+  const isBlockFilter = blockHeight !== null && !isNaN(blockHeight);
+
   // Determine the initial type based on URL or graphql support
   const typeParam = searchParams.get("type");
   const [isUserTransactions, setIsUserTransactions] = useState<boolean | null>(
@@ -28,6 +34,7 @@ function TransactionsContent() {
 
   // Set initial type on mount
   useEffect(() => {
+    if (isBlockFilter) return;
     if (typeParam === "all") {
       setIsUserTransactions(false);
     } else if (typeParam === "user") {
@@ -40,7 +47,7 @@ function TransactionsContent() {
       params.set("type", isGraphqlClientSupported ? "user" : "all");
       router.replace(`/transactions?${params.toString()}`);
     }
-  }, [typeParam, isGraphqlClientSupported, router, searchParams]);
+  }, [typeParam, isGraphqlClientSupported, router, searchParams, isBlockFilter]);
 
   const toggleTransactionType = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -54,6 +61,32 @@ function TransactionsContent() {
     router.push(`/transactions?${params.toString()}`);
     setIsUserTransactions(!isUserTransactions);
   };
+
+  // Block filter mode
+  if (isBlockFilter) {
+    const clearBlockFilter = (
+      <Button
+        variant="link"
+        onClick={() => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("block");
+          params.set("type", "all");
+          params.set("page", "1");
+          router.push(`/transactions?${params.toString()}`);
+        }}
+        className="text-guild-green-500 hover:text-guild-green-400 gap-1 h-auto p-0 text-xs sm:text-sm sm:font-bold"
+      >
+        View All Txn
+        <ArrowRight size={14} strokeWidth={2.5} className="sm:size-4" />
+      </Button>
+    );
+    return (
+      <BlockTransactions
+        blockHeight={blockHeight}
+        headerEndDecorator={clearBlockFilter}
+      />
+    );
+  }
 
   // Show skeleton while determining the type
   if (isUserTransactions === null) {

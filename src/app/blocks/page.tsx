@@ -220,7 +220,7 @@ function BlocksContent() {
               <>
                 Network Height{" "}
                 <span className="font-medium text-foreground">
-                  #{queryMaxHeight.toLocaleString()}
+                  #{queryMaxHeight}
                 </span>
               </>
             )

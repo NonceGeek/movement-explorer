@@ -33,7 +33,7 @@ export function PageSizeSelector({
             onClick={() => onChange(size)}
             disabled={disabled}
             className={cn(
-              "h-8 min-w-[36px] px-2 rounded-md text-sm font-medium transition-colors",
+              "h-8 min-w-[36px] px-2 rounded-md text-sm font-medium transition-colors cursor-pointer",
               "border border-transparent",
               "hover:bg-muted hover:text-foreground",
               "disabled:opacity-50 disabled:cursor-not-allowed",

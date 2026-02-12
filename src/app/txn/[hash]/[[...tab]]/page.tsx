@@ -4,11 +4,12 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
-import { useParams, useSearchParams } from "next/navigation";
+import { useGetPrice } from "@/hooks/useGetPrice";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import { Types } from "aptos";
-import { Card, CardContent, SectionCard } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
@@ -21,36 +22,37 @@ import {
   GitCommit,
 } from "lucide-react";
 import {
-  formatTimestamp,
   getGasInfo,
   getTransactionCounterparty,
   getTransactionFunction,
-  getBalanceChanges,
   getTransactionAmount,
   getStorageRefund,
   getTransactionActions,
 } from "@/utils/transaction";
 import {
-  InfoItem,
-  BalanceChangeTable,
   BalanceChangeTab,
-  ActionsDisplay,
-  CollapsibleList,
+  TransactionActionCard,
+  parseTransactionActions,
+  PayloadDecoder,
+  ChangesTab,
+  EventsTab,
 } from "../components";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { Button } from "@/components/ui/button";
 import JsonViewer from "@/components/ui/json-viewer";
+import { TransactionDetailsTable } from "../components/TransactionDetailsTable";
+import { DetailSection, DetailRow } from "../components/DetailRow";
 
 export default function TransactionDetailPage() {
   const params = useParams();
-  const searchParams = useSearchParams();
   const hash = params.hash as string;
   const tabSlug = params.tab as string[] | undefined;
   const initialTab = tabSlug ? tabSlug[0] : "overview";
   const [showRaw, setShowRaw] = useState(false);
-
-  // Tabs
   const [currentTab, setCurrentTab] = useState(initialTab);
+
+  // Fetch MOVE price
+  const { data: movePrice } = useGetPrice("movement");
 
   const handleTabChange = (value: string) => {
     const scrollY = window.scrollY;
@@ -61,7 +63,6 @@ export default function TransactionDetailPage() {
     });
   };
 
-
   const { data: tx, isLoading, error } = useGetTransaction(hash);
 
   // Fetch block height based on transaction version
@@ -70,32 +71,9 @@ export default function TransactionDetailPage() {
     version: version ? parseInt(version) : 0,
     withTransactions: false,
   });
-  // Basic fields
-  const {
-    isSuccess,
-    txVersion,
-    timestamp,
-    sender,
-    sequenceNumber,
-    expirationTimestamp,
-    vmStatus,
-    stateChangeHash,
-    eventRootHash,
-    accumulatorRootHash,
-    signature,
-    feePayer,
-    secondarySigners,
-    gasInfo,
-    payload,
-    events,
-    changes,
-    balanceChanges,
-    transactionAmount,
-    storageRefund,
-    transactionActions,
-    counterparty,
-    functionName,
-  } = useMemo(() => {
+
+  // Extract all transaction data
+  const txData = useMemo(() => {
     if (!tx) {
       return {
         isSuccess: true,
@@ -115,12 +93,12 @@ export default function TransactionDetailPage() {
         payload: null,
         events: [],
         changes: [],
-        balanceChanges: [],
         transactionAmount: null,
         storageRefund: null,
         transactionActions: [],
         counterparty: null,
         functionName: null,
+        parsedActions: [],
       };
     }
 
@@ -128,8 +106,6 @@ export default function TransactionDetailPage() {
     const txVersion = "version" in tx ? tx.version : null;
     const timestamp = "timestamp" in tx ? tx.timestamp : null;
     const sender = "sender" in tx ? (tx as Types.UserTransaction).sender : null;
-
-    // Additional fields
     const sequenceNumber =
       "sequence_number" in tx
         ? (tx as Types.UserTransaction).sequence_number
@@ -147,7 +123,6 @@ export default function TransactionDetailPage() {
     const signature =
       "signature" in tx ? (tx as Types.UserTransaction).signature : null;
 
-    // Fee payer & secondary signers
     let feePayer: string | undefined;
     let secondarySigners: string[] | undefined;
     if (signature) {
@@ -167,16 +142,12 @@ export default function TransactionDetailPage() {
       "payload" in tx ? (tx as Types.UserTransaction).payload : null;
     const events = "events" in tx ? tx.events : [];
     const changes = "changes" in tx ? tx.changes : [];
-    const balanceChanges = getBalanceChanges(tx);
-
-    // New fields
     const transactionAmount = getTransactionAmount(tx);
     const storageRefund = getStorageRefund(tx);
     const transactionActions = getTransactionActions(tx);
-
-    // Counterparty and function
     const counterparty = getTransactionCounterparty(tx);
     const functionName = getTransactionFunction(tx);
+    const parsedActions = parseTransactionActions(tx);
 
     return {
       isSuccess,
@@ -196,12 +167,12 @@ export default function TransactionDetailPage() {
       payload,
       events,
       changes,
-      balanceChanges,
       transactionAmount,
       storageRefund,
       transactionActions,
       counterparty,
       functionName,
+      parsedActions,
     };
   }, [tx]);
 
@@ -213,12 +184,12 @@ export default function TransactionDetailPage() {
     },
     {
       value: "balance",
-      label: `Balance Change (${balanceChanges.length})`,
+      label: "Balance Changes",
       icon: <Wallet className="w-4 h-4" />,
     },
     {
       value: "events",
-      label: `Events (${events?.length || 0})`,
+      label: `Events (${txData.events?.length || 0})`,
       icon: <Activity className="w-4 h-4" />,
     },
     {
@@ -228,28 +199,56 @@ export default function TransactionDetailPage() {
     },
     {
       value: "changes",
-      label: `Changes (${changes?.length || 0})`,
+      label: `Changes (${txData.changes?.length || 0})`,
       icon: <GitCommit className="w-4 h-4" />,
     },
   ];
 
+  // Loading State
   if (isLoading) {
     return (
       <>
         <PageNavigation />
-        <div className="container mx-auto px-4 py-8">
-          <div className="space-y-4">
-            <EnhancedSkeleton className="h-10 w-64" />
-            <EnhancedSkeleton className="h-96 w-full" />
+        <PageContainer>
+          <div className="flex items-center gap-4 mb-6">
+            <CopyableAddress
+              address={hash}
+              truncateLength={{ start: 16, end: 16 }}
+              className="text-muted-foreground"
+            />
+            <EnhancedSkeleton className="h-6 w-20" />
           </div>
-        </div>
+
+          <Tabs value="overview" className="space-y-3">
+            <CompactTabsList
+              items={[
+                { value: "overview", label: "Overview", icon: <LayoutDashboard className="w-4 h-4" /> },
+                { value: "balance", label: "Balance Changes", icon: <Wallet className="w-4 h-4" /> },
+                { value: "events", label: "Events", icon: <Activity className="w-4 h-4" /> },
+                { value: "payload", label: "Payload", icon: <Code className="w-4 h-4" /> },
+                { value: "changes", label: "Changes", icon: <GitCommit className="w-4 h-4" /> },
+              ]}
+              activeTab="overview"
+              onTabChange={() => {}}
+            />
+
+            <TabsContent value="overview" className="space-y-4">
+              <DetailSection>
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <DetailRow key={i} label="">
+                    <EnhancedSkeleton className="h-5 w-full max-w-md" />
+                  </DetailRow>
+                ))}
+              </DetailSection>
+            </TabsContent>
+          </Tabs>
+        </PageContainer>
       </>
     );
   }
 
-  // Check if transaction not found
+  // Not Found State
   const isNotFound = error?.type === "Not Found";
-
   if (isNotFound || (!tx && !isLoading)) {
     return (
       <>
@@ -278,6 +277,7 @@ export default function TransactionDetailPage() {
     );
   }
 
+  // Error State
   if (error || !tx) {
     return (
       <>
@@ -301,15 +301,15 @@ export default function TransactionDetailPage() {
     <>
       <PageNavigation />
       <PageContainer>
-        {/* Transaction Hash with Status */}
+        {/* Transaction Hash Header */}
         <div className="flex items-center gap-4 mb-6">
           <CopyableAddress
             address={tx.hash}
             truncateLength={{ start: 16, end: 16 }}
             className="text-muted-foreground"
           />
-          <Badge variant={isSuccess ? "success" : "error"}>
-            {isSuccess ? "✓ Success" : "✗ Failed"}
+          <Badge variant={txData.isSuccess ? "success" : "error"}>
+            {txData.isSuccess ? "Success" : "Failed"}
           </Badge>
         </div>
 
@@ -327,6 +327,11 @@ export default function TransactionDetailPage() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
+            {/* Transaction Actions Card */}
+            {txData.parsedActions && txData.parsedActions.length > 0 && (
+              <TransactionActionCard actions={txData.parsedActions} />
+            )}
+
             <div className="flex justify-start">
               <Button
                 variant="outline"
@@ -334,274 +339,58 @@ export default function TransactionDetailPage() {
                 onClick={() => setShowRaw(!showRaw)}
                 className="font-mono text-xs"
               >
-                {showRaw ? "Formatted" : "Raw"}
+                {showRaw ? "Formatted" : "Raw JSON"}
               </Button>
             </div>
+
             {showRaw ? (
               <JsonViewer data={tx} initialDepth={2} />
             ) : (
-              <div className="space-y-4">
-                {/* Basic Info */}
-                <SectionCard title="Basic Info">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <InfoItem label="Version" value={txVersion} mono />
-                    {blockHeight && (
-                      <InfoItem label="Block">
-                        <Link
-                          href={`/block/${blockHeight}`}
-                          className="font-mono text-sm text-primary hover:underline"
-                        >
-                          {blockHeight}
-                        </Link>
-                      </InfoItem>
-                    )}
-                    <InfoItem
-                      label="Timestamp"
-                      value={timestamp ? formatTimestamp(timestamp) : null}
-                      mono
-                    />
-                    <InfoItem label="Type">
-                      <Badge variant="secondary" className="capitalize">
-                        {tx.type.replace(/_/g, " ")}
-                      </Badge>
-                    </InfoItem>
-                  </div>
-                  <InfoItem label="Hash">
-                    <CopyableAddress
-                      address={tx.hash}
-                      showFull
-                      variant="hash"
-                    />
-                  </InfoItem>
-                  {sender && (
-                    <InfoItem label="Sender">
-                      <CopyableAddress
-                        address={sender}
-                        href={`/account/${sender}`}
-                        showFull
-                      />
-                    </InfoItem>
-                  )}
-                  {feePayer && (
-                    <InfoItem label="Fee Payer">
-                      <CopyableAddress
-                        address={feePayer}
-                        href={`/account/${feePayer}`}
-                        showFull
-                      />
-                    </InfoItem>
-                  )}
-                  {secondarySigners && secondarySigners.length > 0 && (
-                    <InfoItem label="Secondary Signers">
-                      <div className="space-y-2">
-                        {secondarySigners.map((addr, i) => (
-                          <div key={i}>
-                            <CopyableAddress
-                              address={addr}
-                              href={`/account/${addr}`}
-                              showFull
-                            />
-                          </div>
-                        ))}
-                      </div>
-                    </InfoItem>
-                  )}
-                  {counterparty && (
-                    <InfoItem
-                      label={
-                        counterparty.role === "receiver"
-                          ? "Receiver"
-                          : "Smart Contract"
-                      }
-                    >
-                      <CopyableAddress
-                        address={counterparty.address}
-                        href={`/account/${counterparty.address}`}
-                        showFull
-                      />
-                    </InfoItem>
-                  )}
-                  {functionName && (
-                    <InfoItem label="Function">
-                      <CopyableAddress address={functionName} showFull />
-                    </InfoItem>
-                  )}
-                  {transactionAmount && (
-                    <InfoItem
-                      label="Amount"
-                      value={`${(Number(transactionAmount) / 1e8).toFixed(
-                        8,
-                      )} MOVE`}
-                      mono
-                    />
-                  )}
-                  {transactionActions.length > 0 && (
-                    <InfoItem label="Actions">
-                      <ActionsDisplay actions={transactionActions} />
-                    </InfoItem>
-                  )}
-                </SectionCard>
-
-                {/* Gas Info */}
-                {gasInfo && (
-                  <SectionCard title="Gas Info">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <InfoItem label="Gas Used" value={gasInfo.gasUsed} mono />
-                      <InfoItem
-                        label="Gas Price"
-                        value={`${gasInfo.gasPrice} Octas`}
-                        mono
-                      />
-                      {gasInfo.maxGas && (
-                        <InfoItem label="Max Gas" value={gasInfo.maxGas} mono />
-                      )}
-                      <InfoItem
-                        label="Gas Fee"
-                        value={`${(Number(gasInfo.gasFee) / 1e8).toFixed(
-                          8,
-                        )} MOVE`}
-                        mono
-                      />
-                    </div>
-                    {storageRefund && (
-                      <InfoItem
-                        label="Storage Refund"
-                        value={`${(Number(storageRefund) / 1e8).toFixed(
-                          8,
-                        )} MOVE`}
-                        mono
-                      />
-                    )}
-                  </SectionCard>
-                )}
-
-                {/* Execution Info */}
-                {(sequenceNumber || expirationTimestamp || vmStatus) && (
-                  <SectionCard title="Execution Info">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {sequenceNumber && (
-                        <InfoItem
-                          label="Sequence Number"
-                          value={sequenceNumber}
-                          mono
-                        />
-                      )}
-                      {expirationTimestamp && (
-                        <InfoItem
-                          label="Expiration"
-                          value={new Date(
-                            parseInt(expirationTimestamp) * 1000,
-                          ).toLocaleString()}
-                          mono
-                        />
-                      )}
-                      {vmStatus && (
-                        <InfoItem label="VM Status">
-                          <Badge
-                            variant={isSuccess ? "success" : "error"}
-                            className="font-mono text-xs"
-                          >
-                            {vmStatus}
-                          </Badge>
-                        </InfoItem>
-                      )}
-                    </div>
-                  </SectionCard>
-                )}
-
-                {/* Advanced */}
-                {(stateChangeHash ||
-                  eventRootHash ||
-                  accumulatorRootHash ||
-                  signature) && (
-                    <SectionCard title="Advanced" defaultCollapsed>
-                      {stateChangeHash && (
-                        <InfoItem label="State Change Hash">
-                          <CopyableAddress
-                            address={stateChangeHash}
-                            showFull
-                            variant="hash"
-                          />
-                        </InfoItem>
-                      )}
-                      {eventRootHash && (
-                        <InfoItem label="Event Root Hash">
-                          <CopyableAddress
-                            address={eventRootHash}
-                            showFull
-                            variant="hash"
-                          />
-                        </InfoItem>
-                      )}
-                      {accumulatorRootHash && (
-                        <InfoItem label="Accumulator Root Hash">
-                          <CopyableAddress
-                            address={accumulatorRootHash}
-                            showFull
-                            variant="hash"
-                          />
-                        </InfoItem>
-                      )}
-                      {signature && (
-                        <div className="space-y-1">
-                          <p className="text-sm text-muted-foreground">
-                            Signature
-                          </p>
-                          <JsonViewer data={signature} initialDepth={1} />
-                        </div>
-                      )}
-                    </SectionCard>
-                  )}
-              </div>
+              <TransactionDetailsTable
+                hash={tx.hash}
+                type={tx.type}
+                version={txData.txVersion}
+                blockHeight={blockHeight}
+                timestamp={txData.timestamp}
+                sender={txData.sender}
+                counterparty={txData.counterparty}
+                functionName={txData.functionName}
+                amount={txData.transactionAmount}
+                gasInfo={txData.gasInfo}
+                sequenceNumber={txData.sequenceNumber}
+                expirationTimestamp={txData.expirationTimestamp}
+                vmStatus={txData.vmStatus}
+                isSuccess={txData.isSuccess}
+                stateChangeHash={txData.stateChangeHash}
+                eventRootHash={txData.eventRootHash}
+                accumulatorRootHash={txData.accumulatorRootHash}
+                signature={txData.signature}
+                feePayer={txData.feePayer}
+                secondarySigners={txData.secondarySigners}
+                usdPrice={movePrice}
+                actions={txData.transactionActions}
+              />
             )}
           </TabsContent>
 
           {/* Balance Change Tab */}
           <TabsContent value="balance">
-            {/* <BalanceChangeTable changes={balanceChanges} /> */}
             <BalanceChangeTab transaction={tx} />
           </TabsContent>
 
           {/* Events Tab */}
           <TabsContent value="events">
-            <CollapsibleList
-              items={
-                events?.map((event, i) => ({
-                  key: i,
-                  title: `#${event.sequence_number} - ${event.type}`,
-                  data: event.data,
-                })) || []
-              }
-              emptyMessage="No events"
-            />
+            <EventsTab events={txData.events || []} />
           </TabsContent>
 
+          {/* Payload Tab */}
           <TabsContent value="payload">
-            {payload ? (
-              <JsonViewer data={payload} initialDepth={2} />
-            ) : (
-              <p className="text-muted-foreground">No payload</p>
-            )}
+            <PayloadDecoder payload={txData.payload} />
           </TabsContent>
 
           {/* Changes Tab */}
           <TabsContent value="changes">
-            <CollapsibleList
-              items={
-                changes?.slice(0, 50).map((change, i) => ({
-                  key: i,
-                  title: change.type,
-                  data: change,
-                })) || []
-              }
-              emptyMessage="No changes"
-              defaultExpanded={true}
-            />
-            {changes && changes.length > 50 && (
-              <p className="text-muted-foreground text-sm mt-4">
-                Showing first 50 of {changes.length} changes
-              </p>
-            )}
+            <ChangesTab changes={txData.changes || []} />
           </TabsContent>
         </Tabs>
       </PageContainer>

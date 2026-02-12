@@ -4,7 +4,7 @@ import { persist } from "zustand/middleware";
 export const PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
 export type PageSize = (typeof PAGE_SIZE_OPTIONS)[number];
 
-export const DEFAULT_PAGE_SIZE: PageSize = 50;
+export const DEFAULT_PAGE_SIZE: PageSize = 25;
 
 interface BlocksPaginationState {
   pageSize: PageSize;
@@ -24,6 +24,6 @@ export const useBlocksPaginationStore = create<BlocksPaginationState>()(
     {
       name: "blocks-pagination-storage",
       partialize: (state) => ({ pageSize: state.pageSize }),
-    }
-  )
+    },
+  ),
 );

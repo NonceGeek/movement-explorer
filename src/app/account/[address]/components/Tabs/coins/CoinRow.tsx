@@ -3,6 +3,7 @@ import { TableCell, StyledTableRow as TableRow } from "@/components/ui/table";
 import { CoinAssetIcon, FaAssetIcon } from "./CoinIcons";
 import { CoinVerificationBadge } from "./CoinVerificationBadge";
 import { CoinRow as CoinRowType } from "./types";
+import { CopyableAddress } from "@/components/common/CopyableAddress";
 
 export function CoinRow({ coin }: { coin: CoinRowType }) {
   const isStruct = coin.assetType.includes("::");
@@ -26,10 +27,7 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
       </TableCell>
       <TableCell>{assetTypeLabel}</TableCell>
       <TableCell className="font-mono text-sm">
-        <Link
-          href={href}
-          className="inline-flex items-center gap-2 text-primary hover:underline"
-        >
+        <div className="inline-flex items-center gap-2">
           {isFA ? (
             <FaAssetIcon
               address={coin.assetType}
@@ -39,10 +37,15 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
           ) : (
             <CoinAssetIcon logoUrl={coin.logoUrl} symbol={coin.symbol} />
           )}
-          {coin.assetType.length > 50
-            ? `${coin.assetType.slice(0, 30)}...${coin.assetType.slice(-15)}`
-            : coin.assetType}
-        </Link>
+          <CopyableAddress
+            address={coin.assetType}
+            href={href}
+            showCopyButton={false}
+            truncateLength={{ start: 30, end: 15 }}
+            showFull={coin.assetType.length <= 30}
+            variant="default"
+          />
+        </div>
       </TableCell>
       <TableCell>
         <CoinVerificationBadge verification={coin.verification} />

@@ -1,5 +1,6 @@
 import { Types } from "aptos";
 import { standardizeAddress, tryStandardizeAddress } from "./index";
+import { CoinDescription } from "@/hooks/coins/types";
 
 export const TransactionTypeName = {
   User: "user_transaction",
@@ -508,6 +509,7 @@ export type BalanceChange = {
   isBanned?: boolean;
   logoUrl?: string;
   isInPanoraTokenList?: boolean;
+  panoraTags?: CoinDescription["panoraTags"];
 };
 
 export type AggregatedBalance = {
@@ -518,6 +520,7 @@ export type AggregatedBalance = {
   isInPanoraTokenList?: boolean;
   isBanned?: boolean;
   logoUrl?: string;
+  panoraTags?: CoinDescription["panoraTags"];
 };
 
 export function getAssetSymbol(

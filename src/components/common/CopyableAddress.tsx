@@ -50,8 +50,13 @@ export function CopyableAddress({
   const accountLabel = useGetAccountLabel(address, showLabel);
 
   // Determine display text
-  const truncatedAddress = `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""
-    }`;
+  // If address is too short to truncate meaningfully, show it in full
+  const minLengthForTruncation = truncateLength.start + truncateLength.end + 3; // +3 for "..."
+  const shouldTruncate = address.length > minLengthForTruncation;
+
+  const truncatedAddress = shouldTruncate
+    ? `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""}`
+    : address;
 
   // Check if this is a verified address and we should show label
   const isVerifiedWithLabel =
@@ -209,6 +214,7 @@ export function CopyableAddress({
           showFull && "flex-wrap",
           variant === "default" &&
           "hover:bg-primary/10 rounded-md pl-2 py-0.5",
+          !showCopyButton && "pr-2"
         )}
       >
         {showFull ? (

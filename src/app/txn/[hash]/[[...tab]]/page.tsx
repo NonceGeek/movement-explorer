@@ -6,11 +6,9 @@ import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
 import { useGetPrice } from "@/hooks/useGetPrice";
 import { useParams } from "next/navigation";
-import Link from "next/link";
 import { useState, useMemo } from "react";
 import { Types } from "aptos";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
 import {
@@ -189,7 +187,7 @@ export default function TransactionDetailPage() {
     },
     {
       value: "events",
-      label: `Events (${txData.events?.length || 0})`,
+      label: isLoading ? "Events" : `Events (${txData.events?.length || 0})`,
       icon: <Activity className="w-4 h-4" />,
     },
     {
@@ -199,53 +197,13 @@ export default function TransactionDetailPage() {
     },
     {
       value: "changes",
-      label: `Changes (${txData.changes?.length || 0})`,
+      label: isLoading ? "Changes" : `Changes (${txData.changes?.length || 0})`,
       icon: <GitCommit className="w-4 h-4" />,
     },
   ];
 
-  // Loading State
-  if (isLoading) {
-    return (
-      <>
-        <PageNavigation />
-        <PageContainer>
-          <div className="flex items-center gap-4 mb-6">
-            <CopyableAddress
-              address={hash}
-              truncateLength={{ start: 16, end: 16 }}
-              className="text-muted-foreground"
-            />
-            <EnhancedSkeleton className="h-6 w-20" />
-          </div>
-
-          <Tabs value="overview" className="space-y-3">
-            <CompactTabsList
-              items={[
-                { value: "overview", label: "Overview", icon: <LayoutDashboard className="w-4 h-4" /> },
-                { value: "balance", label: "Balance Changes", icon: <Wallet className="w-4 h-4" /> },
-                { value: "events", label: "Events", icon: <Activity className="w-4 h-4" /> },
-                { value: "payload", label: "Payload", icon: <Code className="w-4 h-4" /> },
-                { value: "changes", label: "Changes", icon: <GitCommit className="w-4 h-4" /> },
-              ]}
-              activeTab="overview"
-              onTabChange={() => {}}
-            />
-
-            <TabsContent value="overview" className="space-y-4">
-              <DetailSection>
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <DetailRow key={i} label="">
-                    <EnhancedSkeleton className="h-5 w-full max-w-md" />
-                  </DetailRow>
-                ))}
-              </DetailSection>
-            </TabsContent>
-          </Tabs>
-        </PageContainer>
-      </>
-    );
-  }
+  // Note: No separate loading state needed - we render the page structure immediately
+  // and only show skeletons for data that's actually loading
 
   // Not Found State
   const isNotFound = error?.type === "Not Found";
@@ -277,8 +235,8 @@ export default function TransactionDetailPage() {
     );
   }
 
-  // Error State
-  if (error || !tx) {
+  // Error State (only if not loading and still no data)
+  if (error && !isLoading) {
     return (
       <>
         <PageNavigation />
@@ -302,15 +260,13 @@ export default function TransactionDetailPage() {
       <PageNavigation />
       <PageContainer>
         {/* Transaction Hash Header */}
-        <div className="flex items-center gap-4 mb-6">
+        <div className="flex items-start flex-col gap-1 mb-6">
+          <h1 className="text-2xl font-semibold ml-2">Transaction Detail</h1>
           <CopyableAddress
-            address={tx.hash}
-            truncateLength={{ start: 16, end: 16 }}
+            address={hash}
+            showFull
             className="text-muted-foreground"
           />
-          <Badge variant={txData.isSuccess ? "success" : "error"}>
-            {txData.isSuccess ? "Success" : "Failed"}
-          </Badge>
         </div>
 
         {/* Tabs */}
@@ -327,70 +283,117 @@ export default function TransactionDetailPage() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-4">
-            {/* Transaction Actions Card */}
-            {txData.parsedActions && txData.parsedActions.length > 0 && (
-              <TransactionActionCard actions={txData.parsedActions} />
-            )}
-
-            <div className="flex justify-start">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowRaw(!showRaw)}
-                className="font-mono text-xs"
-              >
-                {showRaw ? "Formatted" : "Raw JSON"}
-              </Button>
-            </div>
-
-            {showRaw ? (
-              <JsonViewer data={tx} initialDepth={2} />
+            {isLoading ? (
+              // Loading state - only show skeleton for data that needs to load
+              <DetailSection>
+                {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                  <DetailRow key={i} label="">
+                    <EnhancedSkeleton className="h-5 w-full max-w-md" />
+                  </DetailRow>
+                ))}
+              </DetailSection>
             ) : (
-              <TransactionDetailsTable
-                hash={tx.hash}
-                type={tx.type}
-                version={txData.txVersion}
-                blockHeight={blockHeight}
-                timestamp={txData.timestamp}
-                sender={txData.sender}
-                counterparty={txData.counterparty}
-                functionName={txData.functionName}
-                amount={txData.transactionAmount}
-                gasInfo={txData.gasInfo}
-                sequenceNumber={txData.sequenceNumber}
-                expirationTimestamp={txData.expirationTimestamp}
-                vmStatus={txData.vmStatus}
-                isSuccess={txData.isSuccess}
-                stateChangeHash={txData.stateChangeHash}
-                eventRootHash={txData.eventRootHash}
-                accumulatorRootHash={txData.accumulatorRootHash}
-                signature={txData.signature}
-                feePayer={txData.feePayer}
-                secondarySigners={txData.secondarySigners}
-                usdPrice={movePrice}
-                actions={txData.transactionActions}
-              />
+              <>
+                {/* Transaction Actions Card */}
+                {txData.parsedActions && txData.parsedActions.length > 0 && (
+                  <TransactionActionCard actions={txData.parsedActions} />
+                )}
+
+                <div className="flex justify-start">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowRaw(!showRaw)}
+                    className="font-mono text-xs"
+                  >
+                    {showRaw ? "Formatted" : "Raw JSON"}
+                  </Button>
+                </div>
+
+                {tx && (
+                  showRaw ? (
+                    <JsonViewer data={tx} initialDepth={2} />
+                  ) : (
+                    <TransactionDetailsTable
+                      hash={tx.hash}
+                      type={tx.type}
+                      version={txData.txVersion}
+                      blockHeight={blockHeight}
+                      timestamp={txData.timestamp}
+                      sender={txData.sender}
+                      counterparty={txData.counterparty}
+                      functionName={txData.functionName}
+                      amount={txData.transactionAmount}
+                      gasInfo={txData.gasInfo}
+                      sequenceNumber={txData.sequenceNumber}
+                      expirationTimestamp={txData.expirationTimestamp}
+                      vmStatus={txData.vmStatus}
+                      isSuccess={txData.isSuccess}
+                      stateChangeHash={txData.stateChangeHash}
+                      eventRootHash={txData.eventRootHash}
+                      accumulatorRootHash={txData.accumulatorRootHash}
+                      signature={txData.signature}
+                      feePayer={txData.feePayer}
+                      secondarySigners={txData.secondarySigners}
+                      usdPrice={movePrice}
+                      actions={txData.transactionActions}
+                    />
+                  )
+                )}
+              </>
             )}
           </TabsContent>
 
           {/* Balance Change Tab */}
           <TabsContent value="balance">
-            <BalanceChangeTab transaction={tx} />
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-6">
+                  <EnhancedSkeleton className="h-32 w-full" />
+                </CardContent>
+              </Card>
+            ) : tx ? (
+              <BalanceChangeTab transaction={tx} />
+            ) : null}
           </TabsContent>
 
           {/* Events Tab */}
           <TabsContent value="events">
-            <EventsTab events={txData.events || []} />
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-6">
+                  <EnhancedSkeleton className="h-32 w-full" />
+                </CardContent>
+              </Card>
+            ) : (
+              <EventsTab events={txData.events || []} />
+            )}
           </TabsContent>
 
           {/* Payload Tab */}
           <TabsContent value="payload">
-            <PayloadDecoder payload={txData.payload} />
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-6">
+                  <EnhancedSkeleton className="h-32 w-full" />
+                </CardContent>
+              </Card>
+            ) : (
+              <PayloadDecoder payload={txData.payload} />
+            )}
           </TabsContent>
 
           {/* Changes Tab */}
           <TabsContent value="changes">
-            <ChangesTab changes={txData.changes || []} />
+            {isLoading ? (
+              <Card>
+                <CardContent className="p-6">
+                  <EnhancedSkeleton className="h-32 w-full" />
+                </CardContent>
+              </Card>
+            ) : (
+              <ChangesTab changes={txData.changes || []} />
+            )}
           </TabsContent>
         </Tabs>
       </PageContainer>

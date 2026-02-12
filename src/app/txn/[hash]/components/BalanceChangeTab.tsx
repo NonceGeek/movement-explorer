@@ -46,6 +46,7 @@ function aggregateBalanceChanges(
         isInPanoraTokenList: change.isInPanoraTokenList,
         isBanned: change.isBanned,
         logoUrl: change.logoUrl,
+        panoraTags: change.panoraTags,
       });
     }
   });
@@ -163,6 +164,15 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
       .map((a) => {
         const entry = findCoinData(coinData?.data, a.asset_type);
 
+        // Fallback logo for MOVE token
+        const isMoveCoin = a.asset_type === "0x1::aptos_coin::AptosCoin";
+        const isMoveFa =
+          a.asset_type === "0xa" ||
+          a.asset_type ===
+            "0x000000000000000000000000000000000000000000000000000000000000000a";
+        const fallbackLogoUrl =
+          isMoveCoin || isMoveFa ? "/coinLogo.png" : undefined;
+
         return {
           address: convertAddress(a),
           amount: convertAmount(a),
@@ -181,12 +191,23 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
           known: entry !== undefined,
           isInPanoraTokenList: entry?.isInPanoraTokenList,
           isBanned: entry?.isBanned,
-          logoUrl: entry?.logoUrl,
+          logoUrl: entry?.logoUrl ?? fallbackLogoUrl,
+          panoraTags: entry?.panoraTags ?? [],
         };
       });
 
     // Add storage refund event if present
     if (gasFeeActivity && (gasFeeActivity.storage_refund_amount ?? 0) > 0) {
+      // Storage refund is always MOVE token
+      const isMoveCoin =
+        gasFeeActivity.asset_type === "0x1::aptos_coin::AptosCoin";
+      const isMoveFa =
+        gasFeeActivity.asset_type === "0xa" ||
+        gasFeeActivity.asset_type ===
+          "0x000000000000000000000000000000000000000000000000000000000000000a";
+      const storageRefundLogoUrl =
+        isMoveCoin || isMoveFa ? "/coinLogo.png" : undefined;
+
       changes.push({
         address:
           gasFeeActivity.gas_fee_payer_address ?? gasFeeActivity.owner_address,
@@ -201,6 +222,8 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
         known: true,
         isBanned: false,
         isInPanoraTokenList: true,
+        panoraTags: [],
+        logoUrl: storageRefundLogoUrl,
       });
     }
 

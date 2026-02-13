@@ -11,9 +11,18 @@ import {
   FungibleAssetActivity,
 } from "@/hooks/transactions/useGetTransactionBalanceChanges";
 import { tryStandardizeAddress } from "@/utils";
-import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Card, CardContent } from "@/components/ui/card";
+import {
+  TableBody,
+  TableCell,
+  TableRow,
+  StyledTableHead as TableHead,
+  StyledTableHeader as TableHeader,
+  StyledTableHeaderRow as HeaderRow,
+  StyledTable as Table,
+} from "@/components/ui/table";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { CoinDescription } from "@/hooks/coins/types";
 
@@ -21,10 +30,7 @@ interface BalanceChangeTabProps {
   transaction: Types.Transaction;
 }
 
-enum BalanceViewType {
-  NON_AGGREGATED,
-  AGGREGATED,
-}
+type BalanceViewType = "summary" | "detail";
 
 function aggregateBalanceChanges(
   changes: BalanceChange[],
@@ -90,7 +96,7 @@ function findCoinData(
 
 export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
   const { data: coinData } = useGetCoinList();
-  const [viewType, setViewType] = useState(BalanceViewType.NON_AGGREGATED);
+  const [viewType, setViewType] = useState<BalanceViewType>("summary");
 
   const version = "version" in transaction ? transaction.version : undefined;
 
@@ -232,8 +238,36 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
 
   if (isLoading) {
     return (
-      <div className="space-y-2">
-        <EnhancedSkeleton className="h-[200px] w-full" />
+      <div className="space-y-4">
+        <ToggleGroup value={viewType} onValueChange={(v) => setViewType(v as BalanceViewType)}>
+          <ToggleGroupItem value="summary">Summary</ToggleGroupItem>
+          <ToggleGroupItem value="detail">Detail</ToggleGroupItem>
+        </ToggleGroup>
+
+        <Table>
+          <TableHeader>
+            <HeaderRow>
+              <TableHead className="w-[20%]">Account</TableHead>
+              <TableHead className="w-[10%]">Type</TableHead>
+              <TableHead className="w-[15%]">Asset</TableHead>
+              <TableHead className="w-[20%]">Asset Address</TableHead>
+              <TableHead className="w-[10%]">Verified</TableHead>
+              <TableHead className="text-right w-[25%]">Change</TableHead>
+            </HeaderRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <TableRow key={i}>
+                <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
+                <TableCell><EnhancedSkeleton className="h-5 w-16 rounded-full" /></TableCell>
+                <TableCell><EnhancedSkeleton className="h-4 w-16" /></TableCell>
+                <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
+                <TableCell><EnhancedSkeleton className="h-4 w-12" /></TableCell>
+                <TableCell className="text-right"><EnhancedSkeleton className="h-4 w-28 ml-auto" /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     );
   }
@@ -249,7 +283,7 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
   }
 
   const displayedChanges =
-    viewType === BalanceViewType.AGGREGATED
+    viewType === "summary"
       ? aggregateBalanceChanges(balanceChanges).map((agg) => ({
           ...agg,
           amount: agg.totalAmount,
@@ -260,33 +294,10 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end space-x-2 text-sm">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setViewType(BalanceViewType.NON_AGGREGATED)}
-          className={
-            viewType === BalanceViewType.NON_AGGREGATED
-              ? "text-primary font-bold bg-primary/10"
-              : "text-muted-foreground"
-          }
-        >
-          Non-aggregated
-        </Button>
-        <div className="w-px bg-border h-6 my-auto" />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setViewType(BalanceViewType.AGGREGATED)}
-          className={
-            viewType === BalanceViewType.AGGREGATED
-              ? "text-primary font-bold bg-primary/10"
-              : "text-muted-foreground"
-          }
-        >
-          Aggregated
-        </Button>
-      </div>
+      <ToggleGroup value={viewType} onValueChange={(v) => setViewType(v as BalanceViewType)}>
+        <ToggleGroupItem value="summary">Summary</ToggleGroupItem>
+        <ToggleGroupItem value="detail">Detail</ToggleGroupItem>
+      </ToggleGroup>
 
       <BalanceChangeTable changes={displayedChanges} />
     </div>

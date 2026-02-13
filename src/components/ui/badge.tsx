@@ -30,7 +30,7 @@ export type BadgeVariant =
 
 export interface BadgeProps
   extends React.ComponentProps<"span">,
-    Omit<VariantProps<typeof dsBadgeVariants>, "variant"> {
+  Omit<VariantProps<typeof dsBadgeVariants>, "variant"> {
   variant?: BadgeVariant;
   asChild?: boolean;
 }
@@ -46,14 +46,14 @@ function Badge({ className, variant, asChild = false, ...props }: BadgeProps) {
     customClassName = "bg-purple-500 text-white";
   } else if (variant === "success") {
     resolvedVariant = "default"; // Use default structure but override colors
-    customClassName = "bg-green-500/10 text-green-600 hover:bg-green-500/20";
+    customClassName = "bg-green-500/10 text-green-300 hover:bg-green-500/20";
   } else if (variant === "error") {
     resolvedVariant = "default";
-    customClassName = "bg-red-500/10 text-red-600 hover:bg-red-500/20";
+    customClassName = "bg-red-500/10 text-red-300 hover:bg-red-500/20";
   } else if (variant === "warning") {
     resolvedVariant = "default";
     customClassName =
-      "bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20";
+      "bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20";
   } else {
     resolvedVariant = variant as VariantProps<
       typeof dsBadgeVariants

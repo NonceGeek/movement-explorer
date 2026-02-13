@@ -1,6 +1,7 @@
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Image as ImageIcon } from "lucide-react";
 import { isValidIpfsUrl, toIpfsUrl } from "@/store/utils";
+import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
 
 interface TokenHeaderProps {
   isLoading: boolean;
@@ -62,9 +63,9 @@ export function TokenHeader({
             Collection: {collectionName}
           </p>
         )}
-        <p className="text-muted-foreground font-mono text-xs mt-2 truncate max-w-lg">
-          {tokenId}
-        </p>
+        <div className="mt-2">
+          <HeaderCopyableAddress address={tokenId} />
+        </div>
       </div>
     </div>
   );

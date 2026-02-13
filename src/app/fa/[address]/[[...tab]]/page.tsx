@@ -14,15 +14,9 @@ import { useGetFaPairedCoin } from "@/hooks/coins/useGetFaPairedCoin";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidAccountAddress, getAssetSymbol } from "@/utils";
-import { Coins, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
+import { Coins, Users, ArrowLeftRight } from "lucide-react";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/utils/styling";
+import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
 
 import { FAOverview } from "../components/FAOverview";
 import HoldersTab from "../components/HoldersTab";
@@ -37,8 +31,6 @@ function FAContent() {
   const defaultTab = isGraphqlSupported ? "holders" : "";
   const initialTab = tabSlug && tabSlug[0] !== "info" ? tabSlug[0] : defaultTab;
   const [currentTab, setCurrentTab] = useState(initialTab);
-  const [copied, setCopied] = useState(false);
-
   const handleTabChange = (value: string) => {
     const scrollY = window.scrollY;
     setCurrentTab(value);
@@ -54,16 +46,6 @@ function FAContent() {
       router.replace(`/fa/${address}${isGraphqlSupported ? "/holders" : ""}`);
     }
   }, [tabSlug, address, router, isGraphqlSupported]);
-
-  const handleCopyAddress = async () => {
-    try {
-      await navigator.clipboard.writeText(address);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
 
   // Validate address format
   if (!isValidAccountAddress(address)) {
@@ -168,41 +150,7 @@ function FAContent() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={handleCopyAddress}
-                      className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-md transition-colors group"
-                    >
-                      <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground truncate max-w-[300px]">
-                        {address}
-                      </span>
-                      <span className="relative h-4 w-4 shrink-0">
-                        <Copy
-                          className={cn(
-                            "absolute inset-0 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200",
-                            copied
-                              ? "scale-0 opacity-0"
-                              : "scale-100 opacity-100",
-                          )}
-                        />
-                        <Check
-                          className={cn(
-                            "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
-                            copied
-                              ? "scale-100 opacity-100"
-                              : "scale-0 opacity-0",
-                          )}
-                        />
-                      </span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{copied ? "Copied!" : "Click to copy"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+              <HeaderCopyableAddress address={address} />
 
               {displaySymbol && !isLoading && (
                 <Badge

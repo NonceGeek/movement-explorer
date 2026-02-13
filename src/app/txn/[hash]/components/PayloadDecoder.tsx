@@ -2,11 +2,18 @@
 
 import { useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
 import { cn } from "@/utils/styling";
-import { Code2, FileJson, ChevronDown, ChevronUp, Copy, Check } from "lucide-react";
+import Link from "next/link";
+import { ListTree, ChevronDown, ChevronUp } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Types } from "aptos";
 
 interface PayloadDecoderProps {
@@ -147,7 +154,7 @@ function formatArgValue(value: unknown, type: string): string {
 export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const [viewMode, setViewMode] = useState<"decoded" | "raw">("decoded");
   const [showTypeArgs, setShowTypeArgs] = useState(false);
-  const [copied, setCopied] = useState(false);
+
 
   if (!payload) {
     return (
@@ -164,8 +171,8 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const entryPayload = isEntryFunction
     ? (payload as Types.TransactionPayload_EntryFunctionPayload)
     : isMultisig &&
-        "transaction_payload" in payload &&
-        payload.transaction_payload
+      "transaction_payload" in payload &&
+      payload.transaction_payload
       ? (payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload)
       : null;
 
@@ -179,58 +186,25 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const moduleName = funcParts[1] || "";
   const funcName = funcParts[2] || "";
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   return (
     <div className={cn("space-y-4", className)}>
       {/* View Mode Toggle */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === "decoded" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("decoded")}
-            className="gap-2"
-          >
-            <Code2 className="h-4 w-4" />
-            Decoded
-          </Button>
-          <Button
-            variant={viewMode === "raw" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("raw")}
-            className="gap-2"
-          >
-            <FileJson className="h-4 w-4" />
-            Raw
-          </Button>
-        </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleCopy}
-          className="gap-2"
-        >
-          {copied ? (
-            <Check className="h-4 w-4 text-green-500" />
-          ) : (
-            <Copy className="h-4 w-4" />
-          )}
-          {copied ? "Copied" : "Copy"}
-        </Button>
-      </div>
+      <ToggleGroup value={viewMode} onValueChange={(v) => setViewMode(v as "decoded" | "raw")}>
+        <ToggleGroupItem value="decoded">
+          <ListTree className="h-3.5 w-3.5" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="raw">
+          RAW
+        </ToggleGroupItem>
+      </ToggleGroup>
 
       {viewMode === "raw" ? (
         <JsonViewer data={payload} initialDepth={2} />
       ) : (
-        <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden">
+        <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
           {/* Payload Type */}
-          <div className="px-5 py-3 border-b border-border/30 flex items-center gap-3">
-            <span className="text-sm text-muted-foreground">Type:</span>
+          <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
+            <span className="text-xs text-muted-foreground uppercase tracking-wider">Type</span>
             <Badge variant="secondary" className="capitalize">
               {payload.type.replace(/_/g, " ")}
             </Badge>
@@ -243,7 +217,6 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
 
           {isScript && (
             <div className="px-5 py-4">
-              <div className="text-sm text-muted-foreground mb-2">Script Payload</div>
               <JsonViewer data={payload} initialDepth={1} />
             </div>
           )}
@@ -251,33 +224,62 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
           {entryPayload && (
             <>
               {/* Function */}
-              <div className="px-5 py-3 border-b border-border/30">
-                <div className="text-xs text-muted-foreground mb-1.5">Function</div>
-                <div className="font-mono text-sm flex flex-wrap items-center gap-1">
-                  <CopyableAddress
-                    address={moduleAddr}
-                    href={`/account/${moduleAddr}`}
-                    truncateLength={{ start: 6, end: 4 }}
-                  />
-                  <span className="text-muted-foreground">::</span>
-                  <span className="text-blue-400">{moduleName}</span>
-                  <span className="text-muted-foreground">::</span>
-                  <span className="text-green-400 font-semibold">{funcName}</span>
-                </div>
+              <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
+                <div className="text-xs text-muted-foreground uppercase tracking-wider shrink-0">Function</div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
+                        className="font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden block whitespace-nowrap"
+                      >
+                        {moduleAddr.length <= 10 ? moduleAddr : `${moduleAddr.slice(0, 6)}...${moduleAddr.slice(-4)}`}::{moduleName}::{funcName}
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent className="p-3 max-w-80 sm:max-w-100">
+                      <div className="flex flex-col gap-3">
+                        <div className="space-y-1">
+                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                            Address
+                          </span>
+                          <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
+                            {moduleAddr}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                            Module
+                          </span>
+                          <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
+                            {moduleName}
+                          </div>
+                        </div>
+                        <div className="space-y-1">
+                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                            Function
+                          </span>
+                          <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
+                            {funcName}
+                          </div>
+                        </div>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               {/* Type Arguments */}
               {typeArgs.length > 0 && (
-                <div className="px-5 py-3 border-b border-border/30">
+                <div className="px-5 py-3">
                   <button
                     onClick={() => setShowTypeArgs(!showTypeArgs)}
-                    className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors w-full"
+                    className="flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors w-full cursor-pointer"
                   >
                     <span>Type Arguments ({typeArgs.length})</span>
                     {showTypeArgs ? (
-                      <ChevronUp className="h-3 w-3" />
+                      <ChevronUp className="h-4 w-4" />
                     ) : (
-                      <ChevronDown className="h-3 w-3" />
+                      <ChevronDown className="h-4 w-4" />
                     )}
                   </button>
                   {showTypeArgs && (
@@ -285,9 +287,9 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                       {typeArgs.map((typeArg, i) => (
                         <div
                           key={i}
-                          className="font-mono text-xs bg-muted/50 px-2 py-1 rounded break-all"
+                          className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all"
                         >
-                          <span className="text-muted-foreground mr-2">[{i}]</span>
+                          <span className="text-muted-foreground/60 mr-2">{i}</span>
                           <span className="text-purple-400">{typeArg}</span>
                         </div>
                       ))}
@@ -297,18 +299,16 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
               )}
 
               {/* Arguments */}
-              <div className="px-5 py-3">
-                <div className="text-xs text-muted-foreground mb-2">
+              <div>
+                <div className="px-5 py-3 text-sm text-muted-foreground uppercase tracking-wider bg-muted/20">
                   Arguments ({decodedArgs.length})
                 </div>
                 {decodedArgs.length === 0 ? (
-                  <div className="text-sm text-muted-foreground">No arguments</div>
+                  <div className="px-5 py-4 text-sm text-muted-foreground">No arguments</div>
                 ) : (
-                  <div className="space-y-2">
-                    {decodedArgs.map((arg) => (
-                      <ArgumentRow key={arg.index} arg={arg} />
-                    ))}
-                  </div>
+                  decodedArgs.map((arg) => (
+                    <ArgumentRow key={arg.index} arg={arg} />
+                  ))
                 )}
               </div>
             </>
@@ -319,36 +319,60 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   );
 }
 
+function tryParseJson(value: unknown): { parsed: true; data: unknown } | { parsed: false } {
+  if (typeof value !== "string") return { parsed: false };
+  const trimmed = value.trim();
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return { parsed: false };
+  try {
+    return { parsed: true, data: JSON.parse(trimmed) };
+  } catch {
+    return { parsed: false };
+  }
+}
+
 function ArgumentRow({ arg }: { arg: DecodedArgument }) {
-  const isAddress = arg.type === "address";
+  const isAddress = arg.type === "address" || arg.type === "hex";
+  const isComplex =
+    Array.isArray(arg.value) ||
+    (typeof arg.value === "object" && arg.value !== null);
+  const jsonResult = tryParseJson(arg.value);
   const isLargeValue =
     typeof arg.value === "string" && arg.value.length > 100;
 
   return (
-    <div className="bg-muted/30 rounded-lg px-3 py-2">
-      <div className="flex items-center gap-2 mb-1">
-        <span className="text-xs text-muted-foreground font-mono">[{arg.index}]</span>
+    <div className="flex flex-col sm:flex-row border-b border-border/20 last:border-0">
+      <div className="sm:w-[200px] sm:shrink-0 px-4 py-3 sm:py-3 pb-0 sm:pb-3 flex items-baseline gap-2">
+        <span className="text-sm text-muted-foreground/60 font-mono">{arg.index}</span>
         <span className="text-sm font-medium text-foreground">{arg.name}</span>
-        <Badge variant="outline" className="text-xs font-mono">
+        <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">
           {arg.type}
         </Badge>
       </div>
-      <div className="pl-6">
-        {isAddress ? (
+      <div className="flex-1 px-4 py-3 pt-1 sm:pt-3 min-w-0">
+        {isAddress && typeof arg.value === "string" ? (
           <CopyableAddress
-            address={arg.value as string}
+            address={arg.value}
             href={`/account/${arg.value}`}
             showFull
           />
+        ) : isComplex ? (
+          <JsonViewer data={arg.value} initialDepth={1} />
+        ) : jsonResult.parsed ? (
+          <JsonViewer data={jsonResult.data} initialDepth={1} />
         ) : isLargeValue ? (
           <details className="group">
             <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-              Show full value ({(arg.value as string).length} chars)
+              {(arg.value as string).slice(0, 60)}...
+              <span className="ml-1 opacity-60">({(arg.value as string).length} chars)</span>
             </summary>
-            <div className="mt-1 font-mono text-xs break-all bg-muted/50 px-2 py-1 rounded max-h-40 overflow-auto">
+            <div className="mt-2 font-mono text-xs break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
               {String(arg.value)}
             </div>
           </details>
+        ) : typeof arg.value === "boolean" ? (
+          <span className={`font-mono text-sm ${arg.value ? "text-emerald-400" : "text-rose-400"}`}>
+            {String(arg.value)}
+          </span>
         ) : (
           <span className="font-mono text-sm break-all">{arg.displayValue}</span>
         )}

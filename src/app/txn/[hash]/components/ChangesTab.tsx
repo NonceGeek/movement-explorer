@@ -2,29 +2,66 @@
 
 import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
 import { cn } from "@/utils/styling";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  SortableHeader,
+  type SortDirection,
+} from "@/components/ui/sortable-header";
 import {
   ChevronDown,
   ChevronRight,
   FileEdit,
   FileX,
-  Database,
   Table2,
   Package,
-  Layers,
-  Filter,
 } from "lucide-react";
+import {
+  TableBody,
+  TableCell,
+  TableRow,
+  StyledTableHead as TableHead,
+  StyledTableHeader as TableHeader,
+  StyledTableHeaderRow as HeaderRow,
+  StyledTable as Table,
+} from "@/components/ui/table";
+import Link from "next/link";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import type { Types } from "aptos";
 
-type ChangeType = "write_resource" | "delete_resource" | "write_table_item" | "delete_table_item" | "write_module";
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
 
-interface GroupedChange {
+type ChangeType =
+  | "write_resource"
+  | "delete_resource"
+  | "write_table_item"
+  | "delete_table_item"
+  | "write_module"
+  | "delete_module";
+
+type ChangeCategory = "write" | "delete" | "module";
+
+interface ParsedChange {
+  id: string;
   type: ChangeType;
-  address: string;
-  changes: Types.WriteSetChange[];
+  category: ChangeCategory;
+  address: string | null;
+  resourceType: string | null;
+  displayName: string;
+  moduleLink: string | null;
+  handle: string | null;
+  tableKey: string | null;
+  data: unknown | null;
+  value: string | null;
 }
 
 interface ChangesTabProps {
@@ -32,117 +69,228 @@ interface ChangesTabProps {
   className?: string;
 }
 
-const CHANGE_TYPE_INFO: Record<
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const CHANGE_TYPE_META: Record<
   ChangeType,
-  { label: string; icon: React.ReactNode; color: string }
+  {
+    label: string;
+    icon: React.ReactNode;
+    category: ChangeCategory;
+    badgeVariant: "outline" | "secondary" | "error";
+  }
 > = {
   write_resource: {
-    label: "Write Resource",
-    icon: <FileEdit className="h-4 w-4" />,
-    color: "text-blue-500 bg-blue-500/10 border-blue-500/20",
+    label: "Write Res",
+    icon: <FileEdit className="h-3 w-3" />,
+    category: "write",
+    badgeVariant: "outline",
   },
   delete_resource: {
-    label: "Delete Resource",
-    icon: <FileX className="h-4 w-4" />,
-    color: "text-red-500 bg-red-500/10 border-red-500/20",
+    label: "Del Res",
+    icon: <FileX className="h-3 w-3" />,
+    category: "delete",
+    badgeVariant: "error",
   },
   write_table_item: {
-    label: "Write Table Item",
-    icon: <Table2 className="h-4 w-4" />,
-    color: "text-green-500 bg-green-500/10 border-green-500/20",
+    label: "Write Table",
+    icon: <Table2 className="h-3 w-3" />,
+    category: "write",
+    badgeVariant: "outline",
   },
   delete_table_item: {
-    label: "Delete Table Item",
-    icon: <FileX className="h-4 w-4" />,
-    color: "text-orange-500 bg-orange-500/10 border-orange-500/20",
+    label: "Del Table",
+    icon: <FileX className="h-3 w-3" />,
+    category: "delete",
+    badgeVariant: "error",
   },
   write_module: {
-    label: "Write Module",
-    icon: <Package className="h-4 w-4" />,
-    color: "text-purple-500 bg-purple-500/10 border-purple-500/20",
+    label: "Module",
+    icon: <Package className="h-3 w-3" />,
+    category: "module",
+    badgeVariant: "secondary",
+  },
+  delete_module: {
+    label: "Del Module",
+    icon: <FileX className="h-3 w-3" />,
+    category: "delete",
+    badgeVariant: "error",
   },
 };
 
+// ---------------------------------------------------------------------------
+// Helpers
+// ---------------------------------------------------------------------------
+
+function truncateAddress(addr: string): string {
+  if (addr.length <= 6) return addr; // 0x1, 0xa etc.
+  return `${addr.slice(0, 6)}...${addr.slice(-4)}`;
+}
+
+function formatResourceType(type: string): string {
+  const parts = type.split("::");
+  if (parts.length >= 3) {
+    const addr = truncateAddress(parts[0]);
+    const modName = parts[1];
+    const struct = parts.slice(2).join("::");
+    return `${addr}::${modName}::${struct}`;
+  }
+  return type;
+}
+
+/** Build a link to the module page from a resource type or module ID */
+function buildModuleLink(typeOrModuleId: string): string | null {
+  const parts = typeOrModuleId.split("::");
+  if (parts.length >= 2) {
+    const addr = parts[0];
+    const modName = parts[1];
+    return `/account/${addr}/modules/code/${modName}`;
+  }
+  return null;
+}
+
+/** Parse a resource type / module ID into { addr, moduleName, structName } */
+function parseModuleParts(typeOrModuleId: string): {
+  addr: string;
+  moduleName: string;
+  structName: string | null;
+} | null {
+  const parts = typeOrModuleId.split("::");
+  if (parts.length >= 2) {
+    return {
+      addr: parts[0],
+      moduleName: parts[1],
+      structName: parts.length >= 3 ? parts.slice(2).join("::") : null,
+    };
+  }
+  return null;
+}
+
+function parseChanges(changes: Types.WriteSetChange[]): ParsedChange[] {
+  return changes.map((change, index) => {
+    const type = change.type as ChangeType;
+    const meta = CHANGE_TYPE_META[type];
+    const address =
+      "address" in change ? (change as { address: string }).address : null;
+    const data = "data" in change ? change.data : null;
+    const resourceType =
+      data && typeof data === "object" && "type" in (data as object)
+        ? (data as { type: string }).type
+        : null;
+    const handle =
+      "handle" in change ? (change as { handle: string }).handle : null;
+    const tableKey =
+      "key" in change ? (change as { key: string }).key : null;
+    const value =
+      "value" in change
+        ? String((change as { value: string }).value)
+        : null;
+    const resource =
+      "resource" in change
+        ? (change as { resource: string }).resource
+        : null;
+
+    // Module ID for write_module / delete_module
+    const moduleId =
+      "module" in change
+        ? String((change as { module: string }).module)
+        : null;
+
+    let displayName: string;
+    if (resourceType) {
+      displayName = formatResourceType(resourceType);
+    } else if (resource) {
+      displayName = formatResourceType(resource);
+    } else if (moduleId) {
+      displayName = moduleId;
+    } else if (handle) {
+      displayName = "—";
+    } else {
+      displayName = meta?.label || type;
+    }
+
+    const rawType = resourceType || resource || moduleId;
+    const moduleLink = rawType ? buildModuleLink(rawType) : null;
+
+    return {
+      id: `change-${index}`,
+      type,
+      category: meta?.category || "write",
+      address,
+      resourceType: resourceType || resource,
+      displayName,
+      moduleLink,
+      handle,
+      tableKey,
+      data,
+      value,
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
+// ChangesTab (main export)
+// ---------------------------------------------------------------------------
+
+type ChangeSortColumn = "address" | "type" | "resource";
+
 export function ChangesTab({ changes, className }: ChangesTabProps) {
-  const [viewMode, setViewMode] = useState<"grouped" | "list">("grouped");
-  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const [viewMode, setViewMode] = useState<"table" | "raw">("table");
   const [expandedItems, setExpandedItems] = useState<Set<string>>(new Set());
-  const [filterType, setFilterType] = useState<ChangeType | "all">("all");
+  const [sortColumn, setSortColumn] = useState<ChangeSortColumn | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>("asc");
 
-  // Group changes by type and address
-  const groupedChanges = useMemo(() => {
-    const groups: Map<string, GroupedChange> = new Map();
+  const parsedChanges = useMemo(() => parseChanges(changes), [changes]);
 
-    changes.forEach((change) => {
-      const type = change.type as ChangeType;
-      const address = "address" in change ? change.address : "table";
-      const key = `${type}:${address}`;
+  const sortedChanges = useMemo(() => {
+    if (!sortColumn) return parsedChanges;
 
-      if (!groups.has(key)) {
-        groups.set(key, { type, address, changes: [] });
-      }
-      groups.get(key)!.changes.push(change);
+    const keyMap: Record<ChangeSortColumn, keyof ParsedChange> = {
+      address: "address",
+      type: "type",
+      resource: "displayName",
+    };
+    const key = keyMap[sortColumn];
+
+    return [...parsedChanges].sort((a, b) => {
+      const cmp = String(a[key] ?? "").localeCompare(String(b[key] ?? ""));
+      return sortDirection === "asc" ? cmp : -cmp;
     });
+  }, [parsedChanges, sortColumn, sortDirection]);
 
-    return Array.from(groups.values());
-  }, [changes]);
-
-  // Filter changes
-  const filteredChanges = useMemo(() => {
-    if (filterType === "all") return changes;
-    return changes.filter((c) => c.type === filterType);
-  }, [changes, filterType]);
-
-  const filteredGroups = useMemo(() => {
-    if (filterType === "all") return groupedChanges;
-    return groupedChanges.filter((g) => g.type === filterType);
-  }, [groupedChanges, filterType]);
-
-  // Stats
-  const stats = useMemo(() => {
-    const counts: Record<string, number> = {};
-    changes.forEach((c) => {
-      counts[c.type] = (counts[c.type] || 0) + 1;
-    });
-    return counts;
-  }, [changes]);
-
-  const toggleGroup = (key: string) => {
-    setExpandedGroups((prev) => {
-      const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
+  const handleSort = (column: ChangeSortColumn) => {
+    if (sortColumn === column) {
+      if (sortDirection === "desc") {
+        setSortColumn(null);
+        setSortDirection("asc");
       } else {
-        next.add(key);
+        setSortDirection("desc");
       }
-      return next;
-    });
+    } else {
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
   };
 
-  const toggleItem = (key: string) => {
+  const toggleItem = (id: string) => {
     setExpandedItems((prev) => {
       const next = new Set(prev);
-      if (next.has(key)) {
-        next.delete(key);
-      } else {
-        next.add(key);
-      }
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
       return next;
     });
-  };
-
-  const expandAll = () => {
-    const allKeys = filteredGroups.map((g) => `${g.type}:${g.address}`);
-    setExpandedGroups(new Set(allKeys));
-  };
-
-  const collapseAll = () => {
-    setExpandedGroups(new Set());
   };
 
   if (changes.length === 0) {
     return (
-      <div className="text-muted-foreground text-center py-8">
+      <div
+        className={cn(
+          "text-muted-foreground text-center py-12 text-sm",
+          className
+        )}
+      >
         No state changes in this transaction
       </div>
     );
@@ -150,302 +298,309 @@ export function ChangesTab({ changes, className }: ChangesTabProps) {
 
   return (
     <div className={cn("space-y-4", className)}>
-      {/* Controls */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <Button
-            variant={viewMode === "grouped" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("grouped")}
-            className="gap-2"
-          >
-            <Layers className="h-4 w-4" />
-            Grouped
-          </Button>
-          <Button
-            variant={viewMode === "list" ? "default" : "outline"}
-            size="sm"
-            onClick={() => setViewMode("list")}
-            className="gap-2"
-          >
-            <Database className="h-4 w-4" />
-            List
-          </Button>
-        </div>
+      {/* View Mode Toggle */}
+      <ToggleGroup
+        value={viewMode}
+        onValueChange={(v) => v && setViewMode(v as "table" | "raw")}
+      >
+        <ToggleGroupItem value="table">
+          <Table2 className="h-3.5 w-3.5" />
+        </ToggleGroupItem>
+        <ToggleGroupItem value="raw">RAW</ToggleGroupItem>
+      </ToggleGroup>
 
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <select
-            value={filterType}
-            onChange={(e) => setFilterType(e.target.value as ChangeType | "all")}
-            className="text-sm bg-muted border border-border rounded px-2 py-1"
-          >
-            <option value="all">All ({changes.length})</option>
-            {Object.entries(stats).map(([type, count]) => (
-              <option key={type} value={type}>
-                {CHANGE_TYPE_INFO[type as ChangeType]?.label || type} ({count})
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      {/* Stats Summary */}
-      <div className="flex flex-wrap gap-2">
-        {Object.entries(stats).map(([type, count]) => {
-          const info = CHANGE_TYPE_INFO[type as ChangeType];
-          if (!info) return null;
-          return (
-            <Badge
-              key={type}
-              variant="outline"
-              className={cn(
-                "gap-1.5 cursor-pointer",
-                filterType === type && info.color
-              )}
-              onClick={() =>
-                setFilterType(filterType === type ? "all" : (type as ChangeType))
-              }
-            >
-              {info.icon}
-              {info.label}: {count}
-            </Badge>
-          );
-        })}
-      </div>
-
-      {viewMode === "grouped" ? (
-        <div className="space-y-2">
-          <div className="flex justify-end gap-2">
-            <Button variant="ghost" size="sm" onClick={expandAll}>
-              Expand All
-            </Button>
-            <Button variant="ghost" size="sm" onClick={collapseAll}>
-              Collapse All
-            </Button>
-          </div>
-
-          {filteredGroups.map((group) => {
-            const key = `${group.type}:${group.address}`;
-            const isExpanded = expandedGroups.has(key);
-            const info = CHANGE_TYPE_INFO[group.type];
-
-            return (
-              <div
-                key={key}
-                className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden"
-              >
-                <button
-                  onClick={() => toggleGroup(key)}
-                  className="w-full px-4 py-3 flex items-center gap-3 hover:bg-muted/30 transition-colors"
-                >
-                  {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                  ) : (
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  )}
-                  <div
-                    className={cn(
-                      "flex items-center justify-center w-7 h-7 rounded border",
-                      info?.color
-                    )}
-                  >
-                    {info?.icon}
-                  </div>
-                  <div className="flex-1 text-left">
-                    <div className="flex items-center gap-2">
-                      <span className="font-medium text-sm">
-                        {info?.label || group.type}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        {group.changes.length}
-                      </Badge>
-                    </div>
-                    {group.address !== "table" && (
-                      <div className="text-xs text-muted-foreground font-mono mt-0.5">
-                        {group.address.slice(0, 10)}...{group.address.slice(-8)}
-                      </div>
-                    )}
-                  </div>
-                </button>
-
-                {isExpanded && (
-                  <div className="border-t border-border/30">
-                    {group.changes.map((change, i) => (
-                      <ChangeItem
-                        key={i}
-                        change={change}
-                        index={i}
-                        isExpanded={expandedItems.has(`${key}:${i}`)}
-                        onToggle={() => toggleItem(`${key}:${i}`)}
-                      />
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
+      {viewMode === "raw" ? (
+        <JsonViewer data={changes} initialDepth={2} />
       ) : (
-        <div className="space-y-2">
-          {filteredChanges.slice(0, 100).map((change, i) => (
-            <ChangeItem
-              key={i}
-              change={change}
-              index={i}
-              isExpanded={expandedItems.has(`list:${i}`)}
-              onToggle={() => toggleItem(`list:${i}`)}
-              showType
-            />
-          ))}
-          {filteredChanges.length > 100 && (
-            <div className="text-sm text-muted-foreground text-center py-2">
-              Showing 100 of {filteredChanges.length} changes
-            </div>
-          )}
-        </div>
+        <ChangesTable
+          changes={sortedChanges}
+          expandedItems={expandedItems}
+          onToggle={toggleItem}
+          sortColumn={sortColumn}
+          sortDirection={sortDirection}
+          onSort={handleSort}
+        />
       )}
     </div>
   );
 }
 
-interface ChangeItemProps {
-  change: Types.WriteSetChange;
-  index: number;
+// ---------------------------------------------------------------------------
+// ChangesTable
+// ---------------------------------------------------------------------------
+
+interface ChangesTableProps {
+  changes: ParsedChange[];
+  expandedItems: Set<string>;
+  onToggle: (id: string) => void;
+  sortColumn: ChangeSortColumn | null;
+  sortDirection: SortDirection;
+  onSort: (column: ChangeSortColumn) => void;
+}
+
+function ChangesTable({
+  changes,
+  expandedItems,
+  onToggle,
+  sortColumn,
+  sortDirection,
+  onSort,
+}: ChangesTableProps) {
+  return (
+    <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+    <Table className="min-w-[640px]">
+      <TableHeader>
+        <HeaderRow>
+          <SortableHeader
+            label="Address / Handle"
+            column="address"
+            currentColumn={sortColumn}
+            currentDirection={sortDirection}
+            onSort={onSort}
+            className="w-[25%]"
+            tooltip="Where the data is stored: account/object address or table handle"
+          />
+          <SortableHeader
+            label="Type"
+            column="type"
+            currentColumn={sortColumn}
+            currentDirection={sortDirection}
+            onSort={onSort}
+            className="w-[15%]"
+          />
+          <SortableHeader
+            label="Resource / Module"
+            column="resource"
+            currentColumn={sortColumn}
+            currentDirection={sortDirection}
+            onSort={onSort}
+            className="w-[50%]"
+            tooltip="Which module defines this data structure. Click to view module source code"
+          />
+          <TableHead className="w-[10%] text-center">Data</TableHead>
+        </HeaderRow>
+      </TableHeader>
+      <TableBody>
+        {changes.map((change) => (
+          <ChangeRow
+            key={change.id}
+            change={change}
+            isExpanded={expandedItems.has(change.id)}
+            onToggle={() => onToggle(change.id)}
+          />
+        ))}
+      </TableBody>
+    </Table>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChangeRow
+// ---------------------------------------------------------------------------
+
+interface ChangeRowProps {
+  change: ParsedChange;
   isExpanded: boolean;
   onToggle: () => void;
-  showType?: boolean;
 }
 
-function ChangeItem({
-  change,
-  index,
-  isExpanded,
-  onToggle,
-  showType,
-}: ChangeItemProps) {
-  const type = change.type as ChangeType;
-  const info = CHANGE_TYPE_INFO[type];
-  const address = "address" in change ? change.address : null;
-  const data = "data" in change ? change.data : null;
-
-  // Extract resource type for display
-  const resourceType =
-    data && typeof data === "object" && "type" in data
-      ? (data as { type: string }).type
-      : null;
-
-  // For table items
-  const handle = "handle" in change ? (change as { handle: string }).handle : null;
-  const tableKey = "key" in change ? (change as { key: string }).key : null;
+function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
+  const meta = CHANGE_TYPE_META[change.type];
 
   return (
-    <div className="border-b border-border/20 last:border-b-0">
-      <button
+    <>
+      <TableRow
+        className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-12 cursor-pointer"
         onClick={onToggle}
-        className="w-full px-4 py-2.5 flex items-center gap-3 hover:bg-muted/20 transition-colors text-left"
       >
-        {isExpanded ? (
-          <ChevronDown className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-        ) : (
-          <ChevronRight className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
-        )}
+        {/* Address / Handle */}
+        <TableCell>
+          {change.address ? (
+            <CopyableAddress
+              address={change.address}
+              href={`/account/${change.address}`}
+              truncateLength={{ start: 6, end: 4 }}
+            />
+          ) : change.handle ? (
+            <CopyableAddress
+              address={change.handle}
+              truncateLength={{ start: 6, end: 4 }}
+              variant="hash"
+            />
+          ) : (
+            <span className="text-xs text-muted-foreground">—</span>
+          )}
+        </TableCell>
 
-        <span className="text-xs text-muted-foreground font-mono w-6">
-          #{index}
-        </span>
-
-        {showType && info && (
-          <Badge variant="outline" className={cn("text-xs gap-1", info.color)}>
-            {info.icon}
-            {info.label}
+        {/* Type Badge */}
+        <TableCell>
+          <Badge
+            variant={meta.badgeVariant}
+            className="font-mono text-xs gap-1"
+          >
+            {meta.icon}
+            {meta.label}
           </Badge>
-        )}
+        </TableCell>
 
-        <div className="flex-1 min-w-0">
-          {resourceType && (
-            <div className="font-mono text-xs text-foreground truncate">
-              {formatResourceType(resourceType)}
-            </div>
+        {/* Resource / Module */}
+        <TableCell>
+          {change.moduleLink ? (
+            <ResourceModuleLink
+              rawType={change.resourceType || change.displayName}
+              displayName={change.displayName}
+              href={change.moduleLink}
+            />
+          ) : (
+            <span className="font-mono text-xs text-muted-foreground">
+              {change.displayName}
+            </span>
           )}
-          {handle && (
-            <div className="font-mono text-xs text-muted-foreground truncate">
-              Table: {handle.slice(0, 8)}...
-            </div>
-          )}
-          {address && !resourceType && (
-            <div className="font-mono text-xs text-muted-foreground">
-              {address.slice(0, 10)}...{address.slice(-6)}
-            </div>
-          )}
-        </div>
-      </button>
+        </TableCell>
 
+        {/* Expand Toggle */}
+        <TableCell className="text-center">
+          {isExpanded ? (
+            <ChevronDown className="h-4 w-4 text-muted-foreground inline-block" />
+          ) : (
+            <ChevronRight className="h-4 w-4 text-muted-foreground inline-block" />
+          )}
+        </TableCell>
+      </TableRow>
+
+      {/* Expanded Detail Row */}
       {isExpanded && (
-        <div className="px-4 pb-3">
-          <div className="bg-muted/30 rounded-lg p-3 space-y-3">
-            {address && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Address:</span>
-                <CopyableAddress
-                  address={address}
-                  href={`/account/${address}`}
-                  truncateLength={{ start: 10, end: 8 }}
-                />
-              </div>
-            )}
+        <TableRow className="hover:bg-transparent border-b border-border/30">
+          <TableCell colSpan={4} className="p-0">
+            <ChangeDetail change={change} />
+          </TableCell>
+        </TableRow>
+      )}
+    </>
+  );
+}
 
-            {handle && (
-              <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground">Handle:</span>
-                <CopyableAddress
-                  address={handle}
-                  truncateLength={{ start: 10, end: 8 }}
-                  variant="hash"
-                />
-              </div>
-            )}
+// ---------------------------------------------------------------------------
+// ResourceModuleLink (navigable resource/module with tooltip)
+// ---------------------------------------------------------------------------
 
-            {tableKey && (
-              <div>
-                <span className="text-xs text-muted-foreground">Key:</span>
-                <div className="mt-1 font-mono text-xs bg-muted/50 p-2 rounded overflow-auto max-h-20">
-                  {tableKey}
+function ResourceModuleLink({
+  rawType,
+  displayName,
+  href,
+}: {
+  rawType: string;
+  displayName: string;
+  href: string;
+}) {
+  const parsed = parseModuleParts(rawType);
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link
+            href={href}
+            className="font-mono text-xs text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {displayName}
+          </Link>
+        </TooltipTrigger>
+        {parsed && (
+          <TooltipContent className="p-3 max-w-80 sm:max-w-100">
+            <div className="flex flex-col gap-3">
+              <div className="space-y-1">
+                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                  Address
+                </span>
+                <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
+                  {parsed.addr}
                 </div>
               </div>
-            )}
-
-            {data && (
-              <div>
-                <span className="text-xs text-muted-foreground">Data:</span>
-                <div className="mt-1">
-                  <JsonViewer data={data} initialDepth={1} />
+              <div className="space-y-1">
+                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                  Module
+                </span>
+                <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
+                  {parsed.moduleName}
                 </div>
               </div>
-            )}
-
-            {"value" in change && (
-              <div>
-                <span className="text-xs text-muted-foreground">Value:</span>
-                <div className="mt-1 font-mono text-xs bg-muted/50 p-2 rounded overflow-auto max-h-40">
-                  {String((change as { value: string }).value)}
+              {parsed.structName && (
+                <div className="space-y-1">
+                  <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
+                    Struct
+                  </span>
+                  <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
+                    {parsed.structName}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
+            </div>
+          </TooltipContent>
+        )}
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// ChangeDetail (expanded content)
+// ---------------------------------------------------------------------------
+
+function ChangeDetail({ change }: { change: ParsedChange }) {
+  return (
+    <div className="bg-muted/20 px-6 py-4 space-y-3">
+      {/* Metadata grid */}
+      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs items-baseline">
+        {change.handle ? (
+          <>
+            <span className="text-muted-foreground whitespace-nowrap">
+              Handle
+            </span>
+            <span>
+              <CopyableAddress
+                address={change.handle}
+                truncateLength={{ start: 10, end: 8 }}
+                variant="hash"
+              />
+            </span>
+          </>
+        ) : null}
+        {change.tableKey ? (
+          <>
+            <span className="text-muted-foreground whitespace-nowrap">
+              Key
+            </span>
+            <span className="font-mono break-all max-h-16 overflow-auto">
+              {change.tableKey}
+            </span>
+          </>
+        ) : null}
+        {change.value ? (
+          <>
+            <span className="text-muted-foreground whitespace-nowrap">
+              Value
+            </span>
+            <span className="font-mono break-all max-h-16 overflow-auto">
+              {change.value}
+            </span>
+          </>
+        ) : null}
+      </div>
+
+      {/* Data */}
+      {change.data != null && (
+        <div>
+          <div className="text-xs text-muted-foreground mb-1.5 font-medium">
+            Data
+          </div>
+          <div className="max-h-80 overflow-auto rounded-lg">
+            <JsonViewer data={change.data} initialDepth={1} />
           </div>
         </div>
       )}
     </div>
   );
-}
-
-function formatResourceType(type: string): string {
-  // Extract the module and struct name for cleaner display
-  const parts = type.split("::");
-  if (parts.length >= 3) {
-    const modName = parts[1];
-    const struct = parts.slice(2).join("::");
-    return `${modName}::${struct}`;
-  }
-  return type;
 }

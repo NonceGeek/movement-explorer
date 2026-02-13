@@ -2,8 +2,8 @@ import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
 import { useGetValidatorSet } from "./useGetValidatorSet";
 
-// JSON validator stats loading is disabled until Movement has validator stats JSON files available
-// This includes performance metrics: rewards_growth, last_epoch_performance, liveness, location_stats, etc.
+const MAINNET_EPOCH_STATS_URL =
+  "https://storage.googleapis.com/explorer_stats/mainnet_epoch_stats_new_testing.json";
 
 export interface ValidatorData {
   owner_address: string;
@@ -28,13 +28,53 @@ export interface GeoData {
   epoch: number;
 }
 
-// JSON validator stats loading is disabled until Movement has validator stats JSON files available
-const EMPTY_VALIDATORS_RAW_DATA: ValidatorData[] = [];
-
 function useGetValidatorsRawData() {
-  // Always return empty array - JSON stats loading is disabled
-  // Using a constant to avoid creating new array reference on each render
-  return { validatorsRawData: EMPTY_VALIDATORS_RAW_DATA };
+  const { network_name } = useGlobalStore();
+  const [validatorsRawData, setValidatorsRawData] = useState<ValidatorData[]>(
+    [],
+  );
+
+  useEffect(() => {
+    const urls: Record<string, string | null> = {
+      mainnet: MAINNET_EPOCH_STATS_URL,
+      "bardock testnet": null,
+      testnet: null,
+      devnet: null,
+      local: null,
+      mevmdevnet: null,
+      custom: null,
+    };
+
+    const url = urls[network_name];
+    if (url) {
+      const fetchData = async () => {
+        const response = await fetch(url);
+        const data: ValidatorData[] = await response.json();
+        // Normalize null values from JSON to match interface defaults
+        const normalized = data.map((v) => ({
+          owner_address: v.owner_address,
+          operator_address: v.operator_address,
+          voting_power: v.voting_power ?? "0",
+          governance_voting_record: v.governance_voting_record ?? "",
+          last_epoch: v.last_epoch ?? 0,
+          last_epoch_performance: v.last_epoch_performance ?? "",
+          liveness: v.liveness ?? 0,
+          rewards_growth: v.rewards_growth ?? 0,
+          location_stats: v.location_stats ?? undefined,
+          apt_rewards_distributed: v.apt_rewards_distributed ?? 0,
+        }));
+        setValidatorsRawData(normalized);
+      };
+
+      fetchData().catch((error) => {
+        console.error("Failed to fetch validator epoch stats:", error);
+      });
+    } else {
+      setValidatorsRawData([]);
+    }
+  }, [network_name]);
+
+  return { validatorsRawData };
 }
 
 export function useGetValidators() {

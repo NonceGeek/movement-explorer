@@ -15,6 +15,7 @@ interface ToggleGroupContextValue {
   onValueChange: (value: string) => void;
   size: ToggleGroupSize;
   variant: ToggleGroupVariant;
+  disabled: boolean;
 }
 
 const ToggleGroupContext = React.createContext<ToggleGroupContextValue | null>(
@@ -23,9 +24,10 @@ const ToggleGroupContext = React.createContext<ToggleGroupContextValue | null>(
 
 interface ToggleGroupProps {
   value: string;
-  onValueChange: (value: string) => void;
+  onValueChange?: (value: string) => void;
   size?: ToggleGroupSize;
   variant?: ToggleGroupVariant;
+  disabled?: boolean;
   className?: string;
   children: React.ReactNode;
 }
@@ -34,22 +36,25 @@ const ToggleGroup = React.forwardRef<HTMLDivElement, ToggleGroupProps>(
   (
     {
       value,
-      onValueChange,
+      onValueChange = () => {},
       size = "sm",
       variant = "brand",
+      disabled = false,
       className,
       children,
     },
     ref,
   ) => (
     <ToggleGroupContext.Provider
-      value={{ value, onValueChange, size, variant }}
+      value={{ value, onValueChange, size, variant, disabled }}
     >
       <div
         ref={ref}
         role="radiogroup"
+        aria-disabled={disabled}
         className={cn(
           "inline-flex items-center rounded-lg p-0.5 border border-border bg-muted/30",
+          disabled && "opacity-50 pointer-events-none",
           className,
         )}
       >

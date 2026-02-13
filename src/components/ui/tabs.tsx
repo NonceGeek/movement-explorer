@@ -27,7 +27,7 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       variant === "line" &&
-      "bg-muted/30 p-1.5 px-2 gap-4 border-b border-border/50 w-full justify-start rounded-lg rounded-b-none h-auto",
+      "bg-muted/30 p-1.5 px-2 gap-4 border-b border-border/50 w-full justify-start rounded-lg rounded-b-none h-auto overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden",
       variant === "primary-line" &&
       "bg-transparent gap-1 border-b border-border/30 w-full justify-start rounded-none h-12 p-0",
       variant === "pill" &&
@@ -181,7 +181,7 @@ function CompactTabsList({
   className,
 }: ResponsiveTabsListProps) {
   return (
-    <div className={cn("flex justify-start border-b border-border/30", className)}>
+    <div className={cn("flex justify-start border-b border-border/30 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden", className)}>
       <TabsList
         variant="primary-line"
         className="!w-auto !inline-flex gap-0 h-auto p-0 bg-transparent border-b-0 rounded-none"
@@ -191,7 +191,7 @@ function CompactTabsList({
             key={item.value}
             value={item.value}
             variant="primary-line"
-            className="px-5 py-2.5 text-sm font-bold"
+            className="shrink-0 px-5 py-2.5 text-sm font-bold"
           >
             <span className="flex items-center gap-1.5">
               {item.icon}

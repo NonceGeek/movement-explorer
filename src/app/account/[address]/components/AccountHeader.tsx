@@ -3,7 +3,7 @@
 import { Badge } from "@/components/ui/badge";
 import { BadgeCheck, Clock } from "lucide-react";
 import { AccountIcon, type AccountType } from "./AccountIcon";
-import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
 import { useGetAccountLabel } from "@/hooks/accounts/useGetAccountLabel";
 import { cn } from "@/utils/styling";
 import { formatAge } from "@/utils/time";
@@ -74,13 +74,7 @@ export function AccountHeader({
         </div>
         {/* Address row */}
         <div className="flex items-center gap-2 flex-wrap">
-          <CopyableAddress
-            address={address}
-            showFull
-            showCopyButton
-            variant="muted"
-            className="text-sm"
-          />
+          <HeaderCopyableAddress address={address} />
           {accountLabel?.name && (
             <Badge variant="secondary" className="text-xs">
               {accountLabel.name}

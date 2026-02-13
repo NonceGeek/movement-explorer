@@ -5,10 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
 import { cn } from "@/utils/styling";
-import { ChevronDown, ChevronRight, Table2, List } from "lucide-react";
+import { ChevronDown, ChevronRight, Table2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SortableHeader, type SortDirection } from "@/components/ui/sortable-header";
-import { CollapsibleList } from "./CollapsibleList";
 import type { Types } from "aptos";
 import {
   TableBody,
@@ -123,23 +122,14 @@ export function EventsTab({ events, className }: EventsTabProps) {
       <ToggleGroup value={viewMode} onValueChange={(v) => setViewMode(v as "table" | "raw")}>
         <ToggleGroupItem value="table">
           <Table2 className="h-3.5 w-3.5" />
-          Table
         </ToggleGroupItem>
         <ToggleGroupItem value="raw">
-          <List className="h-3.5 w-3.5" />
-          Raw
+          RAW
         </ToggleGroupItem>
       </ToggleGroup>
 
       {viewMode === "raw" ? (
-        <CollapsibleList
-          items={events.map((event, i) => ({
-            key: i,
-            title: `#${event.sequence_number} - ${event.type}`,
-            data: event.data,
-          }))}
-          emptyMessage="No events"
-        />
+        <JsonViewer data={events} initialDepth={2} />
       ) : (
         <EventTable
           events={sortedEvents}

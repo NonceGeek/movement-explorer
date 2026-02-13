@@ -1,7 +1,13 @@
 "use client";
 
-import { ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUpDown, ArrowUp, ArrowDown, Info } from "lucide-react";
 import { StyledTableHead } from "@/components/ui/table";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/utils/styling";
 
 export type SortDirection = "asc" | "desc";
@@ -13,6 +19,7 @@ interface SortableHeaderProps<T extends string> {
   currentDirection: SortDirection;
   onSort: (column: T) => void;
   className?: string;
+  tooltip?: string;
 }
 
 export function SortableHeader<T extends string>({
@@ -22,6 +29,7 @@ export function SortableHeader<T extends string>({
   currentDirection,
   onSort,
   className,
+  tooltip,
 }: SortableHeaderProps<T>) {
   const isActive = currentColumn === column;
 
@@ -37,6 +45,18 @@ export function SortableHeader<T extends string>({
         onClick={() => onSort(column)}
       >
         {label}
+        {tooltip && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild onClick={(e) => e.stopPropagation()}>
+                <Info className="h-3 w-3 text-muted-foreground/60" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-64 text-xs">
+                {tooltip}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
         {isActive ? (
           currentDirection === "desc" ? (
             <ArrowDown className="h-3.5 w-3.5" />

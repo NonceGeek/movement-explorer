@@ -69,7 +69,7 @@ function JsonNode({ name, value, depth, initialDepth, isLast }: JsonNodeProps) {
     if (value === undefined)
       return <span className="text-muted-foreground italic">undefined</span>;
     if (typeof value === "boolean")
-      return <span className="text-yellow-500">{String(value)}</span>;
+      return <span className={value ? "text-emerald-400" : "text-rose-400"}>{String(value)}</span>;
     if (typeof value === "number")
       return <span className="text-blue-400">{value}</span>;
     if (typeof value === "string") {
@@ -184,13 +184,38 @@ export function JsonViewer({
   initialDepth = 2,
   className,
 }: JsonViewerProps) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyAll = useCallback(async () => {
+    try {
+      const text =
+        typeof data === "string" ? data : JSON.stringify(data, null, 2);
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1500);
+    } catch (err) {
+      console.error("Failed to copy:", err);
+    }
+  }, [data]);
+
   return (
     <div
       className={cn(
-        "bg-muted/30 rounded-lg p-4 overflow-x-auto text-base",
+        "relative bg-muted/30 rounded-lg p-4 overflow-x-auto text-sm group/viewer",
         className,
       )}
     >
+      <button
+        onClick={handleCopyAll}
+        className="absolute top-2 right-2 p-1.5 rounded-md hover:bg-muted/80 text-muted-foreground hover:text-foreground transition-all cursor-pointer"
+        title="Copy all"
+      >
+        {copied ? (
+          <Check className="w-4 h-4 text-green-500" />
+        ) : (
+          <Copy className="w-4 h-4" />
+        )}
+      </button>
       <JsonNode
         name={null}
         value={data}

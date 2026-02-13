@@ -57,11 +57,11 @@ const TabsTrigger = React.forwardRef<
       variant === "interactive" &&
       "cursor-pointer hover:bg-muted/50 data-[state=active]:hover:bg-background transition-[color,box-shadow,background-color]",
       variant === "line" &&
-      "relative rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 shadow-none data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary hover:text-foreground transition-colors",
+      "relative rounded-none border-b-2 border-transparent bg-transparent px-4 py-2 shadow-none data-[state=active]:border-b-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary hover:text-foreground transition-colors text-sm font-bold",
       variant === "primary-line" &&
-      "relative rounded-none border-b-3 border-transparent bg-transparent px-4 py-3 shadow-none data-[state=active]:border-b-primary data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer",
+      "relative rounded-none border-b-3 border-transparent bg-transparent px-4 py-3 shadow-none data-[state=active]:border-b-primary data-[state=active]:bg-transparent dark:data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-foreground text-muted-foreground hover:text-foreground/80 transition-colors cursor-pointer text-sm font-bold",
       variant === "pill" &&
-      "rounded-full px-4 py-2 text-sm font-medium border border-border bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:hover:bg-primary/90 transition-all cursor-pointer shadow-none",
+      "rounded-full px-4 py-2 text-sm font-bold border border-border bg-transparent text-muted-foreground hover:bg-muted/50 hover:text-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary data-[state=active]:hover:bg-primary/90 transition-all cursor-pointer shadow-none",
       className,
     )}
     {...props}
@@ -113,7 +113,7 @@ function ResponsiveTabsList({
             key={item.value}
             value={item.value}
             variant="primary-line"
-            className="shrink-0"
+            className="shrink-0 text-sm font-bold"
           >
             <span className="flex items-center gap-2">
               {item.icon}
@@ -155,7 +155,7 @@ function PillTabsList({
             key={item.value}
             value={item.value}
             variant="pill"
-            className="shrink-0"
+            className="shrink-0 text-sm font-bold"
           >
             <span className="flex items-center gap-1.5">
               <span>{item.label}</span>
@@ -191,7 +191,7 @@ function CompactTabsList({
             key={item.value}
             value={item.value}
             variant="primary-line"
-            className="px-5 py-2.5 text-base font-heading font-normal"
+            className="px-5 py-2.5 text-sm font-bold"
           >
             <span className="flex items-center gap-1.5">
               {item.icon}

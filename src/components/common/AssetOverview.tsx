@@ -1,6 +1,5 @@
 "use client";
 
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
@@ -88,221 +87,219 @@ export function AssetOverview({
   );
 
   return (
-    <Card className="bg-card border-border mb-8 overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
-        {/* Column 1: Overview */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            Overview
-          </h3>
-          <div className="space-y-2.5">
-            {/* Total Supply */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Coins className="h-3 w-3" />
-                Total Supply
-              </span>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-5 w-32" />
-              ) : formattedSupply ? (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm font-semibold tabular-nums">
-                    {formattedSupply} {symbol}
-                  </span>
-                  <SupplyIcon supplyType={supplyType} hasSupply={hasSupply} />
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <span className="text-sm text-muted-foreground">
-                    Not tracked
-                  </span>
-                  <SupplyIcon
-                    supplyType={supplyType}
-                    hasSupply={hasSupply ?? false}
-                  />
-                </div>
-              )}
-            </div>
-
-            {/* USD Price */}
-            {usdPrice && (
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <DollarSign className="h-3 w-3" />
-                  Price
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+      {/* Card 1: Overview */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          OVERVIEW
+        </h3>
+        <div className="space-y-2.5">
+          {/* Total Supply */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Coins className="h-3.5 w-3.5" />
+              Total Supply
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-32" />
+            ) : formattedSupply ? (
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-semibold tabular-nums">
+                  {formattedSupply} {symbol}
                 </span>
-                {isLoading ? (
-                  <EnhancedSkeleton className="h-4 w-20" />
-                ) : (
-                  <span className="text-sm font-medium tabular-nums">
-                    ${parseFloat(usdPrice).toFixed(6)}
-                  </span>
-                )}
+                <SupplyIcon supplyType={supplyType} hasSupply={hasSupply} />
               </div>
-            )}
-
-            {/* Market Cap */}
-            {marketCap && (
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Layers className="h-3 w-3" />
-                  Market Cap
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm text-muted-foreground">
+                  Not tracked
                 </span>
-                {isLoading ? (
-                  <EnhancedSkeleton className="h-4 w-24" />
-                ) : (
-                  <span className="text-sm font-medium tabular-nums text-muted-foreground">
-                    {marketCap}
-                  </span>
-                )}
+                <SupplyIcon
+                  supplyType={supplyType}
+                  hasSupply={hasSupply ?? false}
+                />
               </div>
             )}
           </div>
-        </div>
 
-        {/* Column 2: Token Info */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            Token Info
-          </h3>
-          <div className="space-y-2.5">
-            {/* Decimals */}
+          {/* USD Price */}
+          {usdPrice && (
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Hash className="h-3 w-3" />
-                Decimals
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <DollarSign className="h-3.5 w-3.5" />
+                Price
               </span>
               {isLoading ? (
-                <EnhancedSkeleton className="h-4 w-8" />
+                <EnhancedSkeleton className="h-5 w-20" />
               ) : (
                 <span className="text-sm font-medium tabular-nums">
-                  {decimals}
+                  ${parseFloat(usdPrice).toFixed(6)}
                 </span>
               )}
             </div>
+          )}
 
-            {/* Category */}
-            {category && (
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <Tag className="h-3 w-3" />
-                  Category
-                </span>
-                {isLoading ? (
-                  <EnhancedSkeleton className="h-4 w-16" />
-                ) : (
-                  <span className="text-sm font-medium">{category}</span>
-                )}
-              </div>
-            )}
-
-            {/* Tags */}
-            {displayTags && displayTags.length > 0 && (
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                  <Tag className="h-3 w-3" />
-                  Tags
-                </span>
-                <div className="flex flex-wrap gap-1 justify-end">
-                  {displayTags.slice(0, 3).map((tag) => (
-                    <Badge
-                      key={tag}
-                      variant="secondary"
-                      className="text-xs px-1.5 py-0"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                  {displayTags.length > 3 && (
-                    <Badge
-                      variant="secondary"
-                      className="text-xs px-1.5 py-0"
-                    >
-                      +{displayTags.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Column 3: More Info */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            More Info
-          </h3>
-          <div className="space-y-2.5">
-            {/* Creator / Object Details */}
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                <User className="h-3 w-3" />
-                {identifierLabel}
+          {/* Market Cap */}
+          {marketCap && (
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Layers className="h-3.5 w-3.5" />
+                Market Cap
               </span>
               {isLoading ? (
-                <EnhancedSkeleton className="h-4 w-24" />
+                <EnhancedSkeleton className="h-5 w-24" />
+              ) : (
+                <span className="text-sm font-medium tabular-nums text-muted-foreground">
+                  {marketCap}
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card 2: Token Info */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          TOKEN INFO
+        </h3>
+        <div className="space-y-2.5">
+          {/* Decimals */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Hash className="h-3.5 w-3.5" />
+              Decimals
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-8" />
+            ) : (
+              <span className="text-sm font-medium tabular-nums">
+                {decimals}
+              </span>
+            )}
+          </div>
+
+          {/* Category */}
+          {category && (
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Tag className="h-3.5 w-3.5" />
+                Category
+              </span>
+              {isLoading ? (
+                <EnhancedSkeleton className="h-5 w-16" />
+              ) : (
+                <span className="text-sm font-medium">{category}</span>
+              )}
+            </div>
+          )}
+
+          {/* Tags */}
+          {displayTags && displayTags.length > 0 && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <Tag className="h-3.5 w-3.5" />
+                Tags
+              </span>
+              <div className="flex flex-wrap gap-1 justify-end">
+                {displayTags.slice(0, 3).map((tag) => (
+                  <Badge
+                    key={tag}
+                    variant="secondary"
+                    className="text-xs px-1.5 py-0"
+                  >
+                    {tag}
+                  </Badge>
+                ))}
+                {displayTags.length > 3 && (
+                  <Badge
+                    variant="secondary"
+                    className="text-xs px-1.5 py-0"
+                  >
+                    +{displayTags.length - 3}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Card 3: More Info */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          MORE INFO
+        </h3>
+        <div className="space-y-2.5">
+          {/* Creator / Object Details */}
+          <div className="flex items-center justify-between gap-2">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+              <User className="h-3.5 w-3.5" />
+              {identifierLabel}
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-24" />
+            ) : (
+              <CopyableAddress
+                address={creatorAddress || identifier}
+                href={creatorAddress ? `/account/${creatorAddress}` : identifierHref}
+                className="text-sm"
+                truncateLength={{ start: 6, end: 4 }}
+              />
+            )}
+          </div>
+
+          {/* Paired Asset */}
+          {pairedAsset && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <Link2 className="h-3.5 w-3.5" />
+                {pairedAsset.label}
+              </span>
+              {isLoading ? (
+                <EnhancedSkeleton className="h-5 w-24" />
               ) : (
                 <CopyableAddress
-                  address={creatorAddress || identifier}
-                  href={creatorAddress ? `/account/${creatorAddress}` : identifierHref}
-                  className="text-xs"
+                  address={pairedAsset.address}
+                  href={pairedAsset.href}
+                  className="text-sm"
                   truncateLength={{ start: 6, end: 4 }}
                 />
               )}
             </div>
+          )}
 
-            {/* Paired Asset */}
-            {pairedAsset && (
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                  <Link2 className="h-3 w-3" />
-                  {pairedAsset.label}
-                </span>
-                {isLoading ? (
-                  <EnhancedSkeleton className="h-4 w-24" />
-                ) : (
-                  <CopyableAddress
-                    address={pairedAsset.address}
-                    href={pairedAsset.href}
-                    className="text-xs"
-                    truncateLength={{ start: 6, end: 4 }}
-                  />
-                )}
-              </div>
-            )}
-
-            {/* Website */}
-            {websiteUrl && (
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                  <Globe className="h-3 w-3" />
-                  Website
-                </span>
-                {isLoading ? (
-                  <EnhancedSkeleton className="h-4 w-24" />
-                ) : (
-                  <a
-                    href={websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-xs text-primary hover:underline flex items-center gap-1 truncate max-w-[150px]"
-                  >
-                    {(() => {
-                      try {
-                        const url = websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`;
-                        return new URL(url).hostname;
-                      } catch {
-                        return websiteUrl;
-                      }
-                    })()}
-                    <ExternalLink className="h-3 w-3 shrink-0" />
-                  </a>
-                )}
-              </div>
-            )}
-          </div>
+          {/* Website */}
+          {websiteUrl && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <Globe className="h-3.5 w-3.5" />
+                Website
+              </span>
+              {isLoading ? (
+                <EnhancedSkeleton className="h-5 w-24" />
+              ) : (
+                <a
+                  href={websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm text-primary hover:underline flex items-center gap-1 truncate max-w-[150px]"
+                >
+                  {(() => {
+                    try {
+                      const url = websiteUrl.startsWith("http") ? websiteUrl : `https://${websiteUrl}`;
+                      return new URL(url).hostname;
+                    } catch {
+                      return websiteUrl;
+                    }
+                  })()}
+                  <ExternalLink className="h-3 w-3 shrink-0" />
+                </a>
+              )}
+            </div>
+          )}
         </div>
       </div>
-    </Card>
+    </div>
   );
 }

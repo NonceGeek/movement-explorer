@@ -17,8 +17,8 @@ export function SectionCard({
   className,
 }: SectionCardProps) {
   return (
-    <Card className={cn("bg-card border-border", className)}>
-      <CardHeader className="border-b border-border/50 py-4 px-6">
+    <Card className={cn("bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl", className)}>
+      <CardHeader className="border-b border-border/30 py-4 px-6">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg font-heading font-semibold">
             {title}

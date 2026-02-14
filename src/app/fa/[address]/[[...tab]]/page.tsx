@@ -14,7 +14,8 @@ import { useGetFaPairedCoin } from "@/hooks/coins/useGetFaPairedCoin";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidAccountAddress, getAssetSymbol } from "@/utils";
-import { Coins, Users, ArrowLeftRight } from "lucide-react";
+import { Users, ArrowLeftRight } from "lucide-react";
+import { AccountIcon } from "@/app/account/[address]/components/AccountIcon";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
 import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
 
@@ -116,21 +117,35 @@ function FAContent() {
       <PageNavigation />
       <PageContainer>
         {/* Header */}
-        <div className="flex items-start gap-4 mb-6">
-          {metadata?.icon_uri || coinDescription?.logoUrl ? (
-            <img
-              src={metadata?.icon_uri || coinDescription?.logoUrl}
-              alt={metadata?.name || "FA"}
-              className="w-14 h-14 rounded-full shrink-0"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0">
-              <Coins className="w-7 h-7 text-muted-foreground" />
-            </div>
-          )}
+        <div className="flex items-start gap-3 sm:items-center sm:gap-4 mb-6">
+          <div className="shrink-0 hidden sm:block">
+            {metadata?.icon_uri || coinDescription?.logoUrl ? (
+              <img
+                src={metadata?.icon_uri || coinDescription?.logoUrl}
+                alt={metadata?.name || "FA"}
+                className="w-16 h-16 rounded-full shadow-md"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <AccountIcon type="token" address={address} size="lg" />
+            )}
+          </div>
+          <div className="shrink-0 sm:hidden">
+            {metadata?.icon_uri || coinDescription?.logoUrl ? (
+              <img
+                src={metadata?.icon_uri || coinDescription?.logoUrl}
+                alt={metadata?.name || "FA"}
+                className="w-12 h-12 rounded-full shadow-md"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            ) : (
+              <AccountIcon type="token" address={address} size="md" />
+            )}
+          </div>
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3 flex-wrap mb-2">
               <h1 className="text-3xl font-bold">
@@ -189,16 +204,32 @@ function FAContent() {
             />
 
             <TabsContent value="holders">
-              <HoldersTab
-                address={address}
-                metadata={metadata}
-                coinDescription={coinDescription}
-                displaySymbol={displaySymbol}
-              />
+              {isLoadingPairedCoin ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <EnhancedSkeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <HoldersTab
+                  address={pairedCoin ?? address}
+                  metadata={metadata}
+                  coinDescription={coinDescription}
+                  displaySymbol={displaySymbol}
+                />
+              )}
             </TabsContent>
 
             <TabsContent value="transactions">
-              <TransactionsTab address={address} />
+              {isLoadingPairedCoin ? (
+                <div className="space-y-3">
+                  {Array.from({ length: 10 }).map((_, i) => (
+                    <EnhancedSkeleton key={i} className="h-12 w-full" />
+                  ))}
+                </div>
+              ) : (
+                <TransactionsTab address={pairedCoin ?? address} />
+              )}
             </TabsContent>
           </Tabs>
         )}

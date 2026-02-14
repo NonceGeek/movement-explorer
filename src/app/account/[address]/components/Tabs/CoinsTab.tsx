@@ -8,7 +8,6 @@ import {
   StyledTableHeader as TableHeader,
   StyledTableHeaderRow as HeaderRow,
 } from "@/components/ui/table";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { useCoinData } from "./coins/useCoinData";
@@ -35,20 +34,8 @@ export default function CoinsTab({ address }: { address: string }) {
     maximumFractionDigits: 2,
   });
 
-  if (isLoading) {
-    return (
-      <Card>
-        <CardContent className="pt-6 space-y-3">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <EnhancedSkeleton key={i} className="h-12 w-full" />
-          ))}
-        </CardContent>
-      </Card>
-    );
-  }
-
   // Show empty state only if user has no coins at all
-  if (!coins.length) {
+  if (!isLoading && !coins.length) {
     return (
       <EmptyState
         icon={<Wallet className="h-12 w-12" />}
@@ -80,9 +67,13 @@ export default function CoinsTab({ address }: { address: string }) {
           {/* Total Value */}
           <div className="text-right">
             <span className="text-sm text-muted-foreground">Total Value: </span>
-            <span className="text-lg font-semibold text-primary">
-              {formattedTotalValue}
-            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="inline-block h-6 w-24 align-middle" />
+            ) : (
+              <span className="text-lg font-semibold text-primary">
+                {formattedTotalValue}
+              </span>
+            )}
           </div>
         </div>
       </div>
@@ -103,7 +94,17 @@ export default function CoinsTab({ address }: { address: string }) {
             </HeaderRow>
           </TableHeader>
           <TableBody>
-            {displayedCoins.length > 0 ? (
+            {isLoading ? (
+              Array.from({ length: 5 }).map((_, i) => (
+                <tr key={i}>
+                  {Array.from({ length: 8 }).map((_, j) => (
+                    <td key={j} className="p-3">
+                      <EnhancedSkeleton className="h-5 w-full" />
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : displayedCoins.length > 0 ? (
               displayedCoins.map((coin) => (
                 <CoinRow key={coin.assetType} coin={coin} />
               ))

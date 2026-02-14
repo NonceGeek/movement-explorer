@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   TableBody,
   TableCell,
@@ -81,8 +80,11 @@ export default function HoldersTab({
     displaySymbol ?? metadata?.symbol ?? coinDescription?.symbol ?? "";
 
   return (
-
-    <div className="overflow-x-auto">
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Top {holders.length.toLocaleString()} holders by balance
+      </p>
+      <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <HeaderRow>
@@ -116,6 +118,7 @@ export default function HoldersTab({
           ))}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 }

@@ -1,14 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useMemo } from "react";
 import { Types } from "aptos";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { removeSignerParam } from "@/utils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Loader2 } from "lucide-react";
+import { useForm, Controller } from "react-hook-form";
 
 interface ContractFormProps {
   module: Types.MoveModule;
@@ -34,50 +41,47 @@ export default function ContractForm({
   result,
 }: ContractFormProps) {
   const { account, connected } = useWallet();
-  const [typeArgs, setTypeArgs] = useState<string[]>(
-    Array(fn.generic_type_params.length).fill(""),
-  );
-  const [args, setArgs] = useState<string[]>([]);
-  const [ledgerVersion, setLedgerVersion] = useState<string>("");
-
-  const fnParams = removeSignerParam(fn);
+  const fnParams = useMemo(() => removeSignerParam(fn), [fn]);
   const hasSigner = fnParams.length !== fn.params.length;
 
-  // Initialize args based on params
+  const {
+    control,
+    handleSubmit,
+    formState: { isValid },
+    reset,
+  } = useForm<ContractFormData>({
+    mode: "all",
+    defaultValues: {
+      typeArgs: Array(fn.generic_type_params.length).fill(""),
+      args: Array(fnParams.length).fill(""),
+      ledgerVersion: "",
+    },
+  });
+
+  // Reset form when function changes
   useEffect(() => {
-    setArgs(Array(fnParams.length).fill(""));
-  }, [fnParams.length]);
+    reset({
+      typeArgs: Array(fn.generic_type_params.length).fill(""),
+      args: Array(fnParams.length).fill(""),
+      ledgerVersion: "",
+    });
+  }, [fn.name, fn.generic_type_params.length, fnParams.length, reset]);
 
-  const handleTypeArgChange = (index: number, value: string) => {
-    const newTypeArgs = [...typeArgs];
-    newTypeArgs[index] = value;
-    setTypeArgs(newTypeArgs);
-  };
-
-  const handleArgChange = (index: number, value: string) => {
-    const newArgs = [...args];
-    newArgs[index] = value;
-    setArgs(newArgs);
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const onFormSubmit = async (data: ContractFormData) => {
     await onSubmit({
-      typeArgs: typeArgs.filter((t) => t !== ""),
-      args,
-      ledgerVersion: ledgerVersion || undefined,
+      typeArgs: data.typeArgs.filter((t) => t !== ""),
+      args: data.args,
+      ledgerVersion: data.ledgerVersion || undefined,
     });
   };
 
-  // Check if form is valid (all required fields filled)
-  const isFormValid = args.every((arg, i) => {
-    const param = fnParams[i];
-    // Option types are not required
-    if (param?.startsWith("0x1::option::Option")) {
-      return true;
-    }
-    return arg.trim() !== "";
-  });
+  const isButtonDisabled = isLoading || (!isView && !connected) || !isValid;
+
+  const buttonTooltip = !isValid
+    ? "Input arguments cannot be empty"
+    : !isView && !connected
+      ? "Connect wallet to run"
+      : null;
 
   return (
     <Card>
@@ -97,7 +101,7 @@ export default function ContractForm({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-4">
           {/* Type Arguments */}
           {fn.generic_type_params.length > 0 && (
             <div className="space-y-3">
@@ -105,10 +109,19 @@ export default function ContractForm({
               {fn.generic_type_params.map((_, i) => (
                 <div key={`type-${i}`} className="space-y-1">
                   <Label className="text-xs text-muted-foreground">T{i}</Label>
-                  <Input
-                    placeholder={`Type argument ${i}`}
-                    value={typeArgs[i]}
-                    onChange={(e) => handleTypeArgChange(i, e.target.value)}
+                  <Controller
+                    name={`typeArgs.${i}`}
+                    control={control}
+                    rules={{ required: true }}
+                    render={({ field, fieldState }) => (
+                      <Input
+                        {...field}
+                        placeholder={`Type argument ${i}`}
+                        className={
+                          fieldState.invalid ? "border-destructive" : ""
+                        }
+                      />
+                    )}
                   />
                 </div>
               ))}
@@ -144,10 +157,19 @@ export default function ContractForm({
                     </span>
                   )}
                 </Label>
-                <Input
-                  placeholder={`Argument ${i}`}
-                  value={args[i] || ""}
-                  onChange={(e) => handleArgChange(i, e.target.value)}
+                <Controller
+                  name={`args.${i}`}
+                  control={control}
+                  rules={{ required: !isOption }}
+                  render={({ field, fieldState }) => (
+                    <Input
+                      {...field}
+                      placeholder={`Argument ${i}`}
+                      className={
+                        fieldState.invalid ? "border-destructive" : ""
+                      }
+                    />
+                  )}
                 />
               </div>
             );
@@ -159,31 +181,46 @@ export default function ContractForm({
               <Label className="text-xs text-muted-foreground">
                 Ledger Version (optional, defaults to latest)
               </Label>
-              <Input
-                placeholder="Leave empty for latest"
-                value={ledgerVersion}
-                onChange={(e) => setLedgerVersion(e.target.value)}
+              <Controller
+                name="ledgerVersion"
+                control={control}
+                render={({ field }) => (
+                  <Input {...field} placeholder="Leave empty for latest" />
+                )}
               />
             </div>
           )}
 
-          {/* Submit Button */}
-          <Button
-            type="submit"
-            disabled={isLoading || (!isView && !connected) || !isFormValid}
-            className="w-32"
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                {isView ? "Viewing..." : "Running..."}
-              </>
-            ) : isView ? (
-              "View"
-            ) : (
-              "Run"
-            )}
-          </Button>
+          {/* Submit Button with Tooltip */}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span className="inline-block">
+                  <Button
+                    type="submit"
+                    disabled={isButtonDisabled}
+                    className="w-32"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        {isView ? "Viewing..." : "Running..."}
+                      </>
+                    ) : isView ? (
+                      "View"
+                    ) : (
+                      "Run"
+                    )}
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {buttonTooltip && (
+                <TooltipContent>
+                  <p>{buttonTooltip}</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
 
           {/* Result */}
           {result}
@@ -197,9 +234,10 @@ export default function ContractForm({
               <li>Option arguments can be empty (will be Option::none)</li>
               <li>Nested vectors must be in JSON format</li>
               <li>
-                Vectors: use JSON or comma-separated (e.g., 0x1, 0x2 or ["0x1",
-                "0x2"])
+                Vectors: use JSON or comma-separated (e.g., 0x1, 0x2 or
+                [&quot;0x1&quot;, &quot;0x2&quot;])
               </li>
+              <li>vector&lt;u8&gt;: supports hex format (0xDEADBEEF)</li>
               <li>Numbers and booleans without quotes in JSON</li>
             </ul>
           </div>

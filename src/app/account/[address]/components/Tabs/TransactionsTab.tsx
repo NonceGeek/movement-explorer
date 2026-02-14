@@ -1,17 +1,8 @@
 "use client";
 
-import { useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
 import { useGetAccountTransactionVersions } from "@/hooks/accounts/useGetAccountTransactionVersions";
 import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTransactionCount";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { Types } from "aptos";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -23,52 +14,10 @@ import {
   TransactionRowData,
 } from "@/components/transactions";
 import { EmptyState } from "..";
-import { Activity } from "lucide-react";
+import { Activity, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const TXN_PER_PAGE = 25;
-
-function getPageStartSequenceNumbers(sequenceNum: number): number[] {
-  const pageStarts: number[] = [];
-  const numOfPages = Math.ceil(sequenceNum / TXN_PER_PAGE);
-  let num = sequenceNum;
-  for (let i = 0; i < numOfPages; i++) {
-    num = num - TXN_PER_PAGE;
-    num = num >= 0 ? num : 0;
-    pageStarts.push(num);
-  }
-  return pageStarts;
-}
-
-function getVisiblePages(currentPage: number, totalPages: number) {
-  const pages: (number | "ellipsis")[] = [];
-  const showPages = 5;
-  const halfShow = Math.floor(showPages / 2);
-
-  let startPage = Math.max(1, currentPage - halfShow);
-  let endPage = Math.min(totalPages, currentPage + halfShow);
-
-  if (currentPage <= halfShow) {
-    endPage = Math.min(totalPages, showPages);
-  } else if (currentPage >= totalPages - halfShow) {
-    startPage = Math.max(1, totalPages - showPages + 1);
-  }
-
-  if (startPage > 1) {
-    pages.push(1);
-    if (startPage > 2) pages.push("ellipsis");
-  }
-
-  for (let i = startPage; i <= endPage; i++) {
-    pages.push(i);
-  }
-
-  if (endPage < totalPages) {
-    if (endPage < totalPages - 1) pages.push("ellipsis");
-    pages.push(totalPages);
-  }
-
-  return pages;
-}
+const MAX_DISPLAY = 25;
 
 interface TransactionsTabProps {
   address: string;
@@ -79,27 +28,19 @@ export default function TransactionsTab({
   address,
   accountData,
 }: TransactionsTabProps) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
   const { data: indexerTxCount } = useGetAccountTransactionCount(address);
 
-  const currentTxPage = parseInt(searchParams.get("txPage") ?? "1", 10);
   const sequenceNum = accountData
     ? parseInt(accountData.sequence_number, 10)
     : 0;
 
-  // Use indexer count if available, otherwise fallback to sequence number (only for accounts)
+  // Use indexer count if available, otherwise fallback to sequence number
   const totalTxCount =
     indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
 
-  const totalTxPages = Math.max(1, Math.ceil(totalTxCount / TXN_PER_PAGE));
-
-  // offset for Indexer API
-  const txOffset = (currentTxPage - 1) * TXN_PER_PAGE;
-
+  // Always fetch only the latest 25 transactions
   const { data: transactionVersions, isLoading: transactionsLoading } =
-    useGetAccountTransactionVersions(address, TXN_PER_PAGE, txOffset);
+    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0);
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
@@ -118,27 +59,8 @@ export default function TransactionsTab({
     enabled: !!transactionVersions && transactionVersions.length > 0,
   });
 
-  const txVisiblePages = getVisiblePages(currentTxPage, totalTxPages);
-
   // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-
-  const handleTxPageChange = (page: number) => {
-    // Save current scroll position
-    const scrollY = window.scrollY;
-
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("txPage", page.toString());
-    const newPath = `${pathname}?${params.toString()}`;
-
-    // Use window.history.pushState to avoid Next.js navigation behavior
-    window.history.pushState(null, '', newPath);
-
-    // Restore scroll position after DOM update
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
-  };
 
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
@@ -151,10 +73,6 @@ export default function TransactionsTab({
 
   const isLoading = transactionsLoading || detailsLoading;
 
-  // Calculate pagination info for display
-  const startIndex = txOffset + 1;
-  const endIndex = Math.min(txOffset + TXN_PER_PAGE, totalTxCount);
-
   return (
     <>
       {!isLoading && (!tableData || tableData.length === 0) ? (
@@ -165,14 +83,23 @@ export default function TransactionsTab({
         />
       ) : (
         <div className="space-y-4">
-          {/* Pagination Info - Etherscan Style */}
+          {/* Info */}
           {totalTxCount > 0 && (
             <div className="flex items-center justify-between">
               <p className="text-sm text-muted-foreground">
-                Showing {startIndex.toLocaleString()} to {endIndex.toLocaleString()} of{" "}
-                <span className="font-medium text-foreground">
-                  {totalTxCount.toLocaleString()}
-                </span>{" "}
+                Latest {Math.min(MAX_DISPLAY, totalTxCount).toLocaleString()} from a total of{" "}
+                {totalTxCount > MAX_DISPLAY ? (
+                  <Link
+                    href={`/transactions?address=${address}`}
+                    className="font-medium text-primary hover:underline"
+                  >
+                    {totalTxCount.toLocaleString()}
+                  </Link>
+                ) : (
+                  <span className="font-medium text-foreground">
+                    {totalTxCount.toLocaleString()}
+                  </span>
+                )}{" "}
                 transactions
               </p>
             </div>
@@ -183,7 +110,7 @@ export default function TransactionsTab({
               data={tableData}
               columns={ALL_TRANSACTION_COLUMNS}
               isLoading={isLoading}
-              loadingRowCount={TXN_PER_PAGE}
+              loadingRowCount={MAX_DISPLAY}
               timestampMode={timestampMode}
               onToggleTimestampMode={() =>
                 setTimestampMode((prev) =>
@@ -193,64 +120,15 @@ export default function TransactionsTab({
             />
           </div>
 
-          {!isLoading && totalTxPages > 1 && (
-            <div className="flex justify-center">
-              <Pagination>
-                <PaginationContent>
-                  <PaginationItem>
-                    <PaginationPrevious
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentTxPage > 1)
-                          handleTxPageChange(currentTxPage - 1);
-                      }}
-                      className={
-                        currentTxPage === 1
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-
-                  {txVisiblePages.map((page, i) =>
-                    page === "ellipsis" ? (
-                      <PaginationItem key={`ellipsis-${i}`}>
-                        <PaginationEllipsis />
-                      </PaginationItem>
-                    ) : (
-                      <PaginationItem key={page}>
-                        <PaginationLink
-                          href="#"
-                          isActive={page === currentTxPage}
-                          onClick={(e) => {
-                            e.preventDefault();
-                            handleTxPageChange(page as number);
-                          }}
-                        >
-                          {page}
-                        </PaginationLink>
-                      </PaginationItem>
-                    ),
-                  )}
-
-                  <PaginationItem>
-                    <PaginationNext
-                      href="#"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        if (currentTxPage < totalTxPages)
-                          handleTxPageChange(currentTxPage + 1);
-                      }}
-                      className={
-                        currentTxPage === totalTxPages
-                          ? "pointer-events-none opacity-50"
-                          : "cursor-pointer"
-                      }
-                    />
-                  </PaginationItem>
-                </PaginationContent>
-              </Pagination>
+          {/* View all link */}
+          {!isLoading && totalTxCount > MAX_DISPLAY && (
+            <div className="flex justify-center pt-2">
+              <Button variant="outline" size="sm" asChild>
+                <Link href={`/transactions?address=${address}`}>
+                  View all {totalTxCount.toLocaleString()} transactions
+                  <ArrowRight className="h-4 w-4 ml-1" />
+                </Link>
+              </Button>
             </div>
           )}
         </div>

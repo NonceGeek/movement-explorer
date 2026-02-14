@@ -3,7 +3,6 @@
 import { useState, useMemo } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { motion } from "framer-motion";
 import {
   useGetAccountTokens,
   useGetAccountTokensCount,
@@ -33,9 +32,9 @@ import {
   LayoutGrid,
   TableIcon,
 } from "lucide-react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { EmptyState } from "..";
-import { cn } from "@/utils/styling";
 import { TokenOwnership } from "@/hooks/accounts/useGetAccountTokens";
 
 type ViewMode = "grid" | "table";
@@ -43,7 +42,7 @@ type ViewMode = "grid" | "table";
 const TABLE_LIMIT = 20;
 const CARD_LIMIT = 100;
 
-// ViewToggle component with three modes
+// ViewToggle component using ToggleGroup (same pattern as CoinFilters)
 function ViewToggle({
   mode,
   setMode,
@@ -51,46 +50,18 @@ function ViewToggle({
   mode: ViewMode;
   setMode: (m: ViewMode) => void;
 }) {
-  const modes: { value: ViewMode; icon: React.ReactNode; label: string }[] = [
-    { value: "grid", icon: <LayoutGrid className="h-3.5 w-3.5" />, label: "Grid view" },
-    { value: "table", icon: <TableIcon className="h-3.5 w-3.5" />, label: "Table view" },
-  ];
-
-  const activeIndex = modes.findIndex((m) => m.value === mode);
-
   return (
-    <div className="inline-flex items-center bg-muted/30 rounded-md p-0.5 border border-border/50 relative">
-      {modes.map((m) => (
-        <button
-          key={m.value}
-          onClick={() => setMode(m.value)}
-          className={cn(
-            "p-1.5 rounded relative z-10 transition-colors duration-200 cursor-pointer",
-            mode === m.value
-              ? "text-black"
-              : "text-muted-foreground hover:text-foreground"
-          )}
-          aria-label={m.label}
-        >
-          {m.icon}
-        </button>
-      ))}
-      <div className="absolute inset-0.5 pointer-events-none">
-        <motion.div
-          className="h-full bg-guild-green-500 rounded shadow-sm"
-          initial={false}
-          animate={{
-            x: `${activeIndex * 100}%`,
-            width: `${100 / modes.length}%`,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 400,
-            damping: 30,
-          }}
-        />
-      </div>
-    </div>
+    <ToggleGroup
+      value={mode}
+      onValueChange={(v) => { if (v) setMode(v as ViewMode); }}
+    >
+      <ToggleGroupItem value="grid">
+        <LayoutGrid className="h-3.5 w-3.5" />
+      </ToggleGroupItem>
+      <ToggleGroupItem value="table">
+        <TableIcon className="h-3.5 w-3.5" />
+      </ToggleGroupItem>
+    </ToggleGroup>
   );
 }
 
@@ -146,7 +117,7 @@ function NFTGrid({ tokens }: { tokens: TokenOwnership[] }) {
           key={token.token_data_id}
           href={`/token/${encodeURIComponent(token.token_data_id)}`}
         >
-          <Card className="overflow-hidden hover:border-guild-green-500/50 transition-colors cursor-pointer">
+          <Card className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden hover:border-guild-green-500/50 transition-colors cursor-pointer">
             <div className="aspect-square relative bg-muted flex items-center justify-center overflow-hidden">
               {token.current_token_data?.token_uri ? (
                 <img
@@ -293,7 +264,7 @@ export default function NFTsTab({ address }: NFTsTabProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <div className="flex justify-end">
+        <div className="flex justify-start">
           <ViewToggle mode={viewMode} setMode={setViewMode} />
         </div>
         {viewMode === "table" ? (
@@ -333,8 +304,8 @@ export default function NFTsTab({ address }: NFTsTabProps) {
     <div className="space-y-4">
       {/* Toolbar */}
       <div className="flex items-center justify-between">
-        <span className="text-sm text-muted-foreground">{displayCount}</span>
         <ViewToggle mode={viewMode} setMode={setViewMode} />
+        <span className="text-sm text-muted-foreground">{displayCount}</span>
       </div>
 
       {/* Grid View */}

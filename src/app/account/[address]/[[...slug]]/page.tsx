@@ -29,6 +29,7 @@ import {
 import { Wallet, Activity, Image, Database, Code } from "lucide-react";
 import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
 import { useGetPrice } from "@/hooks/useGetPrice";
+import { useGetAccountCoins } from "@/hooks/accounts/useGetAccountCoins";
 import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
 import CoinsTab from "../components/Tabs/CoinsTab";
@@ -51,6 +52,7 @@ export default function AccountDetailPage() {
   const { data: balance, isLoading: balanceLoading } =
     useGetUnifiedMOVEBalance(address);
   const { data: price, isLoading: priceLoading } = useGetPrice();
+  const { data: accountCoins } = useGetAccountCoins(address);
 
   const accountData = resources?.find((r) => r.type === "0x1::account::Account")
     ?.data as Types.AccountData | undefined;
@@ -67,16 +69,18 @@ export default function AccountDetailPage() {
     !resourcesLoading && !!resources && resources.length === 0 && !isAccount;
 
   // Determine account type for AccountHeader
+  // An address can have both ObjectCore and Account resources.
+  // If ObjectCore exists, treat it as object (matching source project behavior).
   const accountType: AccountType = isToken
     ? "token"
-    : isObject && !isAccount
+    : isObject
       ? "object"
       : "account";
 
   // Format balance
   const formattedBalance = balance
     ? (Number(balance) / 100000000).toLocaleString("en-US", {
-      maximumFractionDigits: 2,
+      maximumFractionDigits: 8,
     })
     : "0";
 
@@ -117,20 +121,15 @@ export default function AccountDetailPage() {
   // Handle Deep Linking via Slug
   const slug = params.slug as string[] | undefined;
 
-  // Derive initial state from slug
-  const initialPackage =
-    slug && slug.length > 2 && slug[0] === "modules" && slug[1] === "code"
+  // Derive initial state from slug: /modules/{tab}/{moduleName}/{fnName}
+  const initialModule =
+    slug && slug.length > 2 && slug[0] === "modules"
       ? decodeURIComponent(slug[2])
       : undefined;
 
-  const initialModule =
-    slug && slug.length > 3 && slug[0] === "modules" && slug[1] === "code"
-      ? decodeURIComponent(slug[3])
-      : undefined;
-
   const initialFunction =
-    slug && slug.length > 4 && slug[0] === "modules" && slug[1] === "code"
-      ? decodeURIComponent(slug[4])
+    slug && slug.length > 3 && slug[0] === "modules"
+      ? decodeURIComponent(slug[3])
       : undefined;
 
   // Handle Tab Change
@@ -225,7 +224,6 @@ export default function AccountDetailPage() {
           <AccountHeader
             address={address}
             accountType={accountType}
-            isAccount={isAccount}
             isObject={isObject}
             isToken={isToken}
             isDeleted={isDeleted}
@@ -240,6 +238,8 @@ export default function AccountDetailPage() {
           formattedBalance={formattedBalance}
           accountData={accountData}
           objectData={objectData}
+          movePrice={price ?? undefined}
+          coinCount={accountCoins?.length || 0}
           tokenCount={tokenCount || 0}
           resourceCount={resources?.length || 0}
           isLoading={balanceLoading || priceLoading || resourcesLoading}
@@ -288,17 +288,8 @@ export default function AccountDetailPage() {
                   ? slug[1]
                   : undefined
               }
-              initialPackage={initialPackage}
-              initialModule={
-                slug && slug.length > 2 && slug[0] === "modules"
-                  ? decodeURIComponent(slug[2])
-                  : initialModule
-              }
-              initialFunction={
-                slug && slug.length > 3 && slug[0] === "modules"
-                  ? decodeURIComponent(slug[3])
-                  : initialFunction
-              }
+              initialModule={initialModule}
+              initialFunction={initialFunction}
             />
           </TabsContent>
         </Tabs>

@@ -6,7 +6,6 @@ interface ModulesTabProps {
   address: string;
   isObject?: boolean;
   initialTab?: string;
-  initialPackage?: string;
   initialModule?: string;
   initialFunction?: string;
 }
@@ -19,7 +18,6 @@ export default function ModulesTab({
   address,
   isObject = false,
   initialTab,
-  initialPackage,
   initialModule,
   initialFunction,
 }: ModulesTabProps) {

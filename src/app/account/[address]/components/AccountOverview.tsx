@@ -1,18 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-  TooltipProvider,
-} from "@/components/ui/tooltip";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
-  Copy,
-  ChevronRight,
   Wallet,
   Hash,
   Key,
@@ -20,10 +9,10 @@ import {
   Database,
   User,
   ArrowLeftRight,
+  Image,
 } from "lucide-react";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { Types } from "aptos";
-import { cn } from "@/utils/styling";
 
 export interface AccountOverviewProps {
   address: string;
@@ -33,6 +22,8 @@ export interface AccountOverviewProps {
   accountData: Types.AccountData | undefined;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   objectData?: any;
+  movePrice?: number;
+  coinCount: number;
   tokenCount: number;
   resourceCount: number;
   isLoading: boolean;
@@ -40,200 +31,190 @@ export interface AccountOverviewProps {
 }
 
 export function AccountOverview({
-  address,
-  balance,
   balanceUSD,
   formattedBalance,
   accountData,
   objectData,
+  movePrice,
+  coinCount,
   tokenCount,
   resourceCount,
   isLoading,
   onTabChange,
 }: AccountOverviewProps) {
-  const [copiedKey, setCopiedKey] = useState(false);
-
-  const handleCopyAuthKey = async () => {
-    if (accountData?.authentication_key) {
-      await navigator.clipboard.writeText(accountData.authentication_key);
-      setCopiedKey(true);
-      setTimeout(() => setCopiedKey(false), 2000);
-    }
-  };
-
-  const truncateKey = (key: string) => {
-    if (key.length <= 20) return key;
-    return `${key.slice(0, 10)}...${key.slice(-8)}`;
-  };
-
   return (
-    <Card className="bg-card border-border mb-8 overflow-hidden">
-      <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
-        {/* Column 1: Overview */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            Overview
-          </h3>
-          <div className="space-y-2.5">
-            {/* MOVE Balance */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Wallet className="h-3 w-3" />
-                Balance
-              </span>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-5 w-24" />
-              ) : (
-                <span className="text-sm font-semibold tabular-nums">
-                  {formattedBalance} MOVE
-                </span>
-              )}
-            </div>
-            {/* USD Value */}
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Value</span>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-4 w-16" />
-              ) : (
-                <span className="text-sm text-muted-foreground tabular-nums">
-                  {balanceUSD ? balanceUSD : "$0.00"}
-                </span>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Column 2: More Info */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            More Info
-          </h3>
-          <div className="space-y-2.5">
-            {/* Sequence Number */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Hash className="h-3 w-3" />
-                Txns Sent
-              </span>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-4 w-12" />
-              ) : (
-                <span className="text-sm font-medium tabular-nums">
-                  {accountData?.sequence_number
-                    ? Number(accountData.sequence_number).toLocaleString()
-                    : "0"}
-                </span>
-              )}
-            </div>
-            {/* Authentication Key */}
-            {accountData?.authentication_key && (
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                  <Key className="h-3 w-3" />
-                  Auth Key
-                </span>
-                <div className="flex items-center gap-1 min-w-0">
-                  <code className="text-xs font-mono text-muted-foreground truncate">
-                    {truncateKey(accountData.authentication_key)}
-                  </code>
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-5 w-5 p-0 shrink-0"
-                          onClick={handleCopyAuthKey}
-                        >
-                          <Copy className="h-2.5 w-2.5" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>{copiedKey ? "Copied!" : "Copy"}</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-              </div>
-            )}
-            {/* Object Owner */}
-            {objectData?.data?.owner && (
-              <div className="flex items-center justify-between gap-2">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                  <User className="h-3 w-3" />
-                  Owner
-                </span>
-                <div className="min-w-0">
-                  <CopyableAddress
-                    address={objectData.data.owner}
-                    showCopyButton
-                    className="text-xs"
-                  />
-                </div>
-              </div>
-            )}
-            {/* Object Transferrable */}
-            {objectData && (
-              <div className="flex items-center justify-between">
-                <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                  <ArrowLeftRight className="h-3 w-3" />
-                  Transferrable
-                </span>
-                <span className="text-sm font-medium">
-                  {objectData.data?.allow_ungated_transfer ? "Yes" : "No"}
-                </span>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+      {/* Card 1: Overview */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          OVERVIEW
+        </h3>
+        <div className="space-y-3">
+          {/* MOVE Balance */}
+          <div>
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground mb-1">
+              <Wallet className="h-3.5 w-3.5" />
+              MOVE Balance
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-8 w-40" />
+            ) : (
+              <div className="text-2xl font-semibold font-mono tabular-nums">
+                {formattedBalance} MOVE
               </div>
             )}
           </div>
-        </div>
-
-        {/* Column 3: Token Holdings */}
-        <div className="px-5 py-4 space-y-3">
-          <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
-            Token Holdings
-          </h3>
-          <div className="space-y-2.5">
-            {/* Token Count */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Coins className="h-3 w-3" />
-                Tokens
-              </span>
-              {isLoading ? (
-                <EnhancedSkeleton className="h-4 w-14" />
-              ) : (
-                <button
-                  onClick={() => onTabChange("tokens")}
-                  className="text-sm font-medium text-primary hover:underline tabular-nums cursor-pointer"
-                >
-                  {tokenCount}
-                </button>
-              )}
-            </div>
-            {/* Resources Count */}
-            <div className="flex items-center justify-between">
-              <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                <Database className="h-3 w-3" />
-                Resources
-              </span>
-              <button
-                onClick={() => onTabChange("resources")}
-                className="text-sm font-medium text-primary hover:underline tabular-nums cursor-pointer"
-              >
-                {resourceCount}
-              </button>
-            </div>
-            {/* Quick Link */}
-            <button
-              onClick={() => onTabChange("coins")}
-              className="flex items-center gap-1 text-xs text-primary hover:underline transition-colors cursor-pointer pt-0.5"
-            >
-              View Coins
-              <ChevronRight className="h-3 w-3" />
-            </button>
+          {/* USD Value */}
+          <div>
+            <span className="text-sm text-muted-foreground mb-1 block">
+              MOVE Value
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-6 w-28" />
+            ) : (
+              <div className="text-base text-muted-foreground tabular-nums">
+                {balanceUSD ? balanceUSD : "$0.00"}
+                {movePrice != null && (
+                  <span className="text-sm text-muted-foreground/70">
+                    {" "}
+                    (@ ${movePrice.toFixed(4)}/MOVE)
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>
-    </Card>
+
+      {/* Card 2: Holdings */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          HOLDINGS
+        </h3>
+        <div className="space-y-2.5">
+          {/* Coins Count */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Coins className="h-3.5 w-3.5" />
+              Coins
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-14" />
+            ) : (
+              <button
+                onClick={() => onTabChange("coins")}
+                className="text-base font-medium text-primary hover:underline tabular-nums cursor-pointer"
+              >
+                {coinCount}
+              </button>
+            )}
+          </div>
+          {/* NFT Count */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Image className="h-3.5 w-3.5" />
+              NFTs
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-14" />
+            ) : (
+              <button
+                onClick={() => onTabChange("nfts")}
+                className="text-base font-medium text-primary hover:underline tabular-nums cursor-pointer"
+              >
+                {tokenCount}
+              </button>
+            )}
+          </div>
+          {/* Resources Count */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Database className="h-3.5 w-3.5" />
+              Resources
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-14" />
+            ) : (
+              <button
+                onClick={() => onTabChange("resources")}
+                className="text-base font-medium text-primary hover:underline tabular-nums cursor-pointer"
+              >
+                {resourceCount}
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Card 3: More Info */}
+      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+        <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
+          MORE INFO
+        </h3>
+        <div className="space-y-2.5">
+          {/* Sequence Number */}
+          <div className="flex items-center justify-between">
+            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Hash className="h-3.5 w-3.5" />
+              Txns Sent
+            </span>
+            {isLoading ? (
+              <EnhancedSkeleton className="h-5 w-14" />
+            ) : (
+              <span className="text-sm font-medium font-mono tabular-nums">
+                {accountData?.sequence_number
+                  ? Number(accountData.sequence_number).toLocaleString()
+                  : "0"}
+              </span>
+            )}
+          </div>
+          {/* Authentication Key */}
+          {accountData?.authentication_key && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <Key className="h-3.5 w-3.5" />
+                Auth Key
+              </span>
+              <div className="min-w-0">
+                <CopyableAddress
+                  address={accountData.authentication_key}
+                  showCopyButton
+                  className="text-sm"
+                  copyTooltip="Copy auth key"
+                />
+              </div>
+            </div>
+          )}
+          {/* Object Owner */}
+          {objectData?.data?.owner && (
+            <div className="flex items-center justify-between gap-2">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                <User className="h-3.5 w-3.5" />
+                Owner
+              </span>
+              <div className="min-w-0">
+                <CopyableAddress
+                  address={objectData.data.owner}
+                  showCopyButton
+                  className="text-sm"
+                />
+              </div>
+            </div>
+          )}
+          {/* Object Transferrable */}
+          {objectData && (
+            <div className="flex items-center justify-between">
+              <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <ArrowLeftRight className="h-3.5 w-3.5" />
+                Transferrable
+              </span>
+              <span className="text-sm font-medium">
+                {objectData.data?.allow_ungated_transfer ? "Yes" : "No"}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }

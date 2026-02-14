@@ -10,6 +10,8 @@ import { useSearchParams, useRouter } from "next/navigation";
 import { UserTransactions } from "./components/UserTransactions";
 import { AllTransactions } from "./components/AllTransactions";
 import { BlockTransactions } from "./components/BlockTransactions";
+import { AccountTransactions } from "./components/AccountTransactions";
+import { CoinTransactions } from "./components/CoinTransactions";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
@@ -26,6 +28,12 @@ function TransactionsContent() {
   const blockHeight = blockParam ? parseInt(blockParam) : null;
   const isBlockFilter = blockHeight !== null && !isNaN(blockHeight);
 
+  // Check for address filter
+  const addressParam = searchParams.get("address");
+
+  // Check for coinType filter
+  const coinTypeParam = searchParams.get("coinType");
+
   // Determine the initial type based on URL or graphql support
   const typeParam = searchParams.get("type");
   const [isUserTransactions, setIsUserTransactions] = useState<boolean | null>(
@@ -34,7 +42,7 @@ function TransactionsContent() {
 
   // Set initial type on mount
   useEffect(() => {
-    if (isBlockFilter) return;
+    if (isBlockFilter || addressParam || coinTypeParam) return;
     if (typeParam === "all") {
       setIsUserTransactions(false);
     } else if (typeParam === "user") {
@@ -47,7 +55,7 @@ function TransactionsContent() {
       params.set("type", isGraphqlClientSupported ? "user" : "all");
       router.replace(`/transactions?${params.toString()}`);
     }
-  }, [typeParam, isGraphqlClientSupported, router, searchParams, isBlockFilter]);
+  }, [typeParam, isGraphqlClientSupported, router, searchParams, isBlockFilter, addressParam, coinTypeParam]);
 
   const toggleTransactionType = () => {
     const params = new URLSearchParams(searchParams.toString());
@@ -84,6 +92,58 @@ function TransactionsContent() {
       <BlockTransactions
         blockHeight={blockHeight}
         headerEndDecorator={clearBlockFilter}
+      />
+    );
+  }
+
+  // Address filter mode
+  if (addressParam) {
+    const clearAddressFilter = (
+      <Button
+        variant="link"
+        onClick={() => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("address");
+          params.set("type", "user");
+          params.set("page", "1");
+          router.push(`/transactions?${params.toString()}`);
+        }}
+        className="text-guild-green-500 hover:text-guild-green-400 gap-1 h-auto p-0 text-xs sm:text-sm sm:font-bold"
+      >
+        View All Txn
+        <ArrowRight size={14} strokeWidth={2.5} className="sm:size-4" />
+      </Button>
+    );
+    return (
+      <AccountTransactions
+        address={addressParam}
+        headerEndDecorator={clearAddressFilter}
+      />
+    );
+  }
+
+  // Coin type filter mode
+  if (coinTypeParam) {
+    const clearCoinTypeFilter = (
+      <Button
+        variant="link"
+        onClick={() => {
+          const params = new URLSearchParams(searchParams.toString());
+          params.delete("coinType");
+          params.set("type", "user");
+          params.set("page", "1");
+          router.push(`/transactions?${params.toString()}`);
+        }}
+        className="text-guild-green-500 hover:text-guild-green-400 gap-1 h-auto p-0 text-xs sm:text-sm sm:font-bold"
+      >
+        View All Txn
+        <ArrowRight size={14} strokeWidth={2.5} className="sm:size-4" />
+      </Button>
+    );
+    return (
+      <CoinTransactions
+        coinType={coinTypeParam}
+        headerEndDecorator={clearCoinTypeFilter}
       />
     );
   }

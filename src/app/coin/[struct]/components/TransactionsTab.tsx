@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useSearchParams, usePathname } from "next/navigation";
+import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import {
@@ -18,37 +11,33 @@ import {
   TransactionRowData,
 } from "@/components/transactions";
 import { useGetCoinActivities } from "@/hooks/coins/useGetCoinActivities";
-import { AlertCircle, Activity } from "lucide-react";
+import { useGetCoinActivitiesCount } from "@/hooks/coins/useGetCoinActivitiesCount";
+import { AlertCircle, Activity, ArrowRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
-const TXN_PER_PAGE = 10;
+const MAX_DISPLAY = 25;
 
 interface TransactionsTabProps {
   struct: string;
 }
 
 export default function TransactionsTab({ struct }: TransactionsTabProps) {
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
   const { aptos_client } = useGlobalStore();
-
-  const currentPage = parseInt(searchParams.get("txPage") ?? "1", 10);
-  const offset = (currentPage - 1) * TXN_PER_PAGE;
 
   // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
-  // Fetch one extra to check if there's a next page
+  // Fetch total count
+  const { data: totalCount } = useGetCoinActivitiesCount(struct);
+
+  // Fetch only latest 25 transactions
   const {
     isLoading: activitiesLoading,
     error: activitiesError,
     data: activities,
-  } = useGetCoinActivities(struct, offset, TXN_PER_PAGE + 1);
+  } = useGetCoinActivities(struct, 0, MAX_DISPLAY);
 
-  const hasNextPage = activities && activities.length > TXN_PER_PAGE;
-  const displayActivities = activities?.slice(0, TXN_PER_PAGE);
-  const transactionVersions = displayActivities?.map(
-    (a) => a.transaction_version
-  );
+  const transactionVersions = activities?.map((a) => a.transaction_version);
 
   // Fetch full transaction details
   const { data: transactions, isLoading: detailsLoading } = useQuery({
@@ -58,8 +47,8 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
 
       const details = await Promise.all(
         transactionVersions.map((v) =>
-          getTransaction({ txnHashOrVersion: v }, aptos_client)
-        )
+          getTransaction({ txnHashOrVersion: v }, aptos_client),
+        ),
       );
       return details;
     },
@@ -67,17 +56,6 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
   });
 
   const isLoading = activitiesLoading || detailsLoading;
-
-  const handlePageChange = (page: number) => {
-    const scrollY = window.scrollY;
-    const params = new URLSearchParams(searchParams.toString());
-    params.set("txPage", page.toString());
-    const newPath = `${pathname}?${params.toString()}`;
-    window.history.pushState(null, "", newPath);
-    requestAnimationFrame(() => {
-      window.scrollTo(0, scrollY);
-    });
-  };
 
   if (activitiesError) {
     return (
@@ -102,8 +80,6 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
     };
   });
 
-  const hasPagination = currentPage > 1 || hasNextPage;
-
   if (!isLoading && (!tableData || tableData.length === 0)) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -116,14 +92,39 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
     );
   }
 
+  const displayCount = totalCount ?? tableData.length;
+
   return (
     <div className="space-y-4">
+      {/* Info */}
+      {displayCount > 0 && (
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">
+            Latest {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
+            total of{" "}
+            {displayCount > MAX_DISPLAY ? (
+              <Link
+                href={`/transactions?coinType=${encodeURIComponent(struct)}`}
+                className="font-medium text-primary hover:underline"
+              >
+                {displayCount.toLocaleString()}
+              </Link>
+            ) : (
+              <span className="font-medium text-foreground">
+                {displayCount.toLocaleString()}
+              </span>
+            )}{" "}
+            transactions
+          </p>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}
           isLoading={isLoading}
-          loadingRowCount={TXN_PER_PAGE}
+          loadingRowCount={MAX_DISPLAY}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
@@ -131,47 +132,17 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
         />
       </div>
 
-      {!isLoading && hasPagination && (
-        <div className="flex justify-center">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (currentPage > 1) handlePageChange(currentPage - 1);
-                  }}
-                  className={
-                    currentPage === 1
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-
-              <PaginationItem>
-                <span className="px-4 py-2 text-sm text-muted-foreground">
-                  Page {currentPage}
-                </span>
-              </PaginationItem>
-
-              <PaginationItem>
-                <PaginationNext
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    if (hasNextPage) handlePageChange(currentPage + 1);
-                  }}
-                  className={
-                    !hasNextPage
-                      ? "pointer-events-none opacity-50"
-                      : "cursor-pointer"
-                  }
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
+      {/* View all link */}
+      {!isLoading && displayCount > MAX_DISPLAY && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link
+              href={`/transactions?coinType=${encodeURIComponent(struct)}`}
+            >
+              View all {displayCount.toLocaleString()} transactions
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
         </div>
       )}
     </div>

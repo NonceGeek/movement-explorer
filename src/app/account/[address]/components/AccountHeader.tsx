@@ -11,7 +11,6 @@ import { formatAge } from "@/utils/time";
 export interface AccountHeaderProps {
   address: string;
   accountType: AccountType;
-  isAccount?: boolean;
   isObject?: boolean;
   isToken?: boolean;
   isDeleted?: boolean;
@@ -24,7 +23,6 @@ export interface AccountHeaderProps {
 export function AccountHeader({
   address,
   accountType,
-  isAccount = false,
   isObject = false,
   isToken = false,
   isDeleted = false,
@@ -39,19 +37,24 @@ export function AccountHeader({
   let title = "Account";
   if (isToken) {
     title = isDeleted ? "Deleted Token Object" : "Token Object";
-  } else if (isObject && !isAccount) {
+  } else if (isObject) {
     title = isDeleted ? "Deleted Object" : "Object";
   } else if (isDeleted) {
     title = "Deleted Account";
   }
 
   return (
-    <div className={cn("flex items-center gap-4", className)}>
-      <AccountIcon type={accountType} address={address} size="lg" />
-      <div className="min-w-0">
+    <div className={cn("flex items-start gap-3 sm:items-center sm:gap-4", className)}>
+      <div className="shrink-0 hidden sm:block">
+        <AccountIcon type={accountType} address={address} size="lg" />
+      </div>
+      <div className="shrink-0 sm:hidden">
+        <AccountIcon type={accountType} address={address} size="md" />
+      </div>
+      <div className="min-w-0 flex-1">
         {/* Title row */}
-        <div className="flex items-center gap-2 mb-1">
-          <h1 className="text-2xl font-heading font-bold">{title}</h1>
+        <div className="flex items-center gap-2 mb-1 flex-wrap">
+          <h1 className="text-xl sm:text-2xl font-heading font-semibold">{title}</h1>
           {isDeleted && (
             <Badge variant="destructive" className="text-xs">
               Deleted

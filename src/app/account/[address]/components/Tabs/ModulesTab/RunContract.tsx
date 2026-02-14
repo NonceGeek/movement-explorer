@@ -13,6 +13,7 @@ import {
 } from "@aptos-labs/wallet-adapter-react";
 import { Types } from "aptos";
 import Link from "next/link";
+import { parseTypeTag } from "@aptos-labs/ts-sdk";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import useSubmitTransaction from "@/hooks/transactions/useSubmitTransaction";
 import { removeSignerParam } from "@/utils";
@@ -81,8 +82,30 @@ export default function RunContract({
     }
     arg = arg.trim();
 
+    let typeTag: ReturnType<typeof parseTypeTag>;
+    try {
+      typeTag = parseTypeTag(type, { allowGenerics: true });
+    } catch {
+      // Fallback: if parseTypeTag fails, return raw arg
+      return arg;
+    }
+
     // Handle vector types
-    if (type.startsWith("vector<")) {
+    if (typeTag.isVector()) {
+      const innerTag = typeTag.value;
+
+      // Nested vectors: must be JSON format
+      if (innerTag.isVector()) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return JSON.parse(arg) as any[];
+      }
+
+      // vector<u8> with hex prefix: pass through as hex string
+      if (innerTag.isU8() && arg.startsWith("0x")) {
+        return arg;
+      }
+
+      // JSON array format
       if (arg.startsWith("[")) {
         try {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,14 +114,19 @@ export default function RunContract({
           return arg.split(",").map((s) => s.trim());
         }
       }
+
+      // Comma-separated values
       return arg.split(",").map((s) => s.trim());
     }
 
-    // Handle option types
-    if (type.startsWith("0x1::option::Option")) {
+    // Handle Option types (recursive for inner type)
+    if (typeTag.isStruct() && typeTag.isOption()) {
       if (arg === "") {
         return undefined;
       }
+      // Recursively convert inner type
+      const innerTypeTag = typeTag.value.typeArgs[0];
+      return convertArgument(arg, innerTypeTag.toString());
     }
 
     return arg;

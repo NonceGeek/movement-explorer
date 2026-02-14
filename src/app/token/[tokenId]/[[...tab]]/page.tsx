@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { Suspense, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, CompactTabsList } from "@/components/ui/tabs";
 import { useGetTokenData } from "@/hooks/tokens/useGetTokenData";
 import { FileText, BarChart2, Activity } from "lucide-react";
 import { TokenHeader } from "../components/TokenHeader";
@@ -33,6 +33,11 @@ function TokenContent() {
     });
   };
 
+
+  const tabItems = [
+    { value: "overview", label: "Overview", icon: <BarChart2 className="w-4 h-4" /> },
+    { value: "activities", label: "Activities", icon: <Activity className="w-4 h-4" /> },
+  ];
 
   const { data, isLoading, error } = useGetTokenData(tokenId);
 
@@ -82,26 +87,13 @@ function TokenContent() {
         <Tabs
           value={currentTab}
           onValueChange={handleTabChange}
-          className="w-full"
+          className="space-y-3"
         >
-          <TabsList variant="line">
-            <TabsTrigger
-              value="overview"
-              variant="line"
-              className="flex items-center gap-2"
-            >
-              <BarChart2 className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger
-              value="activities"
-              variant="line"
-              className="flex items-center gap-2"
-            >
-              <Activity className="h-4 w-4" />
-              Activities
-            </TabsTrigger>
-          </TabsList>
+          <CompactTabsList
+            items={tabItems}
+            activeTab={currentTab}
+            onTabChange={setCurrentTab}
+          />
 
           <TabsContent value="overview">
             {isLoading ? (

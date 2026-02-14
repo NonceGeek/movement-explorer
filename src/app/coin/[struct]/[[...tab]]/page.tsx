@@ -14,15 +14,10 @@ import { useGetCoinPairedFa } from "@/hooks/coins/useGetCoinPairedFa";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidStruct, getAssetSymbol } from "@/utils";
-import { Coins, Users, ArrowLeftRight, Copy, Check } from "lucide-react";
+import { Users, ArrowLeftRight } from "lucide-react";
+import { AccountIcon } from "@/app/account/[address]/components/AccountIcon";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { cn } from "@/utils/styling";
+import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
 
 // Components
 import { CoinData } from "../components/InfoTab";
@@ -39,7 +34,6 @@ function CoinContent() {
   const defaultTab = isGraphqlSupported ? "holders" : "";
   const initialTab = tabSlug && tabSlug[0] !== "info" ? tabSlug[0] : defaultTab;
   const [currentTab, setCurrentTab] = useState(initialTab);
-  const [copied, setCopied] = useState(false);
 
   const handleTabChange = (value: string) => {
     const scrollY = window.scrollY;
@@ -56,16 +50,6 @@ function CoinContent() {
       router.replace(`/coin/${encodeURIComponent(struct)}${isGraphqlSupported ? "/holders" : ""}`);
     }
   }, [tabSlug, struct, router, isGraphqlSupported]);
-
-  const handleCopyStruct = async () => {
-    try {
-      await navigator.clipboard.writeText(struct);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error("Failed to copy:", err);
-    }
-  };
 
   // Validate struct format
   if (!isValidStruct(struct)) {
@@ -161,23 +145,36 @@ function CoinContent() {
       <PageNavigation />
       <PageContainer>
         {/* Header */}
-        <div className="flex items-start gap-4 mb-6">
-          {coinDescription?.logoUrl ? (
-            <img
-              src={coinDescription.logoUrl}
-              alt={coinData?.data?.name || "Coin"}
-              className="w-14 h-14 rounded-full shrink-0"
-            />
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shrink-0">
-              <Coins className="w-7 h-7 text-muted-foreground" />
-            </div>
-          )}
+        <div className="flex items-start gap-3 sm:items-center sm:gap-4 mb-6">
+          {/* Icon - responsive sizes matching account page */}
+          <div className="shrink-0 hidden sm:block">
+            {coinDescription?.logoUrl ? (
+              <img
+                src={coinDescription.logoUrl}
+                alt={coinData?.data?.name || "Coin"}
+                className="w-16 h-16 rounded-full shadow-md"
+              />
+            ) : (
+              <AccountIcon type="token" address={struct} size="lg" />
+            )}
+          </div>
+          <div className="shrink-0 sm:hidden">
+            {coinDescription?.logoUrl ? (
+              <img
+                src={coinDescription.logoUrl}
+                alt={coinData?.data?.name || "Coin"}
+                className="w-12 h-12 rounded-full shadow-md"
+              />
+            ) : (
+              <AccountIcon type="token" address={struct} size="md" />
+            )}
+          </div>
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3 flex-wrap mb-2">
-              <h1 className="text-3xl font-bold">
+            {/* Title row */}
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
+              <h1 className="text-xl sm:text-2xl font-heading font-semibold">
                 {isLoading ? (
-                  <EnhancedSkeleton className="h-9 w-48" />
+                  <EnhancedSkeleton className="h-8 w-48" />
                 ) : (
                   coinData?.data?.name || "Unknown Coin"
                 )}
@@ -189,56 +186,15 @@ function CoinContent() {
                   symbol={displaySymbol}
                 />
               )}
-            </div>
-
-            {/* Struct and Symbol Badges */}
-            <div className="flex items-center gap-2 flex-wrap">
-              {/* Struct Badge */}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <button
-                      onClick={handleCopyStruct}
-                      className="inline-flex items-center gap-1.5 bg-muted/50 hover:bg-muted px-3 py-1.5 rounded-md transition-colors group"
-                    >
-                      <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground truncate max-w-[300px]">
-                        {struct}
-                      </span>
-                      <span className="relative h-4 w-4 shrink-0">
-                        <Copy
-                          className={cn(
-                            "absolute inset-0 h-4 w-4 text-muted-foreground group-hover:text-foreground transition-all duration-200",
-                            copied
-                              ? "scale-0 opacity-0"
-                              : "scale-100 opacity-100",
-                          )}
-                        />
-                        <Check
-                          className={cn(
-                            "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
-                            copied
-                              ? "scale-100 opacity-100"
-                              : "scale-0 opacity-0",
-                          )}
-                        />
-                      </span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">
-                    <p>{copied ? "Copied!" : "Click to copy"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-
-              {/* Symbol Badge */}
               {displaySymbol && !isLoading && (
-                <Badge
-                  variant="secondary"
-                  className="font-mono text-sm px-3 py-1.5"
-                >
+                <Badge variant="secondary" className="text-xs">
                   {displaySymbol}
                 </Badge>
               )}
+            </div>
+            {/* Address row */}
+            <div className="flex items-center gap-2 flex-wrap">
+              <HeaderCopyableAddress address={struct} />
             </div>
           </div>
         </div>

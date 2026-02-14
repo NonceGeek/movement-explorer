@@ -21,9 +21,15 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
   return (
     <TableRow>
       <TableCell>
-        <Link href={href} className="text-primary hover:underline">
-          {coin.name} ({coin.symbol})
-        </Link>
+        <div className="inline-flex items-center gap-1 transition-all duration-200 hover:bg-primary/10 rounded-md pl-2 py-0.5 pr-2">
+          <Link
+            href={href}
+            className="text-guild-green-500 hover:text-guild-green-500/80 transition-colors text-sm"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {coin.name} ({coin.symbol})
+          </Link>
+        </div>
       </TableCell>
       <TableCell>{assetTypeLabel}</TableCell>
       <TableCell className="font-mono text-sm">
@@ -41,8 +47,7 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
             address={coin.assetType}
             href={href}
             showCopyButton={false}
-            truncateLength={{ start: 30, end: 15 }}
-            showFull={coin.assetType.length <= 30}
+            truncateLength={{ start: 6, end: 4 }}
             variant="default"
           />
         </div>

@@ -1,7 +1,7 @@
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { Image as ImageIcon } from "lucide-react";
 import { isValidIpfsUrl, toIpfsUrl } from "@/store/utils";
 import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
+import { AccountIcon } from "@/app/account/[address]/components/AccountIcon";
 
 interface TokenHeaderProps {
   isLoading: boolean;
@@ -36,17 +36,10 @@ export function TokenHeader({
             className="w-full h-full object-cover"
             onError={(e) => {
               (e.target as HTMLImageElement).style.display = "none";
-              const parent = (e.target as HTMLImageElement).parentElement;
-              if (parent) {
-                const icon = document.createElement("div");
-                icon.innerHTML =
-                  '<svg class="w-8 h-8 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>';
-                parent.appendChild(icon.firstChild as Node);
-              }
             }}
           />
         ) : (
-          <ImageIcon className="w-8 h-8 text-muted-foreground" />
+          <AccountIcon type="token" address={tokenId} size="lg" />
         )}
       </div>
 

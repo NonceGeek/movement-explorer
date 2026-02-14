@@ -42,8 +42,13 @@ export function HeaderCopyableAddress({
               className,
             )}
           >
-            <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground break-all text-start">
+            <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground break-all text-start hidden sm:inline">
               {address}
+            </span>
+            <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground text-start sm:hidden">
+              {address.length > 12
+                ? `${address.slice(0, 6)}...${address.slice(-4)}`
+                : address}
             </span>
             <span className="relative h-4 w-4 shrink-0">
               <Copy

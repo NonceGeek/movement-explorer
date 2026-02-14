@@ -6,6 +6,12 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Copy, Check, AlertCircle, CheckCircle2, Eye } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "../..";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
@@ -167,18 +173,27 @@ export default function ReadContract({
                         <pre className="text-xs font-mono whitespace-pre-wrap break-all flex-1">
                           {resultString}
                         </pre>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={handleCopyResult}
-                          className="h-6 px-2 flex-shrink-0"
-                        >
-                          {copied ? (
-                            <Check className="h-3 w-3" />
-                          ) : (
-                            <Copy className="h-3 w-3" />
-                          )}
-                        </Button>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCopyResult}
+                                className="h-6 px-2 shrink-0"
+                              >
+                                {copied ? (
+                                  <Check className="h-3 w-3 text-green-500" />
+                                ) : (
+                                  <Copy className="h-3 w-3" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>{copied ? "Value copied!" : "Copy result"}</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     </AlertDescription>
                   </Alert>

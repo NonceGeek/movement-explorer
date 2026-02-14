@@ -10,9 +10,9 @@ export function formatAge(timestamp: string): string {
   return moment(parseInt(timestamp) / 1000).fromNow();
 }
 
-// Format timestamp as UTC date time (precision to minute)
+// Format timestamp as UTC date time (e.g., "Feb 14, 2026 03:17:37 +UTC")
 export function formatDateTimeUTC(timestamp: string): string {
   return moment(parseInt(timestamp) / 1000)
     .utc()
-    .format("YYYY-MM-DD HH:mm");
+    .format("MMM DD, YYYY HH:mm:ss +UTC");
 }

@@ -228,13 +228,16 @@ function EventRow({ event, isExpanded, onToggle }: EventRowProps) {
         </TableCell>
 
         <TableCell>
-          <Badge variant="outline" className="font-mono text-xs">
+          {/* <Badge variant="outline" className="font-mono text-xs">
             {event.moduleName}
-          </Badge>
+          </Badge> */}
+          <span className="font-mono text-sm text-foreground">
+            {event.moduleName}
+          </span>
         </TableCell>
 
         <TableCell>
-          <span className="font-mono text-xs text-muted-foreground">
+          <span className="font-mono text-sm text-foreground">
             {event.eventName}
           </span>
         </TableCell>

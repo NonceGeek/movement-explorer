@@ -342,7 +342,7 @@ function ArgumentRow({ arg }: { arg: DecodedArgument }) {
   return (
     <div className="flex flex-col sm:flex-row border-b border-border/20 last:border-0">
       <div className="sm:w-[200px] sm:shrink-0 px-4 py-3 sm:py-3 pb-0 sm:pb-3 flex items-baseline gap-2">
-        <span className="text-sm text-muted-foreground/60 font-mono">{arg.index}</span>
+        <span className="text-sm text-muted-foreground/60">{arg.index}</span>
         <span className="text-sm font-medium text-foreground">{arg.name}</span>
         <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">
           {arg.type}

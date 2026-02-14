@@ -156,8 +156,7 @@ function AmountCell({ change }: { change: BalanceChange }) {
 
   return (
     <div
-      className={`flex items-center justify-end gap-1 cursor-pointer group ${isDecrease ? "text-destructive" : "text-green-600"}`}
-      onClick={handleCopy}
+      className={`flex items-center justify-end gap-1 ${isDecrease ? "text-destructive" : "text-green-600"}`}
     >
       <span>
         {isDecrease ? "-" : "+"}
@@ -166,18 +165,6 @@ function AmountCell({ change }: { change: BalanceChange }) {
       <span className="text-xs ml-1 text-muted-foreground/70">
         {change.asset.symbol}
       </span>
-      <TooltipProvider>
-        <Tooltip open={copied}>
-          <TooltipTrigger asChild>
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-              <Copy size={12} className="text-muted-foreground" />
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Copied!</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
     </div>
   );
 }

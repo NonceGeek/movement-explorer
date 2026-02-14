@@ -33,7 +33,7 @@ export function ValueWithUSD({
   if (layout === "stacked") {
     return (
       <div className={cn("flex flex-col", className)}>
-        <span className="font-mono font-semibold">
+        <span className="font-semibold">
           {formattedAmount} {symbol}
         </span>
         {usdValue && (
@@ -44,7 +44,7 @@ export function ValueWithUSD({
   }
 
   return (
-    <span className={cn("font-mono", className)}>
+    <span className={cn(className)}>
       {formattedAmount} {symbol}
       {usdValue && (
         <span className="text-muted-foreground ml-2">({usdValue})</span>

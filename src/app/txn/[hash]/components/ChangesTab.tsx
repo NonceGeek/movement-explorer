@@ -348,49 +348,49 @@ function ChangesTable({
 }: ChangesTableProps) {
   return (
     <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-    <Table className="min-w-[640px]">
-      <TableHeader>
-        <HeaderRow>
-          <SortableHeader
-            label="Address / Handle"
-            column="address"
-            currentColumn={sortColumn}
-            currentDirection={sortDirection}
-            onSort={onSort}
-            className="w-[25%]"
-            tooltip="Where the data is stored: account/object address or table handle"
-          />
-          <SortableHeader
-            label="Type"
-            column="type"
-            currentColumn={sortColumn}
-            currentDirection={sortDirection}
-            onSort={onSort}
-            className="w-[15%]"
-          />
-          <SortableHeader
-            label="Resource / Module"
-            column="resource"
-            currentColumn={sortColumn}
-            currentDirection={sortDirection}
-            onSort={onSort}
-            className="w-[50%]"
-            tooltip="Which module defines this data structure. Click to view module source code"
-          />
-          <TableHead className="w-[10%] text-center">Data</TableHead>
-        </HeaderRow>
-      </TableHeader>
-      <TableBody>
-        {changes.map((change) => (
-          <ChangeRow
-            key={change.id}
-            change={change}
-            isExpanded={expandedItems.has(change.id)}
-            onToggle={() => onToggle(change.id)}
-          />
-        ))}
-      </TableBody>
-    </Table>
+      <Table className="min-w-[640px]">
+        <TableHeader>
+          <HeaderRow>
+            <SortableHeader
+              label="Address / Handle"
+              column="address"
+              currentColumn={sortColumn}
+              currentDirection={sortDirection}
+              onSort={onSort}
+              className="w-[25%]"
+              tooltip="Where the data is stored: account/object address or table handle"
+            />
+            <SortableHeader
+              label="Type"
+              column="type"
+              currentColumn={sortColumn}
+              currentDirection={sortDirection}
+              onSort={onSort}
+              className="w-[15%]"
+            />
+            <SortableHeader
+              label="Resource / Module"
+              column="resource"
+              currentColumn={sortColumn}
+              currentDirection={sortDirection}
+              onSort={onSort}
+              className="w-[50%]"
+              tooltip="Which module defines this data structure. Click to view module source code"
+            />
+            <TableHead className="w-[10%] text-center">Data</TableHead>
+          </HeaderRow>
+        </TableHeader>
+        <TableBody>
+          {changes.map((change) => (
+            <ChangeRow
+              key={change.id}
+              change={change}
+              isExpanded={expandedItems.has(change.id)}
+              onToggle={() => onToggle(change.id)}
+            />
+          ))}
+        </TableBody>
+      </Table>
     </div>
   );
 }
@@ -435,13 +435,15 @@ function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
 
         {/* Type Badge */}
         <TableCell>
-          <Badge
+          {/* <Badge
             variant={meta.badgeVariant}
-            className="font-mono text-xs gap-1"
+            className="text-xs"
           >
-            {meta.icon}
             {meta.label}
-          </Badge>
+          </Badge> */}
+          <span className="text-sm text-foreground">
+            {meta.label}
+          </span>
         </TableCell>
 
         {/* Resource / Module */}
@@ -453,7 +455,7 @@ function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
               href={change.moduleLink}
             />
           ) : (
-            <span className="font-mono text-xs text-muted-foreground">
+            <span className="font-mono text-sm text-foreground">
               {change.displayName}
             </span>
           )}
@@ -502,7 +504,7 @@ function ResourceModuleLink({
         <TooltipTrigger asChild>
           <Link
             href={href}
-            className="font-mono text-xs text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors"
+            className="font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {displayName}

@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { DetailRow, DetailSection } from "./DetailRow";
 import { ValueWithUSD } from "./ValueWithUSD";
-import { GasInfoCompact } from "./GasUsageBar";
+import { GasInfoCompact } from "@/components/common/GasInfoCompact";
 import { MoreDetailsToggle } from "./MoreDetailsToggle";
-import { formatTimestamp } from "@/utils/transaction";
+import { TimestampAge } from "@/components/common/TimestampAge";
 import JsonViewer from "@/components/ui/json-viewer";
 import type { Types } from "aptos";
 
@@ -72,7 +72,6 @@ export function TransactionDetailsTable({
   usdPrice,
   actions,
 }: TransactionDetailsTableProps) {
-  const formattedTime = timestamp ? formatTimestamp(timestamp) : null;
   const hasAdvancedDetails =
     sequenceNumber ||
     stateChangeHash ||
@@ -95,7 +94,7 @@ export function TransactionDetailsTable({
 
       {version && (
         <DetailRow label="Version" tooltip="The version number of this transaction">
-          <span className="font-mono">{version}</span>
+          {version}
         </DetailRow>
       )}
 
@@ -103,21 +102,21 @@ export function TransactionDetailsTable({
         <DetailRow label="Block" tooltip="The block that contains this transaction">
           <Link
             href={`/block/${blockHeight}`}
-            className="font-mono text-primary hover:underline"
+            className="text-primary hover:underline"
           >
             {Number(blockHeight).toLocaleString()}
           </Link>
         </DetailRow>
       )}
 
-      {formattedTime && (
+      {timestamp && (
         <DetailRow label="Timestamp">
-          <span className="font-mono">{formattedTime}</span>
+          <TimestampAge timestamp={timestamp} />
         </DetailRow>
       )}
 
       <DetailRow label="Type">
-        <Badge variant="secondary" className="capitalize font-mono text-xs">
+        <Badge variant="secondary" className="capitalize text-xs">
           {type.replace(/_/g, " ")}
         </Badge>
       </DetailRow>
@@ -197,7 +196,7 @@ export function TransactionDetailsTable({
         <DetailRow label="Actions">
           <div className="flex flex-wrap gap-2">
             {actions.map((action, i) => (
-              <Badge key={i} variant="outline" className="font-mono text-xs">
+              <Badge key={i} variant="outline" className="text-xs">
                 {action.type}
               </Badge>
             ))}
@@ -210,7 +209,7 @@ export function TransactionDetailsTable({
         <DetailRow label="VM Status" tooltip="The virtual machine execution status">
           <Badge
             variant={isSuccess ? "success" : "error"}
-            className="font-mono text-xs"
+            className="text-xs"
           >
             {vmStatus}
           </Badge>
@@ -223,9 +222,7 @@ export function TransactionDetailsTable({
           label="Expiration"
           tooltip="The time after which this transaction expires"
         >
-          <span className="font-mono">
-            {new Date(parseInt(expirationTimestamp) * 1000).toLocaleString()}
-          </span>
+          {new Date(parseInt(expirationTimestamp) * 1000).toLocaleString()}
         </DetailRow>
       )}
 
@@ -237,7 +234,7 @@ export function TransactionDetailsTable({
               label="Sequence Number"
               tooltip="The sequence number of the sender's account"
             >
-              <span className="font-mono">{sequenceNumber}</span>
+              {sequenceNumber}
             </DetailRow>
           )}
 

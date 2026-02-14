@@ -1,7 +1,7 @@
 import { cn } from "@/utils/styling";
 import { Badge } from "@/components/ui/badge";
 import { formatTokenAmount, formatUSDValue } from "@/utils/formatters";
-import { formatTimestamp } from "@/utils/transaction";
+import { TimestampAge } from "@/components/common/TimestampAge";
 import Link from "next/link";
 import { CheckCircle2, XCircle, Clock, Blocks, Coins } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -29,7 +29,6 @@ export function TransactionSummaryCard({
   isLoading = false,
   className,
 }: TransactionSummaryCardProps) {
-  const formattedTime = timestamp ? formatTimestamp(timestamp) : null;
   const formattedAmount = amount
     ? formatTokenAmount(amount.value, amount.decimals ?? 8)
     : null;
@@ -75,7 +74,7 @@ export function TransactionSummaryCard({
           {blockHeight ? (
             <Link
               href={`/block/${blockHeight}`}
-              className="font-mono text-primary hover:underline font-semibold"
+              className="text-primary hover:underline font-semibold"
             >
               {blockHeight.toLocaleString()}
             </Link>
@@ -90,8 +89,8 @@ export function TransactionSummaryCard({
           label="Timestamp"
           isLoading={isLoading}
         >
-          {formattedTime ? (
-            <span className="font-medium text-sm">{formattedTime}</span>
+          {timestamp ? (
+            <TimestampAge timestamp={timestamp} className="font-medium text-sm" />
           ) : (
             <span className="text-muted-foreground">-</span>
           )}
@@ -105,7 +104,7 @@ export function TransactionSummaryCard({
         >
           {formattedAmount ? (
             <div className="flex flex-col">
-              <span className="font-mono font-semibold">
+              <span className="font-semibold">
                 {formattedAmount} {amount?.symbol ?? "MOVE"}
               </span>
               {usdValue && (

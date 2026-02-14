@@ -278,7 +278,7 @@ export default function TransactionDetailPage() {
       <PageContainer>
         {/* Transaction Hash Header */}
         <div className="flex items-start flex-col gap-1 mb-6">
-          <h1 className="text-2xl font-semibold ml-2">Transaction Detail</h1>
+          <h1 className="text-2xl font-semibold ml-2 font-heading">Transaction Detail</h1>
           <HeaderCopyableAddress address={hash} />
         </div>
 

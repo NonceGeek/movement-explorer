@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-
-const COINGECKO_API_ENDPOINT = "https://api.coingecko.com/api/v3/simple/price";
+import { COINGECKO_API_ENDPOINT } from "../constants";
 
 export interface PriceData {
   price: number | null;

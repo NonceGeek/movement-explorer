@@ -1,7 +1,12 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { knownAddresses, scamAddresses, NetworkName } from "@/constants";
+import {
+  knownAddresses,
+  scamAddresses,
+  NetworkName,
+  MNS_API_BASE_URL,
+} from "@/constants";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
   standardizeAddress,
@@ -35,8 +40,8 @@ function getMNSFetchUrl(
   }
 
   return isPrimary
-    ? `https://move.movementlabs.xyz/api/${networkName}/primary-name/${address}`
-    : `https://move.movementlabs.xyz/${networkName}/name/${address}`;
+    ? `${MNS_API_BASE_URL}/api/${networkName}/primary-name/${address}`
+    : `${MNS_API_BASE_URL}/${networkName}/name/${address}`;
 }
 
 async function fetchMNSName(

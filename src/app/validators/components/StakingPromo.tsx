@@ -2,8 +2,7 @@
 
 import { ArrowRight, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-const STAKING_URL = "https://staking.movementnetwork.xyz";
+import { STAKING_URL } from "@/constants";
 
 export function StakingPromo() {
   const handleClick = () => {

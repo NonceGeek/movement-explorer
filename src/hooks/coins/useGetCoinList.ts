@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGetVerifiedTokens } from "./useGetVerifiedTokens";
 import { CoinDescription } from "./types";
+import { COINGECKO_API_ENDPOINT } from "../../constants";
 
 export function useGetCoinList(options?: { retry?: number | boolean }) {
   const { data: verifiedTokens } = useGetVerifiedTokens();
@@ -21,13 +22,12 @@ export function useGetCoinList(options?: { retry?: number | boolean }) {
         .filter((id) => id);
 
       // Fetch prices from CoinGecko
-      const end_point = "https://api.coingecko.com/api/v3/simple/price";
       const query = {
         vs_currencies: "usd",
         ids: coinGeckoIds.join(","),
       };
       const queryString = new URLSearchParams(query);
-      const url = `${end_point}?${queryString}`;
+      const url = `${COINGECKO_API_ENDPOINT}?${queryString}`;
 
       let priceData: Record<string, { usd: number }> = {};
       try {

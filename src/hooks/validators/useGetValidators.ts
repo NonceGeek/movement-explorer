@@ -1,9 +1,8 @@
 import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useGetValidatorSet } from "./useGetValidatorSet";
-
-const MAINNET_EPOCH_STATS_URL =
-  "https://storage.googleapis.com/explorer_stats/mainnet_epoch_stats_new_testing.json";
+import { MAINNET_EPOCH_STATS_URL } from "../../constants";
 
 export interface ValidatorData {
   owner_address: string;
@@ -30,62 +29,55 @@ export interface GeoData {
 
 function useGetValidatorsRawData() {
   const { network_name } = useGlobalStore();
-  const [validatorsRawData, setValidatorsRawData] = useState<ValidatorData[]>(
-    [],
-  );
 
-  useEffect(() => {
-    const urls: Record<string, string | null> = {
-      mainnet: MAINNET_EPOCH_STATS_URL,
-      "bardock testnet": null,
-      testnet: null,
-      devnet: null,
-      local: null,
-      mevmdevnet: null,
-      custom: null,
-    };
+  const urls: Record<string, string | null> = {
+    mainnet: MAINNET_EPOCH_STATS_URL,
+    "bardock testnet": null,
+    testnet: null,
+    devnet: null,
+    local: null,
+    mevmdevnet: null,
+    custom: null,
+  };
 
-    const url = urls[network_name];
-    if (url) {
-      const fetchData = async () => {
-        const response = await fetch(url);
-        const data: ValidatorData[] = await response.json();
-        // Normalize null values from JSON to match interface defaults
-        const normalized = data.map((v) => ({
-          owner_address: v.owner_address,
-          operator_address: v.operator_address,
-          voting_power: v.voting_power ?? "0",
-          governance_voting_record: v.governance_voting_record ?? "",
-          last_epoch: v.last_epoch ?? 0,
-          last_epoch_performance: v.last_epoch_performance ?? "",
-          liveness: v.liveness ?? 0,
-          rewards_growth: v.rewards_growth ?? 0,
-          location_stats: v.location_stats ?? undefined,
-          apt_rewards_distributed: v.apt_rewards_distributed ?? 0,
-        }));
-        setValidatorsRawData(normalized);
-      };
+  const url = urls[network_name];
 
-      fetchData().catch((error) => {
-        console.error("Failed to fetch validator epoch stats:", error);
-      });
-    } else {
-      setValidatorsRawData([]);
-    }
-  }, [network_name]);
-
-  return { validatorsRawData };
+  return useQuery<ValidatorData[]>({
+    queryKey: ["validatorsRawData", network_name],
+    queryFn: async () => {
+      const response = await fetch(url!);
+      const data: ValidatorData[] = await response.json();
+      // Normalize null values from JSON to match interface defaults
+      return data.map((v) => ({
+        owner_address: v.owner_address,
+        operator_address: v.operator_address,
+        voting_power: v.voting_power ?? "0",
+        governance_voting_record: v.governance_voting_record ?? "",
+        last_epoch: v.last_epoch ?? 0,
+        last_epoch_performance: v.last_epoch_performance ?? "",
+        liveness: v.liveness ?? 0,
+        rewards_growth: v.rewards_growth ?? 0,
+        location_stats: v.location_stats ?? undefined,
+        apt_rewards_distributed: v.apt_rewards_distributed ?? 0,
+      }));
+    },
+    enabled: !!url,
+  });
 }
 
 export function useGetValidators() {
   const { aptos_client } = useGlobalStore();
   const { activeValidators } = useGetValidatorSet();
-  const { validatorsRawData } = useGetValidatorsRawData();
+  const { data: validatorsRawData = [], fetchStatus } =
+    useGetValidatorsRawData();
 
   const [validators, setValidators] = useState<ValidatorData[]>([]);
   const [hasJsonStats, setHasJsonStats] = useState<boolean>(false);
 
   useEffect(() => {
+    // Wait for raw data query to settle before proceeding
+    if (fetchStatus === "fetching") return;
+
     if (activeValidators.length > 0 && validatorsRawData.length > 0) {
       // If we have JSON stats data, merge it with active validators
       const validatorsCopy = JSON.parse(JSON.stringify(validatorsRawData));
@@ -138,7 +130,7 @@ export function useGetValidators() {
       fetchOperatorAddresses();
       setHasJsonStats(false);
     }
-  }, [activeValidators, validatorsRawData, aptos_client]);
+  }, [activeValidators, validatorsRawData, fetchStatus, aptos_client]);
 
   return { validators, hasJsonStats };
 }

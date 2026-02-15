@@ -145,7 +145,7 @@ export default function InfoTab({
             <span className="text-muted-foreground">Paired Coin</span>
             <CopyableAddress
               address={pairedCoin}
-              href={`/coin/${encodeURIComponent(pairedCoin)}`}
+              href={`/coin/${pairedCoin}`}
               variant="label"
               truncateLength={{ start: 8, end: 6 }}
             />

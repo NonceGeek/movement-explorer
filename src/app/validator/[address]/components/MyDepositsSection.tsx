@@ -10,8 +10,7 @@ import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
 import { useGetDelegatorStakeInfo } from "@/hooks/staking/useGetDelegatorStakeInfo";
 import { formatMoveAmount } from "@/utils/transaction";
 import { Coins, Lock, Unlock, ArrowDownToLine } from "lucide-react";
-
-const OCTA = 100_000_000;
+import { OCTA } from "@/constants/addresses";
 
 interface MyDepositsProps {
   validatorAddress: string;

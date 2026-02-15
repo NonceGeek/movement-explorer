@@ -47,7 +47,7 @@ function CoinContent() {
   useEffect(() => {
     // Redirect legacy /info URLs
     if (tabSlug && tabSlug[0] === "info") {
-      router.replace(`/coin/${encodeURIComponent(struct)}${isGraphqlSupported ? "/holders" : ""}`);
+      router.replace(`/coin/${struct}${isGraphqlSupported ? "/holders" : ""}`);
     }
   }, [tabSlug, struct, router, isGraphqlSupported]);
 

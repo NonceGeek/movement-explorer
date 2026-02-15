@@ -8,8 +8,8 @@ import { CopyableAddress } from "@/components/common/CopyableAddress";
 export function CoinRow({ coin }: { coin: CoinRowType }) {
   const isStruct = coin.assetType.includes("::");
   const href = isStruct
-    ? `/coin/${encodeURIComponent(coin.assetType)}`
-    : `/fa/${encodeURIComponent(coin.assetType)}`;
+    ? `/coin/${coin.assetType}`
+    : `/fa/${coin.assetType}`;
   const assetTypeLabel =
     coin.tokenStandard === "v1"
       ? "Coin"

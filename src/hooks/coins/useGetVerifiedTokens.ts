@@ -6,6 +6,7 @@ import {
   MovementVerifiedToken,
   HardCodedCoins,
 } from "./types";
+import { MOVEMENT_TOKENS_URL } from "../../constants";
 
 export function useGetVerifiedTokens() {
   return useQuery<Record<string, CoinDescription>>({
@@ -15,9 +16,7 @@ export function useGetVerifiedTokens() {
     queryFn: async () => {
       let movementRes;
       try {
-        movementRes = await fetch(
-          "https://raw.githubusercontent.com/movementlabsxyz/movement-tokens/refs/heads/main/tokens.json"
-        );
+        movementRes = await fetch(MOVEMENT_TOKENS_URL);
       } catch (error) {
         console.error("Failed to fetch Movement Labs verified tokens:", error);
         return HardCodedCoins;

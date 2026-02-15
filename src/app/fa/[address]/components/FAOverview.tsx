@@ -40,7 +40,7 @@ export function FAOverview({
         pairedCoin
           ? {
               address: pairedCoin,
-              href: `/coin/${encodeURIComponent(pairedCoin)}`,
+              href: `/coin/${pairedCoin}`,
               label: "Paired Coin",
             }
           : undefined

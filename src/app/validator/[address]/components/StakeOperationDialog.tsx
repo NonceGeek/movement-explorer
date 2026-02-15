@@ -18,8 +18,7 @@ import useSubmitStakeOperation, {
   StakeOperation,
 } from "@/hooks/staking/useSubmitStakeOperation";
 import { Loader2, CheckCircle2, XCircle } from "lucide-react";
-
-const OCTA = 100_000_000; // 1 MOVE = 10^8 OCTA
+import { OCTA } from "@/constants/addresses";
 
 interface StakeOperationDialogProps {
   isOpen: boolean;

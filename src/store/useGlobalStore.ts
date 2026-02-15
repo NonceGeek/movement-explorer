@@ -12,6 +12,8 @@ import {
   isValidNetworkName,
   isValidFeatureName,
   mainnetUrl,
+  MAINNET_GRAPHQL_URL,
+  TESTNET_GRAPHQL_URL,
 } from "../constants";
 
 const HEADERS = {
@@ -21,9 +23,9 @@ const HEADERS = {
 export function getGraphqlURI(network: NetworkName): string | undefined {
   switch (network) {
     case "mainnet":
-      return "https://indexer.mainnet.movementnetwork.xyz/v1/graphql";
+      return MAINNET_GRAPHQL_URL;
     case "bardock testnet":
-      return "https://indexer.testnet.movementnetwork.xyz/v1/graphql";
+      return TESTNET_GRAPHQL_URL;
     default:
       return undefined;
   }

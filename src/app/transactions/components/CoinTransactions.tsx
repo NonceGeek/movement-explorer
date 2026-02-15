@@ -146,7 +146,7 @@ export function CoinTransactions({
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <Link
-            href={`/coin/${encodeURIComponent(coinType)}`}
+            href={`/coin/${coinType}`}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />

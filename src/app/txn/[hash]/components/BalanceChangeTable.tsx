@@ -53,8 +53,8 @@ export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
         {changes.map((change, i) => {
           const isCoin = change.asset.id.includes("::");
           const assetHref = isCoin
-            ? `/coin/${encodeURIComponent(change.asset.id)}`
-            : `/fa/${encodeURIComponent(change.asset.id)}`;
+            ? `/coin/${change.asset.id}`
+            : `/fa/${change.asset.id}`;
 
           return (
             <TableRow key={i}>

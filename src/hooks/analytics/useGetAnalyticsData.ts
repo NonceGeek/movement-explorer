@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { useGlobalStore } from "../../store/useGlobalStore";
-
-export const BARDOCK_ANALYTICS_DATA_URL =
-  "https://storage.googleapis.com/explorer_stats/chain_stats_bardock_v2.json";
-
-export const ANALYTICS_DATA_URL =
-  "https://storage.googleapis.com/explorer_stats/chain_stats_mainnet_v2.json";
+import {
+  ANALYTICS_DATA_URL,
+  BARDOCK_ANALYTICS_DATA_URL,
+} from "../../constants";
 
 export type AnalyticsData = {
   daily_active_users: DailyActiveUserData[];
@@ -97,34 +95,26 @@ export type NodeCountData = {
 
 export function useGetAnalyticsData() {
   const { network_name } = useGlobalStore();
-  const [data, setData] = useState<AnalyticsData>();
 
-  useEffect(() => {
-    // Need to type the options key to allow string indexing or use specific keys
-    const options: Record<string, string | null> = {
-      "bardock testnet": BARDOCK_ANALYTICS_DATA_URL,
-      testnet: null,
-      mainnet: ANALYTICS_DATA_URL,
-      devnet: null,
-      local: null,
-      mevmdevnet: null,
-      custom: null,
-    };
-    const url = options[network_name];
-    if (url) {
-      const fetchData = async () => {
-        const response = await fetch(url);
-        const data = await response.json();
-        setData(data);
-      };
+  const urls: Record<string, string | null> = {
+    "bardock testnet": BARDOCK_ANALYTICS_DATA_URL,
+    testnet: null,
+    mainnet: ANALYTICS_DATA_URL,
+    devnet: null,
+    local: null,
+    mevmdevnet: null,
+    custom: null,
+  };
+  const url = urls[network_name];
 
-      fetchData().catch((error) => {
-        console.error("ERROR!", error, typeof error);
-      });
-    } else {
-      setData(undefined);
-    }
-  }, [network_name]);
+  const { data } = useQuery<AnalyticsData>({
+    queryKey: ["analyticsData", network_name],
+    queryFn: async () => {
+      const response = await fetch(url!);
+      return response.json();
+    },
+    enabled: !!url,
+  });
 
   return data;
 }

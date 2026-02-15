@@ -20,12 +20,14 @@ import { view } from "@/services";
 import {
   encodeInputArgsForViewRequest,
 } from "@/utils";
+import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import ModuleSidebar from "./ModuleSidebar";
 import ContractForm, { ContractFormData } from "./ContractForm";
 
 interface ReadContractProps {
   address: string;
   isObject?: boolean;
+  packages?: PackageMetadata[];
   selectedModuleName?: string;
   selectedFnName?: string;
   onModuleSelect: (moduleName: string) => void;
@@ -34,6 +36,7 @@ interface ReadContractProps {
 export default function ReadContract({
   address,
   isObject = false,
+  packages,
   selectedModuleName,
   selectedFnName,
   onModuleSelect,
@@ -114,7 +117,7 @@ export default function ReadContract({
 
   if (modulesLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-1 space-y-2">
           <EnhancedSkeleton className="h-8 w-32 mb-2" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -139,11 +142,12 @@ export default function ReadContract({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {/* Sidebar */}
       <div className="md:col-span-1">
         <ModuleSidebar
           modules={modules}
+          packages={packages}
           selectedModuleName={selectedModuleName}
           selectedFnName={currentFnName}
           onModuleSelect={onModuleSelect}
@@ -170,7 +174,7 @@ export default function ReadContract({
                     <CheckCircle2 className="h-4 w-4 text-green-500" />
                     <AlertDescription className="ml-2">
                       <div className="flex items-start justify-between gap-4">
-                        <pre className="text-xs font-mono whitespace-pre-wrap break-all flex-1">
+                        <pre className="text-sm font-mono whitespace-pre-wrap break-all flex-1">
                           {resultString}
                         </pre>
                         <TooltipProvider>
@@ -204,7 +208,7 @@ export default function ReadContract({
                   <Alert variant="destructive" className="mt-4">
                     <AlertCircle className="h-4 w-4" />
                     <AlertDescription className="ml-2">
-                      <pre className="text-xs font-mono whitespace-pre-wrap break-all">
+                      <pre className="text-sm font-mono whitespace-pre-wrap break-all">
                         {error}
                       </pre>
                     </AlertDescription>
@@ -214,7 +218,7 @@ export default function ReadContract({
             }
           />
         ) : (
-          <Card>
+          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <p className="text-muted-foreground">
                 Select a view function from the sidebar

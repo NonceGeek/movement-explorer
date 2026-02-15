@@ -81,7 +81,7 @@ export function CopyableAddress({
 
   const variantStyles = {
     default: href
-      ? "text-guild-green-500 hover:text-guild-green-500/80 transition-colors"
+      ? "text-guild-green-300 hover:text-guild-green-300/80 transition-colors"
       : "",
     muted: "text-muted-foreground",
     hash: "text-foreground bg-muted/50 px-2 py-1 rounded-md",
@@ -181,7 +181,7 @@ export function CopyableAddress({
       {icon}
       {displayText}
       {isVerifiedWithLabel && (
-        <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+        <BadgeCheck className="h-5 w-5 text-byzantine-blue-300 shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
       )}
     </span>
   );
@@ -199,7 +199,7 @@ export function CopyableAddress({
       {icon}
       {displayText}
       {isVerifiedWithLabel && (
-        <BadgeCheck className="h-4 w-4 text-primary shrink-0" />
+        <BadgeCheck className="h-5 w-5 text-byzantine-blue-300 shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
       )}
     </Link>
   ) : (

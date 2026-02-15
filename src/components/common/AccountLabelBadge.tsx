@@ -62,12 +62,12 @@ export function AccountLabelBadge({
           <TooltipTrigger asChild>
             <div
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium",
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-byzantine-blue-300/10 text-byzantine-blue-300 text-sm font-medium",
                 className
               )}
             >
               <span>{name}</span>
-              <BadgeCheck className="h-4 w-4" />
+              <BadgeCheck className="h-5 w-5" fill="currentColor" stroke="white" strokeWidth={2} />
             </div>
           </TooltipTrigger>
           <TooltipContent>

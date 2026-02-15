@@ -101,16 +101,10 @@ export default function ModulesTabs({
             <EnhancedSkeleton key={i} className="h-8 w-20" />
           ))}
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <div className="md:col-span-1 space-y-2">
-            {Array.from({ length: 4 }).map((_, i) => (
-              <EnhancedSkeleton key={i} className="h-10 w-full" />
-            ))}
-          </div>
-          <div className="md:col-span-3 space-y-4">
-            <EnhancedSkeleton className="h-24 w-full" />
-            <EnhancedSkeleton className="h-48 w-full" />
-          </div>
+        <div className="space-y-4">
+          <EnhancedSkeleton className="h-14 w-full rounded-lg" />
+          <EnhancedSkeleton className="h-24 w-full rounded-lg" />
+          <EnhancedSkeleton className="h-48 w-full rounded-lg" />
         </div>
       </div>
     );
@@ -153,6 +147,7 @@ export default function ModulesTabs({
           <ReadContract
             address={address}
             isObject={isObject}
+            packages={packages}
             selectedModuleName={selectedModuleName}
             selectedFnName={initialFunction}
             onModuleSelect={handleModuleSelect}
@@ -163,6 +158,7 @@ export default function ModulesTabs({
           <RunContract
             address={address}
             isObject={isObject}
+            packages={packages}
             selectedModuleName={selectedModuleName}
             selectedFnName={initialFunction}
             onModuleSelect={handleModuleSelect}

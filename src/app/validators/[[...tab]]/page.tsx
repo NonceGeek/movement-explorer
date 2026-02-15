@@ -18,14 +18,12 @@ import {
   type SortColumn,
   type SortDirection,
 } from "../components/ValidatorsTable";
-import { ValidatorsToolbar } from "../components/ValidatorsToolbar";
-import { TransactionPagination } from "@/components/transactions/TransactionPagination";
+import { TransactionTableFooter } from "@/components/transactions/TransactionTableFooter";
+import type { PageSize } from "@/store/useTransactionPaginationStore";
 import { Tabs, PillTabsList } from "@/components/ui/tabs";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getValidatorStatus } from "@/utils/validators";
 import type { ValidatorData } from "@/hooks/validators/useGetValidators";
-
-const ROWS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
 
 export default function ValidatorsPage() {
   const { validators } = useGetValidators();
@@ -41,10 +39,9 @@ export default function ValidatorsPage() {
   const [timeRemaining, setTimeRemaining] = useState("");
 
   // Table state
-  const [searchQuery, setSearchQuery] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const [rowsPerPage, setRowsPerPage] = useState(25);
+  const [rowsPerPage, setRowsPerPage] = useState<PageSize>(25);
   const [sortColumn, setSortColumn] = useState<SortColumn>("votingPower");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
@@ -159,21 +156,10 @@ export default function ValidatorsPage() {
   const { data: commissionAndStateMap } =
     useGetValidatorsCommissionAndState(allAddresses);
 
-  // Filter by search
-  const searchFiltered = useMemo(() => {
-    if (!searchQuery) return delegationValidators;
-    const q = searchQuery.toLowerCase();
-    return delegationValidators.filter(
-      (v) =>
-        v.owner_address.toLowerCase().includes(q) ||
-        v.operator_address.toLowerCase().includes(q),
-    );
-  }, [delegationValidators, searchQuery]);
-
   // Filter by tab (status)
   const tabFiltered = useMemo(() => {
-    if (activeTab === "all") return searchFiltered;
-    return searchFiltered.filter((v) => {
+    if (activeTab === "all") return delegationValidators;
+    return delegationValidators.filter((v) => {
       const info = commissionAndStateMap?.get(v.owner_address);
       if (!info) return activeTab === "all";
       const status = getValidatorStatus(info.status);
@@ -183,7 +169,7 @@ export default function ValidatorsPage() {
         return status === "Inactive" || status === "Pending Inactive";
       return true;
     });
-  }, [searchFiltered, activeTab, commissionAndStateMap]);
+  }, [delegationValidators, activeTab, commissionAndStateMap]);
 
   // Sort
   const sorted = useMemo(() => {
@@ -233,13 +219,13 @@ export default function ValidatorsPage() {
   // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, activeTab, sortColumn, sortDirection]);
+  }, [activeTab, sortColumn, sortDirection]);
 
   // Tab counts
   const counts = useMemo(() => {
     let active = 0;
     let inactive = 0;
-    searchFiltered.forEach((v) => {
+    delegationValidators.forEach((v) => {
       const info = commissionAndStateMap?.get(v.owner_address);
       if (info) {
         const status = getValidatorStatus(info.status);
@@ -248,8 +234,8 @@ export default function ValidatorsPage() {
           inactive++;
       }
     });
-    return { all: searchFiltered.length, active, inactive };
-  }, [searchFiltered, commissionAndStateMap]);
+    return { all: delegationValidators.length, active, inactive };
+  }, [delegationValidators, commissionAndStateMap]);
 
   const handleSort = useCallback(
     (column: SortColumn) => {
@@ -262,10 +248,6 @@ export default function ValidatorsPage() {
     },
     [sortColumn],
   );
-
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-  }, []);
 
   const tabItems = useMemo(
     () => [
@@ -288,6 +270,7 @@ export default function ValidatorsPage() {
           <ValidatorsMap
             validatorGeoGroups={validatorGeoGroups}
             validatorGeoMetric={validatorGeoMetric}
+            numberOfActiveValidators={numberOfActiveValidators}
             hasGeoData={hasGeoData}
             isLoading={isLoading}
           />
@@ -306,15 +289,13 @@ export default function ValidatorsPage() {
 
         {/* Table Section */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          {/* Tabs + Search Toolbar */}
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+          <div className="mb-4">
             <PillTabsList
               items={tabItems}
               activeTab={activeTab}
               onTabChange={setActiveTab}
               className="!static !p-0"
             />
-            <ValidatorsToolbar onSearchChange={handleSearchChange} />
           </div>
 
           <ValidatorsTable
@@ -329,36 +310,17 @@ export default function ValidatorsPage() {
           />
         </Tabs>
 
-        {/* Pagination + Rows Per Page */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-4 bg-card/50 rounded-lg border border-border/50 px-4 py-3">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>Rows per page:</span>
-            <select
-              value={rowsPerPage}
-              onChange={(e) => {
-                setRowsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              className="bg-card border border-border/50 rounded-md px-2.5 py-1 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50"
-            >
-              {ROWS_PER_PAGE_OPTIONS.map((opt) => (
-                <option key={opt} value={opt}>
-                  {opt}
-                </option>
-              ))}
-            </select>
-            <span className="tabular-nums">
-              {sorted.length > 0
-                ? `${(currentPage - 1) * rowsPerPage + 1}-${Math.min(currentPage * rowsPerPage, sorted.length)} of ${sorted.length}`
-                : "0 results"}
-            </span>
-          </div>
-          <TransactionPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={setCurrentPage}
-          />
-        </div>
+        <TransactionTableFooter
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          pageSize={rowsPerPage}
+          onPageSizeChange={(size) => {
+            setRowsPerPage(size);
+            setCurrentPage(1);
+          }}
+          isLoading={isLoading}
+        />
       </PageContainer>
     </>
   );

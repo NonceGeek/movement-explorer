@@ -87,11 +87,11 @@ export default function HomePage() {
             `,
             backgroundSize: "24px 24px, 24px 24px",
             backgroundPosition: "0 0, 12px 12px",
-            maskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%),
-                        linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)`,
+            maskImage: `linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
+                        linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)`,
             maskComposite: "intersect",
-            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 70%, transparent 100%),
-                              linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)`,
+            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
+                              linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)`,
             WebkitMaskComposite: "source-in",
           }}
         />

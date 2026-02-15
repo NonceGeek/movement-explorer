@@ -124,13 +124,13 @@ export function TransactionDetailsTable({
       {/* Addresses */}
       {sender && (
         <DetailRow label="From">
-          <CopyableAddress address={sender} href={`/account/${sender}`} showFull />
+          <CopyableAddress address={sender} href={`/account/${sender}`} showFull showLabel />
         </DetailRow>
       )}
 
       {feePayer && feePayer !== sender && (
         <DetailRow label="Fee Payer" tooltip="The account that paid for this transaction">
-          <CopyableAddress address={feePayer} href={`/account/${feePayer}`} showFull />
+          <CopyableAddress address={feePayer} href={`/account/${feePayer}`} showFull showLabel />
         </DetailRow>
       )}
 
@@ -139,7 +139,7 @@ export function TransactionDetailsTable({
           <div className="space-y-1">
             {secondarySigners.map((addr, i) => (
               <div key={i}>
-                <CopyableAddress address={addr} href={`/account/${addr}`} showFull />
+                <CopyableAddress address={addr} href={`/account/${addr}`} showFull showLabel />
               </div>
             ))}
           </div>
@@ -159,6 +159,7 @@ export function TransactionDetailsTable({
             address={counterparty.address}
             href={`/account/${counterparty.address}`}
             showFull
+            showLabel
           />
         </DetailRow>
       )}

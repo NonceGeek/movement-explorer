@@ -82,12 +82,6 @@ export default function NetworkBadge() {
           "transition-all outline-none",
         )}
       >
-        <span
-          className={cn(
-            "w-2 h-2 rounded-full shrink-0",
-            getNetworkDotColor(network_name),
-          )}
-        />
         <span>{getShortNetworkName(network_name)}</span>
         <ChevronDown
           className={cn(
@@ -100,7 +94,7 @@ export default function NetworkBadge() {
         align="start"
         sideOffset={8}
         className={cn(
-          "w-48 rounded-xl p-2",
+          "w-48 rounded-xl p-2 space-y-1",
           "bg-card/95 backdrop-blur-xl",
           "border border-border/60",
           "shadow-xl shadow-black/10",
@@ -118,12 +112,12 @@ export default function NetworkBadge() {
                 : "text-foreground/80 hover:text-foreground hover:bg-muted/60",
             )}
           >
-            <span
+            {/* <span
               className={cn(
                 "w-2 h-2 rounded-full shrink-0 mr-2",
                 getNetworkDotColor(name),
               )}
-            />
+            /> */}
             {getDisplayNetworkName(name)}
           </DropdownMenuItem>
         ))}

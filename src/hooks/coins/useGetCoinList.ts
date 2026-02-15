@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGetVerifiedTokens } from "./useGetVerifiedTokens";
@@ -9,10 +10,18 @@ import { COINGECKO_API_ENDPOINT } from "../../constants";
 export function useGetCoinList(options?: { retry?: number | boolean }) {
   const { data: verifiedTokens } = useGetVerifiedTokens();
 
+  // Stable placeholder: token metadata without prices (available immediately)
+  const placeholderCoins = useMemo(() => {
+    if (!verifiedTokens) return { data: [] as CoinDescription[] };
+    return { data: Object.values(verifiedTokens) };
+  }, [verifiedTokens]);
+
+  const tokenCount = verifiedTokens ? Object.keys(verifiedTokens).length : 0;
+
   return useQuery<{ data: CoinDescription[] }, ResponseError>({
-    queryKey: ["coinList", verifiedTokens],
+    queryKey: ["coinList", tokenCount],
     enabled: !!verifiedTokens,
-    initialData: { data: [] },
+    placeholderData: placeholderCoins,
     queryFn: async (): Promise<{ data: CoinDescription[] }> => {
       if (!verifiedTokens) return { data: [] };
 

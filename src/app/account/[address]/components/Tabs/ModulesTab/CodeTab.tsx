@@ -1,8 +1,7 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -10,20 +9,74 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+  TooltipProvider,
+} from "@/components/ui/tooltip";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Package,
   FileCode,
-  ChevronDown,
-  ChevronRight,
+  Copy,
+  Check,
+  Maximize2,
+  Minimize2,
+  List,
+  Braces,
+  Hash,
 } from "lucide-react";
-import { cn } from "@/utils/styling";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "../..";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import { useGetAccountModule } from "@/hooks/accounts/useGetAccountModule";
 import { getBytecodeSizeInKB, transformCode } from "@/utils";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import AbiDisplay from "./AbiDisplay";
 import PackageContent from "./PackageContent";
+
+const PACKAGE_OVERVIEW = "__package_overview__";
+const LINE_ANCHOR_PREFIX = "source-code";
+
+interface OutlineItem {
+  type: "struct" | "function" | "const";
+  name: string;
+  line: number;
+}
+
+function parseOutline(code: string): OutlineItem[] {
+  const lines = code.split("\n");
+  const items: OutlineItem[] = [];
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const fnMatch = line.match(
+      /^\s*(?:public\s+)?(?:\(friend\)\s+)?(?:entry\s+)?fun\s+(\w+)/,
+    );
+    if (fnMatch) {
+      items.push({ type: "function", name: fnMatch[1], line: i + 1 });
+      continue;
+    }
+    const structMatch = line.match(/^\s*(?:public\s+)?struct\s+(\w+)/);
+    if (structMatch) {
+      items.push({ type: "struct", name: structMatch[1], line: i + 1 });
+      continue;
+    }
+    const constMatch = line.match(/^\s*const\s+(\w+)/);
+    if (constMatch) {
+      items.push({ type: "const", name: constMatch[1], line: i + 1 });
+    }
+  }
+  return items;
+}
 
 interface CodeTabProps {
   address: string;
@@ -46,9 +99,9 @@ export default function CodeTab({
   const [viewingModule, setViewingModule] = useState<string | null>(
     selectedModuleName || null,
   );
-  const [expandedPackages, setExpandedPackages] = useState<Set<string>>(
-    new Set(),
-  );
+  const [copied, setCopied] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const codeBlockRef = useRef<HTMLDivElement>(null);
 
   // Build flat module→package mapping
   const moduleToPackage = useMemo(() => {
@@ -61,12 +114,10 @@ export default function CodeTab({
     return map;
   }, [packages]);
 
-  // Initialize: select first package & expand it
+  // Initialize: select first package
   useEffect(() => {
     if (packages.length > 0 && !selectedPackageName) {
-      const firstPkg = packages[0].name;
-      setSelectedPackageName(firstPkg);
-      setExpandedPackages(new Set([firstPkg]));
+      setSelectedPackageName(packages[0].name);
     }
   }, [packages, selectedPackageName]);
 
@@ -76,7 +127,6 @@ export default function CodeTab({
       const pkgName = moduleToPackage[selectedModuleName];
       setSelectedPackageName(pkgName);
       setViewingModule(selectedModuleName);
-      setExpandedPackages((prev) => new Set([...prev, pkgName]));
     }
   }, [selectedModuleName, moduleToPackage]);
 
@@ -102,33 +152,55 @@ export default function CodeTab({
     viewingModule || "",
   );
 
-  const togglePackage = (pkgName: string) => {
-    setExpandedPackages((prev) => {
-      const next = new Set(prev);
-      if (next.has(pkgName)) {
-        next.delete(pkgName);
-      } else {
-        next.add(pkgName);
-      }
-      return next;
-    });
-  };
+  // Outline items
+  const outlineItems = useMemo(() => {
+    if (!selectedModuleSource?.decodedSource) return [];
+    return parseOutline(selectedModuleSource.decodedSource);
+  }, [selectedModuleSource?.decodedSource]);
 
-  const handlePackageClick = (pkgName: string) => {
+  const handlePackageChange = (pkgName: string) => {
     setSelectedPackageName(pkgName);
     setViewingModule(null);
-    togglePackage(pkgName);
   };
 
-  const handleModuleClick = (pkgName: string, moduleName: string) => {
-    setSelectedPackageName(pkgName);
-    setViewingModule(moduleName);
-    onModuleSelect(moduleName);
+  const handleModuleChange = (value: string) => {
+    if (value === PACKAGE_OVERVIEW) {
+      setViewingModule(null);
+      return;
+    }
+    setViewingModule(value);
+    onModuleSelect(value);
   };
+
+  const handleCopy = useCallback(async () => {
+    if (!selectedModuleSource?.decodedSource) return;
+    await navigator.clipboard.writeText(selectedModuleSource.decodedSource);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }, [selectedModuleSource?.decodedSource]);
+
+  const handleOutlineClick = useCallback((line: number) => {
+    const el = document.getElementById(`${LINE_ANCHOR_PREFIX}-line-${line}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      // Highlight effect
+      el.style.transition = "none";
+      el.style.backgroundColor = "rgba(59,130,246,0.35)";
+      el.style.boxShadow = "inset 3px 0 0 0 rgba(59,130,246,0.8)";
+      el.style.borderRadius = "2px";
+      setTimeout(() => {
+        el.style.transition =
+          "background-color 1s ease-out, box-shadow 1s ease-out";
+        el.style.backgroundColor = "";
+        el.style.boxShadow = "";
+      }, 2000);
+    }
+  }, []);
 
   // Module stats
   const entryFnCount =
-    moduleData?.abi?.exposed_functions?.filter((fn) => fn.is_entry)?.length || 0;
+    moduleData?.abi?.exposed_functions?.filter((fn) => fn.is_entry)?.length ||
+    0;
   const viewFnCount =
     moduleData?.abi?.exposed_functions?.filter((fn) => fn.is_view)?.length || 0;
   const bytecodeSize = moduleData?.bytecode
@@ -137,17 +209,10 @@ export default function CodeTab({
 
   if (packagesLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="md:col-span-1 space-y-2">
-          <EnhancedSkeleton className="h-8 w-24 mb-2" />
-          {Array.from({ length: 5 }).map((_, i) => (
-            <EnhancedSkeleton key={i} className="h-8 w-full" />
-          ))}
-        </div>
-        <div className="md:col-span-3 space-y-4">
-          <EnhancedSkeleton className="h-16 w-full" />
-          <EnhancedSkeleton className="h-64 w-full" />
-        </div>
+      <div className="space-y-4">
+        <EnhancedSkeleton className="h-14 w-full rounded-lg" />
+        <EnhancedSkeleton className="h-16 w-full rounded-lg" />
+        <EnhancedSkeleton className="h-64 w-full rounded-lg" />
       </div>
     );
   }
@@ -162,181 +227,292 @@ export default function CodeTab({
     );
   }
 
-  // Mobile: build flat options for Select
-  const mobileOptions = packages.flatMap((pkg) =>
-    pkg.modules.map((mod) => ({
-      value: `${pkg.name}::${mod.name}`,
-      label: `${pkg.name} / ${mod.name}`,
-      pkgName: pkg.name,
-      modName: mod.name,
-    })),
-  );
+  const structs = outlineItems.filter((i) => i.type === "struct");
+  const functions = outlineItems.filter((i) => i.type === "function");
+  const constants = outlineItems.filter((i) => i.type === "const");
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-      {/* Sidebar - Tree Navigation */}
-      <div className="md:col-span-1">
-        <Card className="h-fit max-h-[calc(100vh-200px)] overflow-y-auto">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">Packages</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-1">
-            {/* Mobile: Select dropdown */}
-            <div className="md:hidden">
-              <Select
-                value={
-                  viewingModule
-                    ? `${moduleToPackage[viewingModule]}::${viewingModule}`
-                    : undefined
-                }
-                onValueChange={(val) => {
-                  const opt = mobileOptions.find((o) => o.value === val);
-                  if (opt) {
-                    handleModuleClick(opt.pkgName, opt.modName);
-                  }
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a module" />
-                </SelectTrigger>
-                <SelectContent>
-                  {mobileOptions.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+    <div className="space-y-3">
+      {/* Header Navigation Bar */}
+      <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
+        <CardContent className="py-3 px-4">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Package selector */}
+            {packages.length > 1 ? (
+              <div className="flex items-center gap-1.5">
+                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select
+                  value={selectedPackageName}
+                  onValueChange={handlePackageChange}
+                >
+                  <SelectTrigger
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 min-w-[120px] cursor-pointer"
+                  >
+                    <SelectValue placeholder="Select package" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {packages.map((pkg) => (
+                      <SelectItem key={pkg.name} value={pkg.name}>
+                        <span className="flex items-center gap-2">
+                          <span className="font-mono text-sm">{pkg.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {pkg.modules.length} modules
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-sm">
+                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="font-mono font-medium">
+                  {selectedPackageName}
+                </span>
+              </div>
+            )}
 
-            {/* Desktop: Tree view */}
-            <div className="hidden md:block space-y-1">
-              {packages.map((pkg) => {
-                const isExpanded = expandedPackages.has(pkg.name);
-                const isPkgSelected =
-                  pkg.name === selectedPackageName && !viewingModule;
-                return (
-                  <div key={pkg.name}>
-                    {/* Package header */}
+            {/* Separator */}
+            {selectedPackage && (
+              <span className="text-muted-foreground/40 hidden sm:inline">
+                /
+              </span>
+            )}
+
+            {/* Module selector */}
+            {selectedPackage && (
+              <div className="flex items-center gap-1.5">
+                <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select
+                  value={viewingModule || PACKAGE_OVERVIEW}
+                  onValueChange={handleModuleChange}
+                >
+                  <SelectTrigger
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 min-w-[140px] cursor-pointer"
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={PACKAGE_OVERVIEW}>
+                      Package Overview
+                    </SelectItem>
+                    {selectedPackage.modules.map((mod) => (
+                      <SelectItem key={mod.name} value={mod.name}>
+                        <span className="font-mono text-sm">{mod.name}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {/* Stats */}
+            {viewingModule && (
+              <div className="flex items-center gap-3 ml-auto text-sm text-muted-foreground">
+                <span>{entryFnCount} entry</span>
+                <span className="text-muted-foreground/30">|</span>
+                <span>{viewFnCount} view</span>
+                <span className="text-muted-foreground/30">|</span>
+                <span>{bytecodeSize} KB</span>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Content Area */}
+      {viewingModule && selectedModuleSource ? (
+        <>
+          {/* Source Code */}
+          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base">Source Code</CardTitle>
+                {selectedModuleSource.decodedSource && (
+                  <div className="flex items-center gap-1">
+                    {/* Outline */}
+                    {outlineItems.length > 0 && (
+                      <DropdownMenu>
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="h-8 px-2"
+                                >
+                                  <List className="h-4 w-4" />
+                                  <span className="ml-1 text-xs hidden sm:inline">
+                                    Outline
+                                  </span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              <p>Jump to definition</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </TooltipProvider>
+                        <DropdownMenuContent
+                          align="end"
+                          className="max-h-80 overflow-y-auto w-56"
+                        >
+                          {structs.length > 0 && (
+                            <>
+                              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                Structs
+                              </DropdownMenuLabel>
+                              {structs.map((item) => (
+                                <DropdownMenuItem
+                                  key={`struct-${item.line}`}
+                                  onClick={() => handleOutlineClick(item.line)}
+                                  className="cursor-pointer"
+                                >
+                                  <Braces className="h-3.5 w-3.5 mr-2 shrink-0 text-blue-500" />
+                                  <span className="font-mono text-sm truncate">
+                                    {item.name}
+                                  </span>
+                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                    :{item.line}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                              {(functions.length > 0 || constants.length > 0) && (
+                                <DropdownMenuSeparator />
+                              )}
+                            </>
+                          )}
+                          {functions.length > 0 && (
+                            <>
+                              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                Functions
+                              </DropdownMenuLabel>
+                              {functions.map((item) => (
+                                <DropdownMenuItem
+                                  key={`fn-${item.line}`}
+                                  onClick={() => handleOutlineClick(item.line)}
+                                  className="cursor-pointer"
+                                >
+                                  <FileCode className="h-3.5 w-3.5 mr-2 shrink-0 text-purple-500" />
+                                  <span className="font-mono text-sm truncate">
+                                    {item.name}
+                                  </span>
+                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                    :{item.line}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                              {constants.length > 0 && (
+                                <DropdownMenuSeparator />
+                              )}
+                            </>
+                          )}
+                          {constants.length > 0 && (
+                            <>
+                              <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                Constants
+                              </DropdownMenuLabel>
+                              {constants.map((item) => (
+                                <DropdownMenuItem
+                                  key={`const-${item.line}`}
+                                  onClick={() => handleOutlineClick(item.line)}
+                                  className="cursor-pointer"
+                                >
+                                  <Hash className="h-3.5 w-3.5 mr-2 shrink-0 text-orange-500" />
+                                  <span className="font-mono text-sm truncate">
+                                    {item.name}
+                                  </span>
+                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                    :{item.line}
+                                  </span>
+                                </DropdownMenuItem>
+                              ))}
+                            </>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
+
+                    {/* Copy */}
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={handleCopy}
+                            className="h-8 px-2"
+                          >
+                            {copied ? (
+                              <Check className="h-4 w-4 text-green-500" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                            <span className="ml-1 text-xs hidden sm:inline">
+                              {copied ? "Copied" : "Copy"}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>{copied ? "Code copied!" : "Copy source code"}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+
+                    {/* Expand / Collapse */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className={cn(
-                        "w-full justify-start text-left text-xs h-auto py-2 px-2 gap-1",
-                        isPkgSelected &&
-                          "bg-primary/10 text-primary border border-primary/20",
-                      )}
-                      onClick={() => handlePackageClick(pkg.name)}
+                      onClick={() => setExpanded(!expanded)}
+                      className="h-8 px-2"
                     >
-                      {isExpanded ? (
-                        <ChevronDown className="h-3 w-3 shrink-0" />
+                      {expanded ? (
+                        <Minimize2 className="h-4 w-4" />
                       ) : (
-                        <ChevronRight className="h-3 w-3 shrink-0" />
+                        <Maximize2 className="h-4 w-4" />
                       )}
-                      <Package className="h-3 w-3 shrink-0" />
-                      <span className="truncate font-medium">{pkg.name}</span>
-                      <span className="ml-auto text-muted-foreground text-[10px]">
-                        {pkg.modules.length}
+                      <span className="ml-1 text-xs hidden sm:inline">
+                        {expanded ? "Collapse" : "Expand"}
                       </span>
                     </Button>
-
-                    {/* Module list (nested) */}
-                    {isExpanded && (
-                      <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
-                        {pkg.modules.map((mod) => {
-                          const isModSelected = viewingModule === mod.name;
-                          return (
-                            <Button
-                              key={mod.name}
-                              variant="ghost"
-                              size="sm"
-                              className={cn(
-                                "w-full justify-start text-left font-mono text-xs h-auto py-1.5 px-2",
-                                isModSelected &&
-                                  "bg-primary/10 text-primary border border-primary/20",
-                              )}
-                              onClick={() =>
-                                handleModuleClick(pkg.name, mod.name)
-                              }
-                            >
-                              <FileCode className="h-3 w-3 mr-1.5 shrink-0" />
-                              <span className="truncate">{mod.name}</span>
-                            </Button>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="md:col-span-3 space-y-6">
-        {viewingModule && selectedModuleSource ? (
-          <>
-            {/* Module Header */}
-            <Card>
-              <CardHeader>
-                <div className="flex flex-wrap items-center justify-between gap-4">
-                  <CardTitle className="flex items-center gap-2 font-mono">
-                    <FileCode className="h-5 w-5" />
-                    {viewingModule}
-                  </CardTitle>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>{entryFnCount} entry functions</span>
-                    <span>{viewFnCount} view functions</span>
-                    <span>Bytecode: {bytecodeSize} KB</span>
-                  </div>
-                </div>
-              </CardHeader>
-            </Card>
-
-            {/* Source Code */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Source Code</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {selectedModuleSource.decodedSource ? (
-                  <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs font-mono leading-relaxed max-h-[500px]">
-                    {selectedModuleSource.decodedSource}
-                  </pre>
-                ) : (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p>
-                      Unfortunately, the source code cannot be shown because the
-                      package publisher has chosen not to make it available.
-                    </p>
                   </div>
                 )}
-              </CardContent>
-            </Card>
-
-            {/* ABI */}
-            {moduleData?.abi && <AbiDisplay abi={moduleData.abi} />}
-          </>
-        ) : selectedPackage ? (
-          <PackageContent
-            address={address}
-            packageMetadata={selectedPackage}
-            onModuleSelect={(moduleName) =>
-              handleModuleClick(selectedPackage.name, moduleName)
-            }
-          />
-        ) : (
-          <Card>
-            <CardContent className="pt-6">
-              <p className="text-muted-foreground">
-                Select a package or module from the sidebar
-              </p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {selectedModuleSource.decodedSource ? (
+                <CodeBlock
+                  ref={codeBlockRef}
+                  code={selectedModuleSource.decodedSource}
+                  lineAnchorPrefix={LINE_ANCHOR_PREFIX}
+                  maxHeight={expanded ? "none" : "500px"}
+                />
+              ) : (
+                <div className="text-center py-8 text-muted-foreground">
+                  <p>
+                    Unfortunately, the source code cannot be shown because the
+                    package publisher has chosen not to make it available.
+                  </p>
+                </div>
+              )}
             </CardContent>
           </Card>
-        )}
-      </div>
+
+          {/* ABI */}
+          {moduleData?.abi && <AbiDisplay abi={moduleData.abi} />}
+        </>
+      ) : selectedPackage ? (
+        <PackageContent
+          address={address}
+          packageMetadata={selectedPackage}
+        />
+      ) : null}
     </div>
   );
 }

@@ -3,10 +3,9 @@
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { useParams } from "next/navigation";
-import { Suspense, useMemo, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
+import { Suspense, useMemo } from "react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
+// import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -22,20 +21,22 @@ import { useGetDelegationNodeInfo } from "@/hooks/validators/useGetDelegationNod
 import { useGetNumberOfDelegators } from "@/hooks/validators/useGetNumberOfDelegators";
 import { useGetDelegatedStakingPoolList } from "@/hooks/validators/useGetDelegatedStakingPoolList";
 import { useGetAccountResource } from "@/hooks/accounts/useGetAccountResource";
-import { useGetAccountAPTBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
-import { useGetDelegatorStakeInfo } from "@/hooks/staking/useGetDelegatorStakeInfo";
-import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
-import { useWallet } from "@aptos-labs/wallet-adapter-react";
+// TODO: temporarily disabled staking
+// import { useGetAccountAPTBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
+// import { useGetDelegatorStakeInfo } from "@/hooks/staking/useGetDelegatorStakeInfo";
+// import { StakeOperation } from "@/hooks/staking/useSubmitStakeOperation";
+// import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { standardizeAddress } from "@/utils";
 import { formatMoveAmount } from "@/utils/transaction";
-import { OCTA } from "@/constants/addresses";
+// import { OCTA } from "@/constants/addresses";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { ValidatorStatusBadge } from "@/app/validators/components/ValidatorStatusBadge";
-import { WalletModal } from "@movementlabsxyz/movement-design-system";
-import { StakeOperationDialog } from "../components/StakeOperationDialog";
-import { MyDepositsSection } from "../components/MyDepositsSection";
+// TODO: temporarily disabled staking
+// import { WalletModal } from "@movementlabsxyz/movement-design-system";
+// import { StakeOperationDialog } from "../components/StakeOperationDialog";
+// import { MyDepositsSection } from "../components/MyDepositsSection";
 import { CommissionChangeBanner } from "../components/CommissionChangeBanner";
-import { StakeOperationActivities } from "../components/StakeOperationActivities";
+// import { StakeOperationActivities } from "../components/StakeOperationActivities";
 import { TimeDurationIntervalBar } from "../components/TimeDurationIntervalBar";
 import { calculateNetworkPercentage, getValidatorStatus } from "../utils";
 import {
@@ -51,12 +52,12 @@ import {
   Clock,
   CheckCircle2,
   XCircle,
-  ArrowUpCircle,
+  // ArrowUpCircle,
   HelpCircle,
 } from "lucide-react";
 
-const MINIMUM_MOVE_IN_POOL = 11;
-const NETWORK_LIMIT_PERCENT = 30;
+// const MINIMUM_MOVE_IN_POOL = 11;
+// const NETWORK_LIMIT_PERCENT = 30;
 
 interface StakePoolData {
   active: { value: string };
@@ -80,14 +81,13 @@ function ValidatorContent() {
     }
   }, [address]);
 
-  // Wallet state
-  const { connected, account } = useWallet();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [walletModalOpen, setWalletModalOpen] = useState(false);
-
-  const walletAddress = account?.address?.toString() || "";
-  const balance = useGetAccountAPTBalance(walletAddress);
-  const userBalance = balance?.data ? BigInt(balance.data) : BigInt(0);
+  // TODO: temporarily disabled staking
+  // const { connected, account } = useWallet();
+  // const [dialogOpen, setDialogOpen] = useState(false);
+  // const [walletModalOpen, setWalletModalOpen] = useState(false);
+  // const walletAddress = account?.address?.toString() || "";
+  // const balance = useGetAccountAPTBalance(walletAddress);
+  // const userBalance = balance?.data ? BigInt(balance.data) : BigInt(0);
 
   // Fetch validators list
   const { validators } = useGetValidators();
@@ -156,12 +156,10 @@ function ValidatorContent() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <Card className="border-destructive">
-          <CardContent className="pt-6">
-            <p className="text-destructive">Error loading validator</p>
-            <p className="text-muted-foreground mt-2">{error.message}</p>
-          </CardContent>
-        </Card>
+        <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-destructive/50 p-6">
+          <p className="text-destructive">Error loading validator</p>
+          <p className="text-muted-foreground mt-2">{error.message}</p>
+        </div>
       </div>
     );
   }
@@ -197,69 +195,32 @@ function ValidatorContent() {
   // Network percentage
   const networkPercentage = delegationValidator?.voting_power
     ? calculateNetworkPercentage(
-        delegationValidator.voting_power,
-        totalVotingPower,
-      )
+      delegationValidator.voting_power,
+      totalVotingPower,
+    )
     : "0.00";
 
   // Rewards earned
   const rewardsEarned = delegationValidator?.apt_rewards_distributed ?? 0;
 
-  // Stake button logic
-  const networkPct = parseFloat(networkPercentage);
-  const isOverNetworkLimit = networkPct >= NETWORK_LIMIT_PERCENT;
-  const isBalanceInsufficient =
-    connected && userBalance < BigInt(MINIMUM_MOVE_IN_POOL * OCTA);
-
-  const handleStakeClick = () => {
-    if (!connected) {
-      setWalletModalOpen(true);
-      return;
-    }
-    setDialogOpen(true);
-  };
-
-  const getTooltipText = (): string | null => {
-    if (isOverNetworkLimit) {
-      return `This validator has ${networkPercentage}% of the network stake, exceeding the ${NETWORK_LIMIT_PERCENT}% limit.`;
-    }
-    if (isBalanceInsufficient) {
-      return `Insufficient balance. Minimum ${MINIMUM_MOVE_IN_POOL} MOVE required.`;
-    }
-    return null;
-  };
-
-  const tooltipText = getTooltipText();
-  const isStakeDisabled = isOverNetworkLimit || !!isBalanceInsufficient;
-
-  const stakeButton = (
-    <Button
-      onClick={handleStakeClick}
-      disabled={isStakeDisabled}
-      className="gap-2"
-      size="sm"
-    >
-      <ArrowUpCircle className="h-4 w-4" />
-      Stake
-    </Button>
-  );
-
-  const renderStakeButton = () => {
-    if (isOverNetworkLimit) return null;
-    if (tooltipText) {
-      return (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>{stakeButton}</span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{tooltipText}</p>
-          </TooltipContent>
-        </Tooltip>
-      );
-    }
-    return stakeButton;
-  };
+  // TODO: temporarily disabled staking
+  // const networkPct = parseFloat(networkPercentage);
+  // const isOverNetworkLimit = networkPct >= NETWORK_LIMIT_PERCENT;
+  // const isBalanceInsufficient =
+  //   connected && userBalance < BigInt(MINIMUM_MOVE_IN_POOL * OCTA);
+  // const handleStakeClick = () => {
+  //   if (!connected) { setWalletModalOpen(true); return; }
+  //   setDialogOpen(true);
+  // };
+  // const getTooltipText = (): string | null => {
+  //   if (isOverNetworkLimit) return `This validator has ${networkPercentage}% ...`;
+  //   if (isBalanceInsufficient) return `Insufficient balance...`;
+  //   return null;
+  // };
+  // const tooltipText = getTooltipText();
+  // const isStakeDisabled = isOverNetworkLimit || !!isBalanceInsufficient;
+  // const stakeButton = (...);
+  // const renderStakeButton = () => { ... };
 
   return (
     <>
@@ -274,9 +235,9 @@ function ValidatorContent() {
         {isLoading ? (
           <div className="space-y-6">
             {/* Overview Card Skeleton */}
-            <Card className="bg-card border-border overflow-hidden">
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
               {/* Header */}
-              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+              <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
                 <div className="flex items-center gap-3">
                   <EnhancedSkeleton className="w-10 h-10 rounded-full" />
                   <div>
@@ -290,7 +251,7 @@ function ValidatorContent() {
                 <EnhancedSkeleton className="h-8 w-20 rounded-md" />
               </div>
               {/* 3-Column Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/30">
                 {Array.from({ length: 3 }).map((_, col) => (
                   <div key={col} className="px-5 py-4 space-y-3">
                     <EnhancedSkeleton className="h-3 w-28" />
@@ -305,14 +266,14 @@ function ValidatorContent() {
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
 
             {/* Staking Breakdown Skeleton */}
-            <Card className="bg-card border-border">
-              <div className="border-b border-border/50 py-4 px-6">
-                <EnhancedSkeleton className="h-6 w-40" />
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+              <div className="border-b border-border/30 py-4 px-5">
+                <EnhancedSkeleton className="h-5 w-40" />
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div key={i} className="px-5 py-4">
                     <div className="flex items-center gap-2 mb-1">
@@ -323,14 +284,14 @@ function ValidatorContent() {
                   </div>
                 ))}
               </div>
-            </Card>
+            </div>
           </div>
         ) : (
           <>
-            {/* Etherscan-style Overview Card */}
-            <Card className="bg-card border-border mb-6 overflow-hidden">
+            {/* Overview Card */}
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 overflow-hidden transition-all duration-300">
               {/* Card Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
                     <Server className="w-5 h-5 text-primary" />
@@ -347,27 +308,29 @@ function ValidatorContent() {
                       href={`/account/${addressHex}`}
                       showCopyButton
                       truncateLength={{ start: 10, end: 8 }}
-                      className="text-xs"
+                      className="text-sm"
                     />
                   </div>
                 </div>
+                {/* TODO: temporarily disabled staking
                 <div className="shrink-0">{renderStakeButton()}</div>
+                */}
               </div>
 
               {/* 3-Column Grid Body */}
-              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+              <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/30">
                 {/* Column 1: Staking Overview */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Staking Overview
                   </h3>
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Coins className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Coins className="h-3.5 w-3.5" />
                         Delegated Stake
                       </span>
-                      <span className="text-sm font-semibold tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {formatMoveAmount(
                           BigInt(delegationValidator?.voting_power || "0"),
                         )}{" "}
@@ -375,20 +338,20 @@ function ValidatorContent() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Percent className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Percent className="h-3.5 w-3.5" />
                         Network Share
                       </span>
-                      <span className="text-sm font-semibold tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {networkPercentage}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Award className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Award className="h-3.5 w-3.5" />
                         Rewards Earned
                       </span>
-                      <span className="text-sm font-semibold tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {rewardsEarned.toFixed(0)} MOVE
                       </span>
                     </div>
@@ -397,14 +360,14 @@ function ValidatorContent() {
 
                 {/* Column 2: Validator Details */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Validator Details
                   </h3>
                   <div className="space-y-2.5">
                     {stakePoolData?.data?.operator_address && (
                       <div className="flex items-center justify-between gap-2">
-                        <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                          <Users className="h-3 w-3" />
+                        <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                          <Users className="h-3.5 w-3.5" />
                           Operator
                         </span>
                         <CopyableAddress
@@ -412,16 +375,16 @@ function ValidatorContent() {
                           href={`/account/${stakePoolData.data.operator_address}`}
                           showCopyButton
                           truncateLength={{ start: 6, end: 4 }}
-                          className="text-xs"
+                          className="text-sm"
                         />
                       </div>
                     )}
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Users className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Users className="h-3.5 w-3.5" />
                         Delegators
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {isLoadingDelegators ? (
                           <EnhancedSkeleton className="h-4 w-8" />
                         ) : (
@@ -430,20 +393,20 @@ function ValidatorContent() {
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Percent className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Percent className="h-3.5 w-3.5" />
                         Commission
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {commission !== undefined ? `${commission}%` : "-"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <TrendingUp className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <TrendingUp className="h-3.5 w-3.5" />
                         Compound Rewards
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {rewardsRateYearly ?? "-"}% APR
                       </span>
                     </div>
@@ -452,13 +415,13 @@ function ValidatorContent() {
 
                 {/* Column 3: Stake Pool Info */}
                 <div className="px-5 py-4 space-y-3">
-                  <h3 className="text-xs font-medium text-muted-foreground uppercase tracking-widest">
+                  <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                     Stake Pool Info
                   </h3>
                   <div className="space-y-2.5">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground shrink-0">
-                        <Database className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                        <Database className="h-3.5 w-3.5" />
                         Pool Address
                       </span>
                       <CopyableAddress
@@ -466,53 +429,53 @@ function ValidatorContent() {
                         href={`/account/${addressHex}`}
                         showCopyButton
                         truncateLength={{ start: 6, end: 4 }}
-                        className="text-xs"
+                        className="text-sm"
                       />
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <BarChart3 className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <BarChart3 className="h-3.5 w-3.5" />
                         Rewards Perf.
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {rewardsGrowth.toFixed(2)}%
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Activity className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Activity className="h-3.5 w-3.5" />
                         Last Epoch Perf.
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {delegationValidator?.last_epoch_performance || "-"}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Clock className="h-3 w-3" />
+                      <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                        <Clock className="h-3.5 w-3.5" />
                         Last Active Epoch
                       </span>
-                      <span className="text-sm font-medium tabular-nums">
+                      <span className="text-base font-medium tabular-nums">
                         {delegationValidator?.last_epoch ?? "-"}
                       </span>
                     </div>
                   </div>
                 </div>
               </div>
-            </Card>
+            </div>
 
             {/* Staking Breakdown */}
-            <Card className="bg-card border-border mb-6">
-              <div className="border-b border-border/50 py-4 px-6">
-                <h2 className="text-lg font-heading font-semibold">
+            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
+              <div className="border-b border-border/30 py-4 px-5">
+                <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   Staking Breakdown
-                </h2>
+                </span>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-2 mb-1">
                     <CheckCircle2 className="h-3.5 w-3.5 text-green-500" />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       Active
                     </span>
                   </div>
@@ -523,7 +486,7 @@ function ValidatorContent() {
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="h-3.5 w-3.5 text-yellow-500" />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       Pending Active
                     </span>
                   </div>
@@ -534,7 +497,7 @@ function ValidatorContent() {
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-2 mb-1">
                     <Clock className="h-3.5 w-3.5 text-orange-500" />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       Pending Inactive
                     </span>
                   </div>
@@ -545,7 +508,7 @@ function ValidatorContent() {
                 <div className="px-5 py-4">
                   <div className="flex items-center gap-2 mb-1">
                     <XCircle className="h-3.5 w-3.5 text-gray-500" />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-sm text-muted-foreground">
                       Inactive
                     </span>
                   </div>
@@ -555,13 +518,13 @@ function ValidatorContent() {
                 </div>
               </div>
               {stakePoolData?.data?.locked_until_secs && (
-                <div className="border-t border-border/40 px-5 py-3 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                    <Clock className="h-3 w-3" />
+                <div className="border-t border-border/30 px-5 py-3 flex items-center gap-3">
+                  <span className="flex items-center gap-1.5 text-sm text-muted-foreground shrink-0">
+                    <Clock className="h-3.5 w-3.5" />
                     Next Unlock
                     <Tooltip>
                       <TooltipTrigger>
-                        <HelpCircle className="h-3 w-3" />
+                        <HelpCircle className="h-3.5 w-3.5" />
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>
@@ -576,27 +539,27 @@ function ValidatorContent() {
                   />
                 </div>
               )}
-            </Card>
+            </div>
 
-            {/* My Deposits Section */}
+            {/* TODO: temporarily disabled staking
             <MyDepositsSection validatorAddress={addressHex} />
-
-            {/* Staking Activity History */}
             <StakeOperationActivities validatorAddress={addressHex} />
+            */}
           </>
         )}
       </PageContainer>
 
+      {/* TODO: temporarily disabled staking
       {walletModalOpen && (
         <WalletModal onClose={() => setWalletModalOpen(false)} />
       )}
-
       <StakeOperationDialog
         isOpen={dialogOpen}
         onClose={() => setDialogOpen(false)}
         operation={StakeOperation.STAKE}
         validatorAddress={addressHex}
       />
+      */}
     </>
   );
 }
@@ -607,8 +570,8 @@ export default function ValidatorDetailPage() {
       fallback={
         <div className="container mx-auto px-4 py-8 space-y-6">
           {/* Overview Card Skeleton */}
-          <Card className="bg-card border-border overflow-hidden">
-            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/40">
+          <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
+            <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
               <div className="flex items-center gap-3">
                 <EnhancedSkeleton className="w-10 h-10 rounded-full" />
                 <div>
@@ -621,7 +584,7 @@ export default function ValidatorDetailPage() {
               </div>
               <EnhancedSkeleton className="h-8 w-20 rounded-md" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/30">
               {Array.from({ length: 3 }).map((_, col) => (
                 <div key={col} className="px-5 py-4 space-y-3">
                   <EnhancedSkeleton className="h-3 w-28" />
@@ -636,13 +599,13 @@ export default function ValidatorDetailPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
           {/* Staking Breakdown Skeleton */}
-          <Card className="bg-card border-border">
-            <div className="border-b border-border/50 py-4 px-6">
-              <EnhancedSkeleton className="h-6 w-40" />
+          <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+            <div className="border-b border-border/30 py-4 px-5">
+              <EnhancedSkeleton className="h-5 w-40" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/40">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 divide-y sm:divide-y-0 sm:divide-x divide-border/30">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="px-5 py-4">
                   <div className="flex items-center gap-2 mb-1">
@@ -653,7 +616,7 @@ export default function ValidatorDetailPage() {
                 </div>
               ))}
             </div>
-          </Card>
+          </div>
         </div>
       }
     >

@@ -175,15 +175,13 @@ export function SearchBar({
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
-                      index === selectedIndex
-                        ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
-                        : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
-                    } ${
-                      !result.to
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
+                      ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
+                      : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                      } ${!result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3.5">
                       {result.image ? (
@@ -201,11 +199,10 @@ export function SearchBar({
                         </div>
                       )}
                       <span
-                        className={`text-base font-medium ${
-                          index === selectedIndex
-                            ? "text-guild-green-300"
-                            : "text-foreground"
-                        }`}
+                        className={`text-base font-medium ${index === selectedIndex
+                          ? "text-guild-green-300"
+                          : "text-foreground"
+                          }`}
                       >
                         {result.label}
                       </span>
@@ -226,7 +223,7 @@ export function SearchBar({
       <div ref={containerRef} className="relative w-full max-w-2xl">
         <form
           onSubmit={handleSubmit}
-          className="flex items-center bg-background/60 backdrop-blur-sm border border-border/60 rounded-xl overflow-hidden transition-all duration-300 ease-out focus-within:border-guild-green-500 focus-within:bg-background/80"
+          className="flex items-center bg-background/60 backdrop-blur-sm border border-border/60 rounded-full overflow-hidden transition-all duration-300 ease-out focus-within:border-guild-green-500 focus-within:bg-background/80"
         >
           <input
             ref={inputRef}
@@ -244,7 +241,7 @@ export function SearchBar({
             type="submit"
             variant="secondary"
             disabled={isLoading}
-            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-lg! bg-guild-green-500! hover:bg-guild-green-600! text-white! border-0!"
+            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-full! bg-guild-green-500! hover:bg-guild-green-600! text-white! border-0!"
           >
             {isLoading ? (
               <Loader2 size={24} className="animate-spin !w-6 !h-6 text-black" />
@@ -276,15 +273,13 @@ export function SearchBar({
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
-                      index === selectedIndex
-                        ? "bg-guild-green-500/15 border-l-4 border-l-guild-green-500/70"
-                        : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-guild-green-500/30"
-                    } ${
-                      !result.to
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
+                      ? "bg-guild-green-500/15 border-l-4 border-l-guild-green-500/70"
+                      : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-guild-green-500/30"
+                      } ${!result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center gap-3.5">
                       {result.image ? (
@@ -302,11 +297,10 @@ export function SearchBar({
                         </div>
                       )}
                       <span
-                        className={`text-base font-medium ${
-                          index === selectedIndex
-                            ? "text-guild-green-400"
-                            : "text-foreground"
-                        }`}
+                        className={`text-base font-medium ${index === selectedIndex
+                          ? "text-guild-green-400"
+                          : "text-foreground"
+                          }`}
                       >
                         {result.label}
                       </span>
@@ -337,11 +331,13 @@ export function SearchBar({
 
     return (
       <div ref={containerRef} className="relative w-full">
-        <form onSubmit={handleSubmit} className="relative flex items-center">
-          {/* Search icon on left */}
+        <form
+          onSubmit={handleSubmit}
+          className="relative flex items-center group"
+        >
           <Search
-            size={16}
-            className="absolute left-3 text-muted-foreground pointer-events-none"
+            size={15}
+            className="absolute left-3.5 text-muted-foreground/60 pointer-events-none transition-colors duration-200 group-focus-within:text-guild-green-500"
           />
 
           <input
@@ -354,62 +350,67 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="w-full h-10 pl-9 pr-20 bg-muted/50 border border-border/60 rounded-lg text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors duration-200 focus:border-primary/50 focus:bg-muted/70"
+            className="w-full h-10 pl-10 pr-24 bg-background/40 backdrop-blur-sm border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-300 focus:border-guild-green-300 focus:bg-background/60 focus:shadow-[0_0_0_3px_rgba(3,55,255,0.08)]"
           />
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="absolute right-1 h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-medium rounded-md transition-colors duration-150 disabled:opacity-50"
-          >
-            {isLoading ? (
-              <Loader2 size={14} className="animate-spin" />
-            ) : (
-              "Search"
-            )}
-          </button>
+          {isLoading ? (
+            <Loader2
+              size={14}
+              className="absolute right-3.5 animate-spin text-muted-foreground"
+            />
+          ) : (
+            <div className="absolute right-2 flex items-center gap-1.5">
+              <kbd className="hidden sm:inline-flex h-5 items-center px-1.5 rounded bg-muted/60 border border-border/40 text-[10px] font-mono text-muted-foreground/60">
+                /
+              </kbd>
+              <button
+                type="submit"
+                className="h-7 px-3 bg-guild-green-300 hover:bg-guild-green-400 text-black text-xs font-semibold rounded-full transition-all duration-200 hover:shadow-sm cursor-pointer"
+              >
+                Search
+              </button>
+            </div>
+          )}
         </form>
 
-        {/* Results dropdown - Etherscan style */}
+        {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-1 bg-card border border-border/60 rounded-lg shadow-md overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+          <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {results.length === 1 && results[0].type === "none" ? (
-              <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
-                <SearchX size={16} />
-                <span>No results found</span>
+              <div className="flex items-center gap-2.5 px-4 py-3.5 text-sm text-muted-foreground">
+                <SearchX size={16} className="text-muted-foreground/50" />
+                <p>No results found</p>
               </div>
             ) : (
-              <ul className="max-h-72 overflow-y-auto">
+              <ul className="max-h-72 overflow-y-auto divide-y divide-border/20">
                 {results.map((result, index) => (
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-border/30 last:border-b-0 ${
-                      index === selectedIndex
-                        ? "bg-primary/10"
-                        : "hover:bg-muted/50"
-                    } ${!result.to ? "cursor-default opacity-60" : ""}`}
+                    className={`px-4 py-3 cursor-pointer transition-all duration-150 ${index === selectedIndex
+                      ? "bg-guild-green-500/10 border-l-2 border-l-guild-green-500"
+                      : "hover:bg-muted/40 border-l-2 border-l-transparent"
+                      } ${!result.to ? "cursor-default opacity-50" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-3">
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center gap-2.5 min-w-0">
                         {result.image ? (
                           <img
                             src={result.image}
                             alt=""
-                            className="w-5 h-5 rounded-full shrink-0"
+                            className="w-5 h-5 rounded-full ring-1 ring-border/30 shrink-0"
                           />
                         ) : (
-                          <ArrowRight
-                            size={14}
-                            className="text-muted-foreground shrink-0"
-                          />
+                          <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
+                            <ArrowRight size={10} className="text-muted-foreground/60" />
+                          </div>
                         )}
-                        <span className="text-sm truncate">{result.label}</span>
+                        <p className="text-sm truncate">{result.label}</p>
                       </div>
                       {result.type && result.type !== "none" && (
-                        <span className="text-xs text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                        <p className="text-[10px] font-medium text-muted-foreground/70 bg-muted/50 px-2 py-0.5 rounded-md shrink-0 uppercase tracking-wide">
                           {getTypeLabel(result.type)}
-                        </span>
+                        </p>
                       )}
                     </div>
                   </li>
@@ -466,15 +467,13 @@ export function SearchBar({
                 <li
                   key={`${result.to}-${index}`}
                   onClick={() => handleResultClick(result)}
-                  className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
-                    index === selectedIndex
-                      ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
-                      : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
-                  } ${
-                    !result.to
+                  className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${index === selectedIndex
+                    ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
+                    : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                    } ${!result.to
                       ? "cursor-default text-muted-foreground"
                       : "hover:pl-5"
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     {result.image ? (
@@ -492,11 +491,10 @@ export function SearchBar({
                       </div>
                     )}
                     <span
-                      className={`text-sm font-medium ${
-                        index === selectedIndex
-                          ? "text-guild-green-300"
-                          : "text-foreground"
-                      }`}
+                      className={`text-sm font-medium ${index === selectedIndex
+                        ? "text-guild-green-300"
+                        : "text-foreground"
+                        }`}
                     >
                       {result.label}
                     </span>

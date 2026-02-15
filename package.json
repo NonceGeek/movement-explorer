@@ -53,6 +53,7 @@
     "react-dom": "19.2.3",
     "react-hook-form": "^7.65.0",
     "react-simple-maps": "^3.0.0",
+    "shiki": "^3.22.0",
     "tailwind-merge": "^3.4.0",
     "zustand": "^5.0.9"
   },
@@ -64,6 +65,7 @@
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@types/react-simple-maps": "^3.0.6",
+    "baseline-browser-mapping": "^2.9.19",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
     "eslint-config-prettier": "^10.1.8",

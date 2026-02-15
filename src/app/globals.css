@@ -36,6 +36,32 @@
     font-variant-ligatures: none;
     font-feature-settings: "liga" 0;
   }
+
+  /* Global thin scrollbar */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-neutrals-white-alpha-200) transparent;
+  }
+  *:hover {
+    scrollbar-color: var(--color-neutrals-white-alpha-400) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: var(--color-neutrals-white-alpha-200);
+    border-radius: 3px;
+  }
+  *:hover::-webkit-scrollbar-thumb {
+    background: var(--color-neutrals-white-alpha-400);
+  }
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
 }
 
 @keyframes background-move {
@@ -91,3 +117,51 @@
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
 }
+
+/* ============================================================================
+ * SHIKI CODE BLOCK — brand-colored syntax highlighting
+ *
+ * Uses CSS Variables Theme so colors follow the design system automatically.
+ * Token scopes → brand colors:
+ *   keyword      → Guild Green   (primary)
+ *   string       → Moveus Marigold
+ *   function     → Protocol Pink
+ *   constant     → Oracle Orange
+ *   comment      → muted-foreground
+ *   type/link    → Byzantine Blue
+ * ============================================================================ */
+
+.shiki-wrapper {
+  /* base */
+  --shiki-foreground: var(--color-foreground);
+  --shiki-background: color-mix(in srgb, var(--muted) 30%, transparent);
+
+  /* tokens */
+  --shiki-token-keyword: var(--color-guild-green-300);
+  --shiki-token-string: var(--color-moveus-marigold-400);
+  --shiki-token-string-expression: var(--color-moveus-marigold-400);
+  --shiki-token-function: var(--color-protocol-pink-300);
+  --shiki-token-constant: var(--color-oracle-orange-400);
+  --shiki-token-comment: var(--color-muted-foreground);
+  --shiki-token-parameter: var(--color-foreground);
+  --shiki-token-punctuation: var(--color-neutrals-white-alpha-500);
+  --shiki-token-link: var(--color-byzantine-blue-200);
+}
+
+/* line numbers via CSS counters */
+.shiki-wrapper code {
+  counter-reset: line;
+}
+
+.shiki-wrapper code .line::before {
+  counter-increment: line;
+  content: counter(line);
+  display: inline-block;
+  width: 2.5rem;
+  margin-right: 1rem;
+  text-align: right;
+  color: var(--color-muted-foreground);
+  opacity: 0.4;
+  user-select: none;
+}
+

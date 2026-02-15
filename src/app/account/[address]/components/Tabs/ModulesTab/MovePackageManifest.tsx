@@ -4,19 +4,14 @@ import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { Copy, Check, Maximize2, FileText } from "lucide-react";
+import { Copy, Check, Maximize2, Minimize2, FileText } from "lucide-react";
 import { transformCode } from "@/utils";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 
 interface MovePackageManifestProps {
   manifest: string;
@@ -39,82 +34,63 @@ export default function MovePackageManifest({
   };
 
   return (
-    <>
-      <Card>
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-base flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Package Manifest
-            </CardTitle>
-            <div className="flex items-center gap-2">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={handleCopy}
-                      className="h-8 px-2"
-                    >
-                      {copied ? (
-                        <Check className="h-4 w-4 text-green-500" />
-                      ) : (
-                        <Copy className="h-4 w-4" />
-                      )}
-                      <span className="ml-1 text-xs">
-                        {copied ? "Copied" : "Copy"}
-                      </span>
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p>{copied ? "Code copied!" : "Copy code"}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setExpanded(true)}
-                className="h-8 px-2"
-              >
-                <Maximize2 className="h-4 w-4" />
-                <span className="ml-1 text-xs">Expand</span>
-              </Button>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <pre className="bg-muted p-4 rounded-lg overflow-x-auto text-xs font-mono leading-relaxed max-h-[300px]">
-            {manifestText}
-          </pre>
-        </CardContent>
-      </Card>
-
-      <Dialog open={expanded} onOpenChange={setExpanded}>
-        <DialogContent className="max-w-4xl max-h-[80vh]">
-          <DialogHeader>
-            <DialogTitle>Package Manifest</DialogTitle>
-          </DialogHeader>
-          <div className="relative">
+    <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Package Manifest
+          </CardTitle>
+          <div className="flex items-center gap-2">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleCopy}
+                    className="h-8 px-2"
+                  >
+                    {copied ? (
+                      <Check className="h-4 w-4 text-green-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
+                    <span className="ml-1 text-xs">
+                      {copied ? "Copied" : "Copy"}
+                    </span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{copied ? "Code copied!" : "Copy code"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleCopy}
-              className="absolute top-2 right-2 z-10 h-8 px-2"
+              onClick={() => setExpanded(!expanded)}
+              className="h-8 px-2"
             >
-              {copied ? (
-                <Check className="h-4 w-4 text-green-500" />
+              {expanded ? (
+                <Minimize2 className="h-4 w-4" />
               ) : (
-                <Copy className="h-4 w-4" />
+                <Maximize2 className="h-4 w-4" />
               )}
+              <span className="ml-1 text-xs">
+                {expanded ? "Collapse" : "Expand"}
+              </span>
             </Button>
-            <pre className="bg-muted p-4 rounded-lg overflow-auto text-xs font-mono leading-relaxed max-h-[60vh]">
-              {manifestText}
-            </pre>
           </div>
-        </DialogContent>
-      </Dialog>
-    </>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <CodeBlock
+          code={manifestText}
+          language="toml"
+          maxHeight={expanded ? "none" : "300px"}
+        />
+      </CardContent>
+    </Card>
   );
 }

@@ -74,7 +74,7 @@ export function TimeDurationIntervalBar({
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div className="flex items-center gap-2 min-w-[180px]">
+        <div className="flex items-center gap-2 flex-1">
           <Progress
             value={percentage}
             className="h-4 flex-1 bg-indigo-500/30"

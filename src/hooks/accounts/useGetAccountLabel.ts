@@ -4,18 +4,19 @@ import { useQuery } from "@tanstack/react-query";
 import {
   knownAddresses,
   scamAddresses,
-  NetworkName,
-  MNS_API_BASE_URL,
+  // NetworkName,
+  // MNS_API_BASE_URL,
 } from "@/constants";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
   standardizeAddress,
-  getLocalStorageWithExpiry,
-  setLocalStorageWithExpiry,
-  fetchJsonResponse,
+  // getLocalStorageWithExpiry,
+  // setLocalStorageWithExpiry,
+  // fetchJsonResponse,
 } from "@/utils";
 
-const TTL = 60000; // 1 minute cache
+// MNS API is currently unavailable - commented out until service is ready
+// const TTL = 60000; // 1 minute cache
 
 export enum AccountLabelType {
   VERIFIED = "verified", // Known verified address (exchanges, protocols)
@@ -29,53 +30,54 @@ export interface AccountLabel {
   type: AccountLabelType;
 }
 
-function getMNSFetchUrl(
-  networkName: NetworkName,
-  address: string,
-  isPrimary: boolean,
-): string | undefined {
-  // MNS API only available on mainnet
-  if (networkName !== "mainnet") {
-    return undefined;
-  }
-
-  return isPrimary
-    ? `${MNS_API_BASE_URL}/api/${networkName}/primary-name/${address}`
-    : `${MNS_API_BASE_URL}/${networkName}/name/${address}`;
-}
-
-async function fetchMNSName(
-  address: string,
-  networkName: NetworkName,
-): Promise<string | null> {
-  const primaryNameUrl = getMNSFetchUrl(networkName, address, true);
-
-  if (!primaryNameUrl) {
-    return null;
-  }
-
-  try {
-    const { name: primaryName } = await fetchJsonResponse(primaryNameUrl);
-
-    if (primaryName) {
-      return primaryName;
-    }
-
-    // If no primary name, try to get any name
-    const nameUrl = getMNSFetchUrl(networkName, address, false);
-    if (!nameUrl) {
-      return null;
-    }
-
-    const { name } = await fetchJsonResponse(nameUrl);
-    return name ?? null;
-  } catch (error) {
-    // Silently handle MNS API errors - service may be temporarily unavailable
-    // This is a known issue: MNS API endpoint is unstable and often fails with ERR_CONNECTION_CLOSED
-    // See: movement-exploreer-document/known-issues/known-issues.md
-    return null;
-  }
-}
+// MNS API is currently unavailable - commented out until service is ready
+// function getMNSFetchUrl(
+//   networkName: NetworkName,
+//   address: string,
+//   isPrimary: boolean,
+// ): string | undefined {
+//   // MNS API only available on mainnet
+//   if (networkName !== "mainnet") {
+//     return undefined;
+//   }
+//
+//   return isPrimary
+//     ? `${MNS_API_BASE_URL}/api/${networkName}/primary-name/${address}`
+//     : `${MNS_API_BASE_URL}/${networkName}/name/${address}`;
+// }
+//
+// async function fetchMNSName(
+//   address: string,
+//   networkName: NetworkName,
+// ): Promise<string | null> {
+//   const primaryNameUrl = getMNSFetchUrl(networkName, address, true);
+//
+//   if (!primaryNameUrl) {
+//     return null;
+//   }
+//
+//   try {
+//     const { name: primaryName } = await fetchJsonResponse(primaryNameUrl);
+//
+//     if (primaryName) {
+//       return primaryName;
+//     }
+//
+//     // If no primary name, try to get any name
+//     const nameUrl = getMNSFetchUrl(networkName, address, false);
+//     if (!nameUrl) {
+//       return null;
+//     }
+//
+//     const { name } = await fetchJsonResponse(nameUrl);
+//     return name ?? null;
+//   } catch (error) {
+//     // Silently handle MNS API errors - service may be temporarily unavailable
+//     // This is a known issue: MNS API endpoint is unstable and often fails with ERR_CONNECTION_CLOSED
+//     // See: movement-exploreer-document/known-issues/known-issues.md
+//     return null;
+//   }
+// }
 
 /**
  * Hook to get account label (known name, scam warning, or ANS domain)
@@ -85,7 +87,7 @@ async function fetchMNSName(
  */
 export function useGetAccountLabel(
   address: string,
-  shouldCache: boolean = true,
+  _shouldCache: boolean = true, // MNS API unavailable - cache not used currently
 ): AccountLabel | undefined {
   const networkName = useGlobalStore((state) => state.network_name);
 
@@ -115,28 +117,29 @@ export function useGetAccountLabel(
           };
         }
 
-        // Check localStorage cache for ANS name
-        if (shouldCache) {
-          const cachedName = getLocalStorageWithExpiry(`${address}:name`);
-          if (cachedName) {
-            return {
-              name: `${cachedName}.move`,
-              type: AccountLabelType.ANS,
-            };
-          }
-        }
-
-        // Fetch ANS name from API
-        const mnsName = await fetchMNSName(address, networkName);
-        if (mnsName) {
-          if (shouldCache) {
-            setLocalStorageWithExpiry(`${address}:name`, mnsName, TTL);
-          }
-          return {
-            name: `${mnsName}.move`,
-            type: AccountLabelType.ANS,
-          };
-        }
+        // MNS API is currently unavailable - commented out until service is ready
+        // // Check localStorage cache for ANS name
+        // if (shouldCache) {
+        //   const cachedName = getLocalStorageWithExpiry(`${address}:name`);
+        //   if (cachedName) {
+        //     return {
+        //       name: `${cachedName}.move`,
+        //       type: AccountLabelType.ANS,
+        //     };
+        //   }
+        // }
+        //
+        // // Fetch ANS name from API
+        // const mnsName = await fetchMNSName(address, networkName);
+        // if (mnsName) {
+        //   if (shouldCache) {
+        //     setLocalStorageWithExpiry(`${address}:name`, mnsName, TTL);
+        //   }
+        //   return {
+        //     name: `${mnsName}.move`,
+        //     type: AccountLabelType.ANS,
+        //   };
+        // }
 
         return null;
       } catch (error) {

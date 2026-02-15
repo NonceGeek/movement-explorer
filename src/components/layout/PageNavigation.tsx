@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Search, X, Loader2, ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Search, Loader2, ArrowRight } from "lucide-react";
 import { SearchBar } from "@/components/search/SearchBar";
 import { useSearch, SearchResult } from "@/hooks/common/useSearch";
 import { cn } from "@/utils/styling";
@@ -11,6 +10,9 @@ import { useScrollDirection } from "@/hooks/useScrollDirection";
 import dynamic from "next/dynamic";
 
 const NetworkBadge = dynamic(() => import("./NetworkBadge"), { ssr: false });
+const GasPriceIndicator = dynamic(() => import("./GasPriceIndicator"), {
+  ssr: false,
+});
 
 interface PageNavigationProps {
   className?: string;
@@ -26,7 +28,6 @@ export default function PageNavigation({
   headerEndDecorator,
 }: PageNavigationProps) {
   const router = useRouter();
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const { scrollY } = useScrollDirection();
 
   // Show network badge after header (h-16 = 64px) has scrolled out of view
@@ -36,15 +37,7 @@ export default function PageNavigation({
   const [mobileSearchValue, setMobileSearchValue] = useState("");
   const [showResults, setShowResults] = useState(false);
   const { results, search, clearResults, isLoading } = useSearch();
-  const mobileInputRef = useRef<HTMLInputElement>(null);
   const mobileSearchContainerRef = useRef<HTMLDivElement>(null);
-
-  // Auto focus input when search expands
-  useEffect(() => {
-    if (isSearchExpanded && mobileInputRef.current) {
-      setTimeout(() => mobileInputRef.current?.focus(), 100);
-    }
-  }, [isSearchExpanded]);
 
   // Debounced search for mobile
   useEffect(() => {
@@ -79,15 +72,7 @@ export default function PageNavigation({
       router.push(result.to);
       setMobileSearchValue("");
       setShowResults(false);
-      setIsSearchExpanded(false);
     }
-  };
-
-  const handleCloseSearch = () => {
-    setIsSearchExpanded(false);
-    setMobileSearchValue("");
-    setShowResults(false);
-    clearResults();
   };
 
   return (
@@ -105,137 +90,98 @@ export default function PageNavigation({
           className="flex md:hidden items-center w-full gap-2"
           ref={mobileSearchContainerRef}
         >
-          {/* Close button when search expanded */}
-          {isSearchExpanded && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCloseSearch}
-              className="shrink-0 h-8 w-8 text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          )}
+          <GasPriceIndicator />
 
-          {/* Network Badge - visible when search is NOT expanded and header scrolled away */}
-          {!isSearchExpanded && (
-            <div
-              className={cn(
-                "transition-all duration-300 ease-out",
-                showNetworkBadge
-                  ? "opacity-100 translate-x-0"
-                  : "opacity-0 -translate-x-2 pointer-events-none",
-              )}
-            >
-              <NetworkBadge />
-            </div>
-          )}
-
-          {/* Spacer / Search Input area */}
+          {/* Search Input - always visible */}
           <div className="flex-1 min-w-0 relative">
-            {/* Search Input - visible when search is expanded */}
-            {isSearchExpanded && (
-              <div className="relative">
-                <Search
-                  size={14}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
-                />
-                <input
-                  ref={mobileInputRef}
-                  type="text"
-                  value={mobileSearchValue}
-                  onChange={(e) => setMobileSearchValue(e.target.value)}
-                  onFocus={() =>
-                    mobileSearchValue.trim() &&
-                    results.length > 0 &&
-                    setShowResults(true)
-                  }
-                  placeholder="Search..."
-                  className="w-full h-8 pl-8 pr-8 bg-muted/50 border border-border/60 rounded-md text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors duration-200 focus:border-primary/50 focus:bg-muted/70"
-                />
-                {isLoading && (
-                  <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground animate-spin" />
-                )}
+            <div className="relative">
+              <Search
+                size={14}
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+              />
+              <input
+                type="text"
+                value={mobileSearchValue}
+                onChange={(e) => setMobileSearchValue(e.target.value)}
+                onFocus={() =>
+                  mobileSearchValue.trim() &&
+                  results.length > 0 &&
+                  setShowResults(true)
+                }
+                placeholder="Search..."
+                className="w-full h-8 pl-8 pr-8 bg-muted/50 border border-border/60 rounded-md text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors duration-200 focus:border-primary/50 focus:bg-muted/70"
+              />
+              {isLoading && (
+                <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground animate-spin" />
+              )}
 
-                {/* Mobile search results dropdown - Etherscan style */}
-                {showResults && results.length > 0 && (
-                  <div className="absolute z-50 w-full mt-1 bg-card border border-border/60 rounded-md shadow-md overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
-                    {results.length === 1 && results[0].type === "none" ? (
-                      <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
-                        <Search size={14} />
-                        <span>No results found</span>
-                      </div>
-                    ) : (
-                      <ul className="max-h-64 overflow-y-auto">
-                        {results.map((result, index) => (
-                          <li
-                            key={`${result.to}-${index}`}
-                            onClick={() => handleMobileResultClick(result)}
-                            className={cn(
-                              "px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-border/30 last:border-b-0",
-                              "hover:bg-muted/50",
-                              !result.to && "cursor-default opacity-60",
-                            )}
-                          >
-                            <div className="flex items-center justify-between gap-2">
-                              <div className="flex items-center gap-2 min-w-0">
-                                {result.image ? (
-                                  <img
-                                    src={result.image}
-                                    alt=""
-                                    className="w-4 h-4 rounded-full shrink-0"
-                                  />
-                                ) : (
-                                  <ArrowRight
-                                    size={12}
-                                    className="text-muted-foreground shrink-0"
-                                  />
-                                )}
-                                <span className="text-sm truncate">
-                                  {result.label}
-                                </span>
-                              </div>
-                              {result.type && result.type !== "none" && (
-                                <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
-                                  {result.type === "account"
-                                    ? "Address"
-                                    : result.type === "transaction"
-                                      ? "Txn"
-                                      : result.type === "block"
-                                        ? "Block"
-                                        : result.type}
-                                </span>
+              {/* Mobile search results dropdown */}
+              {showResults && results.length > 0 && (
+                <div className="absolute z-50 w-full mt-1 bg-card border border-border/60 rounded-md shadow-md overflow-hidden animate-in fade-in slide-in-from-top-1 duration-150">
+                  {results.length === 1 && results[0].type === "none" ? (
+                    <div className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground">
+                      <Search size={14} />
+                      <span>No results found</span>
+                    </div>
+                  ) : (
+                    <ul className="max-h-64 overflow-y-auto">
+                      {results.map((result, index) => (
+                        <li
+                          key={`${result.to}-${index}`}
+                          onClick={() => handleMobileResultClick(result)}
+                          className={cn(
+                            "px-3 py-2.5 cursor-pointer transition-colors duration-100 border-b border-border/30 last:border-b-0",
+                            "hover:bg-muted/50",
+                            !result.to && "cursor-default opacity-60",
+                          )}
+                        >
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              {result.image ? (
+                                <img
+                                  src={result.image}
+                                  alt=""
+                                  className="w-4 h-4 rounded-full shrink-0"
+                                />
+                              ) : (
+                                <ArrowRight
+                                  size={12}
+                                  className="text-muted-foreground shrink-0"
+                                />
                               )}
+                              <span className="text-sm truncate">
+                                {result.label}
+                              </span>
                             </div>
-                          </li>
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                            {result.type && result.type !== "none" && (
+                              <span className="text-[10px] text-muted-foreground bg-muted px-1.5 py-0.5 rounded shrink-0">
+                                {result.type === "account"
+                                  ? "Address"
+                                  : result.type === "transaction"
+                                    ? "Txn"
+                                    : result.type === "block"
+                                      ? "Block"
+                                      : result.type}
+                              </span>
+                            )}
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* headerEndDecorator */}
-          {!isSearchExpanded && headerEndDecorator}
-
-          {/* Right: Search button */}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setIsSearchExpanded(true)}
-            className="shrink-0 h-8 w-8 border-border/60 hover:bg-muted/50 transition-colors"
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-          </Button>
-
+          {headerEndDecorator}
         </div>
 
         {/* ===== Desktop Layout ===== */}
         {!hideOnDesktop && (
           <>
             <div className="hidden md:flex items-center gap-3 shrink-0">
+              <GasPriceIndicator />
               {/* Network Badge - fade in after header scrolls away */}
               <div
                 className={cn(

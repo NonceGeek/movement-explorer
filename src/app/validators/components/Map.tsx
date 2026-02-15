@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import {
   ComposableMap,
   Geographies,
@@ -18,7 +17,7 @@ import type {
   ValidatorGeoGroup,
 } from "@/hooks/validators/useGetValidatorSetGeoData";
 
-const MARKER_COLOR = "#22D3EE";
+const MARKER_COLOR = "#58c589";
 const MIN_NODE_COUNT_SHOWN_IN_MARKER = 5;
 
 function getCircleRadius(currentGroupSize: number) {
@@ -53,7 +52,7 @@ function MapMarker({ group }: { group: ValidatorGeoGroup }) {
               {nodes.length >= MIN_NODE_COUNT_SHOWN_IN_MARKER && (
                 <text
                   textAnchor="middle"
-                  fill="#1a1a2e"
+                  fill="#0a0a0a"
                   transform="translate(0, 3.3)"
                   fontSize={9}
                 >
@@ -90,9 +89,6 @@ interface MapProps {
 }
 
 export default function ValidatorsWorldMap({ validatorGeoGroups }: MapProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
   return (
     <div className="w-full h-full">
       <ComposableMap
@@ -110,7 +106,9 @@ export default function ValidatorsWorldMap({ validatorGeoGroups }: MapProps) {
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                fill={isDark ? "#4a4a5a" : "#e0e0e0"}
+                fill="#1e2d24"
+                stroke="#2d4a35"
+                strokeWidth={0.5}
                 style={{
                   default: { outline: "0" },
                   hover: { outline: "0" },

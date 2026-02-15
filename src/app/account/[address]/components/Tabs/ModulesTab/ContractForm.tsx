@@ -84,7 +84,7 @@ export default function ContractForm({
       : null;
 
   return (
-    <Card>
+    <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader>
         <CardTitle className="font-mono text-base">
           {fn.name}
@@ -108,7 +108,7 @@ export default function ContractForm({
               <Label className="text-sm font-medium">Type Arguments</Label>
               {fn.generic_type_params.map((_, i) => (
                 <div key={`type-${i}`} className="space-y-1">
-                  <Label className="text-xs text-muted-foreground">T{i}</Label>
+                  <Label className="text-sm text-muted-foreground">T{i}</Label>
                   <Controller
                     name={`typeArgs.${i}`}
                     control={control}
@@ -131,7 +131,7 @@ export default function ContractForm({
           {/* Signer (if needed) */}
           {hasSigner && (
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">signer</Label>
+              <Label className="text-sm text-muted-foreground">signer</Label>
               <Input
                 value={
                   connected
@@ -139,7 +139,7 @@ export default function ContractForm({
                     : "Connect wallet"
                 }
                 disabled
-                className="font-mono text-xs"
+                className="font-mono text-sm"
               />
             </div>
           )}
@@ -149,7 +149,7 @@ export default function ContractForm({
             const isOption = param.startsWith("0x1::option::Option");
             return (
               <div key={`arg-${i}`} className="space-y-1">
-                <Label className="text-xs text-muted-foreground">
+                <Label className="text-sm text-muted-foreground">
                   arg{i}: {param}
                   {isOption && (
                     <span className="text-muted-foreground/60 ml-1">
@@ -178,7 +178,7 @@ export default function ContractForm({
           {/* Ledger Version (for view functions) */}
           {isView && (
             <div className="space-y-1">
-              <Label className="text-xs text-muted-foreground">
+              <Label className="text-sm text-muted-foreground">
                 Ledger Version (optional, defaults to latest)
               </Label>
               <Controller

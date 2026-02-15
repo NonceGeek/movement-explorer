@@ -1,6 +1,5 @@
 "use client";
 
-import { useTheme } from "next-themes";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import ValidatorsWorldMap from "./Map";
 import type {
@@ -11,6 +10,7 @@ import type {
 interface ValidatorsMapProps {
   validatorGeoGroups: ValidatorGeoGroup[];
   validatorGeoMetric: ValidatorGeoMetric;
+  numberOfActiveValidators: number | null;
   hasGeoData: boolean;
   isLoading: boolean;
 }
@@ -50,12 +50,14 @@ function GeoMetrics({
 export default function ValidatorsMap({
   validatorGeoGroups,
   validatorGeoMetric,
+  numberOfActiveValidators,
   hasGeoData,
   isLoading,
 }: ValidatorsMapProps) {
-  const { resolvedTheme } = useTheme();
-  const isDark = resolvedTheme === "dark";
-
+  const metric = {
+    ...validatorGeoMetric,
+    nodeCount: numberOfActiveValidators ?? validatorGeoMetric.nodeCount,
+  };
   // When no geo data, don't render the map section
   // (ValidatorStatsCards already shows node count, epoch, staking info)
   if (!hasGeoData) {
@@ -63,14 +65,11 @@ export default function ValidatorsMap({
   }
 
   return (
-    <div
-      className="rounded-lg overflow-hidden mb-6"
-      style={{ backgroundColor: isDark ? "#2a2a3a" : "#f5f5f5" }}
-    >
+    <div className="rounded-lg overflow-hidden mb-6 bg-card border border-border/50">
       {/* Desktop: metrics left, map right */}
       <div className="hidden md:flex flex-row justify-between">
         <GeoMetrics
-          validatorGeoMetric={validatorGeoMetric}
+          validatorGeoMetric={metric}
           isLoading={isLoading}
         />
         <ValidatorsWorldMap validatorGeoGroups={validatorGeoGroups} />
@@ -80,7 +79,7 @@ export default function ValidatorsMap({
       <div className="flex md:hidden flex-col">
         <ValidatorsWorldMap validatorGeoGroups={validatorGeoGroups} />
         <GeoMetrics
-          validatorGeoMetric={validatorGeoMetric}
+          validatorGeoMetric={metric}
           isLoading={isLoading}
         />
       </div>

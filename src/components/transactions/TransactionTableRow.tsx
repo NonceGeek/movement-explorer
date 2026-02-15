@@ -165,7 +165,7 @@ export function TransactionTableRowCells({
         return (
           <TableCell key={column.key} className={widthClass}>
             {sender ? (
-              <CopyableAddress address={sender} href={`/account/${sender}`} className="text-primary" />
+              <CopyableAddress address={sender} href={`/account/${sender}`} className="text-primary" showLabel />
             ) : (
               <span className="text-muted-foreground transition-colors">-</span>
             )}
@@ -180,6 +180,7 @@ export function TransactionTableRowCells({
                 address={counterparty.address}
                 href={`/account/${counterparty.address}`}
                 className="text-primary"
+                showLabel
                 icon={
                   counterparty.role === "smartContract" ? (
                     <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />

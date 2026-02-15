@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
   Tooltip,
@@ -83,8 +82,7 @@ export function StakingBar({
 
   if (isLoading) {
     return (
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex flex-wrap gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -96,8 +94,7 @@ export function StakingBar({
             </div>
             <EnhancedSkeleton className="h-10 w-20" />
           </div>
-        </CardContent>
-      </Card>
+      </div>
     );
   }
 
@@ -114,8 +111,7 @@ export function StakingBar({
 
   return (
     <>
-      <Card className="mb-6">
-        <CardContent className="pt-6">
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             {/* Stats */}
             <div className="flex flex-wrap gap-6 md:gap-8">
@@ -190,8 +186,7 @@ export function StakingBar({
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+      </div>
 
       {walletModalOpen && (
         <WalletModal onClose={() => setWalletModalOpen(false)} />

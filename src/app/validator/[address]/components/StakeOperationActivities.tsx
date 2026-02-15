@@ -1,7 +1,6 @@
 "use client";
 
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import {
@@ -55,12 +54,11 @@ export function StakeOperationActivities({
   if (!connected) return null;
 
   return (
-    <Card className="bg-card border-border">
-      <div className="border-b border-border/50 py-4 px-6">
-        <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
-          <Activity className="h-5 w-5 text-primary" />
+    <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300">
+      <div className="border-b border-border/30 py-4 px-5">
+        <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Staking Activity History
-        </h2>
+        </span>
       </div>
       <div>
         {loading ? (
@@ -134,6 +132,6 @@ export function StakeOperationActivities({
           </StyledTable>
         )}
       </div>
-    </Card>
+    </div>
   );
 }

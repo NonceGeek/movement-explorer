@@ -111,7 +111,7 @@ export function AllTransactionRow({
       {/* Sender */}
       <TableCell>
         {sender ? (
-          <CopyableAddress address={sender} href={`/account/${sender}`} />
+          <CopyableAddress address={sender} href={`/account/${sender}`} showLabel />
         ) : (
           <span className="text-muted-foreground transition-colors">-</span>
         )}
@@ -122,6 +122,7 @@ export function AllTransactionRow({
           <CopyableAddress
             address={counterparty.address}
             href={`/account/${counterparty.address}`}
+            showLabel
             icon={
               counterparty.role === "smartContract" ? (
                 <FileText className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors" />

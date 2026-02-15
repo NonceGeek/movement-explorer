@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { StakeOperationDialog } from "./StakeOperationDialog";
@@ -30,19 +29,18 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   if (!connected) {
     return (
-      <Card className="bg-card border-border mb-6">
-        <div className="border-b border-border/50 py-4 px-6">
-          <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
-            <Coins className="h-5 w-5 text-primary" />
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
+        <div className="border-b border-border/30 py-4 px-5">
+          <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             My Deposits
-          </h2>
+          </span>
         </div>
-        <div className="px-6 py-8">
+        <div className="px-5 py-8">
           <p className="text-muted-foreground text-center text-sm">
             Connect your wallet to view and manage your deposits
           </p>
         </div>
-      </Card>
+      </div>
     );
   }
 
@@ -63,14 +61,13 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   return (
     <>
-      <Card className="bg-card border-border mb-6">
+      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
         {/* Header with title and action buttons */}
-        <div className="border-b border-border/50 py-4 px-6">
+        <div className="border-b border-border/30 py-4 px-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <h2 className="text-lg font-heading font-semibold flex items-center gap-2">
-              <Coins className="h-5 w-5 text-primary" />
+            <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               My Deposits
-            </h2>
+            </span>
             {!isLoading && (
               <div className="flex gap-2">
                 <Button
@@ -113,7 +110,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
         {/* Deposit Summary - 3-column grid */}
         {isLoading ? (
-          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+          <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/30">
             {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="px-5 py-4">
                 <div className="flex items-center gap-2 mb-1">
@@ -126,7 +123,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/40">
+            <div className="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-border/30">
               <div className="px-5 py-4">
                 <div className="flex items-center gap-2 mb-1">
                   <Lock className="h-3.5 w-3.5 text-green-500" />
@@ -163,7 +160,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
             </div>
 
             {!hasDeposit && (
-              <div className="px-5 py-3 border-t border-border/40">
+              <div className="px-5 py-3 border-t border-border/30">
                 <p className="text-muted-foreground text-sm">
                   You have no deposits in this validator. Click &quot;Stake&quot;
                   to get started.
@@ -172,7 +169,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
             )}
           </>
         )}
-      </Card>
+      </div>
 
       <StakeOperationDialog
         isOpen={dialogOpen}

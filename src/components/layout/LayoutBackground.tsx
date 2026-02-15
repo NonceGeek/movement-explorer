@@ -23,15 +23,7 @@ export function LayoutBackground({ children }: LayoutBackgroundProps) {
         aria-hidden="true"
       />
 
-      {/* Layer 2: Fixed dotted pattern - only on home page */}
-      {pathname === "/" && (
-        <div
-          className="fixed inset-0 pointer-events-none bg-dotted-pattern bg-dotted-pattern-mask z-10"
-          aria-hidden="true"
-        />
-      )}
-
-      {/* Layer 3: Fixed glow effects at top */}
+      {/* Layer 2: Fixed glow effects at top */}
       <div
         className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-guild-green-500/15 blur-[100px] rounded-full pointer-events-none z-10"
         aria-hidden="true"

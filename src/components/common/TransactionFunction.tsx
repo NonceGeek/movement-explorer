@@ -86,7 +86,7 @@ export function TransactionFunction({
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            href={`/account/${address}/modules/code/${moduleName}/${functionName}`}
+            href={`/account/${address}/modules/write/${moduleName}/${functionName}`}
             className={cn(
               "inline-flex items-center py-0.5 h-[30px] rounded-md transition-all duration-200",
               "font-mono text-sm text-primary",

@@ -18,12 +18,14 @@ import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import useSubmitTransaction from "@/hooks/transactions/useSubmitTransaction";
 import { removeSignerParam } from "@/utils";
 import { WalletConnector } from "@/components/wallet/WalletConnector";
+import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import ModuleSidebar from "./ModuleSidebar";
 import ContractForm, { ContractFormData } from "./ContractForm";
 
 interface RunContractProps {
   address: string;
   isObject?: boolean;
+  packages?: PackageMetadata[];
   selectedModuleName?: string;
   selectedFnName?: string;
   onModuleSelect: (moduleName: string) => void;
@@ -32,6 +34,7 @@ interface RunContractProps {
 export default function RunContract({
   address,
   isObject = false,
+  packages,
   selectedModuleName,
   selectedFnName,
   onModuleSelect,
@@ -156,7 +159,7 @@ export default function RunContract({
 
   if (modulesLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div className="md:col-span-1 space-y-2">
           <EnhancedSkeleton className="h-8 w-32 mb-2" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -181,11 +184,12 @@ export default function RunContract({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {/* Sidebar */}
       <div className="md:col-span-1">
         <ModuleSidebar
           modules={modules}
+          packages={packages}
           selectedModuleName={selectedModuleName}
           selectedFnName={currentFnName}
           onModuleSelect={onModuleSelect}
@@ -198,7 +202,7 @@ export default function RunContract({
       {/* Main Content */}
       <div className="md:col-span-3">
         {!connected ? (
-          <Card>
+          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 py-8">
                 <p className="text-muted-foreground text-center">
@@ -239,10 +243,10 @@ export default function RunContract({
                         </p>
                         {transactionResponse.transactionHash && (
                           <div className="flex items-center gap-2">
-                            <span className="text-xs text-muted-foreground">
+                            <span className="text-sm text-muted-foreground">
                               Hash:
                             </span>
-                            <code className="text-xs font-mono">
+                            <code className="text-sm font-mono">
                               {transactionResponse.transactionHash.slice(0, 20)}
                               ...
                             </code>
@@ -262,7 +266,7 @@ export default function RunContract({
                           </div>
                         )}
                         {transactionResponse.message && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-sm text-muted-foreground">
                             {transactionResponse.message}
                           </p>
                         )}
@@ -274,7 +278,7 @@ export default function RunContract({
             }
           />
         ) : (
-          <Card>
+          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <p className="text-muted-foreground">
                 Select an entry function from the sidebar

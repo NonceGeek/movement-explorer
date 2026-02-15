@@ -121,7 +121,7 @@ export function UserTransactionRow({
       {/* Sender */}
       <TableCell>
         {sender ? (
-          <CopyableAddress address={sender} href={`/account/${sender}`} />
+          <CopyableAddress address={sender} href={`/account/${sender}`} showLabel />
         ) : (
           <span className="text-muted-foreground transition-colors">-</span>
         )}
@@ -149,6 +149,7 @@ export function UserTransactionRow({
             <CopyableAddress
               address={counterparty.address}
               href={`/account/${counterparty.address}`}
+              showLabel
             />
           </div>
         ) : (

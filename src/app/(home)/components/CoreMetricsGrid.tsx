@@ -20,7 +20,6 @@ interface MetricCardProps {
   tooltip?: string;
   isLoading?: boolean;
   trend?: React.ReactNode; // Trend indicator (e.g., TrendIndicator component)
-  isHighlight?: boolean; // Whether to highlight the card (e.g., Peak TPS new high)
   href?: string; // Click to navigate
 }
 
@@ -33,7 +32,6 @@ function MetricCard({
   tooltip,
   isLoading,
   trend,
-  isHighlight,
   href,
 }: MetricCardProps) {
   const content = (
@@ -50,8 +48,6 @@ function MetricCard({
           "hover:-translate-y-0.5",
           "cursor-pointer",
         ],
-        // Highlight style (e.g., Peak TPS new high)
-        isHighlight && "border-guild-green-500/50 bg-guild-green-500/5"
       )}
     >
       {/* Header: Label & Tooltip */}
@@ -89,7 +85,7 @@ function MetricCard({
             <div
               className={cn(
                 "text-2xl font-bold font-mono tabular-nums leading-tight",
-                isHighlight ? "text-guild-green-500" : "text-foreground"
+                "text-foreground"
               )}
             >
               {typeof value === "number" ? (
@@ -134,7 +130,6 @@ interface CoreMetricsGridProps {
   totalTransactions: number;
   totalAccounts: number;
   peakTps?: number;
-  isPeakTpsNewHigh?: boolean; // Whether Peak TPS is a new high
   avgGasPrice?: number;
   isLoading?: boolean;
 }
@@ -150,7 +145,6 @@ export function CoreMetricsGrid({
   totalTransactions,
   totalAccounts,
   peakTps,
-  isPeakTpsNewHigh,
   avgGasPrice,
   isLoading,
 }: CoreMetricsGridProps) {
@@ -195,7 +189,6 @@ export function CoreMetricsGrid({
         label="Peak TPS"
         value={peakTps ? formatCompactNumber(Math.round(peakTps), 0) : "-"}
         tooltip="The highest count of user transactions within any two-block interval in the past 30 days."
-        isHighlight={isPeakTpsNewHigh}
         href="/analytics#section-network-activity"
         isLoading={isLoading}
       />

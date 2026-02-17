@@ -22,6 +22,7 @@ export type {
 export {
   HOME_TRANSACTION_COLUMNS,
   ALL_TRANSACTION_COLUMNS,
+  ACCOUNT_TRANSACTION_COLUMNS,
   getColumnCount,
   hasColumn,
 } from "./columnPresets";

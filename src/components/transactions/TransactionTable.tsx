@@ -23,6 +23,7 @@ export function TransactionTable({
   loadingRowCount = 10,
   timestampMode,
   onToggleTimestampMode,
+  address,
 }: TransactionTableProps) {
 
   // Loading skeleton
@@ -65,6 +66,7 @@ export function TransactionTable({
             columns={columns}
             timestampMode={timestampMode}
             onToggleTimestampMode={onToggleTimestampMode}
+            address={address}
             className="animate-in slide-in-from-top-2 fade-in duration-500"
           />
         ))}

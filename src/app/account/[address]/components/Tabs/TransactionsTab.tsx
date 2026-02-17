@@ -10,7 +10,7 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
 import {
   TransactionTable,
-  ALL_TRANSACTION_COLUMNS,
+  ACCOUNT_TRANSACTION_COLUMNS,
   TransactionRowData,
 } from "@/components/transactions";
 import { EmptyState } from "..";
@@ -108,7 +108,7 @@ export default function TransactionsTab({
           <div className="overflow-x-auto">
             <TransactionTable
               data={tableData}
-              columns={ALL_TRANSACTION_COLUMNS}
+              columns={ACCOUNT_TRANSACTION_COLUMNS}
               isLoading={isLoading}
               loadingRowCount={MAX_DISPLAY}
               timestampMode={timestampMode}
@@ -117,6 +117,7 @@ export default function TransactionsTab({
                   prev === "age" ? "dateTime" : "age",
                 )
               }
+              address={address}
             />
           </div>
 

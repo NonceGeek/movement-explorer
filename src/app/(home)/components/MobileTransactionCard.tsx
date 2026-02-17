@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   XCircle,
   ArrowRight,
+  FileCheck,
   FileText,
   User,
 } from "lucide-react";
@@ -15,9 +16,11 @@ import {
   getTransactionCounterparty,
   getTransactionAmount,
   getTransactionFunction,
+  getTransactionModuleAddress,
   formatMoveAmount,
 } from "@/utils/transaction";
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
+import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
 import { Types } from "aptos";
 
 export interface MobileTransactionCardProps {
@@ -70,6 +73,8 @@ export function MobileTransactionCardContent({
 
   // Extract only the method name from full function path (like PC version)
   const methodName = getMethodName(functionName);
+  const moduleAddress = getTransactionModuleAddress(transaction);
+  const { hasSource } = useContractSourceAvailability(moduleAddress);
 
   return (
     <>
@@ -139,7 +144,10 @@ export function MobileTransactionCardContent({
       {/* Footer: Function + Amount + Gas */}
       <div className="flex items-start justify-between gap-3">
         {methodName && (
-          <code className="px-2 py-1 bg-muted/80 rounded-md text-xs font-mono text-primary break-all leading-relaxed">
+          <code className="inline-flex items-center gap-1 px-2 py-1 bg-muted/80 rounded-md text-xs font-mono text-primary break-all leading-relaxed">
+            {hasSource && (
+              <FileCheck className="h-3 w-3 text-white fill-blue-500 shrink-0" />
+            )}
             {methodName}
           </code>
         )}

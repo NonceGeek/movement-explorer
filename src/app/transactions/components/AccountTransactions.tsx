@@ -15,7 +15,7 @@ import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTra
 import { getTransaction } from "@/services";
 import {
   TransactionTable,
-  ALL_TRANSACTION_COLUMNS,
+  ACCOUNT_TRANSACTION_COLUMNS,
   TransactionRowData,
   TransactionTableToolbar,
   TransactionTableFooter,
@@ -184,13 +184,14 @@ export function AccountTransactions({
         <TableLoadingBar visible={isFetching && !isLoading} />
         <TransactionTable
           data={tableData}
-          columns={ALL_TRANSACTION_COLUMNS}
+          columns={ACCOUNT_TRANSACTION_COLUMNS}
           isLoading={isLoading}
           loadingRowCount={currentLimit}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
+          address={address}
         />
       </div>
 

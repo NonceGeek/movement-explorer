@@ -12,6 +12,7 @@ export type TransactionColumnKey =
   | "type"
   | "timestamp"
   | "sender"
+  | "direction"
   | "to"
   | "function"
   | "amount"
@@ -41,6 +42,8 @@ export interface TransactionTableProps {
   // Timestamp
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode: () => void;
+  /** Current account address — used for direction labels (IN/OUT/Contract) */
+  address?: string;
 }
 
 // Row props
@@ -51,6 +54,8 @@ export interface TransactionTableRowProps {
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode?: () => void;
   className?: string;
+  /** Current account address — used for direction labels */
+  address?: string;
 }
 
 // Pagination props (legacy)

@@ -16,6 +16,70 @@ export type TransactionCounterparty = {
   role: "receiver" | "smartContract";
 };
 
+export type TransactionDirection = "out" | "in" | "contract" | "self";
+
+/**
+ * Determine the direction/relationship of a transaction relative to the current account.
+ * - "out": current account is the sender
+ * - "in": current account is a direct receiver (appears in function arguments)
+ * - "self": current account is both sender and receiver
+ * - "contract": current account is indirectly involved (contract internal)
+ */
+export function getTransactionDirection(
+  transaction: Types.Transaction,
+  currentAddress: string,
+): TransactionDirection {
+  const sender = getTransactionSender(transaction);
+  const senderStd = sender ? tryStandardizeAddress(sender) : null;
+  const currentStd = tryStandardizeAddress(currentAddress);
+
+  if (!currentStd) return "contract";
+
+  // Current account is the sender
+  if (senderStd && senderStd === currentStd) {
+    const counterparty = getTransactionCounterparty(transaction);
+    if (counterparty) {
+      const counterpartyStd = tryStandardizeAddress(counterparty.address);
+      if (counterpartyStd === currentStd) return "self";
+    }
+    return "out";
+  }
+
+  // Check if current address is a direct receiver (appears in function arguments)
+  if (transaction.type === "user_transaction" && "payload" in transaction) {
+    const payload = transaction.payload;
+    let args: string[] = [];
+    if (
+      payload.type === "entry_function_payload" &&
+      "arguments" in payload
+    ) {
+      args =
+        (payload as Types.TransactionPayload_EntryFunctionPayload)
+          .arguments || [];
+    } else if (
+      payload.type === "multisig_payload" &&
+      "transaction_payload" in payload &&
+      payload.transaction_payload &&
+      "arguments" in payload.transaction_payload
+    ) {
+      args =
+        (
+          payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload
+        ).arguments || [];
+    }
+    for (const arg of args) {
+      if (typeof arg !== "string") continue;
+      const argStd = tryStandardizeAddress(arg);
+      if (argStd && argStd === currentStd) {
+        return "in";
+      }
+    }
+  }
+
+  // Indirect — contract internal interaction
+  return "contract";
+}
+
 // Format timestamp for display
 export function formatTimestamp(timestamp: string): string {
   const date = new Date(parseInt(timestamp) / 1000);
@@ -448,6 +512,34 @@ export function getTransactionFunction(
   }
 
   return functionFullStr;
+}
+
+/**
+ * Extract the module address from a transaction's function payload.
+ * e.g. "0xABC::module::function" → "0xABC"
+ */
+export function getTransactionModuleAddress(
+  transaction: Types.Transaction,
+): string | null {
+  if (!("payload" in transaction)) return null;
+
+  let functionFullStr: string | undefined;
+  if (transaction.payload.type === "multisig_payload") {
+    if (
+      "transaction_payload" in transaction.payload &&
+      transaction.payload.transaction_payload &&
+      "function" in transaction.payload.transaction_payload
+    ) {
+      functionFullStr = transaction.payload.transaction_payload.function;
+    }
+  } else if ("function" in transaction.payload) {
+    functionFullStr = transaction.payload.function;
+  }
+
+  if (!functionFullStr) return null;
+
+  const parts = functionFullStr.split("::");
+  return parts.length >= 3 ? parts[0] : null;
 }
 
 // Format MOVE amount (default 8 decimals)

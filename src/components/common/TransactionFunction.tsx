@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Types } from "aptos";
+import { FileCheck } from "lucide-react";
 import { cn } from "@/utils/styling";
 import {
   Tooltip,
@@ -7,6 +10,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
 
 interface TransactionFunctionProps {
   transaction: Types.Transaction;
@@ -82,13 +86,36 @@ export function TransactionFunction({
   const [address, moduleName, functionName] = parts;
 
   return (
+    <TransactionFunctionWithSource
+      address={address}
+      moduleName={moduleName}
+      functionName={functionName}
+      className={className}
+    />
+  );
+}
+
+function TransactionFunctionWithSource({
+  address,
+  moduleName,
+  functionName,
+  className,
+}: {
+  address: string;
+  moduleName: string;
+  functionName: string;
+  className?: string;
+}) {
+  const { hasSource } = useContractSourceAvailability(address);
+
+  return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
             href={`/account/${address}/modules/write/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex items-center py-0.5 h-[30px] rounded-md transition-all duration-200",
+              "inline-flex items-center gap-1 py-0.5 h-[30px] rounded-md transition-all duration-200",
               "font-mono text-sm text-primary",
               "hover:bg-primary/10",
               "max-w-[180px]",
@@ -96,6 +123,9 @@ export function TransactionFunction({
             )}
             onClick={(e) => e.stopPropagation()}
           >
+            {hasSource && (
+              <FileCheck className="h-3.5 w-3.5 text-white fill-blue-500 shrink-0" />
+            )}
             <span className="truncate">{functionName}</span>
           </Link>
         </TooltipTrigger>
@@ -128,6 +158,13 @@ export function TransactionFunction({
                 </div>
               </div>
             </div>
+
+            {hasSource && (
+              <div className="flex items-center gap-1.5 text-xs text-blue-500">
+                <FileCheck className="h-4! w-4! text-white fill-blue-500" />
+                <span>Source Code Available</span>
+              </div>
+            )}
           </div>
         </TooltipContent>
       </Tooltip>

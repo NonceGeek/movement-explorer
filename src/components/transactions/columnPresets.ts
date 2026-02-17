@@ -37,6 +37,22 @@ export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
 ];
 
 /**
+ * Account page transaction table columns (includes direction label)
+ * Used by: Account TransactionsTab
+ */
+export const ACCOUNT_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
+  { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
+  { key: "function", label: "Function", width: "w-[120px]" },
+  { key: "type", label: "Type", align: "left", width: "w-[80px]" },
+  { key: "timestamp", label: "Age", width: "w-[155px]" },
+  { key: "sender", label: "Sender", width: "w-[145px]" },
+  { key: "direction", label: "", width: "w-[60px]" },
+  { key: "to", label: "To", width: "w-[150px]" },
+  { key: "amount", label: "Amount", align: "right", width: "w-[130px]" },
+  { key: "gas", label: "Gas", align: "right", width: "w-[100px]" },
+];
+
+/**
  * Get column count for a preset
  */
 export function getColumnCount(columns: TransactionColumnConfig[]): number {

@@ -18,6 +18,7 @@ import {
   getTransactionCounterparty,
   getTransactionAmount,
   getTransactionFunction,
+  getTransactionDirection,
   formatMoveAmount,
 } from "@/utils/transaction";
 import {
@@ -48,7 +49,14 @@ export function TransactionTableRow({
       className={cn("cursor-pointer", className)}
       onClick={handleRowClick}
     >
-      <TransactionTableRowCells {...props} />
+      <TransactionTableRowCells
+        transaction={props.transaction}
+        version={props.version}
+        columns={props.columns}
+        timestampMode={props.timestampMode}
+        onToggleTimestampMode={props.onToggleTimestampMode}
+        address={props.address}
+      />
     </StyledTableRow>
   );
 }
@@ -63,6 +71,7 @@ export function TransactionTableRowCells({
   columns,
   timestampMode,
   onToggleTimestampMode,
+  address,
 }: Omit<TransactionTableRowProps, "className" | "isHighlighted">) {
   // Extract transaction data
   const status = "success" in transaction ? transaction.success : true;
@@ -171,6 +180,48 @@ export function TransactionTableRowCells({
             )}
           </TableCell>
         );
+
+      case "direction": {
+        if (!address) {
+          return <TableCell key={column.key} className={widthClass} />;
+        }
+        const direction = getTransactionDirection(transaction, address);
+        const directionConfig = {
+          out: {
+            label: "OUT",
+            className:
+              "bg-oracle-orange-500/15 text-oracle-orange-500 border-oracle-orange-500/30",
+          },
+          in: {
+            label: "IN",
+            className:
+              "bg-guild-green-500/15 text-guild-green-500 border-guild-green-500/30",
+          },
+          self: {
+            label: "SELF",
+            className:
+              "bg-yellow-500/15 text-yellow-500 border-yellow-500/30",
+          },
+          contract: {
+            label: "Internal",
+            className:
+              "bg-muted text-muted-foreground border-border",
+          },
+        } as const;
+        const config = directionConfig[direction];
+        return (
+          <TableCell key={column.key} className={widthClass}>
+            <span
+              className={cn(
+                "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
+                config.className,
+              )}
+            >
+              {config.label}
+            </span>
+          </TableCell>
+        );
+      }
 
       case "to":
         return (

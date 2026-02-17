@@ -20,6 +20,7 @@ interface MetricCardProps {
   tooltip?: string;
   isLoading?: boolean;
   trend?: React.ReactNode; // Trend indicator (e.g., TrendIndicator component)
+  isHighlight?: boolean; // Whether to highlight the card
   href?: string; // Click to navigate
 }
 
@@ -32,6 +33,7 @@ function MetricCard({
   tooltip,
   isLoading,
   trend,
+  isHighlight,
   href,
 }: MetricCardProps) {
   const content = (
@@ -48,6 +50,8 @@ function MetricCard({
           "hover:-translate-y-0.5",
           "cursor-pointer",
         ],
+        // Highlight style
+        isHighlight && "border-guild-green-500/50 bg-guild-green-500/5"
       )}
     >
       {/* Header: Label & Tooltip */}
@@ -85,7 +89,7 @@ function MetricCard({
             <div
               className={cn(
                 "text-2xl font-bold font-mono tabular-nums leading-tight",
-                "text-foreground"
+                isHighlight ? "text-guild-green-500" : "text-foreground"
               )}
             >
               {typeof value === "number" ? (

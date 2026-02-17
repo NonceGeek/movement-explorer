@@ -124,13 +124,13 @@ function TransactionFunctionWithSource({
             onClick={(e) => e.stopPropagation()}
           >
             {hasSource && (
-              <FileCheck className="h-3.5 w-3.5 text-white fill-blue-500 shrink-0" />
+              <FileCheck className="size-[16] text-white fill-blue-500 shrink-0" />
             )}
             <span className="truncate">{functionName}</span>
           </Link>
         </TooltipTrigger>
         <TooltipContent className="p-3 max-w-80 sm:max-w-100">
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-3 [&_span]:!block [&_svg]:!block">
             <div className="space-y-1">
               <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                 Address
@@ -160,9 +160,9 @@ function TransactionFunctionWithSource({
             </div>
 
             {hasSource && (
-              <div className="flex items-center gap-1.5 text-xs text-blue-500">
-                <FileCheck className="h-4! w-4! text-white fill-blue-500" />
-                <span>Source Code Available</span>
+              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-blue-500/15 border border-blue-500/20 text-white">
+                <FileCheck size={20} className="text-white fill-blue-500 shrink-0" />
+                <span className="text-xs">This contract is open source and the source code is available for viewing.</span>
               </div>
             )}
           </div>

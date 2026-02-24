@@ -9,6 +9,7 @@ import { ChevronDown, ChevronRight, Table2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { SortableHeader, type SortDirection } from "@/components/ui/sortable-header";
 import type { Types } from "aptos";
+import { formatMovementPath } from "@/utils";
 import {
   TableBody,
   TableCell,
@@ -232,13 +233,13 @@ function EventRow({ event, isExpanded, onToggle }: EventRowProps) {
             {event.moduleName}
           </Badge> */}
           <span className="font-mono text-sm text-foreground">
-            {event.moduleName}
+            {formatMovementPath(event.moduleName)}
           </span>
         </TableCell>
 
         <TableCell>
           <span className="font-mono text-sm text-foreground">
-            {event.eventName}
+            {formatMovementPath(event.eventName)}
           </span>
         </TableCell>
 

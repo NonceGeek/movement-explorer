@@ -23,6 +23,7 @@ import {
 import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { ArrowLeft } from "lucide-react";
+import { formatMovementPath } from "@/utils";
 
 const MAX_PAGES = 100;
 
@@ -146,7 +147,7 @@ export function CoinTransactions({
       <div className="mb-4">
         <div className="flex items-center gap-3">
           <Link
-            href={`/coin/${coinType}`}
+            href={`/coin/${formatMovementPath(coinType)}`}
             className="text-muted-foreground hover:text-foreground transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />

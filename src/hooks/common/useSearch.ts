@@ -13,6 +13,7 @@ import {
   is32ByteHex,
   truncateAddress,
   isValidStruct,
+  formatMovementPath,
 } from "@/utils";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import {
@@ -244,7 +245,7 @@ export function useSearch() {
             );
             foundResults.push({
               label: `Coin ${trimmed}`,
-              to: `/coin/${trimmed}`,
+              to: `/coin/${formatMovementPath(trimmed)}`,
               type: "coin_struct",
             });
           } catch {
@@ -264,12 +265,12 @@ export function useSearch() {
               );
               foundResults.push({
                 label: `${trimmed} Emojicoin`,
-                to: `/coin/${emojicoinData.coin}`,
+                to: `/coin/${formatMovementPath(emojicoinData.coin)}`,
                 type: "emojicoin",
               });
               foundResults.push({
                 label: `${trimmed} Emojicoin LP`,
-                to: `/coin/${emojicoinData.lp}`,
+                to: `/coin/${formatMovementPath(emojicoinData.lp)}`,
                 type: "emojicoin",
               });
             } catch {
@@ -308,7 +309,7 @@ export function useSearch() {
             if (coin.tokenAddress) {
               foundResults.push({
                 label,
-                to: `/coin/${coin.tokenAddress}`,
+                to: `/coin/${formatMovementPath(coin.tokenAddress)}`,
                 type: "coin",
                 image: coin.logoUrl,
               });

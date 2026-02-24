@@ -4,11 +4,12 @@ import { CoinAssetIcon, FaAssetIcon } from "./CoinIcons";
 import { CoinVerificationBadge } from "./CoinVerificationBadge";
 import { CoinRow as CoinRowType } from "./types";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { formatMovementPath } from "@/utils";
 
 export function CoinRow({ coin }: { coin: CoinRowType }) {
   const isStruct = coin.assetType.includes("::");
   const href = isStruct
-    ? `/coin/${coin.assetType}`
+    ? `/coin/${formatMovementPath(coin.assetType)}`
     : `/fa/${coin.assetType}`;
   const assetTypeLabel =
     coin.tokenStandard === "v1"

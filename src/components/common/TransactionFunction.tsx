@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
+import { formatMovementPath } from "@/utils";
 
 interface TransactionFunctionProps {
   transaction: Types.Transaction;
@@ -146,7 +147,7 @@ function TransactionFunctionWithSource({
                   Module
                 </span>
                 <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
-                  {moduleName}
+                  {formatMovementPath(moduleName)}
                 </div>
               </div>
               <div className="space-y-1">

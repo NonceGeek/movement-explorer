@@ -34,7 +34,7 @@ export function DownloadPageData({
       className={cn("h-8 gap-1.5 text-xs", className)}
     >
       <Download className="h-4 w-4" />
-      <span className="hidden sm:inline">Download Page Data</span>
+      <span className="hidden sm:inline">Export Page as CSV</span>
       <span className="sm:hidden">CSV</span>
     </Button>
   );

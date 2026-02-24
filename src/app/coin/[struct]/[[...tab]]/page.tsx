@@ -13,7 +13,7 @@ import { useGetCoinSupplyLimit } from "@/hooks/coins/useGetCoinSupplyLimit";
 import { useGetCoinPairedFa } from "@/hooks/coins/useGetCoinPairedFa";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
-import { isValidStruct, getAssetSymbol } from "@/utils";
+import { isValidStruct, getAssetSymbol, reverseMovementPath, formatMovementPath } from "@/utils";
 import { Users, ArrowLeftRight } from "lucide-react";
 import { AccountIcon } from "@/app/account/[address]/components/AccountIcon";
 import { VerifiedAssetBadge } from "@/components/common/VerifiedAssetBadge";
@@ -28,7 +28,7 @@ import TransactionsTab from "../components/TransactionsTab";
 function CoinContent() {
   const params = useParams();
   const router = useRouter();
-  const struct = decodeURIComponent(params.struct as string);
+  const struct = reverseMovementPath(decodeURIComponent(params.struct as string));
   const tabSlug = params.tab as string[] | undefined;
   const isGraphqlSupported = useGetIsGraphqlClientSupported();
   const defaultTab = isGraphqlSupported ? "holders" : "";
@@ -38,7 +38,7 @@ function CoinContent() {
   const handleTabChange = (value: string) => {
     const scrollY = window.scrollY;
     setCurrentTab(value);
-    window.history.pushState(null, "", `/coin/${struct}/${value}`);
+    window.history.pushState(null, "", `/coin/${formatMovementPath(struct)}/${value}`);
     requestAnimationFrame(() => {
       window.scrollTo(0, scrollY);
     });
@@ -47,7 +47,7 @@ function CoinContent() {
   useEffect(() => {
     // Redirect legacy /info URLs
     if (tabSlug && tabSlug[0] === "info") {
-      router.replace(`/coin/${struct}${isGraphqlSupported ? "/holders" : ""}`);
+      router.replace(`/coin/${formatMovementPath(struct)}${isGraphqlSupported ? "/holders" : ""}`);
     }
   }, [tabSlug, struct, router, isGraphqlSupported]);
 

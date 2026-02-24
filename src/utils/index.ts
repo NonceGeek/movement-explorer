@@ -365,7 +365,32 @@ export function getAssetSymbol(
   }
   return "";
 }
-// ... existing code ...
+/**
+ * Convert Aptos module path names to Movement equivalents for display purposes only.
+ * e.g. "aptos_coin" → "movement_coin", "AptosCoin" → "MovementCoin"
+ * Does NOT affect actual on-chain paths used for API calls.
+ */
+export function formatMovementPath(path: string): string {
+  return path
+    .replace(/\baptos_coin\b/g, "movement_coin")
+    .replace(/\baptos_account\b/g, "movement_account")
+    .replace(/\baptos_token\b/g, "movement_token")
+    .replace(/\bAptosCoin\b/g, "MovementCoin")
+    .replace(/\bAptosToken\b/g, "MovementToken");
+}
+
+/**
+ * Reverse of formatMovementPath: convert Movement display names back to on-chain Aptos paths.
+ * Used when parsing display URLs back to actual blockchain module paths for API calls.
+ */
+export function reverseMovementPath(path: string): string {
+  return path
+    .replace(/\bmovement_coin\b/g, "aptos_coin")
+    .replace(/\bmovement_account\b/g, "aptos_account")
+    .replace(/\bmovement_token\b/g, "aptos_token")
+    .replace(/\bMovementCoin\b/g, "AptosCoin")
+    .replace(/\bMovementToken\b/g, "AptosToken");
+}
 
 /**
  * Remove signer parameters from function params

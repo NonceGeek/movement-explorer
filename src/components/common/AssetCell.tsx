@@ -2,6 +2,7 @@ import {
   CoinAssetIcon,
   FaAssetIcon,
 } from "@/app/account/[address]/components/Tabs/coins/CoinIcons";
+import { formatMovementPath } from "@/utils";
 
 export interface AssetCellProps {
   /** Asset ID - v1: "0x1::coin::AptosCoin", v2: "0xa" */
@@ -47,7 +48,7 @@ export function AssetCell({
     ? assetId.split("::")[1] || assetId
     : "FA";
 
-  const displaySubtext = subtext ?? defaultSubtext;
+  const displaySubtext = formatMovementPath(subtext ?? defaultSubtext);
 
   return (
     <div className="flex items-center gap-2">

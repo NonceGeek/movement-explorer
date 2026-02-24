@@ -7,7 +7,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { BadgeCheck, ShieldAlert, ExternalLink } from "lucide-react";
+import { BadgeCheck, ShieldAlert } from "lucide-react";
 import { cn } from "@/utils/styling";
 
 export interface AccountLabelBadgeProps {
@@ -103,18 +103,14 @@ export function AccountLabelBadge({
 
   if (type === AccountLabelType.ANS) {
     return (
-      <a
-        href={`https://www.aptosnames.com/name/${name}`}
-        target="_blank"
-        rel="noopener noreferrer"
+      <div
         className={cn(
-          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm font-medium hover:bg-secondary/80 transition-colors",
+          "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-secondary text-secondary-foreground text-sm font-medium",
           className
         )}
       >
         <span>{name}</span>
-        <ExternalLink className="h-3 w-3" />
-      </a>
+      </div>
     );
   }
 

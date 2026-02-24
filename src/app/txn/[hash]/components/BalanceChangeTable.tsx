@@ -21,6 +21,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useState } from "react";
+import { formatMovementPath } from "@/utils";
 
 interface BalanceChangeTableProps {
   changes: BalanceChange[];
@@ -53,7 +54,7 @@ export function BalanceChangeTable({ changes }: BalanceChangeTableProps) {
         {changes.map((change, i) => {
           const isCoin = change.asset.id.includes("::");
           const assetHref = isCoin
-            ? `/coin/${change.asset.id}`
+            ? `/coin/${formatMovementPath(change.asset.id)}`
             : `/fa/${change.asset.id}`;
 
           return (

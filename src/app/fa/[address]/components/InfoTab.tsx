@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { formatMovementPath } from "@/utils";
 import { formatMoveAmount } from "@/utils/transaction";
 import { FaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { CoinDescription } from "@/hooks/coins/types";
@@ -145,7 +146,7 @@ export default function InfoTab({
             <span className="text-muted-foreground">Paired Coin</span>
             <CopyableAddress
               address={pairedCoin}
-              href={`/coin/${pairedCoin}`}
+              href={`/coin/${formatMovementPath(pairedCoin)}`}
               variant="label"
               truncateLength={{ start: 8, end: 6 }}
             />

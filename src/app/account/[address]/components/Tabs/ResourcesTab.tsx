@@ -33,6 +33,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Types } from "aptos";
+import { formatMovementPath } from "@/utils";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -67,8 +68,8 @@ function formatResourceType(type: string): string {
   const parts = type.split("::");
   if (parts.length >= 3) {
     const addr = truncateAddress(parts[0]);
-    const modName = parts[1];
-    const struct = parts.slice(2).join("::");
+    const modName = formatMovementPath(parts[1]);
+    const struct = formatMovementPath(parts.slice(2).join("::"));
     return `${addr}::${modName}::${struct}`;
   }
   return type;
@@ -364,7 +365,7 @@ function ResourceRow({ resource, isExpanded, onToggle }: ResourceRowProps) {
         {/* Module */}
         <TableCell>
           <span className="text-sm text-foreground">
-            {resource.moduleName}
+            {formatMovementPath(resource.moduleName)}
           </span>
         </TableCell>
 
@@ -448,7 +449,7 @@ function ResourceModuleLink({
                   Module
                 </span>
                 <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
-                  {parsed.moduleName}
+                  {formatMovementPath(parsed.moduleName)}
                 </div>
               </div>
               {parsed.structName && (
@@ -457,7 +458,7 @@ function ResourceModuleLink({
                     Struct
                   </span>
                   <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
-                    {parsed.structName}
+                    {formatMovementPath(parsed.structName)}
                   </div>
                 </div>
               )}

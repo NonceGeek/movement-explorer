@@ -3,6 +3,7 @@
 import { AssetOverview } from "@/components/common/AssetOverview";
 import { FaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { CoinDescription } from "@/hooks/coins/types";
+import { formatMovementPath } from "@/utils";
 
 interface FAOverviewProps {
   address: string;
@@ -40,7 +41,7 @@ export function FAOverview({
         pairedCoin
           ? {
               address: pairedCoin,
-              href: `/coin/${pairedCoin}`,
+              href: `/coin/${formatMovementPath(pairedCoin)}`,
               label: "Paired Coin",
             }
           : undefined

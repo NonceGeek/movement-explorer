@@ -28,7 +28,7 @@ const socialLinks = [
 const companyLinks = [
   { label: "Learn", href: "https://www.movementnetwork.xyz/learn" },
   { label: "Blog", href: "https://www.movementnetwork.xyz/blog" },
-  { label: "Careers", href: "https://jobs.ashbyhq.com/moveindustries" },
+  // { label: "Careers", href: "https://jobs.ashbyhq.com/moveindustries" },
 ];
 
 const resourceLinks = [

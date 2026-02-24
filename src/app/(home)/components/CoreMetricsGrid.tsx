@@ -85,10 +85,10 @@ function MetricCard({
           <EnhancedSkeleton className="h-7 w-24" />
         ) : trend ? (
           /* With trend: wrapper with baseline alignment for value + trend */
-          <div className="flex items-baseline gap-2">
+          <div className="flex items-baseline gap-2 flex-wrap">
             <div
               className={cn(
-                "text-2xl font-bold font-mono tabular-nums leading-tight",
+                "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
                 isHighlight ? "text-guild-green-500" : "text-foreground"
               )}
             >
@@ -104,7 +104,7 @@ function MetricCard({
           /* Without trend: just the value */
           <div
             className={cn(
-              "text-2xl font-bold font-mono tabular-nums leading-tight",
+              "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
               isHighlight ? "text-guild-green-500" : "text-foreground"
             )}
           >

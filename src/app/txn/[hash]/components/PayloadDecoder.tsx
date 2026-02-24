@@ -15,6 +15,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import type { Types } from "aptos";
+import { formatMovementPath } from "@/utils";
 
 interface PayloadDecoderProps {
   payload: Types.TransactionPayload | null;
@@ -233,7 +234,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                         href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
                         className="font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden block whitespace-nowrap"
                       >
-                        {moduleAddr.length <= 10 ? moduleAddr : `${moduleAddr.slice(0, 6)}...${moduleAddr.slice(-4)}`}::{moduleName}::{funcName}
+                        {moduleAddr.length <= 10 ? moduleAddr : `${moduleAddr.slice(0, 6)}...${moduleAddr.slice(-4)}`}::{formatMovementPath(moduleName)}::{funcName}
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent className="p-3 max-w-80 sm:max-w-100">
@@ -251,7 +252,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                             Module
                           </span>
                           <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
-                            {moduleName}
+                            {formatMovementPath(moduleName)}
                           </div>
                         </div>
                         <div className="space-y-1">
@@ -290,7 +291,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                           className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all"
                         >
                           <span className="text-muted-foreground/60 mr-2">{i}</span>
-                          <span className="text-purple-400">{typeArg}</span>
+                          <span className="text-purple-400">{formatMovementPath(typeArg)}</span>
                         </div>
                       ))}
                     </div>

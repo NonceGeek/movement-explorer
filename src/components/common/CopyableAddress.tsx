@@ -10,6 +10,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/styling";
+import { formatMovementPath } from "@/utils";
 import {
   useGetAccountLabel,
   AccountLabelType,
@@ -49,14 +50,17 @@ export function CopyableAddress({
   const [copied, setCopied] = useState(false);
   const accountLabel = useGetAccountLabel(address, showLabel);
 
+  // Format address for display (aptos → movement), keep original for copy
+  const formattedAddress = formatMovementPath(address);
+
   // Determine display text
   // If address is too short to truncate meaningfully, show it in full
   const minLengthForTruncation = truncateLength.start + truncateLength.end + 3; // +3 for "..."
-  const shouldTruncate = address.length > minLengthForTruncation;
+  const shouldTruncate = formattedAddress.length > minLengthForTruncation;
 
   const truncatedAddress = shouldTruncate
-    ? `${address.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? address.slice(-truncateLength.end) : ""}`
-    : address;
+    ? `${formattedAddress.slice(0, truncateLength.start)}...${truncateLength.end > 0 ? formattedAddress.slice(-truncateLength.end) : ""}`
+    : formattedAddress;
 
   // Check if this is a verified address and we should show label
   const isVerifiedWithLabel =
@@ -64,11 +68,11 @@ export function CopyableAddress({
     accountLabel?.name &&
     accountLabel.type === AccountLabelType.VERIFIED;
 
-  // Use label name for verified addresses, otherwise use address
+  // Use label name for verified addresses, otherwise use formatted address
   const displayText = isVerifiedWithLabel
     ? accountLabel.name
     : showFull
-      ? address
+      ? formattedAddress
       : truncatedAddress;
 
   // When using label variant with showLabel and NOT verified, delegate to AccountLabelBadge
@@ -127,7 +131,7 @@ export function CopyableAddress({
               side="top"
               className="max-w-80 break-all font-mono text-xs"
             >
-              <p>{address}</p>
+              <p>{formattedAddress}</p>
             </TooltipContent>
           </Tooltip>
 
@@ -226,7 +230,7 @@ export function CopyableAddress({
               side="top"
               className="max-w-80 break-all font-mono text-xs"
             >
-              <p>{address}</p>
+              <p>{formattedAddress}</p>
             </TooltipContent>
           </Tooltip>
         )}

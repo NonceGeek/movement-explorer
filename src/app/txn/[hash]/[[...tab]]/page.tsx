@@ -36,7 +36,6 @@ import {
   getTransactionFunction,
   getTransactionAmount,
   getStorageRefund,
-  getTransactionActions,
 } from "@/utils/transaction";
 import {
   BalanceChangeTab,
@@ -105,7 +104,6 @@ export default function TransactionDetailPage() {
         changes: [],
         transactionAmount: null,
         storageRefund: null,
-        transactionActions: [],
         counterparty: null,
         functionName: null,
         parsedActions: [],
@@ -154,7 +152,6 @@ export default function TransactionDetailPage() {
     const changes = "changes" in tx ? tx.changes : [];
     const transactionAmount = getTransactionAmount(tx);
     const storageRefund = getStorageRefund(tx);
-    const transactionActions = getTransactionActions(tx);
     const counterparty = getTransactionCounterparty(tx);
     const functionName = getTransactionFunction(tx);
     const parsedActions = parseTransactionActions(tx);
@@ -179,7 +176,6 @@ export default function TransactionDetailPage() {
       changes,
       transactionAmount,
       storageRefund,
-      transactionActions,
       counterparty,
       functionName,
       parsedActions,
@@ -335,7 +331,6 @@ export default function TransactionDetailPage() {
                     feePayer={txData.feePayer}
                     secondarySigners={txData.secondarySigners}
                     usdPrice={movePrice}
-                    actions={txData.transactionActions}
                   />
                 )}
               </>

@@ -96,7 +96,7 @@ export function CopyableAddress({
     e.preventDefault();
     e.stopPropagation();
     try {
-      await navigator.clipboard.writeText(address);
+      await navigator.clipboard.writeText(formattedAddress);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {

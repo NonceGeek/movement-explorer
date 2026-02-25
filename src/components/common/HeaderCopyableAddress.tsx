@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/utils/styling";
+import { formatMovementPath } from "@/utils";
 
 interface HeaderCopyableAddressProps {
   address: string;
@@ -20,10 +21,11 @@ export function HeaderCopyableAddress({
   className,
 }: HeaderCopyableAddressProps) {
   const [copied, setCopied] = useState(false);
+  const displayAddress = formatMovementPath(address);
 
   const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(address);
+      await navigator.clipboard.writeText(displayAddress);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (err) {
@@ -43,12 +45,12 @@ export function HeaderCopyableAddress({
             )}
           >
             <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground break-all text-start hidden sm:inline">
-              {address}
+              {displayAddress}
             </span>
             <span className="font-mono text-sm text-muted-foreground group-hover:text-foreground text-start sm:hidden">
-              {address.length > 12
-                ? `${address.slice(0, 6)}...${address.slice(-4)}`
-                : address}
+              {displayAddress.length > 12
+                ? `${displayAddress.slice(0, 6)}...${displayAddress.slice(-4)}`
+                : displayAddress}
             </span>
             <span className="relative h-4 w-4 shrink-0">
               <Copy

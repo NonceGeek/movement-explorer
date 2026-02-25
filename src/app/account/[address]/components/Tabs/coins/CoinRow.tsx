@@ -48,6 +48,7 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
             address={coin.assetType}
             href={href}
             showCopyButton={false}
+            showFull={isStruct}
             truncateLength={{ start: 6, end: 4 }}
             variant="default"
           />

@@ -45,7 +45,6 @@ interface TransactionDetailsTableProps {
   feePayer?: string | null;
   secondarySigners?: string[] | null;
   usdPrice?: number | null;
-  actions?: Array<{ type: string; data?: unknown }>;
 }
 
 export function TransactionDetailsTable({
@@ -70,7 +69,6 @@ export function TransactionDetailsTable({
   feePayer,
   secondarySigners,
   usdPrice,
-  actions,
 }: TransactionDetailsTableProps) {
   const hasAdvancedDetails =
     sequenceNumber ||
@@ -189,19 +187,6 @@ export function TransactionDetailsTable({
             gasFee={gasInfo.gasFee}
             usdPrice={usdPrice}
           />
-        </DetailRow>
-      )}
-
-      {/* Actions */}
-      {actions && actions.length > 0 && (
-        <DetailRow label="Actions">
-          <div className="flex flex-wrap gap-2">
-            {actions.map((action, i) => (
-              <Badge key={i} variant="outline" className="text-xs">
-                {action.type}
-              </Badge>
-            ))}
-          </div>
         </DetailRow>
       )}
 

@@ -111,6 +111,23 @@ export function TransactionTableRowCells({
         return (
           <TableCell key={column.key} className={widthClass}>
             <div className="flex items-center gap-2">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="text-foreground/80 shrink-0 cursor-default">
+                      {typeInfo.icon}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs font-medium capitalize">
+                      {typeInfo.label}
+                    </p>
+                    <p className="text-xs text-muted-foreground max-w-xs">
+                      {typeInfo.description}
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
               <CopyableAddress
                 address={transaction.hash || ""}
                 href={`/txn/${transaction.hash || version}`}
@@ -125,34 +142,6 @@ export function TransactionTableRowCells({
                 }
               />
             </div>
-          </TableCell>
-        );
-
-      case "type":
-        return (
-          <TableCell key={column.key} className={cn(hideClass, alignClass, widthClass)}>
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div
-                    className={cn(
-                      "flex items-center text-foreground/80 transition-colors cursor-default",
-                      justifyClass,
-                    )}
-                  >
-                    {typeInfo.icon}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p className="text-xs font-medium capitalize">
-                    {typeInfo.label}
-                  </p>
-                  <p className="text-xs text-muted-foreground max-w-xs">
-                    {typeInfo.description}
-                  </p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
           </TableCell>
         );
 

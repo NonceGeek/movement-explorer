@@ -28,7 +28,6 @@ export const HOME_TRANSACTION_COLUMNS: TransactionColumnConfig[] = BASE_COLUMNS;
 export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
   { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
   { key: "function", label: "Function", width: "w-[120px]" },
-  { key: "type", label: "Type", align: "left", width: "w-[80px]" },
   { key: "timestamp", label: "Age", width: "w-[155px]" },
   { key: "sender", label: "Sender", width: "w-[145px]" },
   { key: "to", label: "To", width: "w-[150px]" },
@@ -43,7 +42,6 @@ export const ALL_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
 export const ACCOUNT_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
   { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
   { key: "function", label: "Function", width: "w-[120px]" },
-  { key: "type", label: "Type", align: "left", width: "w-[80px]" },
   { key: "timestamp", label: "Age", width: "w-[155px]" },
   { key: "sender", label: "Sender", width: "w-[145px]" },
   { key: "direction", label: "", width: "w-[60px]" },

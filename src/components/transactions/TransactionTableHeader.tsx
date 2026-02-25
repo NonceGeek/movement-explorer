@@ -38,14 +38,16 @@ export function TransactionTableHeader({
     const widthClass = column.width || "";
 
     switch (column.key) {
-      case "type":
+      case "hash":
         return (
           <StyledTableHead
             key={column.key}
-            className={cn("flex items-center", widthClass)}
+            className={cn(hideClass, alignClass, widthClass)}
           >
-            Type
-            <TransactionTypeTooltip />
+            <div className="flex items-center gap-1">
+              <TransactionTypeTooltip />
+              {column.label}
+            </div>
           </StyledTableHead>
         );
 

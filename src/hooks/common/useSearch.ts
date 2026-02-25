@@ -14,6 +14,7 @@ import {
   truncateAddress,
   isValidStruct,
   formatMovementPath,
+  reverseMovementPath,
 } from "@/utils";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import {
@@ -236,16 +237,18 @@ export function useSearch() {
         }
 
         // Check if valid struct (e.g., 0x1::coin::CoinInfo<...>)
-        if (isValidStruct(trimmed)) {
-          const address = trimmed.split("::")[0];
+        // Reverse movement paths back to on-chain aptos paths for API query
+        const actualStruct = reverseMovementPath(trimmed);
+        if (isValidStruct(actualStruct)) {
+          const address = actualStruct.split("::")[0];
           try {
             await aptos_client.getAccountResource(
               address,
-              `0x1::coin::CoinInfo<${trimmed}>`
+              `0x1::coin::CoinInfo<${actualStruct}>`
             );
             foundResults.push({
-              label: `Coin ${trimmed}`,
-              to: `/coin/${formatMovementPath(trimmed)}`,
+              label: `Coin ${formatMovementPath(actualStruct)}`,
+              to: `/coin/${formatMovementPath(actualStruct)}`,
               type: "coin_struct",
             });
           } catch {
@@ -316,7 +319,7 @@ export function useSearch() {
             } else if (coin.faAddress) {
               foundResults.push({
                 label,
-                to: `/fungible_asset/${coin.faAddress}`,
+                to: `/fa/${coin.faAddress}`,
                 type: "coin",
                 image: coin.logoUrl,
               });

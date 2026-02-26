@@ -87,10 +87,204 @@ const KNOWN_FUNCTIONS: Record<
   "0x1::managed_coin::register": {
     args: [],
   },
+  "0x1::managed_coin::mint": {
+    args: [
+      { name: "dst_addr", type: "address" },
+      { name: "amount", type: "u64" },
+    ],
+  },
+  "0x1::managed_coin::burn": {
+    args: [
+      { name: "amount", type: "u64" },
+    ],
+  },
+  "0x1::coin::register": {
+    args: [],
+  },
   "0x1::code::publish_package_txn": {
     args: [
       { name: "metadata_serialized", type: "vector<u8>" },
       { name: "code", type: "vector<vector<u8>>" },
+    ],
+  },
+  "0x1::aptos_account::create_account": {
+    args: [
+      { name: "auth_key", type: "address" },
+    ],
+  },
+  "0x1::aptos_account::batch_transfer": {
+    args: [
+      { name: "recipients", type: "vector<address>" },
+      { name: "amounts", type: "vector<u64>" },
+    ],
+  },
+  "0x1::aptos_account::batch_transfer_coins": {
+    args: [
+      { name: "recipients", type: "vector<address>" },
+      { name: "amounts", type: "vector<u64>" },
+    ],
+  },
+  "0x1::resource_account::create_resource_account": {
+    args: [
+      { name: "seed", type: "vector<u8>" },
+    ],
+  },
+  "0x1::resource_account::create_resource_account_and_publish_package": {
+    args: [
+      { name: "seed", type: "vector<u8>" },
+      { name: "metadata_serialized", type: "vector<u8>" },
+      { name: "code", type: "vector<vector<u8>>" },
+    ],
+  },
+  "0x1::multisig_account::create_with_owners": {
+    args: [
+      { name: "additional_owners", type: "vector<address>" },
+      { name: "num_signatures_required", type: "u64" },
+      { name: "metadata_keys", type: "vector<String>" },
+      { name: "metadata_values", type: "vector<vector<u8>>" },
+    ],
+  },
+  "0x1::account::rotate_authentication_key": {
+    args: [
+      { name: "from_scheme", type: "u8" },
+      { name: "from_public_key_bytes", type: "vector<u8>" },
+      { name: "to_scheme", type: "u8" },
+      { name: "to_public_key_bytes", type: "vector<u8>" },
+      { name: "cap_rotate_key", type: "vector<u8>" },
+      { name: "cap_update_table", type: "vector<u8>" },
+    ],
+  },
+  "0x1::delegation_pool::reactivate_stake": {
+    args: [
+      { name: "pool_address", type: "address" },
+      { name: "amount", type: "u64" },
+    ],
+  },
+  "0x1::aptos_governance::create_proposal": {
+    args: [
+      { name: "stake_pool", type: "address" },
+      { name: "execution_hash", type: "vector<u8>" },
+      { name: "metadata_location", type: "vector<u8>" },
+      { name: "metadata_hash", type: "vector<u8>" },
+    ],
+  },
+  "0x1::aptos_governance::vote": {
+    args: [
+      { name: "stake_pool", type: "address" },
+      { name: "proposal_id", type: "u64" },
+      { name: "should_pass", type: "bool" },
+    ],
+  },
+  "0x1::aptos_account::fungible_transfer_only": {
+    args: [
+      { name: "metadata", type: "Object<Metadata>" },
+      { name: "to", type: "address" },
+      { name: "amount", type: "u64" },
+    ],
+  },
+  // 0x4:: Digital Assets (Token V2)
+  "0x4::aptos_token::mint": {
+    args: [
+      { name: "collection", type: "Object<Collection>" },
+      { name: "description", type: "String" },
+      { name: "name", type: "String" },
+      { name: "uri", type: "String" },
+      { name: "property_keys", type: "vector<String>" },
+      { name: "property_types", type: "vector<String>" },
+      { name: "property_values", type: "vector<vector<u8>>" },
+    ],
+  },
+  "0x4::aptos_token::mint_soul_bound": {
+    args: [
+      { name: "collection", type: "Object<Collection>" },
+      { name: "description", type: "String" },
+      { name: "name", type: "String" },
+      { name: "property_keys", type: "vector<String>" },
+      { name: "property_types", type: "vector<String>" },
+      { name: "property_values", type: "vector<vector<u8>>" },
+      { name: "uri", type: "String" },
+      { name: "soul_bound_to", type: "address" },
+    ],
+  },
+  "0x4::aptos_token::burn": {
+    args: [
+      { name: "token", type: "Object<Token>" },
+    ],
+  },
+  "0x4::aptos_token::freeze_transfer": {
+    args: [
+      { name: "token", type: "Object<Token>" },
+    ],
+  },
+  "0x4::aptos_token::unfreeze_transfer": {
+    args: [
+      { name: "token", type: "Object<Token>" },
+    ],
+  },
+  "0x4::aptos_token::set_description": {
+    args: [
+      { name: "token", type: "Object<Token>" },
+      { name: "description", type: "String" },
+    ],
+  },
+  "0x4::aptos_token::set_uri": {
+    args: [
+      { name: "token", type: "Object<Token>" },
+      { name: "uri", type: "String" },
+    ],
+  },
+  // 0x3:: Legacy Token V1
+  "0x3::token::create_token_script": {
+    args: [
+      { name: "collection", type: "String" },
+      { name: "name", type: "String" },
+      { name: "description", type: "String" },
+      { name: "supply", type: "u64" },
+      { name: "maximum", type: "u64" },
+      { name: "uri", type: "String" },
+      { name: "royalty_payee_address", type: "address" },
+      { name: "royalty_points_denominator", type: "u64" },
+      { name: "royalty_points_numerator", type: "u64" },
+      { name: "mutate_setting", type: "vector<bool>" },
+      { name: "property_keys", type: "vector<String>" },
+      { name: "property_values", type: "vector<vector<u8>>" },
+      { name: "property_types", type: "vector<String>" },
+    ],
+  },
+  "0x3::token::mint_script": {
+    args: [
+      { name: "token_data_address", type: "address" },
+      { name: "collection", type: "String" },
+      { name: "name", type: "String" },
+      { name: "amount", type: "u64" },
+    ],
+  },
+  "0x3::token_transfers::offer_script": {
+    args: [
+      { name: "receiver", type: "address" },
+      { name: "creator", type: "address" },
+      { name: "collection", type: "String" },
+      { name: "name", type: "String" },
+      { name: "property_version", type: "u64" },
+      { name: "amount", type: "u64" },
+    ],
+  },
+  "0x3::token_transfers::claim_script": {
+    args: [
+      { name: "sender", type: "address" },
+      { name: "creator", type: "address" },
+      { name: "collection", type: "String" },
+      { name: "name", type: "String" },
+      { name: "property_version", type: "u64" },
+    ],
+  },
+  "0x3::token_transfers::cancel_offer_script": {
+    args: [
+      { name: "receiver", type: "address" },
+      { name: "creator", type: "address" },
+      { name: "collection", type: "String" },
+      { name: "name", type: "String" },
+      { name: "property_version", type: "u64" },
     ],
   },
 };

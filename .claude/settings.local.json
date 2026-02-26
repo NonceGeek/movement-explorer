@@ -12,7 +12,9 @@
       "Bash(head:*)",
       "WebFetch(domain:docs.movementnetwork.xyz)",
       "Bash(git show:*)",
-      "Bash(npm run lint:*)"
+      "Bash(npm run lint:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm build:*)"
     ]
   }
 }

@@ -7,6 +7,7 @@ export interface AccountIconProps {
   type: AccountType;
   address?: string;
   size?: "sm" | "md" | "lg";
+  shape?: "circle" | "square";
   className?: string;
 }
 
@@ -50,12 +51,14 @@ export function AccountIcon({
   type,
   address,
   size = "md",
+  shape = "circle",
   className,
 }: AccountIconProps) {
   return (
     <div
       className={cn(
-        "rounded-full overflow-hidden shadow-md",
+        "overflow-hidden shadow-md",
+        shape === "circle" ? "rounded-full" : "rounded-lg",
         ICON_SIZES[size],
         className,
       )}

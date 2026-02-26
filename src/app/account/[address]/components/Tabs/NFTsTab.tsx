@@ -36,6 +36,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { EmptyState } from "..";
 import { TokenOwnership } from "@/hooks/accounts/useGetAccountTokens";
+import { isValidIpfsUrl, toIpfsUrl, isVideoUrl } from "@/store/utils";
 
 type ViewMode = "grid" | "table";
 
@@ -99,13 +100,67 @@ function useVisiblePages(currentPage: number, totalPages: number) {
   }, [currentPage, totalPages]);
 }
 
-// IPFS URL converter
-function convertIpfsToHttps(ipfsUrl: string) {
-  if (!ipfsUrl) return "";
-  if (ipfsUrl.startsWith("ipfs://")) {
-    return `https://gateway.pinata.cloud/ipfs/${ipfsUrl.replace("ipfs://", "")}`;
+function resolveTokenUri(uri: string): string {
+  if (!uri) return "";
+  return isValidIpfsUrl(uri) ? toIpfsUrl(uri) : uri;
+}
+
+// Media preview with image -> video -> fallback
+function NFTMediaPreview({ uri, name }: { uri?: string; name?: string }) {
+  const [mediaState, setMediaState] = useState<"image" | "video" | "fallback">("image");
+
+  if (!uri) {
+    return (
+      <div className="absolute inset-0 flex items-center justify-center bg-muted p-4">
+        <span className="text-base font-semibold text-muted-foreground text-center break-words line-clamp-4">
+          {name || "Unknown Token"}
+        </span>
+      </div>
+    );
   }
-  return ipfsUrl;
+
+  const mediaUrl = resolveTokenUri(uri);
+  const isKnownVideo = isVideoUrl(mediaUrl);
+
+  if (isKnownVideo || mediaState === "video") {
+    return (
+      <video
+        src={mediaUrl}
+        className="object-cover w-full h-full"
+        muted
+        loop
+        autoPlay
+        playsInline
+        onError={() => setMediaState("fallback")}
+      />
+    );
+  }
+
+  if (mediaState === "image") {
+    return (
+      <>
+        <img
+          src={mediaUrl}
+          alt={name}
+          className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
+          onError={() => setMediaState("video")}
+        />
+        <div className="hidden absolute inset-0 flex items-center justify-center bg-muted p-4">
+          <span className="text-base font-semibold text-muted-foreground text-center break-words line-clamp-4">
+            {name || "Unknown Token"}
+          </span>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <div className="absolute inset-0 flex items-center justify-center bg-muted p-4">
+      <span className="text-base font-semibold text-muted-foreground text-center break-words line-clamp-4">
+        {name || "Unknown Token"}
+      </span>
+    </div>
+  );
 }
 
 // Grid View Component
@@ -119,25 +174,10 @@ function NFTGrid({ tokens }: { tokens: TokenOwnership[] }) {
         >
           <Card className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden hover:border-guild-green-500/50 transition-colors cursor-pointer">
             <div className="aspect-square relative bg-muted flex items-center justify-center overflow-hidden">
-              {token.current_token_data?.token_uri ? (
-                <img
-                  src={convertIpfsToHttps(token.current_token_data.token_uri)}
-                  alt={token.current_token_data.token_name}
-                  className="object-cover w-full h-full hover:scale-105 transition-transform duration-300"
-                  onError={(e) => {
-                    e.currentTarget.style.display = "none";
-                    e.currentTarget.nextElementSibling?.classList.remove("hidden");
-                  }}
-                />
-              ) : null}
-              <div className="hidden absolute inset-0 items-center justify-center text-muted-foreground/20 group-hover:flex">
-                <ImageIcon className="h-12 w-12" />
-              </div>
-              {!token.current_token_data?.token_uri && (
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/20">
-                  <ImageIcon className="h-12 w-12" />
-                </div>
-              )}
+              <NFTMediaPreview
+                uri={token.current_token_data?.token_uri}
+                name={token.current_token_data?.token_name}
+              />
             </div>
             <CardContent className="p-4">
               <h3

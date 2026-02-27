@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/tooltip";
 import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
 import { formatMovementPath } from "@/utils";
+import { getFunctionDescription } from "@/constants/contractFunctions";
 
 interface TransactionFunctionProps {
   transaction: Types.Transaction;
@@ -91,6 +92,7 @@ export function TransactionFunction({
       address={address}
       moduleName={moduleName}
       functionName={functionName}
+      functionFullStr={functionFullStr}
       className={className}
     />
   );
@@ -100,14 +102,18 @@ function TransactionFunctionWithSource({
   address,
   moduleName,
   functionName,
+  functionFullStr,
   className,
 }: {
   address: string;
   moduleName: string;
   functionName: string;
+  functionFullStr: string;
   className?: string;
 }) {
   const { hasSource } = useContractSourceAvailability(address);
+  const description = getFunctionDescription(functionFullStr);
+  const displayName = description ?? functionName;
 
   return (
     <TooltipProvider>
@@ -117,7 +123,7 @@ function TransactionFunctionWithSource({
             href={`/account/${address}/modules/write/${moduleName}/${functionName}`}
             className={cn(
               "inline-flex items-center gap-1 py-0.5 h-[30px] rounded-md transition-all duration-200",
-              "font-mono text-sm text-primary",
+              description ? "text-sm text-primary" : "font-mono text-sm text-primary",
               "hover:bg-primary/10",
               "max-w-[180px]",
               className,
@@ -127,7 +133,7 @@ function TransactionFunctionWithSource({
             {hasSource && (
               <FileCheck className="size-[16] text-white fill-blue-500 shrink-0" />
             )}
-            <span className="truncate">{functionName}</span>
+            <span className="truncate">{displayName}</span>
           </Link>
         </TooltipTrigger>
         <TooltipContent className="p-3 max-w-80 sm:max-w-100">

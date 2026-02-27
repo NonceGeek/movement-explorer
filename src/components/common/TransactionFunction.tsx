@@ -122,9 +122,10 @@ function TransactionFunctionWithSource({
           <Link
             href={`/account/${address}/modules/write/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex items-center gap-1 py-0.5 h-[30px] rounded-md transition-all duration-200",
-              description ? "text-sm text-primary" : "font-mono text-sm text-primary",
-              "hover:bg-primary/10",
+              "inline-flex items-center gap-1 rounded-md transition-all duration-200 text-sm",
+              description
+                ? "px-2 py-1 bg-primary/15 text-primary font-medium hover:bg-primary/25"
+                : "py-0.5 h-[30px] font-mono text-primary hover:bg-primary/10",
               "max-w-[180px]",
               className,
             )}

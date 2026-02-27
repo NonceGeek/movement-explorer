@@ -21,6 +21,7 @@ import {
 } from "@/utils/transaction";
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
 import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
+import { getFunctionDescription } from "@/constants/contractFunctions";
 import { Types } from "aptos";
 
 export interface MobileTransactionCardProps {
@@ -34,6 +35,28 @@ export interface MobileTransactionCardProps {
  * MobileTransactionCardContent - Returns the card content without Link wrapper
  * Used by parent components that need to wrap with motion.div for animations
  */
+/**
+ * Extract the full function string (address::module::function) from transaction payload
+ */
+function getFullFunctionStr(transaction: Types.Transaction): string | null {
+  if (!("payload" in transaction)) return null;
+  if (transaction.payload.type === "script_payload") return null;
+  if (transaction.payload.type === "multisig_payload") {
+    if (
+      "transaction_payload" in transaction.payload &&
+      transaction.payload.transaction_payload &&
+      "function" in transaction.payload.transaction_payload
+    ) {
+      return transaction.payload.transaction_payload.function;
+    }
+    return null;
+  }
+  if ("function" in transaction.payload) {
+    return transaction.payload.function;
+  }
+  return null;
+}
+
 /**
  * Extract method name from function string
  * getTransactionFunction returns formats like:
@@ -75,6 +98,12 @@ export function MobileTransactionCardContent({
   const methodName = getMethodName(functionName);
   const moduleAddress = getTransactionModuleAddress(transaction);
   const { hasSource } = useContractSourceAvailability(moduleAddress);
+
+  // Check for human-friendly function description
+  const fullFunctionStr = getFullFunctionStr(transaction);
+  const functionDescription = fullFunctionStr
+    ? getFunctionDescription(fullFunctionStr)
+    : null;
 
   return (
     <>
@@ -143,12 +172,19 @@ export function MobileTransactionCardContent({
 
       {/* Footer: Function + Amount + Gas */}
       <div className="flex items-start justify-between gap-3">
-        {methodName && (
-          <code className="inline-flex items-center gap-1 px-2 py-1 bg-muted/80 rounded-md text-xs font-mono text-primary break-all leading-relaxed">
+        {(functionDescription || methodName) && (
+          <code
+            className={cn(
+              "inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs break-all leading-relaxed",
+              functionDescription
+                ? "bg-primary/15 text-primary font-medium"
+                : "bg-muted/80 font-mono text-primary",
+            )}
+          >
             {hasSource && (
               <FileCheck className="h-3 w-3 text-white fill-blue-500 shrink-0" />
             )}
-            {methodName}
+            {functionDescription ?? methodName}
           </code>
         )}
         <div className="flex flex-col items-end gap-1 ml-auto shrink-0">

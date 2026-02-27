@@ -52,6 +52,18 @@ export const knownAddresses: Record<string, string> = {
     "Move.Fun",
   "0x4877ee1d4970d17283fb9477094fd9b203e2c93ec6d6886e5d831c0b84c2ecf7":
     "Binance",
+  "0xfbdb3da73efcfa742d542f152d65fc6da7b55dee864cd66475213e4be18c9d54":
+    "Meridian AMM",
+  "0xf1fc2bc72b9eeaa3cc80239d5c00e49ebab0b2c8a5b55227ce47644b3275ff96":
+    "Meridian Farming",
+  "0x88def51006db6ae8f90051a1531d1b43877eeb233f4c0d99dcb24f49cd27ad5b":
+    "Meridian CLAMM",
+  "0x4c5da52eaa510af14e93e7b16dddf3c5d6a9b3f847d18dc8e7499fc71a5a0a24":
+    "Meridian CLAMM Farming",
+  "0xccd2621d2897d407e06d18e6ebe3be0e6d9b61f1e809dd49360522b9105812cf":
+    "MovePosition",
+  "0x6a01d5761d43a5b5a0ccbfc42edf2d02c0611464aae99a2ea0e0d4819f0550b5":
+    "Echelon",
 };
 
 export const scamAddresses: Record<string, string> = {

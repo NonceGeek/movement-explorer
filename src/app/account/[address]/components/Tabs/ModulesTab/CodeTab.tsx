@@ -34,15 +34,20 @@ import {
   List,
   Braces,
   Hash,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "../..";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import { useGetAccountModule } from "@/hooks/accounts/useGetAccountModule";
+import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { getBytecodeSizeInKB, transformCode } from "@/utils";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import AbiDisplay from "./AbiDisplay";
 import PackageContent from "./PackageContent";
+import ModuleSidebar from "./ModuleSidebar";
+import { useModuleUIStore } from "@/store/useModuleUIStore";
 
 const PACKAGE_OVERVIEW = "__package_overview__";
 const LINE_ANCHOR_PREFIX = "source-code";
@@ -102,6 +107,9 @@ export default function CodeTab({
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const codeBlockRef = useRef<HTMLDivElement>(null);
+  const { codeSidebarOpen, setCodeSidebarOpen } = useModuleUIStore();
+  const toggleSidebar = () => setCodeSidebarOpen(!codeSidebarOpen);
+  const [pendingScrollFn, setPendingScrollFn] = useState<string | null>(null);
 
   // Build flat module→package mapping
   const moduleToPackage = useMemo(() => {
@@ -131,6 +139,9 @@ export default function CodeTab({
   }, [selectedModuleName, moduleToPackage]);
 
   const selectedPackage = packages.find((p) => p.name === selectedPackageName);
+
+  // All modules with ABI for sidebar function navigation
+  const { data: allModules = [] } = useGetAccountModules(address);
 
   // Find the module and decode its source code
   const selectedModuleSource = useMemo(() => {
@@ -197,6 +208,29 @@ export default function CodeTab({
     }
   }, []);
 
+  useEffect(() => {
+    if (pendingScrollFn && outlineItems.length > 0) {
+      const item = outlineItems.find((i) => i.name === pendingScrollFn);
+      if (item) {
+        handleOutlineClick(item.line);
+        setPendingScrollFn(null);
+      }
+    }
+  }, [pendingScrollFn, outlineItems, handleOutlineClick]);
+
+  const handleSidebarFunctionSelect = useCallback(
+    (moduleName: string, fnName: string) => {
+      if (moduleName !== viewingModule) {
+        handleModuleChange(moduleName);
+        setPendingScrollFn(fnName);
+      } else {
+        const item = outlineItems.find((i) => i.name === fnName);
+        if (item) handleOutlineClick(item.line);
+      }
+    },
+    [viewingModule, outlineItems, handleModuleChange, handleOutlineClick],
+  );
+
   // Module stats
   const entryFnCount =
     moduleData?.abi?.exposed_functions?.filter((fn) => fn.is_entry)?.length ||
@@ -237,79 +271,121 @@ export default function CodeTab({
       <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Package selector */}
-            {packages.length > 1 ? (
-              <div className="flex items-center gap-1.5">
-                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Select
-                  value={selectedPackageName}
-                  onValueChange={handlePackageChange}
-                >
-                  <SelectTrigger
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 min-w-[120px] cursor-pointer"
-                  >
-                    <SelectValue placeholder="Select package" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {packages.map((pkg) => (
-                      <SelectItem key={pkg.name} value={pkg.name}>
-                        <span className="flex items-center gap-2">
-                          <span className="font-mono text-sm">{pkg.name}</span>
-                          <span className="text-xs text-muted-foreground">
-                            {pkg.modules.length} modules
-                          </span>
-                        </span>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-sm">
-                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-mono font-medium">
-                  {selectedPackageName}
+            {/* Sidebar toggle — desktop only */}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="hidden md:flex h-8 w-8 shrink-0"
+              onClick={toggleSidebar}
+            >
+              {codeSidebarOpen ? (
+                <PanelLeftClose className="h-4 w-4" />
+              ) : (
+                <PanelLeftOpen className="h-4 w-4" />
+              )}
+            </Button>
+
+            {/* Breadcrumb — desktop when sidebar open */}
+            {codeSidebarOpen && (
+              <div className="hidden md:flex items-center gap-1.5">
+                {packages.length > 1 && (
+                  <>
+                    <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                    <span className="font-mono text-sm font-medium">
+                      {selectedPackageName}
+                    </span>
+                    <span className="text-muted-foreground/40">/</span>
+                  </>
+                )}
+                <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="font-mono text-sm font-medium">
+                  {viewingModule || selectedPackageName}
                 </span>
               </div>
             )}
 
-            {/* Separator */}
-            {selectedPackage && (
-              <span className="text-muted-foreground/40 hidden sm:inline">
-                /
-              </span>
-            )}
-
-            {/* Module selector */}
-            {selectedPackage && (
-              <div className="flex items-center gap-1.5">
-                <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-                <Select
-                  value={viewingModule || PACKAGE_OVERVIEW}
-                  onValueChange={handleModuleChange}
-                >
-                  <SelectTrigger
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 min-w-[140px] cursor-pointer"
+            {/* Select dropdowns — mobile always; desktop when sidebar closed */}
+            <div
+              className={
+                codeSidebarOpen
+                  ? "md:hidden flex flex-wrap items-center gap-3"
+                  : "flex flex-wrap items-center gap-3"
+              }
+            >
+              {/* Package selector */}
+              {packages.length > 1 ? (
+                <div className="flex items-center gap-1.5">
+                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Select
+                    value={selectedPackageName}
+                    onValueChange={handlePackageChange}
                   >
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value={PACKAGE_OVERVIEW}>
-                      Package Overview
-                    </SelectItem>
-                    {selectedPackage.modules.map((mod) => (
-                      <SelectItem key={mod.name} value={mod.name}>
-                        <span className="font-mono text-sm">{mod.name}</span>
+                    <SelectTrigger
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 min-w-[120px] cursor-pointer"
+                    >
+                      <SelectValue placeholder="Select package" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {packages.map((pkg) => (
+                        <SelectItem key={pkg.name} value={pkg.name}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-mono text-sm">{pkg.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {pkg.modules.length} modules
+                            </span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5 text-sm">
+                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <span className="font-mono font-medium">
+                    {selectedPackageName}
+                  </span>
+                </div>
+              )}
+
+              {/* Separator */}
+              {selectedPackage && (
+                <span className="text-muted-foreground/40 hidden sm:inline">
+                  /
+                </span>
+              )}
+
+              {/* Module selector */}
+              {selectedPackage && (
+                <div className="flex items-center gap-1.5">
+                  <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                  <Select
+                    value={viewingModule || PACKAGE_OVERVIEW}
+                    onValueChange={handleModuleChange}
+                  >
+                    <SelectTrigger
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 min-w-[140px] cursor-pointer"
+                    >
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value={PACKAGE_OVERVIEW}>
+                        Package Overview
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
+                      {selectedPackage.modules.map((mod) => (
+                        <SelectItem key={mod.name} value={mod.name}>
+                          <span className="font-mono text-sm">{mod.name}</span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </div>
 
             {/* Stats */}
             {viewingModule && (
@@ -325,8 +401,25 @@ export default function CodeTab({
         </CardContent>
       </Card>
 
-      {/* Content Area */}
-      {viewingModule && selectedModuleSource ? (
+      {/* Body: sidebar + content area */}
+      <div className="flex gap-3 items-start">
+        {/* Sidebar — desktop only, when open */}
+        {codeSidebarOpen && allModules.length > 0 && (
+          <div className="hidden md:block w-56 shrink-0">
+            <ModuleSidebar
+              modules={allModules}
+              packages={packages}
+              selectedModuleName={viewingModule || ""}
+              onModuleSelect={handleModuleChange}
+              onFunctionSelect={handleSidebarFunctionSelect}
+              title="Modules"
+            />
+          </div>
+        )}
+
+        {/* Content Area */}
+        <div className="flex-1 min-w-0 space-y-3">
+          {viewingModule && selectedModuleSource ? (
         <>
           {/* Source Code */}
           <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
@@ -507,12 +600,14 @@ export default function CodeTab({
           {/* ABI */}
           {moduleData?.abi && <AbiDisplay abi={moduleData.abi} />}
         </>
-      ) : selectedPackage ? (
-        <PackageContent
-          address={address}
-          packageMetadata={selectedPackage}
-        />
-      ) : null}
+          ) : selectedPackage ? (
+            <PackageContent
+              address={address}
+              packageMetadata={selectedPackage}
+            />
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

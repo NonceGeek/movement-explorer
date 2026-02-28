@@ -7,12 +7,16 @@ export const TESTNET_GRAPHQL_URL =
 // Google Cloud Storage — Analytics
 export const ANALYTICS_DATA_URL =
   "https://storage.googleapis.com/explorer_stats/chain_stats_mainnet_v2.json";
+export const TESTNET_ANALYTICS_DATA_URL =
+  "https://storage.googleapis.com/explorer_stats/chain_stats_testnet_v2.json";
 export const BARDOCK_ANALYTICS_DATA_URL =
   "https://storage.googleapis.com/explorer_stats/chain_stats_bardock_v2.json";
 
 // Google Cloud Storage — Validator Epoch Stats
 export const MAINNET_EPOCH_STATS_URL =
-  "https://storage.googleapis.com/explorer_stats/mainnet_epoch_stats_new_testing.json";
+  "https://storage.googleapis.com/explorer_stats/mainnet_epoch_stats.json";
+export const TESTNET_EPOCH_STATS_URL =
+  "https://storage.googleapis.com/explorer_stats/testnet_epoch_stats.json";
 
 // CoinGecko
 export const COINGECKO_API_ENDPOINT =

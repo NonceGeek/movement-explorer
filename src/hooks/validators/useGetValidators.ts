@@ -2,7 +2,10 @@ import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGetValidatorSet } from "./useGetValidatorSet";
-import { MAINNET_EPOCH_STATS_URL } from "../../constants";
+import {
+  MAINNET_EPOCH_STATS_URL,
+  TESTNET_EPOCH_STATS_URL,
+} from "../../constants";
 
 export interface ValidatorData {
   owner_address: string;
@@ -33,7 +36,7 @@ function useGetValidatorsRawData() {
   const urls: Record<string, string | null> = {
     mainnet: MAINNET_EPOCH_STATS_URL,
     "bardock testnet": null,
-    testnet: null,
+    testnet: TESTNET_EPOCH_STATS_URL,
     devnet: null,
     local: null,
     mevmdevnet: null,

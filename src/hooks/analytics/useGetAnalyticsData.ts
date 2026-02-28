@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useGlobalStore } from "../../store/useGlobalStore";
 import {
   ANALYTICS_DATA_URL,
+  TESTNET_ANALYTICS_DATA_URL,
   BARDOCK_ANALYTICS_DATA_URL,
 } from "../../constants";
 
@@ -98,7 +99,7 @@ export function useGetAnalyticsData() {
 
   const urls: Record<string, string | null> = {
     "bardock testnet": BARDOCK_ANALYTICS_DATA_URL,
-    testnet: null,
+    testnet: TESTNET_ANALYTICS_DATA_URL,
     mainnet: ANALYTICS_DATA_URL,
     devnet: null,
     local: null,

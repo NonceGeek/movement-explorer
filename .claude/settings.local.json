@@ -15,7 +15,9 @@
       "Bash(npm run lint:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm build:*)",
-      "WebFetch(domain:storage.googleapis.com)"
+      "WebFetch(domain:storage.googleapis.com)",
+      "Bash(git add src/store/useModuleUIStore.ts src/app/account/[address]/components/Tabs/ModulesTab/CodeTab.tsx)",
+      "Bash(git commit:*)"
     ]
   }
 }

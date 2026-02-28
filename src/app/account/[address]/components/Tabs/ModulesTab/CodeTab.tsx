@@ -34,7 +34,6 @@ import {
   List,
   Braces,
   Hash,
-  PanelLeftClose,
   PanelLeftOpen,
 } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -212,8 +211,9 @@ export default function CodeTab({
     if (pendingScrollFn && outlineItems.length > 0) {
       const item = outlineItems.find((i) => i.name === pendingScrollFn);
       if (item) {
-        handleOutlineClick(item.line);
         setPendingScrollFn(null);
+        // Delay slightly to allow shiki to finish async HTML rendering before scrolling
+        setTimeout(() => handleOutlineClick(item.line), 350);
       }
     }
   }, [pendingScrollFn, outlineItems, handleOutlineClick]);
@@ -266,24 +266,22 @@ export default function CodeTab({
   const constants = outlineItems.filter((i) => i.type === "const");
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2">
       {/* Header Navigation Bar */}
       <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Sidebar toggle — desktop only */}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="hidden md:flex h-8 w-8 shrink-0"
-              onClick={toggleSidebar}
-            >
-              {codeSidebarOpen ? (
-                <PanelLeftClose className="h-4 w-4" />
-              ) : (
+            {/* Sidebar open button — desktop only, when sidebar is closed */}
+            {!codeSidebarOpen && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="hidden md:flex h-8 w-8 shrink-0"
+                onClick={toggleSidebar}
+              >
                 <PanelLeftOpen className="h-4 w-4" />
-              )}
-            </Button>
+              </Button>
+            )}
 
             {/* Breadcrumb — desktop when sidebar open */}
             {codeSidebarOpen && (
@@ -401,24 +399,39 @@ export default function CodeTab({
         </CardContent>
       </Card>
 
-      {/* Body: sidebar + content area */}
-      <div className="flex gap-3 items-start">
-        {/* Sidebar — desktop only, when open */}
+      {/* Body: sidebar + content area — same grid as Read/Write tabs */}
+      <div
+        className={
+          codeSidebarOpen && allModules.length > 0
+            ? "grid grid-cols-1 md:grid-cols-4 gap-4 items-start"
+            : ""
+        }
+      >
+        {/* Sidebar — desktop only, col-span-1 */}
         {codeSidebarOpen && allModules.length > 0 && (
-          <div className="hidden md:block w-56 shrink-0">
+          <div className="hidden md:block md:col-span-1">
             <ModuleSidebar
               modules={allModules}
               packages={packages}
               selectedModuleName={viewingModule || ""}
               onModuleSelect={handleModuleChange}
               onFunctionSelect={handleSidebarFunctionSelect}
-              title="Modules"
+              packageName={selectedPackageName}
+              onPackageSelect={() => handleModuleChange(PACKAGE_OVERVIEW)}
+              isPackageSelected={!viewingModule}
+              onCollapse={toggleSidebar}
             />
           </div>
         )}
 
         {/* Content Area */}
-        <div className="flex-1 min-w-0 space-y-3">
+        <div
+          className={
+            codeSidebarOpen && allModules.length > 0
+              ? "md:col-span-3 min-w-0 space-y-2"
+              : "min-w-0 space-y-2"
+          }
+        >
           {viewingModule && selectedModuleSource ? (
         <>
           {/* Source Code */}

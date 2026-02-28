@@ -12,10 +12,17 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   ChevronDown,
   ChevronRight,
   Package as PackageIcon,
   FileCode,
+  PanelLeftClose,
 } from "lucide-react";
 import { cn } from "@/utils/styling";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
@@ -29,6 +36,11 @@ interface ModuleSidebarProps {
   onFunctionSelect?: (moduleName: string, fnName: string) => void;
   filterFn?: (fn: Types.MoveFunction) => boolean;
   title?: string;
+  // Code-tab-only props
+  packageName?: string;
+  onPackageSelect?: () => void;
+  isPackageSelected?: boolean;
+  onCollapse?: () => void;
 }
 
 export default function ModuleSidebar({
@@ -40,71 +52,57 @@ export default function ModuleSidebar({
   onFunctionSelect,
   filterFn,
   title = "Select function",
+  packageName,
+  onPackageSelect,
+  isPackageSelected,
+  onCollapse,
 }: ModuleSidebarProps) {
-  // Group functions by module (from ABI data)
+  const isCompact = !!packageName;
+
   const moduleAndFnsGroup = useMemo(() => {
     return modules.reduce(
       (acc, module) => {
-        if (!module.abi) {
-          return acc;
-        }
-
+        if (!module.abi) return acc;
         const fns = filterFn
           ? module.abi.exposed_functions.filter(filterFn)
           : module.abi.exposed_functions;
-
-        if (fns.length === 0) {
-          return acc;
-        }
-
-        const moduleName = module.abi.name;
-        return {
-          ...acc,
-          [moduleName]: fns,
-        } as Record<string, Types.MoveFunction[]>;
+        if (fns.length === 0) return acc;
+        return { ...acc, [module.abi.name]: fns } as Record<
+          string,
+          Types.MoveFunction[]
+        >;
       },
       {} as Record<string, Types.MoveFunction[]>,
     );
   }, [modules, filterFn]);
 
-  // Build package → modules tree structure
   const packageTree = useMemo(() => {
     if (!packages || packages.length === 0) return null;
-
     return packages
-      .map((pkg) => {
-        // Only include modules that have matching functions
-        const modulesWithFns = pkg.modules
-          .map((mod) => mod.name)
-          .filter((name) => moduleAndFnsGroup[name]);
-        return { name: pkg.name, moduleNames: modulesWithFns };
-      })
+      .map((pkg) => ({
+        name: pkg.name,
+        moduleNames: pkg.modules
+          .map((m) => m.name)
+          .filter((n) => moduleAndFnsGroup[n]),
+      }))
       .filter((pkg) => pkg.moduleNames.length > 0);
   }, [packages, moduleAndFnsGroup]);
 
   const hasMultiplePackages = packageTree && packageTree.length > 1;
-
   const sortedModuleNames = Object.keys(moduleAndFnsGroup).sort();
 
-  // Find which package a module belongs to
   const moduleToPackage = useMemo(() => {
     if (!packages) return {};
     const map: Record<string, string> = {};
-    for (const pkg of packages) {
-      for (const mod of pkg.modules) {
-        map[mod.name] = pkg.name;
-      }
-    }
+    for (const pkg of packages)
+      for (const mod of pkg.modules) map[mod.name] = pkg.name;
     return map;
   }, [packages]);
 
-  // Track expanded state for packages and modules
   const [expandedPackages, setExpandedPackages] = useState<Set<string>>(() => {
     if (!hasMultiplePackages) return new Set();
-    // Auto-expand the package containing the selected module
-    if (selectedModuleName && moduleToPackage[selectedModuleName]) {
+    if (selectedModuleName && moduleToPackage[selectedModuleName])
       return new Set([moduleToPackage[selectedModuleName]]);
-    }
     return packageTree ? new Set([packageTree[0].name]) : new Set();
   });
 
@@ -117,31 +115,20 @@ export default function ModuleSidebar({
       ),
   );
 
-  const togglePackage = (pkgName: string) => {
+  const togglePackage = (pkgName: string) =>
     setExpandedPackages((prev) => {
       const next = new Set(prev);
-      if (next.has(pkgName)) {
-        next.delete(pkgName);
-      } else {
-        next.add(pkgName);
-      }
+      next.has(pkgName) ? next.delete(pkgName) : next.add(pkgName);
       return next;
     });
-  };
 
-  const toggleModule = (moduleName: string) => {
+  const toggleModule = (moduleName: string) =>
     setExpandedModules((prev) => {
       const next = new Set(prev);
-      if (next.has(moduleName)) {
-        next.delete(moduleName);
-      } else {
-        next.add(moduleName);
-      }
+      next.has(moduleName) ? next.delete(moduleName) : next.add(moduleName);
       return next;
     });
-  };
 
-  // Mobile: flat options for Select
   const mobileOptions = sortedModuleNames.flatMap((moduleName) =>
     moduleAndFnsGroup[moduleName].map((fn) => ({
       value: `${moduleName}::${fn.name}`,
@@ -163,60 +150,72 @@ export default function ModuleSidebar({
     );
   }
 
-  const renderModuleNode = (moduleName: string, indent?: boolean) => {
+  const chevronIcon = (expanded: boolean) =>
+    expanded ? (
+      <ChevronDown className="h-3.5 w-3.5 shrink-0" />
+    ) : (
+      <ChevronRight className="h-3.5 w-3.5 shrink-0" />
+    );
+
+  // Unified module node — same visual style for both Code tab and Read/Write
+  const renderModuleNode = (moduleName: string) => {
     const fns = moduleAndFnsGroup[moduleName];
     const isExpanded = expandedModules.has(moduleName);
 
     return (
       <div key={moduleName}>
-        {/* Module header */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className={cn(
-            "w-full justify-start text-left text-sm h-auto py-2 px-2 gap-1",
-          )}
-          onClick={() => {
-            toggleModule(moduleName);
-            onModuleSelect(moduleName);
-          }}
-        >
-          {isExpanded ? (
-            <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-          ) : (
-            <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-          )}
-          <FileCode className="h-3.5 w-3.5 shrink-0" />
-          <span className="truncate font-medium">{moduleName}</span>
-          <span className="ml-auto text-muted-foreground text-xs">
-            {fns.length}
-          </span>
-        </Button>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full justify-start text-left text-sm h-auto py-2 px-2 gap-1"
+              onClick={() => {
+                toggleModule(moduleName);
+                onModuleSelect(moduleName);
+              }}
+            >
+              {chevronIcon(isExpanded)}
+              <FileCode className="h-3.5 w-3.5 shrink-0" />
+              <span className="truncate font-medium">{moduleName}</span>
+              <span className="ml-auto text-muted-foreground text-xs">
+                {fns.length}
+              </span>
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent side="right" className="font-mono text-xs">
+            {moduleName}
+          </TooltipContent>
+        </Tooltip>
 
-        {/* Function list (nested) */}
         {isExpanded && (
           <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
             {fns.map((fn) => {
               const isFnSelected =
-                moduleName === selectedModuleName &&
-                fn.name === selectedFnName;
+                moduleName === selectedModuleName && fn.name === selectedFnName;
               return (
-                <Button
-                  key={fn.name}
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    "w-full justify-start text-left font-mono text-sm h-auto py-1.5 px-2",
-                    isFnSelected &&
-                      "bg-primary/10 text-primary border border-primary/20",
-                  )}
-                  onClick={() => {
-                    onModuleSelect(moduleName);
-                    onFunctionSelect?.(moduleName, fn.name);
-                  }}
-                >
-                  <span className="truncate">{fn.name}</span>
-                </Button>
+                <Tooltip key={fn.name}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className={cn(
+                        "w-full justify-start text-left font-mono text-sm h-auto py-1.5 px-2",
+                        isFnSelected &&
+                          "bg-primary/10 text-primary border border-primary/20",
+                      )}
+                      onClick={() => {
+                        onModuleSelect(moduleName);
+                        onFunctionSelect?.(moduleName, fn.name);
+                      }}
+                    >
+                      <span className="truncate">{fn.name}</span>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" className="font-mono text-xs">
+                    {fn.name}
+                  </TooltipContent>
+                </Tooltip>
               );
             })}
           </div>
@@ -228,8 +227,34 @@ export default function ModuleSidebar({
   return (
     <Card className="h-fit max-h-[calc(100vh-200px)] overflow-y-auto bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader className="pb-3">
-        <CardTitle className="text-base">{title}</CardTitle>
+        {isCompact ? (
+          // Code tab: Package overview button + collapse button as header
+          <div className="flex items-center justify-between gap-2">
+            <button
+              onClick={onPackageSelect}
+              className={cn(
+                "flex items-center gap-1.5 min-w-0 text-base font-semibold truncate transition-colors hover:text-primary",
+                isPackageSelected ? "text-primary" : "",
+              )}
+            >
+              <PackageIcon className="h-4 w-4 shrink-0" />
+              <span className="truncate">{packageName}</span>
+            </button>
+            {onCollapse && (
+              <button
+                onClick={onCollapse}
+                className="shrink-0 text-muted-foreground hover:text-foreground rounded p-0.5"
+              >
+                <PanelLeftClose className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+        ) : (
+          // Read/Write: plain title
+          <CardTitle className="text-base">{title}</CardTitle>
+        )}
       </CardHeader>
+
       <CardContent className="space-y-1">
         {/* Mobile: Select dropdown */}
         <div className="md:hidden">
@@ -261,48 +286,54 @@ export default function ModuleSidebar({
         </div>
 
         {/* Desktop: Tree view */}
-        <div className="hidden md:block space-y-1">
-          {hasMultiplePackages
-            ? // 3-level tree: Package → Module → Function
-              packageTree.map((pkg) => {
-                const isPkgExpanded = expandedPackages.has(pkg.name);
-                return (
-                  <div key={pkg.name}>
-                    {/* Package header */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start text-left text-sm h-auto py-2 px-2 gap-1"
-                      onClick={() => togglePackage(pkg.name)}
-                    >
-                      {isPkgExpanded ? (
-                        <ChevronDown className="h-3.5 w-3.5 shrink-0" />
-                      ) : (
-                        <ChevronRight className="h-3.5 w-3.5 shrink-0" />
-                      )}
-                      <PackageIcon className="h-3.5 w-3.5 shrink-0" />
-                      <span className="truncate font-medium">{pkg.name}</span>
-                      <span className="ml-auto text-muted-foreground text-xs">
-                        {pkg.moduleNames.length}
-                      </span>
-                    </Button>
+        <TooltipProvider delayDuration={400}>
+          <div className="hidden md:block space-y-1">
+            {hasMultiplePackages
+              ? packageTree.map((pkg) => {
+                  const isPkgExpanded = expandedPackages.has(pkg.name);
+                  return (
+                    <div key={pkg.name}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="w-full justify-start text-left text-sm h-auto py-2 px-2 gap-1"
+                            onClick={() => togglePackage(pkg.name)}
+                          >
+                            {chevronIcon(isPkgExpanded)}
+                            <PackageIcon className="h-3.5 w-3.5 shrink-0" />
+                            <span className="truncate font-medium">
+                              {pkg.name}
+                            </span>
+                            <span className="ml-auto text-muted-foreground text-xs">
+                              {pkg.moduleNames.length}
+                            </span>
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent
+                          side="right"
+                          className="font-mono text-xs"
+                        >
+                          {pkg.name}
+                        </TooltipContent>
+                      </Tooltip>
 
-                    {/* Modules under this package */}
-                    {isPkgExpanded && (
-                      <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
-                        {pkg.moduleNames.map((modName) =>
-                          renderModuleNode(modName, true),
-                        )}
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            : // 2-level tree: Module → Function (single or no package)
-              sortedModuleNames.map((moduleName) =>
-                renderModuleNode(moduleName),
-              )}
-        </div>
+                      {isPkgExpanded && (
+                        <div className="ml-4 border-l border-border pl-2 space-y-0.5 mt-0.5">
+                          {pkg.moduleNames.map((modName) =>
+                            renderModuleNode(modName),
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              : sortedModuleNames.map((moduleName) =>
+                  renderModuleNode(moduleName),
+                )}
+          </div>
+        </TooltipProvider>
       </CardContent>
     </Card>
   );

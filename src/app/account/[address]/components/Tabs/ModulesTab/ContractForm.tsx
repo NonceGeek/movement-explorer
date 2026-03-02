@@ -231,7 +231,7 @@ export default function ContractForm({
                       rules={{
                         required: "Type argument is required",
                         validate: (v: string) =>
-                          v.trim() === "" || isValidStruct(v.trim()) || "Invalid type (expected addr::module::name)",
+                          isValidStruct(v.trim()) || "Invalid type (expected addr::module::name)",
                       }}
                       render={({ field, fieldState }) => (
                         <>

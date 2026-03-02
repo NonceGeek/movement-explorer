@@ -20,8 +20,11 @@ function validateUint(
 ): string | true {
   const trimmed = value.trim();
   if (trimmed === "") return true;
+  if (!/^\d+$/.test(trimmed)) {
+    return `Must be an integer (0 to ${max.toLocaleString()})`;
+  }
   const n = Number(trimmed);
-  if (!Number.isInteger(n) || n < 0 || n > max) {
+  if (n < 0 || n > max) {
     return `Must be an integer (0 to ${max.toLocaleString()})`;
   }
   return true;
@@ -34,6 +37,9 @@ function validateBigUint(
 ): string | true {
   const trimmed = value.trim();
   if (trimmed === "") return true;
+  if (!/^\d+$/.test(trimmed)) {
+    return `Must be a valid ${label} integer`;
+  }
   try {
     const n = BigInt(trimmed);
     if (n < BigInt(0) || n > max) {
@@ -141,14 +147,13 @@ export function getMoveTypeValidator(
 }
 
 /**
- * Validates ledger version input: must be a positive integer or empty.
+ * Validates ledger version input: must be a non-negative integer or empty.
  */
 export function validateLedgerVersion(value: string): string | true {
   const trimmed = (value ?? "").trim();
   if (trimmed === "") return true;
-  const n = Number(trimmed);
-  if (!Number.isInteger(n) || n < 0) {
-    return "Must be a positive integer";
+  if (!/^\d+$/.test(trimmed)) {
+    return "Must be a non-negative integer";
   }
   return true;
 }

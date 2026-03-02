@@ -153,6 +153,24 @@
   counter-reset: line;
 }
 
+.shiki-wrapper code .line {
+  display: inline-block;
+  width: 100%;
+  border-radius: 2px;
+}
+
+.shiki-wrapper code .line[data-highlighted] {
+  background-color: rgba(59, 130, 246, 0.35);
+  box-shadow: inset 3px 0 0 0 rgba(59, 130, 246, 0.8);
+  transition: none;
+}
+
+.shiki-wrapper code .line[data-highlighted="fading"] {
+  background-color: transparent;
+  box-shadow: none;
+  transition: background-color 1s ease-out, box-shadow 1s ease-out;
+}
+
 .shiki-wrapper code .line::before {
   counter-increment: line;
   content: counter(line);

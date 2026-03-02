@@ -200,21 +200,26 @@ export default function CodeTab({
   }, [selectedModuleSource?.decodedSource]);
 
   const handleOutlineClick = useCallback((line: number) => {
-    const el = document.getElementById(`${LINE_ANCHOR_PREFIX}-line-${line}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      // Highlight effect
-      el.style.transition = "none";
-      el.style.backgroundColor = "rgba(59,130,246,0.35)";
-      el.style.boxShadow = "inset 3px 0 0 0 rgba(59,130,246,0.8)";
-      el.style.borderRadius = "2px";
-      setTimeout(() => {
-        el.style.transition =
-          "background-color 1s ease-out, box-shadow 1s ease-out";
-        el.style.backgroundColor = "";
-        el.style.boxShadow = "";
-      }, 2000);
-    }
+    // Clear any previous highlight
+    document
+      .querySelectorAll(`[data-highlighted]`)
+      .forEach((el) => el.removeAttribute("data-highlighted"));
+
+    // Use requestAnimationFrame to ensure highlight applies after any
+    // re-render caused by dropdown close / state changes
+    requestAnimationFrame(() => {
+      const el = document.getElementById(`${LINE_ANCHOR_PREFIX}-line-${line}`);
+      if (el) {
+        el.scrollIntoView({ behavior: "smooth", block: "center" });
+        el.setAttribute("data-highlighted", "true");
+        setTimeout(() => {
+          el.setAttribute("data-highlighted", "fading");
+          setTimeout(() => {
+            el.removeAttribute("data-highlighted");
+          }, 1000);
+        }, 2000);
+      }
+    });
   }, []);
 
   useEffect(() => {

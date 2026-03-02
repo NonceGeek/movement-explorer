@@ -17,7 +17,11 @@
       "Bash(pnpm build:*)",
       "WebFetch(domain:storage.googleapis.com)",
       "Bash(git add src/store/useModuleUIStore.ts src/app/account/[address]/components/Tabs/ModulesTab/CodeTab.tsx)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(npx next build --no-lint)",
+      "Bash(brew --cache)",
+      "Bash(xargs du -sh)",
+      "Bash(du -sh ~/Documents/GitHub/*/node_modules)"
     ]
   }
 }

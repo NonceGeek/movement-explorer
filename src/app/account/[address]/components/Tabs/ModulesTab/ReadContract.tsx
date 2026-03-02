@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Types } from "aptos";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -19,7 +19,12 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 import { view } from "@/services";
 import {
   encodeInputArgsForViewRequest,
+  transformCode,
 } from "@/utils";
+import {
+  parseFunctionParams,
+  parseFunctionTypeParams,
+} from "@/utils/moveSourceParser";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import ModuleSidebar from "./ModuleSidebar";
 import ContractForm, { ContractFormData } from "./ContractForm";
@@ -65,6 +70,34 @@ export default function ReadContract({
   const selectedFn = selectedModule?.abi?.exposed_functions.find(
     (fn) => fn.name === currentFnName && fn.is_view,
   );
+
+  // Resolve parameter and type parameter names from source code
+  const { paramNames, typeParamNames } = useMemo(() => {
+    if (!selectedFn || !selectedModuleName || !packages)
+      return { paramNames: undefined, typeParamNames: undefined };
+    for (const pkg of packages) {
+      const mod = pkg.modules.find((m) => m.name === selectedModuleName);
+      if (mod?.source && mod.source !== "0x") {
+        const sourceCode = transformCode(mod.source);
+        if (sourceCode) {
+          const parsedParams = parseFunctionParams(
+            sourceCode,
+            selectedFn.name,
+          );
+          const parsedTypeParams = parseFunctionTypeParams(
+            sourceCode,
+            selectedFn.name,
+          );
+          return {
+            paramNames: parsedParams?.map((p) => p.name),
+            typeParamNames: parsedTypeParams ?? undefined,
+          };
+        }
+        break;
+      }
+    }
+    return { paramNames: undefined, typeParamNames: undefined };
+  }, [selectedFn, selectedModuleName, packages]);
 
   const handleFunctionSelect = (moduleName: string, fnName: string) => {
     onModuleSelect(moduleName);
@@ -166,6 +199,8 @@ export default function ReadContract({
             isView={true}
             onSubmit={handleSubmit}
             isLoading={isExecuting}
+            paramNames={paramNames}
+            typeParamNames={typeParamNames}
             result={
               <>
                 {/* Success Result */}

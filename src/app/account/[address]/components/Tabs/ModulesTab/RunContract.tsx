@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,11 @@ import Link from "next/link";
 import { parseTypeTag } from "@aptos-labs/ts-sdk";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import useSubmitTransaction from "@/hooks/transactions/useSubmitTransaction";
-import { removeSignerParam } from "@/utils";
+import { removeSignerParam, transformCode } from "@/utils";
+import {
+  parseFunctionParams,
+  parseFunctionTypeParams,
+} from "@/utils/moveSourceParser";
 import { WalletConnector } from "@/components/wallet/WalletConnector";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import ModuleSidebar from "./ModuleSidebar";
@@ -68,6 +72,34 @@ export default function RunContract({
   const selectedFn = selectedModule?.abi?.exposed_functions.find(
     (fn) => fn.name === currentFnName && fn.is_entry,
   );
+
+  // Resolve parameter and type parameter names from source code
+  const { paramNames, typeParamNames } = useMemo(() => {
+    if (!selectedFn || !selectedModuleName || !packages)
+      return { paramNames: undefined, typeParamNames: undefined };
+    for (const pkg of packages) {
+      const mod = pkg.modules.find((m) => m.name === selectedModuleName);
+      if (mod?.source && mod.source !== "0x") {
+        const sourceCode = transformCode(mod.source);
+        if (sourceCode) {
+          const parsedParams = parseFunctionParams(
+            sourceCode,
+            selectedFn.name,
+          );
+          const parsedTypeParams = parseFunctionTypeParams(
+            sourceCode,
+            selectedFn.name,
+          );
+          return {
+            paramNames: parsedParams?.map((p) => p.name),
+            typeParamNames: parsedTypeParams ?? undefined,
+          };
+        }
+        break;
+      }
+    }
+    return { paramNames: undefined, typeParamNames: undefined };
+  }, [selectedFn, selectedModuleName, packages]);
 
   const handleFunctionSelect = (moduleName: string, fnName: string) => {
     onModuleSelect(moduleName);
@@ -219,6 +251,8 @@ export default function RunContract({
             isView={false}
             onSubmit={handleSubmit}
             isLoading={transactionInProcess}
+            paramNames={paramNames}
+            typeParamNames={typeParamNames}
             result={
               <>
                 {/* Success Result */}

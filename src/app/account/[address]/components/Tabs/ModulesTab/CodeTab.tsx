@@ -405,48 +405,42 @@ export default function CodeTab({
               {/* Source Code */}
               <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
                 <CardHeader>
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="hidden md:flex items-center gap-3 min-w-0">
-                      {/* Sidebar toggle */}
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 shrink-0"
-                        onClick={toggleSidebar}
-                      >
-                        {codeSidebarOpen ? (
-                          <PanelLeftClose className="h-4 w-4" />
-                        ) : (
-                          <PanelLeftOpen className="h-4 w-4" />
-                        )}
-                      </Button>
-                      {/* Breadcrumb */}
-                      <div className="flex items-center gap-1.5 min-w-0">
-                        <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="font-mono text-sm font-medium truncate">
-                          {selectedPackageName}
-                        </span>
-                        <span className="text-muted-foreground/40">/</span>
-                        <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-                        <span className="font-mono text-sm font-medium truncate">
-                          {viewingModule}
-                        </span>
+                  <div className="flex flex-col gap-2">
+                    {/* Row 1: breadcrumb + actions */}
+                    <div className="flex items-center justify-between gap-2">
+                      {/* Desktop: sidebar toggle + breadcrumb */}
+                      <div className="hidden md:flex items-center gap-3 min-w-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 shrink-0"
+                          onClick={toggleSidebar}
+                        >
+                          {codeSidebarOpen ? (
+                            <PanelLeftClose className="h-4 w-4" />
+                          ) : (
+                            <PanelLeftOpen className="h-4 w-4" />
+                          )}
+                        </Button>
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="font-mono text-sm font-medium truncate">
+                            {selectedPackageName}
+                          </span>
+                          <span className="text-muted-foreground/40">/</span>
+                          <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                          <span className="font-mono text-sm font-medium truncate">
+                            {viewingModule}
+                          </span>
+                        </div>
                       </div>
-                      {/* Stats */}
-                      <div className="flex items-center gap-3 ml-auto shrink-0 text-sm text-muted-foreground">
-                        <span>{entryFnCount} entry</span>
-                        <span className="text-muted-foreground/30">|</span>
-                        <span>{viewFnCount} view</span>
-                        <span className="text-muted-foreground/30">|</span>
-                        <span>{bytecodeSize} KB</span>
-                      </div>
-                    </div>
-                    {/* Mobile: simple title */}
-                    <CardTitle className="text-base md:hidden">
-                      Source Code
-                    </CardTitle>
-                    {selectedModuleSource.decodedSource && (
-                      <div className="flex items-center gap-1 shrink-0">
+                      {/* Mobile: simple title */}
+                      <CardTitle className="text-base md:hidden">
+                        Source Code
+                      </CardTitle>
+                      {/* Action buttons (shared) */}
+                      {selectedModuleSource.decodedSource && (
+                        <div className="flex items-center gap-1 shrink-0">
                         {/* Outline */}
                         {outlineItems.length > 0 &&
                           (() => {
@@ -693,6 +687,15 @@ export default function CodeTab({
                         </Button>
                       </div>
                     )}
+                  </div>
+                    {/* Row 2: stats (desktop only) */}
+                    <div className="hidden md:flex items-center gap-3 pl-11 text-sm text-muted-foreground">
+                      <span>{entryFnCount} entry</span>
+                      <span className="text-muted-foreground/30">|</span>
+                      <span>{viewFnCount} view</span>
+                      <span className="text-muted-foreground/30">|</span>
+                      <span>{bytecodeSize} KB</span>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>

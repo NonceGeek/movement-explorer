@@ -12,10 +12,11 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { removeSignerParam } from "@/utils";
+import { removeSignerParam, isValidStruct } from "@/utils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
+import { getMoveTypeValidator, validateLedgerVersion } from "@/utils/moveTypeValidator";
 
 /**
  * Abbreviate long Move types for display.
@@ -62,7 +63,7 @@ export default function ContractForm({
     formState: { isValid },
     reset,
   } = useForm<ContractFormData>({
-    mode: "all",
+    mode: "onTouched",
     defaultValues: {
       typeArgs: Array(fn.generic_type_params.length).fill(""),
       args: Array(fnParams.length).fill(""),
@@ -90,7 +91,7 @@ export default function ContractForm({
   const isButtonDisabled = isLoading || (!isView && !connected) || !isValid;
 
   const buttonTooltip = !isValid
-    ? "Input arguments cannot be empty"
+    ? "Please fix the validation errors above"
     : !isView && !connected
       ? "Connect wallet to run"
       : null;
@@ -227,17 +228,28 @@ export default function ContractForm({
                     <Controller
                       name={`typeArgs.${i}`}
                       control={control}
-                      rules={{ required: true }}
+                      rules={{
+                        required: "Type argument is required",
+                        validate: (v: string) =>
+                          v.trim() === "" || isValidStruct(v.trim()) || "Invalid type (expected addr::module::name)",
+                      }}
                       render={({ field, fieldState }) => (
-                        <Input
-                          {...field}
-                          placeholder="e.g. 0x1::aptos_coin::AptosCoin"
-                          className={
-                            fieldState.invalid
-                              ? "border-destructive text-base"
-                              : "text-base"
-                          }
-                        />
+                        <>
+                          <Input
+                            {...field}
+                            placeholder="e.g. 0x1::aptos_coin::AptosCoin"
+                            className={
+                              fieldState.error
+                                ? "border-destructive text-base"
+                                : "text-base"
+                            }
+                          />
+                          {fieldState.error?.message && (
+                            <p className="text-xs text-destructive mt-1">
+                              {fieldState.error.message}
+                            </p>
+                          )}
+                        </>
                       )}
                     />
                   </div>
@@ -313,13 +325,23 @@ export default function ContractForm({
                 <Controller
                   name={`args.${i}`}
                   control={control}
-                  rules={{ required: !isOption }}
+                  rules={{
+                    required: !isOption && "Argument is required",
+                    validate: getMoveTypeValidator(param),
+                  }}
                   render={({ field, fieldState }) => (
-                    <Input
-                      {...field}
-                      placeholder={paramNames?.[i] ?? `Argument ${i}`}
-                      className={fieldState.invalid ? "border-destructive" : ""}
-                    />
+                    <>
+                      <Input
+                        {...field}
+                        placeholder={paramNames?.[i] ?? `Argument ${i}`}
+                        className={fieldState.error ? "border-destructive" : ""}
+                      />
+                      {fieldState.error?.message && (
+                        <p className="text-xs text-destructive mt-1">
+                          {fieldState.error.message}
+                        </p>
+                      )}
+                    </>
                   )}
                 />
               </div>
@@ -335,8 +357,18 @@ export default function ContractForm({
               <Controller
                 name="ledgerVersion"
                 control={control}
-                render={({ field }) => (
-                  <Input {...field} placeholder="Leave empty for latest" />
+                rules={{
+                  validate: (v) => validateLedgerVersion(v ?? ""),
+                }}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Input {...field} placeholder="Leave empty for latest" />
+                    {fieldState.error?.message && (
+                      <p className="text-xs text-destructive mt-1">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </>
                 )}
               />
             </div>

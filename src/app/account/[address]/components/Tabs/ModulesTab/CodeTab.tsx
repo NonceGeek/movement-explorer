@@ -34,7 +34,9 @@ import {
   List,
   Braces,
   Hash,
+  Search,
   PanelLeftOpen,
+  PanelLeftClose,
 } from "lucide-react";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "../..";
@@ -63,7 +65,7 @@ function parseOutline(code: string): OutlineItem[] {
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const fnMatch = line.match(
-      /^\s*(?:public\s+)?(?:\(friend\)\s+)?(?:entry\s+)?fun\s+(\w+)/,
+      /^\s*(?:public(?:\(friend\))?\s+)?(?:entry\s+)?(?:inline\s+)?fun\s+(\w+)/,
     );
     if (fnMatch) {
       items.push({ type: "function", name: fnMatch[1], line: i + 1 });
@@ -105,10 +107,13 @@ export default function CodeTab({
   );
   const [copied, setCopied] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [outlineSearch, setOutlineSearch] = useState("");
   const codeBlockRef = useRef<HTMLDivElement>(null);
+  const outlineInputRef = useRef<HTMLInputElement>(null);
   const { codeSidebarOpen, setCodeSidebarOpen } = useModuleUIStore();
   const toggleSidebar = () => setCodeSidebarOpen(!codeSidebarOpen);
   const [pendingScrollFn, setPendingScrollFn] = useState<string | null>(null);
+  const handledModuleRef = useRef<string | undefined>(undefined);
 
   // Build flat module→package mapping
   const moduleToPackage = useMemo(() => {
@@ -128,9 +133,14 @@ export default function CodeTab({
     }
   }, [packages, selectedPackageName]);
 
-  // If initialModule is provided, resolve its package and select it
+  // If initialModule is provided (or changes), resolve its package and select it
   useEffect(() => {
-    if (selectedModuleName && moduleToPackage[selectedModuleName]) {
+    if (
+      selectedModuleName &&
+      selectedModuleName !== handledModuleRef.current &&
+      moduleToPackage[selectedModuleName]
+    ) {
+      handledModuleRef.current = selectedModuleName;
       const pkgName = moduleToPackage[selectedModuleName];
       setSelectedPackageName(pkgName);
       setViewingModule(selectedModuleName);
@@ -267,356 +277,461 @@ export default function CodeTab({
 
   return (
     <div className="space-y-2">
-      {/* Header Navigation Bar */}
-      <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
+      {/* Mobile navigation */}
+      <Card className="md:hidden bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap items-center gap-3">
-            {/* Sidebar open button — desktop only, when sidebar is closed */}
-            {!codeSidebarOpen && (
-              <Button
-                variant="ghost"
-                size="icon"
-                className="hidden md:flex h-8 w-8 shrink-0"
-                onClick={toggleSidebar}
-              >
-                <PanelLeftOpen className="h-4 w-4" />
-              </Button>
-            )}
-
-            {/* Breadcrumb — desktop when sidebar open */}
-            {codeSidebarOpen && (
-              <div className="hidden md:flex items-center gap-1.5">
-                {packages.length > 1 && (
-                  <>
-                    <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                    <span className="font-mono text-sm font-medium">
-                      {selectedPackageName}
-                    </span>
-                    <span className="text-muted-foreground/40">/</span>
-                  </>
-                )}
-                <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-                <span className="font-mono text-sm font-medium">
-                  {viewingModule || selectedPackageName}
+            {/* Package selector */}
+            {packages.length > 1 ? (
+              <div className="flex items-center gap-1.5">
+                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select
+                  value={selectedPackageName}
+                  onValueChange={handlePackageChange}
+                >
+                  <SelectTrigger
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 min-w-[120px] cursor-pointer"
+                  >
+                    <SelectValue placeholder="Select package" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {packages.map((pkg) => (
+                      <SelectItem key={pkg.name} value={pkg.name}>
+                        <span className="flex items-center gap-2">
+                          <span className="font-mono text-sm">{pkg.name}</span>
+                          <span className="text-xs text-muted-foreground">
+                            {pkg.modules.length} modules
+                          </span>
+                        </span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-sm">
+                <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                <span className="font-mono font-medium">
+                  {selectedPackageName}
                 </span>
               </div>
             )}
 
-            {/* Select dropdowns — mobile always; desktop when sidebar closed */}
-            <div
-              className={
-                codeSidebarOpen
-                  ? "md:hidden flex flex-wrap items-center gap-3"
-                  : "flex flex-wrap items-center gap-3"
-              }
-            >
-              {/* Package selector */}
-              {packages.length > 1 ? (
-                <div className="flex items-center gap-1.5">
-                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Select
-                    value={selectedPackageName}
-                    onValueChange={handlePackageChange}
-                  >
-                    <SelectTrigger
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 min-w-[120px] cursor-pointer"
-                    >
-                      <SelectValue placeholder="Select package" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {packages.map((pkg) => (
-                        <SelectItem key={pkg.name} value={pkg.name}>
-                          <span className="flex items-center gap-2">
-                            <span className="font-mono text-sm">{pkg.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {pkg.modules.length} modules
-                            </span>
-                          </span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5 text-sm">
-                  <Package className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <span className="font-mono font-medium">
-                    {selectedPackageName}
-                  </span>
-                </div>
-              )}
+            {/* Separator */}
+            {selectedPackage && (
+              <span className="text-muted-foreground/40">/</span>
+            )}
 
-              {/* Separator */}
-              {selectedPackage && (
-                <span className="text-muted-foreground/40 hidden sm:inline">
-                  /
-                </span>
-              )}
-
-              {/* Module selector */}
-              {selectedPackage && (
-                <div className="flex items-center gap-1.5">
-                  <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
-                  <Select
-                    value={viewingModule || PACKAGE_OVERVIEW}
-                    onValueChange={handleModuleChange}
+            {/* Module selector */}
+            {selectedPackage && (
+              <div className="flex items-center gap-1.5">
+                <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                <Select
+                  value={viewingModule || PACKAGE_OVERVIEW}
+                  onValueChange={handleModuleChange}
+                >
+                  <SelectTrigger
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 min-w-[140px] cursor-pointer"
                   >
-                    <SelectTrigger
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 min-w-[140px] cursor-pointer"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value={PACKAGE_OVERVIEW}>
-                        Package Overview
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value={PACKAGE_OVERVIEW}>
+                      Package Overview
+                    </SelectItem>
+                    {selectedPackage.modules.map((mod) => (
+                      <SelectItem key={mod.name} value={mod.name}>
+                        <span className="font-mono text-sm">{mod.name}</span>
                       </SelectItem>
-                      {selectedPackage.modules.map((mod) => (
-                        <SelectItem key={mod.name} value={mod.name}>
-                          <span className="font-mono text-sm">{mod.name}</span>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
-            </div>
-
-            {/* Stats */}
-            {viewingModule && (
-              <div className="flex items-center gap-3 ml-auto text-sm text-muted-foreground">
-                <span>{entryFnCount} entry</span>
-                <span className="text-muted-foreground/30">|</span>
-                <span>{viewFnCount} view</span>
-                <span className="text-muted-foreground/30">|</span>
-                <span>{bytecodeSize} KB</span>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             )}
           </div>
         </CardContent>
       </Card>
 
-      {/* Body: sidebar + content area — same grid as Read/Write tabs */}
+      {/* Body: sidebar + content area */}
       <div
         className={
-          codeSidebarOpen && allModules.length > 0
-            ? "grid grid-cols-1 md:grid-cols-4 gap-4 items-start"
+          allModules.length > 0
+            ? "md:grid md:items-start"
             : ""
         }
+        style={
+          allModules.length > 0
+            ? {
+                gridTemplateColumns: codeSidebarOpen ? "1fr 3fr" : "0fr 1fr",
+                columnGap: codeSidebarOpen ? "16px" : "0px",
+                transition:
+                  "grid-template-columns 400ms cubic-bezier(0.16, 1, 0.3, 1), column-gap 400ms cubic-bezier(0.16, 1, 0.3, 1)",
+              }
+            : undefined
+        }
       >
-        {/* Sidebar — desktop only, col-span-1 */}
-        {codeSidebarOpen && allModules.length > 0 && (
-          <div className="hidden md:block md:col-span-1">
+        {/* Sidebar — always mounted for transition, hidden on mobile */}
+        {allModules.length > 0 && (
+          <div className="hidden md:block overflow-hidden min-w-0">
             <ModuleSidebar
               modules={allModules}
               packages={packages}
               selectedModuleName={viewingModule || ""}
               onModuleSelect={handleModuleChange}
               onFunctionSelect={handleSidebarFunctionSelect}
-              packageName={selectedPackageName}
-              onPackageSelect={() => handleModuleChange(PACKAGE_OVERVIEW)}
-              isPackageSelected={!viewingModule}
-              onCollapse={toggleSidebar}
+              onPackageOverview={(pkgName) => {
+                setSelectedPackageName(pkgName);
+                setViewingModule(null);
+              }}
+              isOverviewSelected={!viewingModule}
+              filterFn={(fn) => fn.is_entry || fn.is_view}
+              title="Modules"
             />
           </div>
         )}
 
         {/* Content Area */}
-        <div
-          className={
-            codeSidebarOpen && allModules.length > 0
-              ? "md:col-span-3 min-w-0 space-y-2"
-              : "min-w-0 space-y-2"
-          }
-        >
+        <div className="min-w-0 space-y-2">
           {viewingModule && selectedModuleSource ? (
-        <>
-          {/* Source Code */}
-          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base">Source Code</CardTitle>
-                {selectedModuleSource.decodedSource && (
-                  <div className="flex items-center gap-1">
-                    {/* Outline */}
-                    {outlineItems.length > 0 && (
-                      <DropdownMenu>
+            <>
+              {/* Source Code */}
+              <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+                <CardHeader>
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="hidden md:flex items-center gap-3 min-w-0">
+                      {/* Sidebar toggle */}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-8 w-8 shrink-0"
+                        onClick={toggleSidebar}
+                      >
+                        {codeSidebarOpen ? (
+                          <PanelLeftClose className="h-4 w-4" />
+                        ) : (
+                          <PanelLeftOpen className="h-4 w-4" />
+                        )}
+                      </Button>
+                      {/* Breadcrumb */}
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <Package className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-mono text-sm font-medium truncate">
+                          {selectedPackageName}
+                        </span>
+                        <span className="text-muted-foreground/40">/</span>
+                        <FileCode className="h-4 w-4 text-muted-foreground shrink-0" />
+                        <span className="font-mono text-sm font-medium truncate">
+                          {viewingModule}
+                        </span>
+                      </div>
+                      {/* Stats */}
+                      <div className="flex items-center gap-3 ml-auto shrink-0 text-sm text-muted-foreground">
+                        <span>{entryFnCount} entry</span>
+                        <span className="text-muted-foreground/30">|</span>
+                        <span>{viewFnCount} view</span>
+                        <span className="text-muted-foreground/30">|</span>
+                        <span>{bytecodeSize} KB</span>
+                      </div>
+                    </div>
+                    {/* Mobile: simple title */}
+                    <CardTitle className="text-base md:hidden">
+                      Source Code
+                    </CardTitle>
+                    {selectedModuleSource.decodedSource && (
+                      <div className="flex items-center gap-1 shrink-0">
+                        {/* Outline */}
+                        {outlineItems.length > 0 &&
+                          (() => {
+                            const q = outlineSearch.toLowerCase();
+                            const filteredStructs = q
+                              ? structs.filter((i) =>
+                                  i.name.toLowerCase().includes(q),
+                                )
+                              : structs;
+                            const filteredFunctions = q
+                              ? functions.filter((i) =>
+                                  i.name.toLowerCase().includes(q),
+                                )
+                              : functions;
+                            const filteredConstants = q
+                              ? constants.filter((i) =>
+                                  i.name.toLowerCase().includes(q),
+                                )
+                              : constants;
+                            const hasResults =
+                              filteredStructs.length > 0 ||
+                              filteredFunctions.length > 0 ||
+                              filteredConstants.length > 0;
+                            return (
+                              <DropdownMenu
+                                onOpenChange={(open) => {
+                                  if (!open) setOutlineSearch("");
+                                  else
+                                    setTimeout(
+                                      () => outlineInputRef.current?.focus(),
+                                      0,
+                                    );
+                                }}
+                              >
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <DropdownMenuTrigger asChild>
+                                        <Button
+                                          variant="ghost"
+                                          size="sm"
+                                          className="h-8 px-2"
+                                        >
+                                          <List className="h-4 w-4" />
+                                          <span className="ml-1 text-xs hidden sm:inline">
+                                            Outline
+                                          </span>
+                                        </Button>
+                                      </DropdownMenuTrigger>
+                                    </TooltipTrigger>
+                                    <TooltipContent>
+                                      <p>Jump to definition</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                                <DropdownMenuContent
+                                  align="end"
+                                  className="w-72"
+                                  onCloseAutoFocus={(e) => e.preventDefault()}
+                                >
+                                  <div
+                                    className="px-2 pb-1.5"
+                                    onKeyDown={(e) => e.stopPropagation()}
+                                  >
+                                    <div className="flex items-center gap-1.5 px-2 h-8 rounded-md border border-border bg-muted/30">
+                                      <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                      <input
+                                        ref={outlineInputRef}
+                                        value={outlineSearch}
+                                        onChange={(e) =>
+                                          setOutlineSearch(e.target.value)
+                                        }
+                                        placeholder="Search..."
+                                        className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+                                      />
+                                    </div>
+                                  </div>
+                                  <TooltipProvider delayDuration={400}>
+                                    <div className="max-h-64 overflow-y-auto">
+                                      {!hasResults && (
+                                        <div className="py-4 text-center text-xs text-muted-foreground">
+                                          No matches
+                                        </div>
+                                      )}
+                                      {filteredStructs.length > 0 && (
+                                        <>
+                                          <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                            Structs
+                                          </DropdownMenuLabel>
+                                          {filteredStructs.map((item) => (
+                                            <DropdownMenuItem
+                                              key={`struct-${item.line}`}
+                                              onClick={() =>
+                                                handleOutlineClick(item.line)
+                                              }
+                                              className="cursor-pointer"
+                                            >
+                                              <Braces className="h-3.5 w-3.5 mr-2 shrink-0 text-blue-500" />
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <span className="font-mono text-sm truncate">
+                                                    {item.name}
+                                                  </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                  side="right"
+                                                  className="z-9999 font-mono text-xs bg-gray-500! backdrop-blur-lg"
+                                                >
+                                                  {item.name}
+                                                </TooltipContent>
+                                              </Tooltip>
+                                              <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                                :{item.line}
+                                              </span>
+                                            </DropdownMenuItem>
+                                          ))}
+                                          {(filteredFunctions.length > 0 ||
+                                            filteredConstants.length > 0) && (
+                                            <DropdownMenuSeparator />
+                                          )}
+                                        </>
+                                      )}
+                                      {filteredFunctions.length > 0 && (
+                                        <>
+                                          <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                            Functions
+                                          </DropdownMenuLabel>
+                                          {filteredFunctions.map((item) => (
+                                            <DropdownMenuItem
+                                              key={`fn-${item.line}`}
+                                              onClick={() =>
+                                                handleOutlineClick(item.line)
+                                              }
+                                              className="cursor-pointer"
+                                            >
+                                              <FileCode className="h-3.5 w-3.5 mr-2 shrink-0 text-purple-500" />
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <span className="font-mono text-sm truncate">
+                                                    {item.name}
+                                                  </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                  side="right"
+                                                  className="z-9999 font-mono text-xs bg-gray-500! backdrop-blur-lg"
+                                                >
+                                                  {item.name}
+                                                </TooltipContent>
+                                              </Tooltip>
+                                              <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                                :{item.line}
+                                              </span>
+                                            </DropdownMenuItem>
+                                          ))}
+                                          {filteredConstants.length > 0 && (
+                                            <DropdownMenuSeparator />
+                                          )}
+                                        </>
+                                      )}
+                                      {filteredConstants.length > 0 && (
+                                        <>
+                                          <DropdownMenuLabel className="text-xs text-muted-foreground">
+                                            Constants
+                                          </DropdownMenuLabel>
+                                          {filteredConstants.map((item) => (
+                                            <DropdownMenuItem
+                                              key={`const-${item.line}`}
+                                              onClick={() =>
+                                                handleOutlineClick(item.line)
+                                              }
+                                              className="cursor-pointer"
+                                            >
+                                              <Hash className="h-3.5 w-3.5 mr-2 shrink-0 text-orange-500" />
+                                              <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                  <span className="font-mono text-sm truncate">
+                                                    {item.name}
+                                                  </span>
+                                                </TooltipTrigger>
+                                                <TooltipContent
+                                                  side="right"
+                                                  className="z-9999 font-mono text-xs bg-gray-500! backdrop-blur-lg"
+                                                >
+                                                  {item.name}
+                                                </TooltipContent>
+                                              </Tooltip>
+                                              <span className="ml-auto text-xs text-muted-foreground pl-2">
+                                                :{item.line}
+                                              </span>
+                                            </DropdownMenuItem>
+                                          ))}
+                                        </>
+                                      )}
+                                    </div>
+                                  </TooltipProvider>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            );
+                          })()}
+
+                        {/* Copy */}
                         <TooltipProvider>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 px-2"
-                                >
-                                  <List className="h-4 w-4" />
-                                  <span className="ml-1 text-xs hidden sm:inline">
-                                    Outline
-                                  </span>
-                                </Button>
-                              </DropdownMenuTrigger>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleCopy}
+                                className="h-8 px-2"
+                              >
+                                {copied ? (
+                                  <Check className="h-4 w-4 text-green-500" />
+                                ) : (
+                                  <Copy className="h-4 w-4" />
+                                )}
+                                <span className="ml-1 text-xs hidden sm:inline">
+                                  {copied ? "Copied" : "Copy"}
+                                </span>
+                              </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              <p>Jump to definition</p>
+                              <p>
+                                {copied ? "Code copied!" : "Copy source code"}
+                              </p>
                             </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
-                        <DropdownMenuContent
-                          align="end"
-                          className="max-h-80 overflow-y-auto w-56"
+
+                        {/* Expand / Collapse */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setExpanded(!expanded)}
+                          className="h-8 px-2"
                         >
-                          {structs.length > 0 && (
-                            <>
-                              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                Structs
-                              </DropdownMenuLabel>
-                              {structs.map((item) => (
-                                <DropdownMenuItem
-                                  key={`struct-${item.line}`}
-                                  onClick={() => handleOutlineClick(item.line)}
-                                  className="cursor-pointer"
-                                >
-                                  <Braces className="h-3.5 w-3.5 mr-2 shrink-0 text-blue-500" />
-                                  <span className="font-mono text-sm truncate">
-                                    {item.name}
-                                  </span>
-                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
-                                    :{item.line}
-                                  </span>
-                                </DropdownMenuItem>
-                              ))}
-                              {(functions.length > 0 || constants.length > 0) && (
-                                <DropdownMenuSeparator />
-                              )}
-                            </>
+                          {expanded ? (
+                            <Minimize2 className="h-4 w-4" />
+                          ) : (
+                            <Maximize2 className="h-4 w-4" />
                           )}
-                          {functions.length > 0 && (
-                            <>
-                              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                Functions
-                              </DropdownMenuLabel>
-                              {functions.map((item) => (
-                                <DropdownMenuItem
-                                  key={`fn-${item.line}`}
-                                  onClick={() => handleOutlineClick(item.line)}
-                                  className="cursor-pointer"
-                                >
-                                  <FileCode className="h-3.5 w-3.5 mr-2 shrink-0 text-purple-500" />
-                                  <span className="font-mono text-sm truncate">
-                                    {item.name}
-                                  </span>
-                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
-                                    :{item.line}
-                                  </span>
-                                </DropdownMenuItem>
-                              ))}
-                              {constants.length > 0 && (
-                                <DropdownMenuSeparator />
-                              )}
-                            </>
-                          )}
-                          {constants.length > 0 && (
-                            <>
-                              <DropdownMenuLabel className="text-xs text-muted-foreground">
-                                Constants
-                              </DropdownMenuLabel>
-                              {constants.map((item) => (
-                                <DropdownMenuItem
-                                  key={`const-${item.line}`}
-                                  onClick={() => handleOutlineClick(item.line)}
-                                  className="cursor-pointer"
-                                >
-                                  <Hash className="h-3.5 w-3.5 mr-2 shrink-0 text-orange-500" />
-                                  <span className="font-mono text-sm truncate">
-                                    {item.name}
-                                  </span>
-                                  <span className="ml-auto text-xs text-muted-foreground pl-2">
-                                    :{item.line}
-                                  </span>
-                                </DropdownMenuItem>
-                              ))}
-                            </>
-                          )}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                          <span className="ml-1 text-xs hidden sm:inline">
+                            {expanded ? "Collapse" : "Expand"}
+                          </span>
+                        </Button>
+                      </div>
                     )}
-
-                    {/* Copy */}
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={handleCopy}
-                            className="h-8 px-2"
-                          >
-                            {copied ? (
-                              <Check className="h-4 w-4 text-green-500" />
-                            ) : (
-                              <Copy className="h-4 w-4" />
-                            )}
-                            <span className="ml-1 text-xs hidden sm:inline">
-                              {copied ? "Copied" : "Copy"}
-                            </span>
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>{copied ? "Code copied!" : "Copy source code"}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-
-                    {/* Expand / Collapse */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setExpanded(!expanded)}
-                      className="h-8 px-2"
-                    >
-                      {expanded ? (
-                        <Minimize2 className="h-4 w-4" />
-                      ) : (
-                        <Maximize2 className="h-4 w-4" />
-                      )}
-                      <span className="ml-1 text-xs hidden sm:inline">
-                        {expanded ? "Collapse" : "Expand"}
-                      </span>
-                    </Button>
                   </div>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {selectedModuleSource.decodedSource ? (
-                <CodeBlock
-                  ref={codeBlockRef}
-                  code={selectedModuleSource.decodedSource}
-                  lineAnchorPrefix={LINE_ANCHOR_PREFIX}
-                  maxHeight={expanded ? "none" : "500px"}
-                />
-              ) : (
-                <div className="text-center py-8 text-muted-foreground">
-                  <p>
-                    Unfortunately, the source code cannot be shown because the
-                    package publisher has chosen not to make it available.
-                  </p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                </CardHeader>
+                <CardContent>
+                  {selectedModuleSource.decodedSource ? (
+                    <CodeBlock
+                      ref={codeBlockRef}
+                      code={selectedModuleSource.decodedSource}
+                      lineAnchorPrefix={LINE_ANCHOR_PREFIX}
+                      maxHeight={expanded ? "none" : "500px"}
+                    />
+                  ) : (
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>
+                        Unfortunately, the source code cannot be shown because
+                        the package publisher has chosen not to make it
+                        available.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-          {/* ABI */}
-          {moduleData?.abi && <AbiDisplay abi={moduleData.abi} />}
-        </>
+              {/* ABI */}
+              {moduleData?.abi && <AbiDisplay abi={moduleData.abi} />}
+            </>
           ) : selectedPackage ? (
             <PackageContent
               address={address}
               packageMetadata={selectedPackage}
+              sidebarToggle={
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 shrink-0"
+                  onClick={toggleSidebar}
+                >
+                  {codeSidebarOpen ? (
+                    <PanelLeftClose className="h-4 w-4" />
+                  ) : (
+                    <PanelLeftOpen className="h-4 w-4" />
+                  )}
+                </Button>
+              }
             />
           ) : null}
         </div>

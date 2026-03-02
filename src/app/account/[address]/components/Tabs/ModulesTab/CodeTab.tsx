@@ -50,6 +50,7 @@ import AbiDisplay from "./AbiDisplay";
 import PackageContent from "./PackageContent";
 import ModuleSidebar from "./ModuleSidebar";
 import { useModuleUIStore } from "@/store/useModuleUIStore";
+import { toast } from "@movementlabsxyz/movement-design-system";
 
 const PACKAGE_OVERVIEW = "__package_overview__";
 const LINE_ANCHOR_PREFIX = "source-code";
@@ -234,6 +235,23 @@ export default function CodeTab({
 
   const handleSidebarFunctionSelect = useCallback(
     (moduleName: string, fnName: string) => {
+      // Check if the target module has source code
+      const targetModule = packages
+        .flatMap((pkg) => pkg.modules)
+        .find((m) => m.name === moduleName);
+      const hasSource =
+        targetModule?.source && targetModule.source !== "0x";
+
+      if (!hasSource) {
+        handleModuleChange(moduleName);
+        toast.info({
+          title: "Source code unavailable",
+          description:
+            "The publisher has not made the source code available for this module.",
+        });
+        return;
+      }
+
       if (moduleName !== viewingModule) {
         handleModuleChange(moduleName);
         setPendingScrollFn(fnName);
@@ -242,7 +260,7 @@ export default function CodeTab({
         if (item) handleOutlineClick(item.line);
       }
     },
-    [viewingModule, outlineItems, handleModuleChange, handleOutlineClick],
+    [viewingModule, outlineItems, packages, handleModuleChange, handleOutlineClick],
   );
 
   // Module stats

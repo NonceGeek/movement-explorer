@@ -21,7 +21,13 @@
       "Bash(npx next build --no-lint)",
       "Bash(brew --cache)",
       "Bash(xargs du -sh)",
-      "Bash(du -sh ~/Documents/GitHub/*/node_modules)"
+      "Bash(du -sh ~/Documents/GitHub/*/node_modules)",
+      "Bash(git add src/utils/moveTypeValidator.ts)",
+      "Bash(python3 -c \":*)",
+      "Bash(git rebase --no-fork-point HEAD~2 --exec \"echo skip\")",
+      "Bash(npm run build)",
+      "Bash(git add src/app/account/[address]/components/Tabs/ModulesTab/ContractForm.tsx)",
+      "Bash(git add src/utils/moveTypeValidator.ts src/app/account/[address]/components/Tabs/ModulesTab/ContractForm.tsx)"
     ]
   }
 }

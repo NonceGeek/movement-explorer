@@ -16,6 +16,10 @@ import {
 } from "@/components/ui/tooltip";
 import type { Types } from "aptos";
 import { formatMovementPath } from "@/utils";
+import {
+  useGetFunctionParams,
+  type ResolvedParam,
+} from "@/hooks/accounts/useGetFunctionParams";
 
 interface PayloadDecoderProps {
   payload: Types.TransactionPayload | null;
@@ -292,15 +296,20 @@ const KNOWN_FUNCTIONS: Record<
 function decodeArguments(
   func: string,
   args: unknown[],
-  _typeArgs: string[]
+  _typeArgs: string[],
+  dynamicParams: ResolvedParam[] | null,
 ): DecodedArgument[] {
   const known = KNOWN_FUNCTIONS[func];
   const decoded: DecodedArgument[] = [];
 
   args.forEach((arg, index) => {
-    const argInfo = known?.args[index];
-    const name = argInfo?.name || `arg_${index}`;
-    const type = argInfo?.type || inferType(arg);
+    // Priority 1: KNOWN_FUNCTIONS hardcoded table
+    const knownArg = known?.args[index];
+    // Priority 2: Dynamic ABI + source code
+    const dynamicArg = dynamicParams?.[index];
+    // Priority 3: Inference fallback
+    const name = knownArg?.name ?? dynamicArg?.name ?? `arg_${index}`;
+    const type = knownArg?.type ?? dynamicArg?.type ?? inferType(arg);
     const displayValue = formatArgValue(arg, type);
 
     decoded.push({
@@ -350,6 +359,26 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const [viewMode, setViewMode] = useState<"decoded" | "raw">("decoded");
   const [showTypeArgs, setShowTypeArgs] = useState(false);
 
+  // Extract entry payload and function path before hooks (rules of hooks: no conditional calls)
+  const isEntryFunction = payload?.type === "entry_function_payload";
+  const isScript = payload?.type === "script_payload";
+  const isMultisig = payload?.type === "multisig_payload";
+
+  const entryPayload = isEntryFunction
+    ? (payload as Types.TransactionPayload_EntryFunctionPayload)
+    : isMultisig &&
+      payload &&
+      "transaction_payload" in payload &&
+      payload.transaction_payload
+      ? (payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload)
+      : null;
+
+  const func = entryPayload?.function || "";
+  const isKnown = func in KNOWN_FUNCTIONS;
+
+  // Dynamically resolve param names/types from ABI + source code (only for unknown functions)
+  const { params: dynamicParams, isLoading: paramsLoading } =
+    useGetFunctionParams(isKnown || !func ? null : func);
 
   if (!payload) {
     return (
@@ -359,22 +388,11 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
     );
   }
 
-  const isEntryFunction = payload.type === "entry_function_payload";
-  const isScript = payload.type === "script_payload";
-  const isMultisig = payload.type === "multisig_payload";
-
-  const entryPayload = isEntryFunction
-    ? (payload as Types.TransactionPayload_EntryFunctionPayload)
-    : isMultisig &&
-      "transaction_payload" in payload &&
-      payload.transaction_payload
-      ? (payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload)
-      : null;
-
-  const func = entryPayload?.function || "";
   const args = entryPayload?.arguments || [];
   const typeArgs = entryPayload?.type_arguments || [];
-  const decodedArgs = entryPayload ? decodeArguments(func, args, typeArgs) : [];
+  const decodedArgs = entryPayload
+    ? decodeArguments(func, args, typeArgs, dynamicParams)
+    : [];
 
   const funcParts = func.split("::");
   const moduleAddr = funcParts[0] || "";
@@ -399,7 +417,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
         <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
           {/* Payload Type */}
           <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
-            <span className="text-xs text-muted-foreground uppercase tracking-wider">Type</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wider">Type</span>
             <Badge variant="secondary" className="capitalize">
               {payload.type.replace(/_/g, " ")}
             </Badge>
@@ -420,13 +438,13 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
             <>
               {/* Function */}
               <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <div className="text-xs text-muted-foreground uppercase tracking-wider shrink-0">Function</div>
+                <div className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">Function</div>
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
                         href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
-                        className="font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden block whitespace-nowrap"
+                        className="font-mono text-base text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden block whitespace-nowrap"
                       >
                         {moduleAddr.length <= 10 ? moduleAddr : `${moduleAddr.slice(0, 6)}...${moduleAddr.slice(-4)}`}::{formatMovementPath(moduleName)}::{funcName}
                       </Link>
@@ -453,8 +471,31 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                           <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                             Function
                           </span>
-                          <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
-                            {funcName}
+                          <div className="font-mono text-xs bg-primary/5 p-2 rounded border border-primary/10 [&_span]:inline">
+                            <span className="text-guild-green-500 font-medium">{funcName}</span>
+                            <span className="text-muted-foreground">(</span>
+                            {decodedArgs.length <= 2 ? (
+                              // Inline for short signatures
+                              decodedArgs.map((arg, i) => (
+                                <span key={arg.index}>
+                                  {i > 0 && <span className="text-muted-foreground">, </span>}
+                                  <span className="text-foreground">{arg.name}</span>
+                                  <span className="text-muted-foreground">: </span>
+                                  <span className="text-purple-400">{arg.type}</span>
+                                </span>
+                              ))
+                            ) : (
+                              // One param per line for long signatures
+                              decodedArgs.map((arg, i) => (
+                                <div key={arg.index} className="pl-4 break-all">
+                                  <span className="text-foreground">{arg.name}</span>
+                                  <span className="text-muted-foreground">: </span>
+                                  <span className="text-purple-400">{arg.type}</span>
+                                  {i < decodedArgs.length - 1 && <span className="text-muted-foreground">,</span>}
+                                </div>
+                              ))
+                            )}
+                            <span className="text-muted-foreground">)</span>
                           </div>
                         </div>
                       </div>
@@ -469,6 +510,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                   <button
                     onClick={() => setShowTypeArgs(!showTypeArgs)}
                     className="flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors w-full cursor-pointer"
+
                   >
                     <span>Type Arguments ({typeArgs.length})</span>
                     {showTypeArgs ? (
@@ -497,6 +539,9 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
               <div>
                 <div className="px-5 py-3 text-sm text-muted-foreground uppercase tracking-wider bg-muted/20">
                   Arguments ({decodedArgs.length})
+                  {paramsLoading && !isKnown && (
+                    <span className="ml-2 text-xs opacity-50 animate-pulse">resolving...</span>
+                  )}
                 </div>
                 {decodedArgs.length === 0 ? (
                   <div className="px-5 py-4 text-sm text-muted-foreground">No arguments</div>
@@ -535,15 +580,15 @@ function ArgumentRow({ arg }: { arg: DecodedArgument }) {
     typeof arg.value === "string" && arg.value.length > 100;
 
   return (
-    <div className="flex flex-col sm:flex-row border-b border-border/20 last:border-0">
-      <div className="sm:w-[200px] sm:shrink-0 px-4 py-3 sm:py-3 pb-0 sm:pb-3 flex items-baseline gap-2">
-        <span className="text-sm text-muted-foreground/60">{arg.index}</span>
-        <span className="text-sm font-medium text-foreground">{arg.name}</span>
-        <Badge variant="outline" className="text-xs font-mono px-1.5 py-0">
+    <div className="border-b border-border/20 last:border-0 px-4 py-3">
+      <div className="flex items-baseline gap-2 flex-wrap mb-1.5">
+        <span className="text-base text-muted-foreground/50">{arg.index}</span>
+        <span className="text-base font-medium text-muted-foreground">{arg.name}</span>
+        <Badge variant="outline" className="text-xs font-mono px-1.5 py-0 shrink-0">
           {arg.type}
         </Badge>
       </div>
-      <div className="flex-1 px-4 py-3 pt-1 sm:pt-3 min-w-0">
+      <div className="min-w-0 pl-4">
         {isAddress && typeof arg.value === "string" ? (
           <CopyableAddress
             address={arg.value}
@@ -560,16 +605,16 @@ function ArgumentRow({ arg }: { arg: DecodedArgument }) {
               {(arg.value as string).slice(0, 60)}...
               <span className="ml-1 opacity-60">({(arg.value as string).length} chars)</span>
             </summary>
-            <div className="mt-2 font-mono text-xs break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
+            <div className="mt-2 font-mono text-base break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
               {String(arg.value)}
             </div>
           </details>
         ) : typeof arg.value === "boolean" ? (
-          <span className={`font-mono text-sm ${arg.value ? "text-emerald-400" : "text-rose-400"}`}>
+          <span className={`font-mono text-base ${arg.value ? "text-emerald-400" : "text-rose-400"}`}>
             {String(arg.value)}
           </span>
         ) : (
-          <span className="font-mono text-sm break-all">{arg.displayValue}</span>
+          <span className="font-mono text-base break-all">{arg.displayValue}</span>
         )}
       </div>
     </div>

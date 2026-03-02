@@ -4,6 +4,7 @@ import pako from "pako";
 // import {Statsig} from "statsig-react";
 import { AccountAddress, AccountAddressInput, Hex } from "@aptos-labs/ts-sdk";
 import moment from "moment";
+import { buildFnDeclRegex } from "./moveSourceParser";
 
 /**
  * Helper function for exhaustiveness checks.
@@ -132,11 +133,6 @@ export const tryStandardizeAddress = (
   return undefined;
 };
 
-// inspired by https://stackoverflow.com/questions/3446170/escape-string-for-use-in-javascript-regex
-function escapeRegExp(regexpString: string) {
-  return regexpString.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
 // Get the line number of a public function in a source code.
 // The line number is zero-based.
 // Return 0 if the function is not found.
@@ -145,15 +141,9 @@ export function getPublicFunctionLineNumber(
   functionName: string
 ) {
   const lines = sourceCode.split("\n");
-  const publicEntryFunRegexp = new RegExp(
-    `\\s*public\\s*(entry\\s*)?fun\\s*${escapeRegExp(
-      functionName
-    )}\\s*(?:<|\\()`
-  );
+  const fnRegex = buildFnDeclRegex(functionName);
 
-  const lineNumber = lines.findIndex((line) =>
-    line.match(publicEntryFunRegexp)
-  );
+  const lineNumber = lines.findIndex((line) => fnRegex.test(line));
   if (lineNumber !== -1) {
     return lineNumber;
   }

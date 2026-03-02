@@ -44,6 +44,7 @@ import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 import { useGetAccountModule } from "@/hooks/accounts/useGetAccountModule";
 import { useGetAccountModules } from "@/hooks/accounts/useGetAccountModules";
 import { getBytecodeSizeInKB, transformCode } from "@/utils";
+import { MOVE_FN_REGEX } from "@/utils/moveSourceParser";
 import { CodeBlock } from "@/components/ui/CodeBlock";
 import AbiDisplay from "./AbiDisplay";
 import PackageContent from "./PackageContent";
@@ -64,9 +65,7 @@ function parseOutline(code: string): OutlineItem[] {
   const items: OutlineItem[] = [];
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
-    const fnMatch = line.match(
-      /^\s*(?:public(?:\(friend\))?\s+)?(?:entry\s+)?(?:inline\s+)?fun\s+(\w+)/,
-    );
+    const fnMatch = line.match(MOVE_FN_REGEX);
     if (fnMatch) {
       items.push({ type: "function", name: fnMatch[1], line: i + 1 });
       continue;

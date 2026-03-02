@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/utils/styling";
 import { transformCode } from "@/utils";
+import { MOVE_FN_REGEX } from "@/utils/moveSourceParser";
 import { PackageMetadata } from "@/hooks/accounts/useGetAccountPackages";
 
 interface ModuleSidebarProps {
@@ -65,9 +66,7 @@ export default function ModuleSidebar({
           const order = new Map<string, number>();
           const lines = source.split("\n");
           for (let i = 0; i < lines.length; i++) {
-            const match = lines[i].match(
-              /^\s*(?:public(?:\(friend\))?\s+)?(?:entry\s+)?(?:inline\s+)?fun\s+(\w+)/,
-            );
+            const match = lines[i].match(MOVE_FN_REGEX);
             if (match) order.set(match[1], i);
           }
           orderMap[mod.name] = order;

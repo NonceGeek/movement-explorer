@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourceAvailability";
+import { useGetFunctionParams } from "@/hooks/accounts/useGetFunctionParams";
 import { formatMovementPath } from "@/utils";
 import { getFunctionDescription } from "@/constants/contractFunctions";
 
@@ -98,6 +99,66 @@ export function TransactionFunction({
   );
 }
 
+function FunctionSignature({
+  functionName,
+  params,
+  isLoading,
+}: {
+  functionName: string;
+  params: { name: string; type: string }[] | null;
+  isLoading?: boolean;
+}) {
+  if (isLoading) {
+    return (
+      <span className="text-guild-green-500 font-medium">
+        {functionName}
+        <span className="text-muted-foreground">(</span>
+        <span className="text-muted-foreground/80 inline-flex gap-[2px] [&>span]:animate-bounce">
+          <span className="[animation-delay:0ms]">.</span>
+          <span className="[animation-delay:150ms]">.</span>
+          <span className="[animation-delay:300ms]">.</span>
+        </span>
+        <span className="text-muted-foreground">)</span>
+      </span>
+    );
+  }
+
+  if (!params || params.length === 0) {
+    return (
+      <span className="text-guild-green-500 font-medium">
+        {functionName}()
+      </span>
+    );
+  }
+
+  return (
+    <>
+      <span className="text-guild-green-500 font-medium">{functionName}</span>
+      <span className="text-muted-foreground">(</span>
+      {params.length <= 2 ? (
+        params.map((p, i) => (
+          <span key={i}>
+            {i > 0 && <span className="text-muted-foreground">, </span>}
+            <span className="text-foreground">{p.name}</span>
+            <span className="text-muted-foreground">: </span>
+            <span className="text-purple-400">{p.type}</span>
+          </span>
+        ))
+      ) : (
+        params.map((p, i) => (
+          <div key={i} className="pl-4 break-all">
+            <span className="text-foreground">{p.name}</span>
+            <span className="text-muted-foreground">: </span>
+            <span className="text-purple-400">{p.type}</span>
+            {i < params.length - 1 && <span className="text-muted-foreground">,</span>}
+          </div>
+        ))
+      )}
+      <span className="text-muted-foreground">)</span>
+    </>
+  );
+}
+
 function TransactionFunctionWithSource({
   address,
   moduleName,
@@ -112,6 +173,7 @@ function TransactionFunctionWithSource({
   className?: string;
 }) {
   const { hasSource } = useContractSourceAvailability(address);
+  const { params, isLoading: paramsLoading } = useGetFunctionParams(functionFullStr);
   const description = getFunctionDescription(functionFullStr);
   const displayName = description ?? functionName;
 
@@ -137,7 +199,7 @@ function TransactionFunctionWithSource({
             <span className="truncate">{displayName}</span>
           </Link>
         </TooltipTrigger>
-        <TooltipContent className="p-3 max-w-80 sm:max-w-100">
+        <TooltipContent side="right" className="p-3 max-w-80 sm:max-w-100">
           <div className="flex flex-col gap-3 [&_span]:!block [&_svg]:!block">
             <div className="space-y-1">
               <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
@@ -161,8 +223,8 @@ function TransactionFunctionWithSource({
                 <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                   Function
                 </span>
-                <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
-                  {functionName}
+                <div className="font-mono text-xs bg-primary/5 p-2 rounded border border-primary/10 [&_span]:!inline">
+                  <FunctionSignature functionName={functionName} params={params} isLoading={paramsLoading} />
                 </div>
               </div>
             </div>

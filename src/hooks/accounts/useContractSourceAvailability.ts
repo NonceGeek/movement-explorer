@@ -1,30 +1,19 @@
-import { useQuery } from "@tanstack/react-query";
-import { getAccountResource } from "../../services/accounts";
-import { useGlobalStore } from "../../store/useGlobalStore";
-import { PackageMetadata } from "./useGetAccountPackages";
+import { useMemo } from "react";
+import { useGetPackageRegistry } from "./useGetPackageRegistry";
 
+/**
+ * Check if any package under this address has source code available.
+ * Shares the same cached PackageRegistry data as useGetFunctionParams.
+ */
 export function useContractSourceAvailability(address: string | null) {
-  const { network_value, aptos_client } = useGlobalStore();
+  const { data: packages, isLoading } = useGetPackageRegistry(address);
 
-  const { data: hasSource = false, isLoading } = useQuery({
-    queryKey: ["contractSourceAvailability", address, network_value],
-    queryFn: async () => {
-      if (!address) return false;
-      const resource = await getAccountResource(
-        { address, resourceType: "0x1::code::PackageRegistry" },
-        aptos_client,
-      );
-      const registryData = resource.data as { packages?: PackageMetadata[] };
-      const packages = registryData?.packages;
-      if (!packages) return false;
-      return packages.some((pkg) =>
-        pkg.modules.some((mod) => mod.source && mod.source !== "0x"),
-      );
-    },
-    enabled: !!address,
-    staleTime: Infinity,
-    retry: false,
-  });
+  const hasSource = useMemo(() => {
+    if (!packages) return false;
+    return packages.some((pkg) =>
+      pkg.modules.some((mod) => mod.source && mod.source !== "0x"),
+    );
+  }, [packages]);
 
   return { hasSource, isLoading };
 }

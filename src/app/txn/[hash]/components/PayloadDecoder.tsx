@@ -345,6 +345,8 @@ function formatArgValue(value: unknown, type: string): string {
 
 export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const [viewMode, setViewMode] = useState<"decoded" | "raw">("decoded");
+  const [typeArgsExpanded, setTypeArgsExpanded] = useState(false);
+  const [argsExpanded, setArgsExpanded] = useState(false);
 
   // Extract entry payload and function path before hooks (rules of hooks: no conditional calls)
   const isEntryFunction = payload?.type === "entry_function_payload";
@@ -466,16 +468,83 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                   {typeArgs.length > 0 && (
                     <>
                       <span className="text-muted-foreground">&lt;</span>
-                      {typeArgs.map((typeArg, i) => (
-                        <span key={i}>
-                          {i > 0 && (
-                            <span className="text-muted-foreground">, </span>
-                          )}
-                          <span className="text-blue-400">
-                            {formatMovementPath(typeArg)}
-                          </span>
-                        </span>
-                      ))}
+                      {typeArgs.length <= 2
+                        ? typeArgs.map((typeArg, i) => (
+                            <span key={i}>
+                              {i > 0 && (
+                                <span className="text-muted-foreground">
+                                  ,{" "}
+                                </span>
+                              )}
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="text-blue-400">
+                                      {abbreviateType(
+                                        formatMovementPath(typeArg),
+                                      )}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="font-mono text-xs max-w-md break-all">
+                                    {formatMovementPath(typeArg)}
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </span>
+                          ))
+                        : (() => {
+                            const visible = typeArgsExpanded
+                              ? typeArgs
+                              : typeArgs.slice(0, 6);
+                            const hiddenCount = typeArgs.length - 6;
+                            return (
+                              <>
+                                {visible.map((typeArg, i) => (
+                                  <div key={i} className="pl-4 break-all">
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                        <TooltipTrigger asChild>
+                                          <span className="text-blue-400">
+                                            {abbreviateType(
+                                              formatMovementPath(typeArg),
+                                            )}
+                                          </span>
+                                        </TooltipTrigger>
+                                        <TooltipContent side="right" className="font-mono text-xs max-w-md break-all">
+                                          {formatMovementPath(typeArg)}
+                                        </TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                    {(i < visible.length - 1 ||
+                                      (!typeArgsExpanded &&
+                                        hiddenCount > 0)) && (
+                                      <span className="text-muted-foreground">
+                                        ,
+                                      </span>
+                                    )}
+                                  </div>
+                                ))}
+                                {hiddenCount > 0 && (
+                                  <div
+                                    className="pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none flex items-center gap-1"
+                                    onClick={() =>
+                                      setTypeArgsExpanded(!typeArgsExpanded)
+                                    }
+                                  >
+                                    <ChevronRight
+                                      className={cn(
+                                        "size-3.5 shrink-0 transition-transform",
+                                        typeArgsExpanded && "rotate-90",
+                                      )}
+                                    />
+                                    {typeArgsExpanded
+                                      ? "collapse"
+                                      : `${hiddenCount} more`}
+                                  </div>
+                                )}
+                              </>
+                            );
+                          })()}
                       <span className="text-muted-foreground">&gt;</span>
                     </>
                   )}
@@ -493,18 +562,56 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                           </span>
                         </span>
                       ))
-                    : decodedArgs.map((arg, i) => (
-                        <div key={arg.index} className="pl-4 break-all">
-                          <span className="text-foreground">{arg.name}</span>
-                          <span className="text-muted-foreground">: </span>
-                          <span className="text-purple-400">
-                            {abbreviateType(arg.type)}
-                          </span>
-                          {i < decodedArgs.length - 1 && (
-                            <span className="text-muted-foreground">,</span>
-                          )}
-                        </div>
-                      ))}
+                    : (() => {
+                        const visibleArgs = argsExpanded
+                          ? decodedArgs
+                          : decodedArgs.slice(0, 6);
+                        const hiddenArgCount = decodedArgs.length - 6;
+                        return (
+                          <>
+                            {visibleArgs.map((arg, i) => (
+                              <div
+                                key={arg.index}
+                                className="pl-4 break-all"
+                              >
+                                <span className="text-foreground">
+                                  {arg.name}
+                                </span>
+                                <span className="text-muted-foreground">
+                                  :{" "}
+                                </span>
+                                <span className="text-purple-400">
+                                  {abbreviateType(arg.type)}
+                                </span>
+                                {(i < visibleArgs.length - 1 ||
+                                  (!argsExpanded && hiddenArgCount > 0)) && (
+                                  <span className="text-muted-foreground">
+                                    ,
+                                  </span>
+                                )}
+                              </div>
+                            ))}
+                            {hiddenArgCount > 0 && (
+                              <div
+                                className="pl-4 text-muted-foreground cursor-pointer hover:text-foreground transition-colors select-none flex items-center gap-1"
+                                onClick={() =>
+                                  setArgsExpanded(!argsExpanded)
+                                }
+                              >
+                                <ChevronRight
+                                  className={cn(
+                                    "size-3.5 shrink-0 transition-transform",
+                                    argsExpanded && "rotate-90",
+                                  )}
+                                />
+                                {argsExpanded
+                                  ? "collapse"
+                                  : `${hiddenArgCount} more`}
+                              </div>
+                            )}
+                          </>
+                        );
+                      })()}
                   <span className="text-muted-foreground">)</span>
                   {paramsLoading && !isKnown && (
                     <span className="ml-1.5 text-xs opacity-50 animate-pulse">

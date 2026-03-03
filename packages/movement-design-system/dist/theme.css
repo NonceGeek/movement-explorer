@@ -481,7 +481,7 @@
   
   /* Muted & UI elements */
   --muted: hsl(0 0% 15%); /* dark muted bg */
-  --muted-foreground: hsl(0 0% 60%); /* muted white */
+  --muted-foreground: hsl(0 0% 80%); /* muted white */
   --border: hsl(0 0% 100% / 24%); /* rgba(255,255,255,0.24) */
   --input: hsl(0 0% 100% / 24%); /* rgba(255,255,255,0.24) - checkbox/input border and bg */
   --ring: hsl(150 100% 75%); /* guild-green.300 - focus ring */
@@ -570,7 +570,7 @@
   
   /* Muted & UI elements (dark mode) */
   --muted: hsl(0 0% 15%);
-  --muted-foreground: hsl(0 0% 70%);
+  --muted-foreground: hsl(0 0% 80%);
   --border: hsl(0 0% 100% / 10%);
   --input: hsl(0 0% 100% / 15%);
   --ring: hsl(154 66% 66%); /* guild-green.400 */

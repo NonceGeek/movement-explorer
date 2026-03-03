@@ -6,16 +6,16 @@ import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
 import { cn } from "@/utils/styling";
 import Link from "next/link";
-import { ListTree, ChevronDown, ChevronUp } from "lucide-react";
+import { ListTree, ChevronRight } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import type { Types } from "aptos";
+import { formatMovementPath, abbreviateType } from "@/utils";
 import {
   Tooltip,
   TooltipContent,
-  TooltipProvider,
   TooltipTrigger,
+  TooltipProvider,
 } from "@/components/ui/tooltip";
-import type { Types } from "aptos";
-import { formatMovementPath } from "@/utils";
 import {
   useGetFunctionParams,
   type ResolvedParam,
@@ -98,9 +98,7 @@ const KNOWN_FUNCTIONS: Record<
     ],
   },
   "0x1::managed_coin::burn": {
-    args: [
-      { name: "amount", type: "u64" },
-    ],
+    args: [{ name: "amount", type: "u64" }],
   },
   "0x1::coin::register": {
     args: [],
@@ -112,9 +110,7 @@ const KNOWN_FUNCTIONS: Record<
     ],
   },
   "0x1::aptos_account::create_account": {
-    args: [
-      { name: "auth_key", type: "address" },
-    ],
+    args: [{ name: "auth_key", type: "address" }],
   },
   "0x1::aptos_account::batch_transfer": {
     args: [
@@ -129,9 +125,7 @@ const KNOWN_FUNCTIONS: Record<
     ],
   },
   "0x1::resource_account::create_resource_account": {
-    args: [
-      { name: "seed", type: "vector<u8>" },
-    ],
+    args: [{ name: "seed", type: "vector<u8>" }],
   },
   "0x1::resource_account::create_resource_account_and_publish_package": {
     args: [
@@ -211,19 +205,13 @@ const KNOWN_FUNCTIONS: Record<
     ],
   },
   "0x4::aptos_token::burn": {
-    args: [
-      { name: "token", type: "Object<Token>" },
-    ],
+    args: [{ name: "token", type: "Object<Token>" }],
   },
   "0x4::aptos_token::freeze_transfer": {
-    args: [
-      { name: "token", type: "Object<Token>" },
-    ],
+    args: [{ name: "token", type: "Object<Token>" }],
   },
   "0x4::aptos_token::unfreeze_transfer": {
-    args: [
-      { name: "token", type: "Object<Token>" },
-    ],
+    args: [{ name: "token", type: "Object<Token>" }],
   },
   "0x4::aptos_token::set_description": {
     args: [
@@ -357,7 +345,6 @@ function formatArgValue(value: unknown, type: string): string {
 
 export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const [viewMode, setViewMode] = useState<"decoded" | "raw">("decoded");
-  const [showTypeArgs, setShowTypeArgs] = useState(false);
 
   // Extract entry payload and function path before hooks (rules of hooks: no conditional calls)
   const isEntryFunction = payload?.type === "entry_function_payload";
@@ -367,9 +354,9 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   const entryPayload = isEntryFunction
     ? (payload as Types.TransactionPayload_EntryFunctionPayload)
     : isMultisig &&
-      payload &&
-      "transaction_payload" in payload &&
-      payload.transaction_payload
+        payload &&
+        "transaction_payload" in payload &&
+        payload.transaction_payload
       ? (payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload)
       : null;
 
@@ -402,13 +389,14 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   return (
     <div className={cn("space-y-4", className)}>
       {/* View Mode Toggle */}
-      <ToggleGroup value={viewMode} onValueChange={(v) => setViewMode(v as "decoded" | "raw")}>
+      <ToggleGroup
+        value={viewMode}
+        onValueChange={(v) => setViewMode(v as "decoded" | "raw")}
+      >
         <ToggleGroupItem value="decoded">
           <ListTree className="h-3.5 w-3.5" />
         </ToggleGroupItem>
-        <ToggleGroupItem value="raw">
-          RAW
-        </ToggleGroupItem>
+        <ToggleGroupItem value="raw">RAW</ToggleGroupItem>
       </ToggleGroup>
 
       {viewMode === "raw" ? (
@@ -417,7 +405,9 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
         <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
           {/* Payload Type */}
           <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider">Type</span>
+            <span className="text-sm text-muted-foreground uppercase tracking-wider">
+              Type
+            </span>
             <Badge variant="secondary" className="capitalize">
               {payload.type.replace(/_/g, " ")}
             </Badge>
@@ -436,121 +426,129 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
 
           {entryPayload && (
             <>
-              {/* Function */}
-              <div className="px-5 py-3 flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3">
-                <div className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">Function</div>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Link
-                        href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
-                        className="font-mono text-base text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden block whitespace-nowrap"
-                      >
-                        {moduleAddr.length <= 10 ? moduleAddr : `${moduleAddr.slice(0, 6)}...${moduleAddr.slice(-4)}`}::{formatMovementPath(moduleName)}::{funcName}
-                      </Link>
-                    </TooltipTrigger>
-                    <TooltipContent className="p-3 max-w-80 sm:max-w-100">
-                      <div className="flex flex-col gap-3">
-                        <div className="space-y-1">
-                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                            Address
-                          </span>
-                          <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
-                            {moduleAddr}
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                            Module
-                          </span>
-                          <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
-                            {formatMovementPath(moduleName)}
-                          </div>
-                        </div>
-                        <div className="space-y-1">
-                          <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                            Function
-                          </span>
-                          <div className="font-mono text-xs bg-primary/5 p-2 rounded border border-primary/10 [&_span]:inline">
-                            <span className="text-guild-green-500 font-medium">{funcName}</span>
-                            <span className="text-muted-foreground">(</span>
-                            {decodedArgs.length <= 2 ? (
-                              // Inline for short signatures
-                              decodedArgs.map((arg, i) => (
-                                <span key={arg.index}>
-                                  {i > 0 && <span className="text-muted-foreground">, </span>}
-                                  <span className="text-foreground">{arg.name}</span>
-                                  <span className="text-muted-foreground">: </span>
-                                  <span className="text-purple-400">{arg.type}</span>
-                                </span>
-                              ))
-                            ) : (
-                              // One param per line for long signatures
-                              decodedArgs.map((arg, i) => (
-                                <div key={arg.index} className="pl-4 break-all">
-                                  <span className="text-foreground">{arg.name}</span>
-                                  <span className="text-muted-foreground">: </span>
-                                  <span className="text-purple-400">{arg.type}</span>
-                                  {i < decodedArgs.length - 1 && <span className="text-muted-foreground">,</span>}
-                                </div>
-                              ))
-                            )}
-                            <span className="text-muted-foreground">)</span>
-                          </div>
-                        </div>
-                      </div>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+              {/* Address */}
+              <div className="px-5 py-3 flex items-center gap-3">
+                <span className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">
+                  Address
+                </span>
+                <CopyableAddress
+                  address={moduleAddr}
+                  href={`/account/${moduleAddr}`}
+                  showFull
+                />
               </div>
 
-              {/* Type Arguments */}
-              {typeArgs.length > 0 && (
-                <div className="px-5 py-3">
-                  <button
-                    onClick={() => setShowTypeArgs(!showTypeArgs)}
-                    className="flex items-center gap-2 text-sm text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors w-full cursor-pointer"
+              {/* Module */}
+              <div className="px-5 py-3 flex items-center gap-3">
+                <span className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">
+                  Module
+                </span>
+                <Link
+                  href={`/account/${moduleAddr}/modules/code/${moduleName}`}
+                  className="font-mono text-sm text-primary hover:underline break-all"
+                >
+                  {formatMovementPath(moduleName)}
+                </Link>
+              </div>
 
+              {/* Signature */}
+              <div className="px-5 py-3">
+                <div className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
+                  Signature
+                </div>
+                <div className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all [&_span]:inline">
+                  <Link
+                    href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
+                    className="text-guild-green-500 font-medium hover:underline"
                   >
-                    <span>Type Arguments ({typeArgs.length})</span>
-                    {showTypeArgs ? (
-                      <ChevronUp className="h-4 w-4" />
-                    ) : (
-                      <ChevronDown className="h-4 w-4" />
-                    )}
-                  </button>
-                  {showTypeArgs && (
-                    <div className="mt-2 space-y-1">
+                    {funcName}
+                  </Link>
+                  {typeArgs.length > 0 && (
+                    <>
+                      <span className="text-muted-foreground">&lt;</span>
                       {typeArgs.map((typeArg, i) => (
-                        <div
-                          key={i}
-                          className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all"
-                        >
-                          <span className="text-muted-foreground/60 mr-2">{i}</span>
-                          <span className="text-purple-400">{formatMovementPath(typeArg)}</span>
+                        <span key={i}>
+                          {i > 0 && (
+                            <span className="text-muted-foreground">, </span>
+                          )}
+                          <span className="text-blue-400">
+                            {formatMovementPath(typeArg)}
+                          </span>
+                        </span>
+                      ))}
+                      <span className="text-muted-foreground">&gt;</span>
+                    </>
+                  )}
+                  <span className="text-muted-foreground">(</span>
+                  {decodedArgs.length <= 2
+                    ? decodedArgs.map((arg, i) => (
+                        <span key={arg.index}>
+                          {i > 0 && (
+                            <span className="text-muted-foreground">, </span>
+                          )}
+                          <span className="text-foreground">{arg.name}</span>
+                          <span className="text-muted-foreground">: </span>
+                          <span className="text-purple-400">
+                            {abbreviateType(arg.type)}
+                          </span>
+                        </span>
+                      ))
+                    : decodedArgs.map((arg, i) => (
+                        <div key={arg.index} className="pl-4 break-all">
+                          <span className="text-foreground">{arg.name}</span>
+                          <span className="text-muted-foreground">: </span>
+                          <span className="text-purple-400">
+                            {abbreviateType(arg.type)}
+                          </span>
+                          {i < decodedArgs.length - 1 && (
+                            <span className="text-muted-foreground">,</span>
+                          )}
                         </div>
                       ))}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Arguments */}
-              <div>
-                <div className="px-5 py-3 text-sm text-muted-foreground uppercase tracking-wider bg-muted/20">
-                  Arguments ({decodedArgs.length})
+                  <span className="text-muted-foreground">)</span>
                   {paramsLoading && !isKnown && (
-                    <span className="ml-2 text-xs opacity-50 animate-pulse">resolving...</span>
+                    <span className="ml-1.5 text-xs opacity-50 animate-pulse">
+                      resolving...
+                    </span>
                   )}
                 </div>
-                {decodedArgs.length === 0 ? (
-                  <div className="px-5 py-4 text-sm text-muted-foreground">No arguments</div>
-                ) : (
-                  decodedArgs.map((arg) => (
-                    <ArgumentRow key={arg.index} arg={arg} />
-                  ))
-                )}
               </div>
+
+              {/* Arguments Header */}
+              <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
+                <span className="text-sm text-muted-foreground uppercase tracking-wider">
+                  Arguments
+                </span>
+                <Badge variant="secondary" className="text-xs">
+                  {decodedArgs.length}
+                </Badge>
+              </div>
+
+              {/* Argument Rows */}
+              {decodedArgs.length === 0 ? (
+                <div className="px-5 py-3 text-sm text-muted-foreground">
+                  No arguments
+                </div>
+              ) : (
+                decodedArgs.map((arg) => (
+                  <div key={arg.index} className="px-5 py-3">
+                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                      {arg.name.startsWith("arg_") && (
+                        <span className="text-xs text-muted-foreground/50 shrink-0 font-mono">
+                          #{arg.index}
+                        </span>
+                      )}
+                      <span className="text-sm font-medium text-foreground/70 font-mono">
+                        {arg.name}
+                      </span>
+                      <TypeBadge type={arg.type} />
+                    </div>
+                    <div className="min-w-0 pl-4">
+                      <ArgumentValue arg={arg} />
+                    </div>
+                  </div>
+                ))
+              )}
             </>
           )}
         </div>
@@ -559,10 +557,13 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
   );
 }
 
-function tryParseJson(value: unknown): { parsed: true; data: unknown } | { parsed: false } {
+function tryParseJson(
+  value: unknown,
+): { parsed: true; data: unknown } | { parsed: false } {
   if (typeof value !== "string") return { parsed: false };
   const trimmed = value.trim();
-  if (!(trimmed.startsWith("{") || trimmed.startsWith("["))) return { parsed: false };
+  if (!(trimmed.startsWith("{") || trimmed.startsWith("[")))
+    return { parsed: false };
   try {
     return { parsed: true, data: JSON.parse(trimmed) };
   } catch {
@@ -570,53 +571,247 @@ function tryParseJson(value: unknown): { parsed: true; data: unknown } | { parse
   }
 }
 
-function ArgumentRow({ arg }: { arg: DecodedArgument }) {
-  const isAddress = arg.type === "address" || arg.type === "hex";
-  const isComplex =
-    Array.isArray(arg.value) ||
-    (typeof arg.value === "object" && arg.value !== null);
-  const jsonResult = tryParseJson(arg.value);
-  const isLargeValue =
-    typeof arg.value === "string" && arg.value.length > 100;
-
+function isAddressValue(value: unknown): boolean {
   return (
-    <div className="border-b border-border/20 last:border-0 px-4 py-3">
-      <div className="flex items-baseline gap-2 flex-wrap mb-1.5">
-        <span className="text-base text-muted-foreground/50">{arg.index}</span>
-        <span className="text-base font-medium text-muted-foreground">{arg.name}</span>
-        <Badge variant="outline" className="text-xs font-mono px-1.5 py-0 shrink-0">
-          {arg.type}
-        </Badge>
+    typeof value === "string" && value.startsWith("0x") && value.length >= 10
+  );
+}
+
+/** Move Object<T> is serialized as {inner: "0x..."} */
+function extractObjectAddress(value: unknown): string | null {
+  if (typeof value === "object" && value !== null && "inner" in value) {
+    const inner = (value as { inner: unknown }).inner;
+    if (typeof inner === "string" && inner.startsWith("0x")) return inner;
+  }
+  return null;
+}
+
+/** Recursive value renderer — handles any value with smart type detection */
+function SmartValue({
+  value,
+  typeHint,
+}: {
+  value: unknown;
+  typeHint?: string;
+}) {
+  // Address string
+  if (isAddressValue(value) && typeof value === "string") {
+    return (
+      <CopyableAddress
+        address={value}
+        href={`/account/${value}`}
+        showFull
+        className="text-sm"
+      />
+    );
+  }
+
+  // Object<T> pattern: {inner: "0x..."}
+  const objectAddr = extractObjectAddress(value);
+  if (objectAddr) {
+    return (
+      <CopyableAddress
+        address={objectAddr}
+        href={`/account/${objectAddr}`}
+        showFull
+        className="text-sm"
+      />
+    );
+  }
+
+  // vector<u8> hex bytes (serialized as a single hex string)
+  if (typeHint === "vector<u8>" && typeof value === "string") {
+    return (
+      <div className="font-mono text-sm bg-muted/30 px-3 py-2 rounded-lg break-all max-h-32 overflow-auto">
+        {value}
       </div>
-      <div className="min-w-0 pl-4">
-        {isAddress && typeof arg.value === "string" ? (
-          <CopyableAddress
-            address={arg.value}
-            href={`/account/${arg.value}`}
-            showFull
-          />
-        ) : isComplex ? (
-          <JsonViewer data={arg.value} initialDepth={1} />
-        ) : jsonResult.parsed ? (
-          <JsonViewer data={jsonResult.data} initialDepth={1} />
-        ) : isLargeValue ? (
+    );
+  }
+
+  // Array — render each item with index, recursively
+  if (Array.isArray(value)) {
+    if (value.length === 0) {
+      return (
+        <span className="font-mono text-sm text-muted-foreground">
+          [] (empty)
+        </span>
+      );
+    }
+    // Derive inner type hint: strip outermost vector<...>
+    const innerType =
+      typeHint?.startsWith("vector<") && typeHint.endsWith(">")
+        ? typeHint.slice(7, -1)
+        : undefined;
+    // Check if any item is a nested array/object (complex)
+    const hasComplexItems = value.some(
+      (item) =>
+        Array.isArray(item) ||
+        (typeof item === "object" &&
+          item !== null &&
+          !extractObjectAddress(item)),
+    );
+
+    const COLLAPSE_THRESHOLD = 5;
+    const shouldCollapse = value.length > COLLAPSE_THRESHOLD;
+
+    if (hasComplexItems) {
+      // Nested structures — each item open by default
+      const list = (
+        <div className="space-y-1">
+          {value.map((item, i) => (
+            <details key={i} open className="group">
+              <summary className="cursor-pointer flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground font-mono py-0.5 [&::-webkit-details-marker]:hidden list-none">
+                <ChevronRight className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+                <span className="text-muted-foreground/80 shrink-0 text-xs">
+                  [{i}]
+                </span>
+                <span>
+                  {Array.isArray(item)
+                    ? `${item.length} ${item.length === 1 ? "item" : "items"}`
+                    : "object"}
+                </span>
+              </summary>
+              <div className="ml-5 pl-3 border-l border-border/30 mt-1">
+                <SmartValue value={item} typeHint={innerType} />
+              </div>
+            </details>
+          ))}
+        </div>
+      );
+      if (shouldCollapse) {
+        return (
           <details className="group">
-            <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-              {(arg.value as string).slice(0, 60)}...
-              <span className="ml-1 opacity-60">({(arg.value as string).length} chars)</span>
+            <summary className="cursor-pointer flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-mono py-0.5 [&::-webkit-details-marker]:hidden list-none">
+              <ChevronRight className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+              <span>[{value.length} items]</span>
             </summary>
-            <div className="mt-2 font-mono text-base break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
-              {String(arg.value)}
-            </div>
+            <div className="mt-1">{list}</div>
           </details>
-        ) : typeof arg.value === "boolean" ? (
-          <span className={`font-mono text-base ${arg.value ? "text-emerald-400" : "text-rose-400"}`}>
-            {String(arg.value)}
-          </span>
-        ) : (
-          <span className="font-mono text-base break-all">{arg.displayValue}</span>
-        )}
+        );
+      }
+      return list;
+    }
+
+    // Flat list for leaf values
+    const list = (
+      <div className="space-y-1">
+        {value.map((item, i) => (
+          <div key={i} className="flex items-baseline gap-1.5">
+            <span className="text-xs text-muted-foreground/80 shrink-0 font-mono">
+              [{i}]
+            </span>
+            <div className="min-w-0 flex-1">
+              <SmartValue value={item} typeHint={innerType} />
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
+    );
+    if (shouldCollapse) {
+      return (
+        <details className="group">
+          <summary className="cursor-pointer flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground font-mono py-0.5 [&::-webkit-details-marker]:hidden list-none">
+            <ChevronRight className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+            <span>[{value.length} items]</span>
+          </summary>
+          <div className="mt-1">{list}</div>
+        </details>
+      );
+    }
+    return list;
+  }
+
+  // Non-array object (not Object<T>, handled above)
+  if (typeof value === "object" && value !== null) {
+    return <JsonViewer data={value} initialDepth={1} />;
+  }
+
+  // Boolean (JS boolean or string "true"/"false" with bool typeHint)
+  if (
+    typeof value === "boolean" ||
+    (typeHint === "bool" && (value === "true" || value === "false"))
+  ) {
+    const boolVal = typeof value === "boolean" ? value : value === "true";
+    return (
+      <span
+        className={`font-mono text-sm ${boolVal ? "text-emerald-400" : "text-rose-400"}`}
+      >
+        {String(boolVal)}
+      </span>
+    );
+  }
+
+  // Numeric value (JS number or string with numeric typeHint)
+  const isNumericType = /^u(8|16|32|64|128|256)$/.test(typeHint ?? "");
+  if (
+    typeof value === "number" ||
+    (isNumericType && typeof value === "string" && /^\d+$/.test(value))
+  ) {
+    const display =
+      typeof value === "number"
+        ? value.toLocaleString()
+        : BigInt(value).toLocaleString();
+    return <span className="font-mono text-sm text-foreground">{display}</span>;
+  }
+
+  // String
+  if (typeof value === "string") {
+    // JSON string
+    const jsonResult = tryParseJson(value);
+    if (jsonResult.parsed) {
+      return <JsonViewer data={jsonResult.data} initialDepth={1} />;
+    }
+    // Large string
+    if (value.length > 100) {
+      return (
+        <details className="group">
+          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
+            {value.slice(0, 60)}...
+            <span className="ml-1 opacity-60">({value.length} chars)</span>
+          </summary>
+          <div className="mt-2 font-mono text-sm break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
+            {value}
+          </div>
+        </details>
+      );
+    }
+    // Short string / number-like
+    return <span className="font-mono text-sm break-all">{value}</span>;
+  }
+
+  // Default
+  return <span className="font-mono text-sm break-all">{String(value)}</span>;
+}
+
+function ArgumentValue({ arg }: { arg: DecodedArgument }) {
+  return <SmartValue value={arg.value} typeHint={arg.type} />;
+}
+
+function TypeBadge({ type }: { type: string }) {
+  const short = abbreviateType(type);
+  const isAbbreviated = short !== type;
+  const badge = (
+    <span
+      className={cn(
+        "inline-flex items-center font-mono text-xs px-1.5 py-0.5 rounded bg-muted/60 text-foreground/70 border border-border/40 shrink-0",
+        isAbbreviated && "cursor-help",
+      )}
+    >
+      {short}
+    </span>
+  );
+  if (!isAbbreviated) return badge;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{badge}</TooltipTrigger>
+        <TooltipContent
+          side="top"
+          className="max-w-sm font-mono text-xs break-all"
+        >
+          {type}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

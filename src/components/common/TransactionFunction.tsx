@@ -88,30 +88,132 @@ export function TransactionFunction({
 
   const [address, moduleName, functionName] = parts;
 
+  // Extract actual arguments and type_arguments from the payload
+  const entryPayload = getEntryPayload(transaction.payload);
+
   return (
     <TransactionFunctionWithSource
       address={address}
       moduleName={moduleName}
       functionName={functionName}
       functionFullStr={functionFullStr}
+      args={entryPayload?.arguments ?? []}
+      typeArgs={entryPayload?.type_arguments ?? []}
       className={className}
     />
   );
 }
 
+/**
+ * Extract the entry function payload from various payload types.
+ */
+function getEntryPayload(
+  payload: Types.TransactionPayload,
+): Types.TransactionPayload_EntryFunctionPayload | null {
+  if (payload.type === "entry_function_payload") {
+    return payload as Types.TransactionPayload_EntryFunctionPayload;
+  }
+  if (
+    payload.type === "multisig_payload" &&
+    "transaction_payload" in payload &&
+    payload.transaction_payload &&
+    "type" in payload.transaction_payload &&
+    payload.transaction_payload.type === "entry_function_payload"
+  ) {
+    return payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload;
+  }
+  return null;
+}
+
+/**
+ * Format an argument value for compact tooltip display.
+ */
+function formatArgDisplay(value: unknown): string {
+  if (typeof value === "string") {
+    // Address: 0x + 64 hex chars
+    if (/^0x[0-9a-fA-F]{1,64}$/.test(value) && value.length > 10) {
+      return `${value.slice(0, 6)}…${value.slice(-4)}`;
+    }
+    // Pure numeric string → thousands separator
+    if (/^\d+$/.test(value)) {
+      return BigInt(value).toLocaleString();
+    }
+    // Short string → as-is, long string → truncate
+    if (value.length > 20) {
+      return `${value.slice(0, 18)}…`;
+    }
+    return value;
+  }
+  if (typeof value === "boolean") return String(value);
+  if (Array.isArray(value)) {
+    // Short arrays with simple (non-nested) values: expand inline
+    if (
+      value.length <= 3 &&
+      value.every((v) => typeof v !== "object" || v === null)
+    ) {
+      return `[${value.map((v) => formatArgDisplay(v)).join(", ")}]`;
+    }
+    return `[${value.length} items]`;
+  }
+  if (typeof value === "object" && value !== null) {
+    // Object<T> types commonly have an "inner" field with the address
+    const obj = value as Record<string, unknown>;
+    if ("inner" in obj && typeof obj.inner === "string") {
+      return formatArgDisplay(obj.inner);
+    }
+    // Single-key objects: show the value directly
+    const keys = Object.keys(obj);
+    if (keys.length === 1) {
+      return formatArgDisplay(obj[keys[0]]);
+    }
+    return "{…}";
+  }
+  return String(value);
+}
+
+/**
+ * Format a type_argument for generic display.
+ * e.g. "0x1::aptos_coin::AptosCoin" → "MovementCoin"
+ */
+function formatTypeArgShort(typeArg: string): string {
+  const parts = typeArg.split("::");
+  if (parts.length >= 3) {
+    return formatMovementPath(parts[parts.length - 1]);
+  }
+  return formatMovementPath(typeArg);
+}
+
 function FunctionSignature({
   functionName,
   params,
+  args,
+  typeArgs,
   isLoading,
 }: {
   functionName: string;
   params: { name: string; type: string }[] | null;
+  args: unknown[];
+  typeArgs: string[];
   isLoading?: boolean;
 }) {
+  // Merge param names with actual argument values
+  const mergedParams = args.map((value, i) => ({
+    name: params?.[i]?.name ?? `arg_${i}`,
+    value: formatArgDisplay(value),
+  }));
+
+  const typeArgDisplay =
+    typeArgs.length > 0
+      ? `<${typeArgs.map(formatTypeArgShort).join(", ")}>`
+      : "";
+
   if (isLoading) {
     return (
       <span className="text-guild-green-500 font-medium">
         {functionName}
+        {typeArgDisplay && (
+          <span className="text-blue-400">{typeArgDisplay}</span>
+        )}
         <span className="text-muted-foreground">(</span>
         <span className="text-muted-foreground/80 inline-flex gap-[2px] [&>span]:animate-bounce">
           <span className="[animation-delay:0ms]">.</span>
@@ -123,10 +225,14 @@ function FunctionSignature({
     );
   }
 
-  if (!params || params.length === 0) {
+  if (mergedParams.length === 0) {
     return (
       <span className="text-guild-green-500 font-medium">
-        {functionName}()
+        {functionName}
+        {typeArgDisplay && (
+          <span className="text-blue-400">{typeArgDisplay}</span>
+        )}
+        ()
       </span>
     );
   }
@@ -134,26 +240,18 @@ function FunctionSignature({
   return (
     <>
       <span className="text-guild-green-500 font-medium">{functionName}</span>
-      <span className="text-muted-foreground">(</span>
-      {params.length <= 2 ? (
-        params.map((p, i) => (
-          <span key={i}>
-            {i > 0 && <span className="text-muted-foreground">, </span>}
-            <span className="text-foreground">{p.name}</span>
-            <span className="text-muted-foreground">: </span>
-            <span className="text-purple-400">{p.type}</span>
-          </span>
-        ))
-      ) : (
-        params.map((p, i) => (
-          <div key={i} className="pl-4 break-all">
-            <span className="text-foreground">{p.name}</span>
-            <span className="text-muted-foreground">: </span>
-            <span className="text-purple-400">{p.type}</span>
-            {i < params.length - 1 && <span className="text-muted-foreground">,</span>}
-          </div>
-        ))
+      {typeArgDisplay && (
+        <span className="text-blue-400">{typeArgDisplay}</span>
       )}
+      <span className="text-muted-foreground">(</span>
+      {mergedParams.map((p, i) => (
+        <div key={i} className="pl-4 break-all">
+          <span className="text-foreground">{p.name}</span>
+          <span className="text-muted-foreground">: </span>
+          <span className="text-purple-400">{p.value}</span>
+          {i < mergedParams.length - 1 && <span className="text-muted-foreground">,</span>}
+        </div>
+      ))}
       <span className="text-muted-foreground">)</span>
     </>
   );
@@ -164,12 +262,16 @@ function TransactionFunctionWithSource({
   moduleName,
   functionName,
   functionFullStr,
+  args,
+  typeArgs,
   className,
 }: {
   address: string;
   moduleName: string;
   functionName: string;
   functionFullStr: string;
+  args: unknown[];
+  typeArgs: string[];
   className?: string;
 }) {
   const { hasSource } = useContractSourceAvailability(address);
@@ -224,7 +326,7 @@ function TransactionFunctionWithSource({
                   Function
                 </span>
                 <div className="font-mono text-xs bg-primary/5 p-2 rounded border border-primary/10 [&_span]:!inline">
-                  <FunctionSignature functionName={functionName} params={params} isLoading={paramsLoading} />
+                  <FunctionSignature functionName={functionName} params={params} args={args} typeArgs={typeArgs} isLoading={paramsLoading} />
                 </div>
               </div>
             </div>

@@ -383,6 +383,14 @@ export function reverseMovementPath(path: string): string {
 }
 
 /**
+ * Abbreviate long Move types for display.
+ * e.g. "0x1::object::Object<0xABC...::liquidity_pool::LiquidityPool>" → "Object<LiquidityPool>"
+ */
+export function abbreviateType(type: string): string {
+  return type.replace(/0x[a-fA-F0-9]+::\w+::(\w+)/g, "$1");
+}
+
+/**
  * Remove signer parameters from function params
  * Signer is automatically populated by the wallet
  */

@@ -12,19 +12,11 @@ import {
   TooltipTrigger,
   TooltipProvider,
 } from "@/components/ui/tooltip";
-import { removeSignerParam, isValidStruct } from "@/utils";
+import { removeSignerParam, isValidStruct, abbreviateType } from "@/utils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
 import { getMoveTypeValidator, validateLedgerVersion } from "@/utils/moveTypeValidator";
-
-/**
- * Abbreviate long Move types for display.
- * e.g. "0x1::object::Object<0xABC...::liquidity_pool::LiquidityPool>" → "Object<LiquidityPool>"
- */
-function abbreviateType(type: string): string {
-  return type.replace(/0x[a-fA-F0-9]+::\w+::(\w+)/g, "$1");
-}
 
 interface ContractFormProps {
   module: Types.MoveModule;

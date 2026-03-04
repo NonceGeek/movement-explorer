@@ -13,11 +13,22 @@ import {
   ACCOUNT_TRANSACTION_COLUMNS,
   TransactionRowData,
 } from "@/components/transactions";
+import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
 import { Activity, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import CoinTransfersTab from "./CoinTransfersTab";
+import NFTTransfersTab from "./NFTTransfersTab";
 
 const MAX_DISPLAY = 25;
+
+type TransactionSubTab = "txns" | "coins" | "nfts";
+
+const SUB_TAB_ITEMS = [
+  { value: "txns", label: "Transactions" },
+  { value: "coins", label: "Token Transfers" },
+  { value: "nfts", label: "NFT Transfers" },
+];
 
 interface TransactionsTabProps {
   address: string;
@@ -28,6 +39,45 @@ export default function TransactionsTab({
   address,
   accountData,
 }: TransactionsTabProps) {
+  const [subTab, setSubTab] = useState<TransactionSubTab>("txns");
+
+  const handleTabChange = (value: string) => {
+    setSubTab(value as TransactionSubTab);
+  };
+
+  return (
+    <div className="space-y-4">
+      <Tabs value={subTab} onValueChange={handleTabChange}>
+        <PillTabsList
+          items={SUB_TAB_ITEMS}
+          activeTab={subTab}
+          onTabChange={handleTabChange}
+        />
+
+        <TabsContent value="txns" className="mt-2">
+          <TransactionsSubTab address={address} accountData={accountData} />
+        </TabsContent>
+
+        <TabsContent value="coins" className="mt-2">
+          <CoinTransfersTab address={address} />
+        </TabsContent>
+
+        <TabsContent value="nfts" className="mt-2">
+          <NFTTransfersTab address={address} />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
+
+/** Original transactions list — extracted from the old TransactionsTab */
+function TransactionsSubTab({
+  address,
+  accountData,
+}: {
+  address: string;
+  accountData: Types.AccountData | undefined;
+}) {
   const { data: indexerTxCount } = useGetAccountTransactionCount(address);
 
   const sequenceNum = accountData

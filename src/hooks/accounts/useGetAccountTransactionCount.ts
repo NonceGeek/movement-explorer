@@ -13,16 +13,14 @@ export function useGetAccountTransactionCount(
     queryKey: ["accountTransactionCount", address, network_value],
     queryFn: async () => {
       try {
-        // Match source project: use move_resources_aggregate for count
         const result = await sdk_v2_client.queryIndexer<{
-          move_resources_aggregate: { aggregate: { count: number } };
+          account_transactions_aggregate: { aggregate: { count: number } };
         }>({
           query: {
             query: `
-              query AccountTransactionsCount($address: String) {
-                move_resources_aggregate(
-                  where: {address: {_eq: $address}}
-                  distinct_on: transaction_version
+              query AccountTransactionsCount($address: String!) {
+                account_transactions_aggregate(
+                  where: { account_address: { _eq: $address } }
                 ) {
                   aggregate {
                     count
@@ -33,10 +31,8 @@ export function useGetAccountTransactionCount(
             variables: { address: addr64Hash },
           },
         });
-        
-        console.log("Transaction count result:", result);
-        
-        return result.move_resources_aggregate?.aggregate?.count;
+
+        return result.account_transactions_aggregate?.aggregate?.count;
       } catch (e) {
         // Fallback or error handling if indexer is not available
         console.error("Indexer count fetch failed:", e);

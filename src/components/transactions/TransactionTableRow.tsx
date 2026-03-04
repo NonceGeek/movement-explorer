@@ -19,6 +19,7 @@ import {
   getTransactionAmount,
   getTransactionFunction,
   getTransactionDirection,
+  getTransactionToken,
   formatMoveAmount,
 } from "@/utils/transaction";
 import {
@@ -290,6 +291,21 @@ export function TransactionTableRowCells({
             )}
           </TableCell>
         );
+
+      case "token": {
+        const tokenName = getTransactionToken(transaction);
+        return (
+          <TableCell key={column.key} className={cn(hideClass, widthClass)}>
+            {tokenName ? (
+              <span className="text-sm text-foreground/80 transition-colors truncate max-w-[130px] inline-block">
+                {tokenName}
+              </span>
+            ) : (
+              <span className="text-muted-foreground transition-colors">-</span>
+            )}
+          </TableCell>
+        );
+      }
 
       default:
         return null;

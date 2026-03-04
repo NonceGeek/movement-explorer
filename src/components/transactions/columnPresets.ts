@@ -51,6 +51,21 @@ export const ACCOUNT_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
 ];
 
 /**
+ * Account page token transfer columns (replaces Gas with Token)
+ * Used by: Account TokenTransfersTab, AccountCoinTransfers page
+ */
+export const TOKEN_TRANSFER_COLUMNS: TransactionColumnConfig[] = [
+  { key: "hash", label: "Transaction Hash", width: "w-[170px]" },
+  { key: "function", label: "Function", width: "w-[120px]" },
+  { key: "timestamp", label: "Age", width: "w-[155px]" },
+  { key: "sender", label: "Sender", width: "w-[145px]" },
+  { key: "direction", label: "", width: "w-[75px]" },
+  { key: "to", label: "To", width: "w-[150px]" },
+  { key: "amount", label: "Amount", align: "right", width: "w-[130px]" },
+  { key: "token", label: "Token", width: "w-[130px]" },
+];
+
+/**
  * Get column count for a preset
  */
 export function getColumnCount(columns: TransactionColumnConfig[]): number {

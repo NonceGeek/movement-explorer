@@ -104,6 +104,7 @@ function TransactionsContent() {
         onClick={() => {
           const params = new URLSearchParams(searchParams.toString());
           params.delete("address");
+          params.delete("type");
           params.set("type", "user");
           params.set("page", "1");
           router.push(`/transactions?${params.toString()}`);
@@ -114,6 +115,7 @@ function TransactionsContent() {
         <ArrowRight size={14} strokeWidth={2.5} className="sm:size-4" />
       </Button>
     );
+
     return (
       <AccountTransactions
         address={addressParam}

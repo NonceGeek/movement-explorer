@@ -48,7 +48,13 @@
       "mcp__plugin_playwright_playwright__browser_click",
       "mcp__plugin_playwright_playwright__browser_run_code",
       "WebFetch(domain:aptos.dev)",
-      "WebFetch(domain:hasura.io)"
+      "WebFetch(domain:hasura.io)",
+      "Bash(npx next build)",
+      "Bash(python3 -m json.tool)",
+      "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d '{\"\"query\"\":\"\"{ __type\\(name: \\\\\"\"account_transactions\\\\\"\"\\) { fields { name type { name kind ofType { name } } } } }\"\"}')",
+      "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d '{:*)",
+      "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d @-)",
+      "Bash(npm run dev)"
     ]
   }
 }

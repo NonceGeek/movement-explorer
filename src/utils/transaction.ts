@@ -569,6 +569,30 @@ export function getGasInfo(tx: Types.Transaction): GasInfo | null {
   return null;
 }
 
+/**
+ * Extract the primary token type from a transaction.
+ * Returns a readable token name from payload type_arguments or events.
+ */
+export function getTransactionToken(
+  tx: Types.Transaction,
+): string | null {
+  if (!("payload" in tx)) return null;
+
+  const payload = tx.payload as Types.TransactionPayload_EntryFunctionPayload;
+  if (!payload.type_arguments || payload.type_arguments.length === 0)
+    return null;
+
+  const typeArg = payload.type_arguments[0];
+
+  // Extract readable name: "0x1::aptos_coin::AptosCoin" → "AptosCoin"
+  const parts = typeArg.split("::");
+  if (parts.length >= 3) {
+    return parts[parts.length - 1];
+  }
+
+  return typeArg;
+}
+
 // Balance change type for display
 export type BalanceChange = {
   address: string;

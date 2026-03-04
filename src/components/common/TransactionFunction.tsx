@@ -16,15 +16,41 @@ import { formatMovementPath } from "@/utils";
 import { getFunctionDescription } from "@/constants/contractFunctions";
 
 interface TransactionFunctionProps {
-  transaction: Types.Transaction;
+  transaction?: Types.Transaction;
+  entryFunctionIdStr?: string;
   className?: string;
 }
 
 export function TransactionFunction({
   transaction,
+  entryFunctionIdStr,
   className,
 }: TransactionFunctionProps) {
-  if (!("payload" in transaction)) {
+  // If only entryFunctionIdStr is provided (no full transaction object)
+  if (!transaction && entryFunctionIdStr) {
+    const parts = entryFunctionIdStr.split("::");
+    if (parts.length < 3) {
+      return (
+        <span className={cn("text-muted-foreground", className)}>
+          {entryFunctionIdStr}
+        </span>
+      );
+    }
+    const [address, moduleName, functionName] = parts;
+    return (
+      <TransactionFunctionWithSource
+        address={address}
+        moduleName={moduleName}
+        functionName={functionName}
+        functionFullStr={entryFunctionIdStr}
+        args={[]}
+        typeArgs={[]}
+        className={className}
+      />
+    );
+  }
+
+  if (!transaction || !("payload" in transaction)) {
     return "-";
   }
 

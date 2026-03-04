@@ -16,7 +16,8 @@ export type TransactionColumnKey =
   | "to"
   | "function"
   | "amount"
-  | "gas";
+  | "gas"
+  | "token";
 
 // Column configuration
 export interface TransactionColumnConfig {

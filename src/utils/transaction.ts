@@ -16,14 +16,17 @@ export type TransactionCounterparty = {
   role: "receiver" | "smartContract";
 };
 
-export type TransactionDirection = "out" | "in" | "contract" | "self";
+export type TransactionDirection = "out" | "in" | "self" | "call" | "related";
 
 /**
  * Determine the direction/relationship of a transaction relative to the current account.
- * - "out": current account is the sender
- * - "in": current account is a direct receiver (appears in function arguments)
- * - "self": current account is both sender and receiver
- * - "contract": current account is indirectly involved (contract internal)
+ * Uses counterparty role to distinguish transfers from contract calls.
+ *
+ * - "out": current account sent a transfer (known transfer function)
+ * - "in": current account received a transfer (known transfer function)
+ * - "self": current account transferred to itself
+ * - "call": current account initiated a contract call (not a known transfer)
+ * - "related": current account is indirectly involved
  */
 export function getTransactionDirection(
   transaction: Types.Transaction,
@@ -33,51 +36,31 @@ export function getTransactionDirection(
   const senderStd = sender ? tryStandardizeAddress(sender) : null;
   const currentStd = tryStandardizeAddress(currentAddress);
 
-  if (!currentStd) return "contract";
+  if (!currentStd) return "related";
+
+  const counterparty = getTransactionCounterparty(transaction);
 
   // Current account is the sender
   if (senderStd && senderStd === currentStd) {
-    const counterparty = getTransactionCounterparty(transaction);
-    if (counterparty) {
+    if (counterparty?.role === "receiver") {
       const counterpartyStd = tryStandardizeAddress(counterparty.address);
       if (counterpartyStd === currentStd) return "self";
+      return "out";
     }
-    return "out";
+    // Sender calling a contract (not a known transfer function)
+    return "call";
   }
 
-  // Check if current address is a direct receiver (appears in function arguments)
-  if (transaction.type === "user_transaction" && "payload" in transaction) {
-    const payload = transaction.payload;
-    let args: string[] = [];
-    if (
-      payload.type === "entry_function_payload" &&
-      "arguments" in payload
-    ) {
-      args =
-        (payload as Types.TransactionPayload_EntryFunctionPayload)
-          .arguments || [];
-    } else if (
-      payload.type === "multisig_payload" &&
-      "transaction_payload" in payload &&
-      payload.transaction_payload &&
-      "arguments" in payload.transaction_payload
-    ) {
-      args =
-        (
-          payload.transaction_payload as Types.TransactionPayload_EntryFunctionPayload
-        ).arguments || [];
-    }
-    for (const arg of args) {
-      if (typeof arg !== "string") continue;
-      const argStd = tryStandardizeAddress(arg);
-      if (argStd && argStd === currentStd) {
-        return "in";
-      }
+  // Current account is NOT the sender — check if it's a direct transfer receiver
+  if (counterparty?.role === "receiver") {
+    const counterpartyStd = tryStandardizeAddress(counterparty.address);
+    if (counterpartyStd === currentStd) {
+      return "in";
     }
   }
 
-  // Indirect — contract internal interaction
-  return "contract";
+  // Indirectly involved (e.g. through events or state changes)
+  return "related";
 }
 
 // Format timestamp for display

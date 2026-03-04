@@ -178,21 +178,31 @@ export function TransactionTableRowCells({
         const directionConfig = {
           out: {
             label: "OUT",
+            tooltip: "Sent a transfer",
             className:
               "bg-oracle-orange-500/15 text-oracle-orange-500 border-oracle-orange-500/30",
           },
           in: {
             label: "IN",
+            tooltip: "Received a transfer",
             className:
               "bg-guild-green-500/15 text-guild-green-500 border-guild-green-500/30",
           },
           self: {
             label: "SELF",
+            tooltip: "Transferred to self",
             className:
               "bg-yellow-500/15 text-yellow-500 border-yellow-500/30",
           },
-          contract: {
-            label: "Internal",
+          call: {
+            label: "CALL",
+            tooltip: "Initiated a contract call",
+            className:
+              "bg-blue-500/15 text-blue-500 border-blue-500/30",
+          },
+          related: {
+            label: "RELATED",
+            tooltip: "Indirectly involved",
             className:
               "bg-muted text-muted-foreground border-border",
           },
@@ -200,14 +210,23 @@ export function TransactionTableRowCells({
         const config = directionConfig[direction];
         return (
           <TableCell key={column.key} className={widthClass}>
-            <span
-              className={cn(
-                "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border",
-                config.className,
-              )}
-            >
-              {config.label}
-            </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span
+                    className={cn(
+                      "inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border cursor-default",
+                      config.className,
+                    )}
+                  >
+                    {config.label}
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="text-xs">{config.tooltip}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </TableCell>
         );
       }

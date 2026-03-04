@@ -41,7 +41,14 @@
       "WebFetch(domain:api.github.com)",
       "Bash(git clone --depth 1 https://github.com/aptos-labs/explorer.git aptos-explorer)",
       "mcp__plugin_playwright_playwright__browser_navigate",
-      "WebFetch(domain:codepen.io)"
+      "WebFetch(domain:codepen.io)",
+      "mcp__plugin_playwright_playwright__browser_snapshot",
+      "mcp__plugin_playwright_playwright__browser_take_screenshot",
+      "mcp__plugin_playwright_playwright__browser_handle_dialog",
+      "mcp__plugin_playwright_playwright__browser_click",
+      "mcp__plugin_playwright_playwright__browser_run_code",
+      "WebFetch(domain:aptos.dev)",
+      "WebFetch(domain:hasura.io)"
     ]
   }
 }

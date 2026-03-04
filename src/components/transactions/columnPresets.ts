@@ -44,7 +44,7 @@ export const ACCOUNT_TRANSACTION_COLUMNS: TransactionColumnConfig[] = [
   { key: "function", label: "Function", width: "w-[120px]" },
   { key: "timestamp", label: "Age", width: "w-[155px]" },
   { key: "sender", label: "Sender", width: "w-[145px]" },
-  { key: "direction", label: "", width: "w-[60px]" },
+  { key: "direction", label: "", width: "w-[75px]" },
   { key: "to", label: "To", width: "w-[150px]" },
   { key: "amount", label: "Amount", align: "right", width: "w-[130px]" },
   { key: "gas", label: "Gas", align: "right", width: "w-[100px]" },

@@ -42,7 +42,7 @@ export interface TransactionTableProps {
   // Timestamp
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode: () => void;
-  /** Current account address — used for direction labels (IN/OUT/Contract) */
+  /** Current account address — used for direction labels (IN/OUT/SELF/CALL/RELATED) */
   address?: string;
 }
 

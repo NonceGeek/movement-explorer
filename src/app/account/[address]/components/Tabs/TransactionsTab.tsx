@@ -18,7 +18,11 @@ import {
   DirectionColumnFilter,
   DirectionFilterValue,
 } from "@/components/transactions/filters/DirectionColumnFilter";
-import { getTransactionDirection } from "@/utils/transaction";
+import {
+  getTransactionDirection,
+  getTransactionFunction,
+} from "@/utils/transaction";
+import { FunctionColumnFilter } from "@/components/transactions/filters/FunctionColumnFilter";
 import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
 import { Activity, ArrowRight } from "lucide-react";
@@ -118,6 +122,7 @@ function TransactionsSubTab({
   // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
+  const [functionFilter, setFunctionFilter] = useState<string | null>(null);
 
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
@@ -128,20 +133,29 @@ function TransactionsSubTab({
     };
   });
 
-  // Filter by direction
-  const filteredData =
-    directionFilter === "any"
-      ? tableData
-      : tableData.filter((row) => {
-          const dir = getTransactionDirection(row.transaction, address);
-          return dir === directionFilter;
-        });
+  // Filter by direction and function
+  const filteredData = tableData
+    .filter((row) => {
+      if (directionFilter === "any") return true;
+      return getTransactionDirection(row.transaction, address) === directionFilter;
+    })
+    .filter((row) => {
+      if (!functionFilter) return true;
+      return getTransactionFunction(row.transaction) === functionFilter;
+    });
 
   const columnFilters: ColumnFilters = {
     direction: (
       <DirectionColumnFilter
         value={directionFilter}
         onChange={setDirectionFilter}
+      />
+    ),
+    function: (
+      <FunctionColumnFilter
+        value={functionFilter}
+        onChange={setFunctionFilter}
+        transactions={tableData}
       />
     ),
   };
@@ -176,11 +190,14 @@ function TransactionsSubTab({
                   </span>
                 )}{" "}
                 transactions
-                {directionFilter !== "any" && (
+                {(directionFilter !== "any" || functionFilter !== null) && (
                   <>
                     <span className="text-primary/80 ml-1">(filtered)</span>
                     <button
-                      onClick={() => setDirectionFilter("any")}
+                      onClick={() => {
+                        setDirectionFilter("any");
+                        setFunctionFilter(null);
+                      }}
                       className="text-xs text-primary hover:underline ml-2"
                     >
                       Clear Filters

@@ -28,6 +28,9 @@ export interface TransactionColumnConfig {
   width?: string; // e.g., 'w-[300px]'
 }
 
+// Column filters — maps a column key to a custom filter ReactNode
+export type ColumnFilters = Partial<Record<TransactionColumnKey, ReactNode>>;
+
 // Unified row data
 export interface TransactionRowData {
   version: number;
@@ -45,6 +48,8 @@ export interface TransactionTableProps {
   onToggleTimestampMode: () => void;
   /** Current account address — used for direction labels (IN/OUT/SELF/CALL/RELATED) */
   address?: string;
+  /** Optional filter widgets to render in column headers */
+  columnFilters?: ColumnFilters;
 }
 
 // Row props

@@ -7,13 +7,14 @@ import {
 } from "@/components/ui/table";
 import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
-import { TransactionColumnConfig } from "./types";
+import { TransactionColumnConfig, ColumnFilters } from "./types";
 import { cn } from "@/utils/styling";
 
 interface TransactionTableHeaderProps {
   columns: TransactionColumnConfig[];
   timestampMode: "age" | "dateTime";
   onToggleTimestampMode: (mode: "age" | "dateTime") => void;
+  columnFilters?: ColumnFilters;
 }
 
 /**
@@ -24,6 +25,7 @@ export function TransactionTableHeader({
   columns,
   timestampMode,
   onToggleTimestampMode,
+  columnFilters,
 }: TransactionTableHeaderProps) {
   // Get responsive class for column hiding
   const getHideClass = (hideAt?: "sm" | "md" | "lg") => {
@@ -61,15 +63,17 @@ export function TransactionTableHeader({
           </StyledTableHead>
         );
 
-      default:
+      default: {
+        const filter = columnFilters?.[column.key];
         return (
           <StyledTableHead
             key={column.key}
             className={cn(hideClass, alignClass, widthClass)}
           >
-            {column.label}
+            {filter ?? column.label}
           </StyledTableHead>
         );
+      }
     }
   };
 

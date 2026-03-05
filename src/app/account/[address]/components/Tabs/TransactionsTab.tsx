@@ -176,6 +176,17 @@ function TransactionsSubTab({
                   </span>
                 )}{" "}
                 transactions
+                {directionFilter !== "any" && (
+                  <>
+                    <span className="text-primary/80 ml-1">(filtered)</span>
+                    <button
+                      onClick={() => setDirectionFilter("any")}
+                      className="text-xs text-primary hover:underline ml-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           )}

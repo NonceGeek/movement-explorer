@@ -88,6 +88,13 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
     ),
   };
 
+  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null;
+
+  const clearAllFilters = () => {
+    setDirectionFilter("any");
+    setCoinFilter(null);
+  };
+
   const isLoading = versionsLoading || detailsLoading;
   const displayCount = totalCount ?? (transactionVersions?.length || 0);
 
@@ -120,6 +127,17 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
                   </span>
                 )}{" "}
                 token transfers
+                {hasActiveFilters && (
+                  <>
+                    <span className="text-primary/80 ml-1">(filtered)</span>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs text-primary hover:underline ml-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           )}

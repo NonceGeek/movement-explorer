@@ -11,7 +11,13 @@ import {
   TransactionTable,
   TOKEN_TRANSFER_COLUMNS,
   TransactionRowData,
+  ColumnFilters,
 } from "@/components/transactions";
+import {
+  DirectionColumnFilter,
+  DirectionFilterValue,
+} from "@/components/transactions/filters/DirectionColumnFilter";
+import { getTransactionDirection } from "@/utils/transaction";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,11 +54,30 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   });
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
 
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
     const version = "version" in tx ? parseInt(tx.version) : 0;
     return { version, transaction: tx };
   });
+
+  // Filter by direction
+  const filteredData =
+    directionFilter === "any"
+      ? tableData
+      : tableData.filter((row) => {
+          const dir = getTransactionDirection(row.transaction, address);
+          return dir === directionFilter;
+        });
+
+  const columnFilters: ColumnFilters = {
+    direction: (
+      <DirectionColumnFilter
+        value={directionFilter}
+        onChange={setDirectionFilter}
+      />
+    ),
+  };
 
   const isLoading = versionsLoading || detailsLoading;
   const displayCount = totalCount ?? (transactionVersions?.length || 0);
@@ -92,7 +117,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
 
           <div className="overflow-x-auto">
             <TransactionTable
-              data={tableData}
+              data={filteredData}
               columns={TOKEN_TRANSFER_COLUMNS}
               isLoading={isLoading}
               loadingRowCount={MAX_DISPLAY}
@@ -103,6 +128,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
                 )
               }
               address={address}
+              columnFilters={columnFilters}
             />
           </div>
 

@@ -12,7 +12,13 @@ import {
   TransactionTable,
   ACCOUNT_TRANSACTION_COLUMNS,
   TransactionRowData,
+  ColumnFilters,
 } from "@/components/transactions";
+import {
+  DirectionColumnFilter,
+  DirectionFilterValue,
+} from "@/components/transactions/filters/DirectionColumnFilter";
+import { getTransactionDirection } from "@/utils/transaction";
 import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
 import { Activity, ArrowRight } from "lucide-react";
@@ -111,6 +117,7 @@ function TransactionsSubTab({
 
   // Timestamp display mode
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
 
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
@@ -120,6 +127,24 @@ function TransactionsSubTab({
       transaction: tx,
     };
   });
+
+  // Filter by direction
+  const filteredData =
+    directionFilter === "any"
+      ? tableData
+      : tableData.filter((row) => {
+          const dir = getTransactionDirection(row.transaction, address);
+          return dir === directionFilter;
+        });
+
+  const columnFilters: ColumnFilters = {
+    direction: (
+      <DirectionColumnFilter
+        value={directionFilter}
+        onChange={setDirectionFilter}
+      />
+    ),
+  };
 
   const isLoading = transactionsLoading || detailsLoading;
 
@@ -157,7 +182,7 @@ function TransactionsSubTab({
 
           <div className="overflow-x-auto">
             <TransactionTable
-              data={tableData}
+              data={filteredData}
               columns={ACCOUNT_TRANSACTION_COLUMNS}
               isLoading={isLoading}
               loadingRowCount={MAX_DISPLAY}
@@ -168,6 +193,7 @@ function TransactionsSubTab({
                 )
               }
               address={address}
+              columnFilters={columnFilters}
             />
           </div>
 

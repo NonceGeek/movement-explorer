@@ -7,6 +7,7 @@
 export type {
   TransactionColumnKey,
   TransactionColumnConfig,
+  ColumnFilters,
   TransactionRowData,
   TransactionTableProps,
   TransactionTableRowProps,

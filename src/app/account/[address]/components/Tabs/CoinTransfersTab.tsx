@@ -22,6 +22,7 @@ import { getTransactionDirection } from "@/utils/transaction";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const MAX_DISPLAY = 25;
 
@@ -58,20 +59,24 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
+  const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
 
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
     const version = "version" in tx ? parseInt(tx.version) : 0;
     return { version, transaction: tx };
   });
 
-  // Filter by direction
-  const filteredData =
-    directionFilter === "any"
-      ? tableData
-      : tableData.filter((row) => {
-          const dir = getTransactionDirection(row.transaction, address);
-          return dir === directionFilter;
-        });
+  // Filter by direction and status
+  const filteredData = tableData
+    .filter((row) => {
+      if (directionFilter === "any") return true;
+      return getTransactionDirection(row.transaction, address) === directionFilter;
+    })
+    .filter((row) => {
+      if (statusFilter === "all") return true;
+      const success = "success" in row.transaction ? row.transaction.success : true;
+      return statusFilter === "success" ? success : !success;
+    });
 
   const columnFilters: ColumnFilters = {
     direction: (
@@ -88,11 +93,12 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
     ),
   };
 
-  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null;
+  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all";
 
   const clearAllFilters = () => {
     setDirectionFilter("any");
     setCoinFilter(null);
+    setStatusFilter("all");
   };
 
   const isLoading = versionsLoading || detailsLoading;
@@ -141,6 +147,22 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
               </p>
             </div>
           )}
+
+          {/* Filter toolbar */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Status:</span>
+              <ToggleGroup
+                value={statusFilter}
+                onValueChange={(v) => v && setStatusFilter(v as "all" | "success" | "failed")}
+                size="sm"
+              >
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="success">Success</ToggleGroupItem>
+                <ToggleGroupItem value="failed">Failed</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+          </div>
 
           <div className="overflow-x-auto">
             <TransactionTable

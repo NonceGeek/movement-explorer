@@ -17,6 +17,7 @@ import {
   DirectionColumnFilter,
   DirectionFilterValue,
 } from "@/components/transactions/filters/DirectionColumnFilter";
+import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
 import { getTransactionDirection } from "@/utils/transaction";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
@@ -29,10 +30,12 @@ interface CoinTransfersTabProps {
 }
 
 export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
-  const { data: totalCount } = useGetAccountCoinTransfersCount(address);
+  const [coinFilter, setCoinFilter] = useState<string | null>(null);
+
+  const { data: totalCount } = useGetAccountCoinTransfersCount(address, coinFilter);
 
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0);
+    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0, coinFilter);
 
   // Fetch full transaction details (same as TransactionsSubTab)
   const { aptos_client } = useGlobalStore();
@@ -75,6 +78,12 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
       <DirectionColumnFilter
         value={directionFilter}
         onChange={setDirectionFilter}
+      />
+    ),
+    token: (
+      <CoinColumnFilter
+        value={coinFilter}
+        onChange={setCoinFilter}
       />
     ),
   };

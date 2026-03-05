@@ -25,7 +25,12 @@ import {
 import {
   getTransactionDirection,
   getTransactionFunction,
+  getTransactionAmount,
 } from "@/utils/transaction";
+import {
+  AmountRangeFilter,
+  AmountRange,
+} from "@/components/transactions/filters/AmountRangeFilter";
 import { FunctionColumnFilter } from "@/components/transactions/filters/FunctionColumnFilter";
 import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
@@ -131,6 +136,7 @@ function TransactionsSubTab({
   const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
   const [functionFilter, setFunctionFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
+  const [amountRange, setAmountRange] = useState<AmountRange>({ min: "", max: "" });
 
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
@@ -155,6 +161,16 @@ function TransactionsSubTab({
       if (statusFilter === "all") return true;
       const success = "success" in row.transaction ? row.transaction.success : true;
       return statusFilter === "success" ? success : !success;
+    })
+    .filter((row) => {
+      if (amountRange.min === "" && amountRange.max === "") return true;
+      const amount = getTransactionAmount(row.transaction);
+      if (amount === undefined) return amountRange.min === "" && amountRange.max === "";
+      // Convert from octas to MOVE (8 decimals)
+      const amountInMove = Number(amount) / 1e8;
+      if (amountRange.min !== "" && amountInMove < Number(amountRange.min)) return false;
+      if (amountRange.max !== "" && amountInMove > Number(amountRange.max)) return false;
+      return true;
     });
 
   const columnFilters: ColumnFilters = {
@@ -169,6 +185,12 @@ function TransactionsSubTab({
         value={functionFilter}
         onChange={setFunctionFilter}
         transactions={tableData}
+      />
+    ),
+    amount: (
+      <AmountRangeFilter
+        value={amountRange}
+        onChange={setAmountRange}
       />
     ),
   };
@@ -203,7 +225,7 @@ function TransactionsSubTab({
                   </span>
                 )}{" "}
                 transactions
-                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null || statusFilter !== "all") && (
+                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null || statusFilter !== "all" || amountRange.min !== "" || amountRange.max !== "") && (
                   <>
                     <span className="text-primary/80 ml-1">(filtered)</span>
                     <button
@@ -212,6 +234,7 @@ function TransactionsSubTab({
                         setFunctionFilter(null);
                         setDateRange({ from: null, to: null });
                         setStatusFilter("all");
+                        setAmountRange({ min: "", max: "" });
                       }}
                       className="text-xs text-primary hover:underline ml-2"
                     >

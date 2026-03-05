@@ -22,7 +22,11 @@ import {
   DateRangeFilter,
   DateRange,
 } from "@/components/transactions/filters/DateRangeFilter";
-import { getTransactionDirection } from "@/utils/transaction";
+import { getTransactionDirection, getTransactionAmount } from "@/utils/transaction";
+import {
+  AmountRangeFilter,
+  AmountRange,
+} from "@/components/transactions/filters/AmountRangeFilter";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,6 +74,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
   const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
+  const [amountRange, setAmountRange] = useState<AmountRange>({ min: "", max: "" });
 
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
     const version = "version" in tx ? parseInt(tx.version) : 0;
@@ -86,6 +91,16 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
       if (statusFilter === "all") return true;
       const success = "success" in row.transaction ? row.transaction.success : true;
       return statusFilter === "success" ? success : !success;
+    })
+    .filter((row) => {
+      if (amountRange.min === "" && amountRange.max === "") return true;
+      const amount = getTransactionAmount(row.transaction);
+      if (amount === undefined) return amountRange.min === "" && amountRange.max === "";
+      // Convert from octas to MOVE (8 decimals)
+      const amountInMove = Number(amount) / 1e8;
+      if (amountRange.min !== "" && amountInMove < Number(amountRange.min)) return false;
+      if (amountRange.max !== "" && amountInMove > Number(amountRange.max)) return false;
+      return true;
     });
 
   const columnFilters: ColumnFilters = {
@@ -101,15 +116,22 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
         onChange={setCoinFilter}
       />
     ),
+    amount: (
+      <AmountRangeFilter
+        value={amountRange}
+        onChange={setAmountRange}
+      />
+    ),
   };
 
-  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all" || dateRange.from !== null;
+  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all" || dateRange.from !== null || amountRange.min !== "" || amountRange.max !== "";
 
   const clearAllFilters = () => {
     setDirectionFilter("any");
     setCoinFilter(null);
     setStatusFilter("all");
     setDateRange({ from: null, to: null });
+    setAmountRange({ min: "", max: "" });
   };
 
   const isLoading = versionsLoading || detailsLoading;

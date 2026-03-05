@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -17,12 +17,19 @@ import {
   TransactionTable,
   TOKEN_TRANSFER_COLUMNS,
   TransactionRowData,
+  ColumnFilters,
 } from "@/components/transactions";
+import {
+  DateRangeColumnFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
+import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
+import { AddressColumnFilter } from "@/components/transactions/filters/AddressColumnFilter";
 import { TransactionTableToolbar } from "@/components/transactions/TransactionTableToolbar";
 import { TransactionTableFooter } from "@/components/transactions/TransactionTableFooter";
 import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 
 const MAX_PAGES = 100;
 
@@ -41,6 +48,9 @@ export function AccountCoinTransfers({
   const pathname = usePathname();
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [coinFilter, setCoinFilter] = useState<string | null>(null);
+  const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
   // Get page from URL or default to 1, capped at MAX_PAGES
   const pageParam = searchParams.get("page");
@@ -55,13 +65,16 @@ export function AccountCoinTransfers({
     ? ((parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE)
     : pageSize;
 
-  // Get optional coinType filter from URL
+  // Get optional coinType filter from URL (seed the coinFilter state on first render)
   const coinTypeParam = searchParams.get("coinType");
+  const activeCoin = coinFilter ?? coinTypeParam;
 
   // Fetch count
   const { data: txCount } = useGetAccountCoinTransfersCount(
     address,
-    coinTypeParam,
+    activeCoin,
+    dateRange.from,
+    dateRange.to,
   );
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
@@ -72,7 +85,7 @@ export function AccountCoinTransfers({
   // Fetch coin transfer versions for current page
   const offset = (currentPage - 1) * currentLimit;
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, currentLimit, offset, coinTypeParam);
+    useGetAccountCoinTransfers(address, currentLimit, offset, activeCoin, dateRange.from, dateRange.to, senderFilter);
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
@@ -128,6 +141,50 @@ export function AccountCoinTransfers({
     [setPageSize, updateURL],
   );
 
+  // Reset to page 1 when filters change
+  const filterKey = `${dateRange.from}-${dateRange.to}-${activeCoin}-${senderFilter}`;
+  const prevFilterKey = useRef(filterKey);
+  useEffect(() => {
+    if (prevFilterKey.current !== filterKey) {
+      prevFilterKey.current = filterKey;
+      if (currentPage !== 1) {
+        handlePageChange(1);
+      }
+    }
+  }, [filterKey, currentPage, handlePageChange]);
+
+  const hasActiveFilters = dateRange.from !== null || coinFilter !== null || senderFilter !== null;
+
+  const clearAllFilters = () => {
+    setDateRange({ from: null, to: null });
+    setCoinFilter(null);
+    setSenderFilter(null);
+  };
+
+  const columnFilters: ColumnFilters = {
+    timestamp: (
+      <DateRangeColumnFilter
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        timestampMode={timestampMode}
+        onToggleTimestampMode={setTimestampMode}
+      />
+    ),
+    token: (
+      <CoinColumnFilter
+        value={activeCoin}
+        onChange={setCoinFilter}
+      />
+    ),
+    sender: (
+      <AddressColumnFilter
+        label="Sender"
+        value={senderFilter}
+        onChange={setSenderFilter}
+      />
+    ),
+  };
+
   return (
     <>
       <div className="mb-4">
@@ -160,14 +217,25 @@ export function AccountCoinTransfers({
         transactions={[]}
         isLoading={isLoading}
         infoText={
-          totalCount > 0 ? (
-            <>
-              <span className="font-medium text-foreground">
-                {totalCount.toLocaleString()}
-              </span>{" "}
-              token transfers found
-            </>
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {totalCount > 0 && (
+              <span>
+                <span className="font-medium text-foreground">
+                  {totalCount.toLocaleString()}
+                </span>{" "}
+                token transfers found
+              </span>
+            )}
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full cursor-pointer hover:bg-primary/20 transition-colors"
+              >
+                <X className="h-3 w-3" />
+                filtered
+              </button>
+            )}
+          </div>
         }
       />
 
@@ -184,6 +252,7 @@ export function AccountCoinTransfers({
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
           address={address}
+          columnFilters={columnFilters}
         />
       </div>
 

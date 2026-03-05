@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import Link from "next/link";
 import { useQuery } from "@tanstack/react-query";
@@ -17,17 +17,21 @@ import {
   NFTActivity,
 } from "@/hooks/accounts/useGetAccountNFTTransfers";
 import { useGetAccountNFTTransfersCount } from "@/hooks/accounts/useGetAccountNFTTransfersCount";
+import { ActivityColumnFilter } from "@/components/transactions/filters/ActivityColumnFilter";
+import {
+  DateRangeColumnFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
 import { TransactionTableToolbar } from "@/components/transactions/TransactionTableToolbar";
 import { TransactionTableFooter } from "@/components/transactions/TransactionTableFooter";
 import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
 import {
   TransactionTypeName,
   TRANSACTION_TYPE_INFO,
 } from "@/constants/transaction";
-import { ArrowLeft, CircleCheckBig, XCircle } from "lucide-react";
+import { ArrowLeft, CircleCheckBig, X, XCircle } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -82,6 +86,8 @@ export function AccountNFTTransfers({
   const pathname = usePathname();
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [activityFilter, setActivityFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
 
   // Get page from URL or default to 1, capped at MAX_PAGES
   const pageParam = searchParams.get("page");
@@ -97,7 +103,7 @@ export function AccountNFTTransfers({
     : pageSize;
 
   // Fetch count
-  const { data: txCount } = useGetAccountNFTTransfersCount(address);
+  const { data: txCount } = useGetAccountNFTTransfersCount(address, activityFilter, dateRange.from, dateRange.to);
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
     MAX_PAGES,
@@ -107,7 +113,7 @@ export function AccountNFTTransfers({
   // Fetch NFT activities for current page
   const offset = (currentPage - 1) * currentLimit;
   const { data: activities, isLoading: activitiesLoading } =
-    useGetAccountNFTTransfers(address, currentLimit, offset);
+    useGetAccountNFTTransfers(address, currentLimit, offset, activityFilter, dateRange.from, dateRange.to);
 
   // Extract unique transaction versions to fetch full transaction details
   const uniqueVersions = useMemo(() => {
@@ -172,6 +178,25 @@ export function AccountNFTTransfers({
     [setPageSize, updateURL],
   );
 
+  const hasActiveFilters = activityFilter !== null || dateRange.from !== null;
+
+  const clearAllFilters = () => {
+    setActivityFilter(null);
+    setDateRange({ from: null, to: null });
+  };
+
+  // Reset to page 1 when filters change
+  const filterKey = `${dateRange.from}-${dateRange.to}-${activityFilter}`;
+  const prevFilterKey = useRef(filterKey);
+  useEffect(() => {
+    if (prevFilterKey.current !== filterKey) {
+      prevFilterKey.current = filterKey;
+      if (currentPage !== 1) {
+        handlePageChange(1);
+      }
+    }
+  }, [filterKey, currentPage, handlePageChange]);
+
   return (
     <>
       <div className="mb-4">
@@ -198,14 +223,25 @@ export function AccountNFTTransfers({
         transactions={[]}
         isLoading={isLoading}
         infoText={
-          totalCount > 0 ? (
-            <>
-              <span className="font-medium text-foreground">
-                {totalCount.toLocaleString()}
-              </span>{" "}
-              NFT transfers found
-            </>
-          ) : undefined
+          <div className="flex items-center gap-2">
+            {totalCount > 0 && (
+              <span>
+                <span className="font-medium text-foreground">
+                  {totalCount.toLocaleString()}
+                </span>{" "}
+                NFT transfers found
+              </span>
+            )}
+            {hasActiveFilters && (
+              <button
+                onClick={clearAllFilters}
+                className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full cursor-pointer hover:bg-primary/20 transition-colors"
+              >
+                <X className="h-3 w-3" />
+                filtered
+              </button>
+            )}
+          </div>
         }
       />
 
@@ -217,12 +253,19 @@ export function AccountNFTTransfers({
             <StyledTableHeaderRow>
               <StyledTableHead className="w-[170px]">Txn Hash</StyledTableHead>
               <StyledTableHead className="w-[155px]">
-                <TimestampModeToggle
-                  mode={timestampMode}
-                  setMode={setTimestampMode}
+                <DateRangeColumnFilter
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  timestampMode={timestampMode}
+                  onToggleTimestampMode={setTimestampMode}
                 />
               </StyledTableHead>
-              <StyledTableHead className="w-[100px]">Activity</StyledTableHead>
+              <StyledTableHead className="w-[100px]">
+                <ActivityColumnFilter
+                  value={activityFilter}
+                  onChange={setActivityFilter}
+                />
+              </StyledTableHead>
               <StyledTableHead className="w-[180px]">Token</StyledTableHead>
               <StyledTableHead className="w-[150px]">From</StyledTableHead>
               <StyledTableHead className="w-[150px]">To</StyledTableHead>

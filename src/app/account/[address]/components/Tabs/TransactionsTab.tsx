@@ -29,8 +29,9 @@ import {
 import { FunctionColumnFilter } from "@/components/transactions/filters/FunctionColumnFilter";
 import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
-import { Activity, ArrowRight } from "lucide-react";
+import { Activity, ArrowRight, SlidersHorizontal } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CoinTransfersTab from "./CoinTransfersTab";
 import NFTTransfersTab from "./NFTTransfersTab";
 
@@ -129,6 +130,7 @@ function TransactionsSubTab({
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
   const [functionFilter, setFunctionFilter] = useState<string | null>(null);
+  const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
 
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
@@ -148,6 +150,11 @@ function TransactionsSubTab({
     .filter((row) => {
       if (!functionFilter) return true;
       return getTransactionFunction(row.transaction) === functionFilter;
+    })
+    .filter((row) => {
+      if (statusFilter === "all") return true;
+      const success = "success" in row.transaction ? row.transaction.success : true;
+      return statusFilter === "success" ? success : !success;
     });
 
   const columnFilters: ColumnFilters = {
@@ -196,7 +203,7 @@ function TransactionsSubTab({
                   </span>
                 )}{" "}
                 transactions
-                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null) && (
+                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null || statusFilter !== "all") && (
                   <>
                     <span className="text-primary/80 ml-1">(filtered)</span>
                     <button
@@ -204,6 +211,7 @@ function TransactionsSubTab({
                         setDirectionFilter("any");
                         setFunctionFilter(null);
                         setDateRange({ from: null, to: null });
+                        setStatusFilter("all");
                       }}
                       className="text-xs text-primary hover:underline ml-2"
                     >
@@ -218,6 +226,24 @@ function TransactionsSubTab({
           {/* Filter toolbar */}
           <div className="flex items-center gap-4 flex-wrap">
             <DateRangeFilter value={dateRange} onChange={setDateRange} />
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Status:</span>
+              <ToggleGroup
+                value={statusFilter}
+                onValueChange={(v) => v && setStatusFilter(v as "all" | "success" | "failed")}
+                size="sm"
+              >
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="success">Success</ToggleGroupItem>
+                <ToggleGroupItem value="failed">Failed</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            <Button variant="ghost" size="sm" asChild className="ml-auto text-xs h-7">
+              <Link href={`/transactions?address=${address}`}>
+                <SlidersHorizontal className="h-3 w-3 mr-1" />
+                Advanced
+              </Link>
+            </Button>
           </div>
 
           <div className="overflow-x-auto">

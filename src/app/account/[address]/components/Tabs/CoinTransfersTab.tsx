@@ -18,6 +18,10 @@ import {
   DirectionFilterValue,
 } from "@/components/transactions/filters/DirectionColumnFilter";
 import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
+import {
+  DateRangeFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
 import { getTransactionDirection } from "@/utils/transaction";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
@@ -32,11 +36,17 @@ interface CoinTransfersTabProps {
 
 export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   const [coinFilter, setCoinFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
 
-  const { data: totalCount } = useGetAccountCoinTransfersCount(address, coinFilter);
+  const { data: totalCount } = useGetAccountCoinTransfersCount(
+    address,
+    coinFilter,
+    dateRange.from,
+    dateRange.to,
+  );
 
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0, coinFilter);
+    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0, coinFilter, dateRange.from, dateRange.to);
 
   // Fetch full transaction details (same as TransactionsSubTab)
   const { aptos_client } = useGlobalStore();
@@ -93,12 +103,13 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
     ),
   };
 
-  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all";
+  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all" || dateRange.from !== null;
 
   const clearAllFilters = () => {
     setDirectionFilter("any");
     setCoinFilter(null);
     setStatusFilter("all");
+    setDateRange({ from: null, to: null });
   };
 
   const isLoading = versionsLoading || detailsLoading;
@@ -162,6 +173,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
                 <ToggleGroupItem value="failed">Failed</ToggleGroupItem>
               </ToggleGroup>
             </div>
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
           </div>
 
           <div className="overflow-x-auto">

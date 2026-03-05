@@ -19,6 +19,10 @@ import {
   DirectionFilterValue,
 } from "@/components/transactions/filters/DirectionColumnFilter";
 import {
+  DateRangeFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
+import {
   getTransactionDirection,
   getTransactionFunction,
 } from "@/utils/transaction";
@@ -98,9 +102,11 @@ function TransactionsSubTab({
   const totalTxCount =
     indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
 
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+
   // Always fetch only the latest 25 transactions
   const { data: transactionVersions, isLoading: transactionsLoading } =
-    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0);
+    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0, dateRange.from, dateRange.to);
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
@@ -190,13 +196,14 @@ function TransactionsSubTab({
                   </span>
                 )}{" "}
                 transactions
-                {(directionFilter !== "any" || functionFilter !== null) && (
+                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null) && (
                   <>
                     <span className="text-primary/80 ml-1">(filtered)</span>
                     <button
                       onClick={() => {
                         setDirectionFilter("any");
                         setFunctionFilter(null);
+                        setDateRange({ from: null, to: null });
                       }}
                       className="text-xs text-primary hover:underline ml-2"
                     >
@@ -207,6 +214,11 @@ function TransactionsSubTab({
               </p>
             </div>
           )}
+
+          {/* Filter toolbar */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          </div>
 
           <div className="overflow-x-auto">
             <TransactionTable

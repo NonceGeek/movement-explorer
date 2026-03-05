@@ -5,12 +5,17 @@ import { useGlobalStore } from "@/store/useGlobalStore";
 export function useGetAccountNFTTransfersCount(
   address: string,
   activityType?: string | null,
+  timestampGte?: string | null,
+  timestampLte?: string | null,
 ): {
   isLoading: boolean;
   error: ResponseError | undefined;
   data: number | undefined;
 } {
   const { network_value, sdk_v2_client } = useGlobalStore();
+
+  const hasActivity = !!activityType;
+  const hasTimestamp = !!timestampGte && !!timestampLte;
 
   const { isLoading, error, data } = useQuery<
     number | undefined,
@@ -20,48 +25,49 @@ export function useGetAccountNFTTransfersCount(
       "accountNFTTransfersCount",
       address,
       activityType ?? null,
+      timestampGte ?? null,
+      timestampLte ?? null,
       network_value,
     ],
     queryFn: async () => {
       try {
-        const query = activityType
-          ? `
-            query GetAccountNFTTransfersCountByType($address: String!, $activityType: String!) {
-              token_activities_v2_aggregate(
-                where: {
-                  _or: [
-                    { from_address: { _eq: $address } }
-                    { to_address: { _eq: $address } }
-                  ]
-                  type: { _eq: $activityType }
-                }
-              ) {
-                aggregate {
-                  count
-                }
+        const varParts = ["$address: String!"];
+        if (hasActivity) varParts.push("$activityType: String!");
+        if (hasTimestamp) {
+          varParts.push("$timestampGte: timestamp");
+          varParts.push("$timestampLte: timestamp");
+        }
+
+        const whereParts = [
+          `_or: [
+            { from_address: { _eq: $address } }
+            { to_address: { _eq: $address } }
+          ]`,
+        ];
+        if (hasActivity) whereParts.push("type: { _eq: $activityType }");
+        if (hasTimestamp) {
+          whereParts.push(
+            "transaction_timestamp: { _gte: $timestampGte, _lte: $timestampLte }",
+          );
+        }
+
+        const query = `
+          query GetAccountNFTTransfersCount(${varParts.join(", ")}) {
+            token_activities_v2_aggregate(
+              where: { ${whereParts.join(", ")} }
+            ) {
+              aggregate {
+                count
               }
             }
-          `
-          : `
-            query GetAccountNFTTransfersCount($address: String!) {
-              token_activities_v2_aggregate(
-                where: {
-                  _or: [
-                    { from_address: { _eq: $address } }
-                    { to_address: { _eq: $address } }
-                  ]
-                }
-              ) {
-                aggregate {
-                  count
-                }
-              }
-            }
-          `;
+          }
+        `;
 
         const variables: Record<string, unknown> = { address };
-        if (activityType) {
-          variables.activityType = activityType;
+        if (hasActivity) variables.activityType = activityType;
+        if (hasTimestamp) {
+          variables.timestampGte = timestampGte;
+          variables.timestampLte = timestampLte;
         }
 
         const result = await sdk_v2_client.queryIndexer<{

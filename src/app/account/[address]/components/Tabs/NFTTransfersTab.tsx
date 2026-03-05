@@ -12,15 +12,18 @@ import {
 } from "@/hooks/accounts/useGetAccountNFTTransfers";
 import { useGetAccountNFTTransfersCount } from "@/hooks/accounts/useGetAccountNFTTransfersCount";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
-import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { ActivityColumnFilter } from "@/components/transactions/filters/ActivityColumnFilter";
+import {
+  DateRangeColumnFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
 import {
   TransactionTypeName,
   TRANSACTION_TYPE_INFO,
 } from "@/constants/transaction";
 import { EmptyState } from "..";
-import { ImageIcon, CircleCheckBig, XCircle, ArrowRight } from "lucide-react";
+import { ImageIcon, CircleCheckBig, XCircle, ArrowRight, X, SearchX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -76,10 +79,11 @@ interface NFTTransfersTabProps {
 
 export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
 
-  const { data: totalCount } = useGetAccountNFTTransfersCount(address, activityFilter);
+  const { data: totalCount } = useGetAccountNFTTransfersCount(address, activityFilter, dateRange.from, dateRange.to);
   const { data: activities, isLoading: activitiesLoading } =
-    useGetAccountNFTTransfers(address, MAX_DISPLAY, 0, activityFilter);
+    useGetAccountNFTTransfers(address, MAX_DISPLAY, 0, activityFilter, dateRange.from, dateRange.to);
 
   // Extract unique transaction versions to fetch full transaction details
   const uniqueVersions = useMemo(() => {
@@ -119,7 +123,10 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
   const isLoading = activitiesLoading || txDetailsLoading;
   const displayCount = totalCount ?? (activities?.length || 0);
 
-  if (!isLoading && (!activities || activities.length === 0)) {
+  const hasActiveFilters = activityFilter !== null || dateRange.from !== null;
+
+  // Show full empty state only when there are no filters active
+  if (!isLoading && (!activities || activities.length === 0) && !hasActiveFilters) {
     return (
       <EmptyState
         icon={<ImageIcon className="h-12 w-12" />}
@@ -131,36 +138,41 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
 
   return (
     <div className="space-y-4">
-      {displayCount > 0 && (
-        <div className="flex items-center justify-between">
-          <p className="text-sm text-muted-foreground">
-            Latest {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
-            total of{" "}
-            {displayCount > MAX_DISPLAY ? (
-              <Link
-                href={`/nft-transfers?address=${address}`}
-                className="font-medium text-primary hover:underline"
-              >
-                {displayCount.toLocaleString()}
-              </Link>
-            ) : (
-              <span className="font-medium text-foreground">
-                {displayCount.toLocaleString()}
-              </span>
-            )}{" "}
-            NFT transfers
-            {activityFilter !== null && (
+      {(displayCount > 0 || hasActiveFilters) && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <p>
+            {(activities?.length ?? 0) > 0 ? (
               <>
-                <span className="text-primary/80 ml-1">(filtered)</span>
-                <button
-                  onClick={() => setActivityFilter(null)}
-                  className="text-xs text-primary hover:underline ml-2"
-                >
-                  Clear Filters
-                </button>
+                Latest {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
+                total of{" "}
+                <span className="font-medium text-foreground">
+                  {displayCount.toLocaleString()}
+                </span>{" "}
+                NFT transfers
               </>
+            ) : (
+              <>No matching NFT transfers</>
             )}
           </p>
+          {hasActiveFilters && (
+            <button
+              onClick={() => {
+                setActivityFilter(null);
+                setDateRange({ from: null, to: null });
+              }}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full cursor-pointer hover:bg-primary/20 transition-colors"
+            >
+              <X className="h-3 w-3" />
+              filtered
+            </button>
+          )}
+          <Link
+            href={`/nft-transfers?address=${address}`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-guild-green-500 hover:text-guild-green-400 transition-colors"
+          >
+            View All
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
         </div>
       )}
 
@@ -170,9 +182,11 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
             <StyledTableHeaderRow>
               <StyledTableHead className="w-[170px]">Txn Hash</StyledTableHead>
               <StyledTableHead className="w-[155px]">
-                <TimestampModeToggle
-                  mode={timestampMode}
-                  setMode={setTimestampMode}
+                <DateRangeColumnFilter
+                  dateRange={dateRange}
+                  onDateRangeChange={setDateRange}
+                  timestampMode={timestampMode}
+                  onToggleTimestampMode={setTimestampMode}
                 />
               </StyledTableHead>
               <StyledTableHead className="w-[100px]">
@@ -200,6 +214,21 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
                     ))}
                   </TableRow>
                 ))
+              : (activities || []).length === 0 ? (
+                  <TableRow className="hover:bg-transparent">
+                    <TableCell colSpan={7} className="h-40">
+                      <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="p-3 bg-muted/30 rounded-full">
+                          <SearchX className="h-8 w-8 text-muted-foreground/60" />
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-foreground/70">No matching results</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">Try adjusting or clearing your filters</p>
+                        </div>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                )
               : (activities || []).map((activity) => (
                   <NFTActivityRow
                     key={`${activity.transaction_version}-${activity.event_index}`}
@@ -220,9 +249,7 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
       {!isLoading && displayCount > MAX_DISPLAY && (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" asChild>
-            <Link
-              href={`/nft-transfers?address=${address}`}
-            >
+            <Link href={`/nft-transfers?address=${address}`}>
               View all {displayCount.toLocaleString()} NFT transfers
               <ArrowRight className="h-4 w-4 ml-1" />
             </Link>

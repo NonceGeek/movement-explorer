@@ -44,13 +44,9 @@ export { TransactionTableToolbar } from "./TransactionTableToolbar";
 export { TransactionTableFooter } from "./TransactionTableFooter";
 export { NewDataNotification } from "../common/NewDataNotification";
 
-// Filters
-export { DirectionColumnFilter } from "./filters/DirectionColumnFilter";
-export type { DirectionFilterValue } from "./filters/DirectionColumnFilter";
+// Filters (server-side only)
 export { CoinColumnFilter } from "./filters/CoinColumnFilter";
-export { FunctionColumnFilter } from "./filters/FunctionColumnFilter";
 export { ActivityColumnFilter } from "./filters/ActivityColumnFilter";
-export { DateRangeFilter } from "./filters/DateRangeFilter";
+export { DateRangeColumnFilter } from "./filters/DateRangeFilter";
 export type { DateRange } from "./filters/DateRangeFilter";
-export { AmountRangeFilter } from "./filters/AmountRangeFilter";
-export type { AmountRange } from "./filters/AmountRangeFilter";
+export { AddressColumnFilter } from "./filters/AddressColumnFilter";

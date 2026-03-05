@@ -6,7 +6,7 @@ import { Types } from "aptos";
 import { cn } from "@/utils/styling";
 import { formatAge, formatDateTimeUTC } from "@/utils/time";
 import { formatTokenAmount } from "@/utils/formatters";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, Info } from "lucide-react";
 import type { AccountTimeline } from "@/hooks/accounts/useGetAccountFirstLastTx";
 import type { AccountMoveFlow } from "@/hooks/accounts/useGetAccountMoveFlow";
 
@@ -54,22 +54,14 @@ export function AccountOverview({
   timelineLoading,
   moveFlow,
   moveFlowLoading,
-  accountType,
 }: AccountOverviewProps) {
-  const isRegularAccount = accountType === "account";
-
   const netFlowUsd =
     moveFlow && movePrice != null
       ? (Number(moveFlow.netFlow) / 1e8) * movePrice
       : null;
 
   return (
-    <div
-      className={cn(
-        "grid grid-cols-1 gap-3 mb-6",
-        isRegularAccount ? "md:grid-cols-3" : "md:grid-cols-2",
-      )}
-    >
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
       {/* Card 1: Overview */}
       <div className={CARD_CLASS}>
         <h3 className={TITLE_CLASS}>OVERVIEW</h3>
@@ -102,28 +94,6 @@ export function AccountOverview({
               </div>
             )}
           </div>
-          {/* Object Owner */}
-          {!isRegularAccount && objectData?.data?.owner && (
-            <div>
-              <div className={LABEL_CLASS}>Owner</div>
-              <div className="mt-0.5">
-                <CopyableAddress
-                  address={objectData.data.owner}
-                  showCopyButton
-                  className="text-sm"
-                />
-              </div>
-            </div>
-          )}
-          {/* Object Transferrable */}
-          {!isRegularAccount && objectData && (
-            <div>
-              <div className={LABEL_CLASS}>Transferrable</div>
-              <div className="text-sm mt-0.5">
-                {objectData.data?.allow_ungated_transfer ? "Yes" : "No"}
-              </div>
-            </div>
-          )}
           {/* Holdings — compressed single row */}
           <div>
             <div className={LABEL_CLASS}>Holdings</div>
@@ -164,86 +134,94 @@ export function AccountOverview({
         </div>
       </div>
 
-      {/* Card 2: MOVE Flow (regular accounts only) */}
-      {isRegularAccount && (
-        <div className={CARD_CLASS}>
-          <h3 className={TITLE_CLASS}>MOVE FLOW</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className={LABEL_CLASS}>Total In</span>
-              {moveFlowLoading ? (
-                <EnhancedSkeleton className="h-4 w-28" />
-              ) : moveFlow ? (
-                <span className="text-sm font-mono tabular-nums text-green-500">
-                  {formatTokenAmount(moveFlow.totalInflow, 8, 2)} MOVE
-                </span>
-              ) : (
-                <span className="text-sm text-muted-foreground">—</span>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className={LABEL_CLASS}>Total Out</span>
-              {moveFlowLoading ? (
-                <EnhancedSkeleton className="h-4 w-28" />
-              ) : moveFlow ? (
-                <span className="text-sm font-mono tabular-nums text-red-500">
-                  {formatTokenAmount(moveFlow.totalOutflow, 8, 2)} MOVE
-                </span>
-              ) : (
-                <span className="text-sm text-muted-foreground">—</span>
-              )}
-            </div>
-            <div className="flex items-center justify-between">
-              <span className={LABEL_CLASS}>Net Flow</span>
-              {moveFlowLoading ? (
-                <EnhancedSkeleton className="h-4 w-32" />
-              ) : moveFlow ? (
-                <div className="flex flex-col items-end">
-                  <span
-                    className={cn(
-                      "text-sm font-mono tabular-nums",
-                      moveFlow.netFlow >= BigInt(0)
-                        ? "text-green-500"
-                        : "text-red-500",
-                    )}
-                  >
-                    {moveFlow.netFlow >= BigInt(0) ? "+" : ""}
-                    {formatTokenAmount(moveFlow.netFlow, 8, 2)} MOVE
-                  </span>
-                  {netFlowUsd != null && (
-                    <span className="text-sm text-muted-foreground">
-                      (~
-                      {netFlowUsd.toLocaleString("en-US", {
-                        style: "currency",
-                        currency: "USD",
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2,
-                      })}
-                      )
-                    </span>
+      {/* Card 2: MOVE Flow */}
+      <div className={CARD_CLASS}>
+        <h3 className={TITLE_CLASS}>MOVE FLOW</h3>
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <span className={LABEL_CLASS}>Total In</span>
+            {moveFlowLoading ? (
+              <EnhancedSkeleton className="h-4 w-28" />
+            ) : moveFlow ? (
+              <span className="text-sm font-mono tabular-nums text-green-500">
+                {formatTokenAmount(moveFlow.totalInflow, 8, 2)} MOVE
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">—</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between">
+            <span className={LABEL_CLASS}>Total Out</span>
+            {moveFlowLoading ? (
+              <EnhancedSkeleton className="h-4 w-28" />
+            ) : moveFlow ? (
+              <span className="text-sm font-mono tabular-nums text-red-500">
+                {formatTokenAmount(moveFlow.totalOutflow, 8, 2)} MOVE
+              </span>
+            ) : (
+              <span className="text-sm text-muted-foreground">—</span>
+            )}
+          </div>
+          <div className="flex items-center justify-between">
+            <span className={LABEL_CLASS}>Net Flow</span>
+            {moveFlowLoading ? (
+              <EnhancedSkeleton className="h-4 w-32" />
+            ) : moveFlow ? (
+              <div className="flex flex-col items-end">
+                <span
+                  className={cn(
+                    "text-sm font-mono tabular-nums",
+                    moveFlow.netFlow >= BigInt(0)
+                      ? "text-green-500"
+                      : "text-red-500",
                   )}
-                </div>
-              ) : (
-                <span className="text-sm text-muted-foreground">—</span>
-              )}
-            </div>
+                >
+                  {moveFlow.netFlow >= BigInt(0) ? "+" : ""}
+                  {formatTokenAmount(moveFlow.netFlow, 8, 2)} MOVE
+                </span>
+                {netFlowUsd != null && (
+                  <span className="text-sm text-muted-foreground">
+                    (~
+                    {netFlowUsd.toLocaleString("en-US", {
+                      style: "currency",
+                      currency: "USD",
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                    )
+                  </span>
+                )}
+              </div>
+            ) : (
+              <span className="text-sm text-muted-foreground">—</span>
+            )}
           </div>
         </div>
-      )}
+        <div className="mt-3 pt-3 border-t border-border/30">
+          <p className="text-xs text-muted-foreground/70 flex items-start gap-1.5">
+            <Info className="h-3 w-3 shrink-0 mt-0.5" />
+            <span>
+              Flow data is based on Coin v1 events only and may not reflect
+              all Fungible Asset v2 transactions. Net Flow may differ from the
+              actual balance.
+            </span>
+          </p>
+        </div>
+      </div>
 
       {/* Card 3: More Info */}
       <div className={CARD_CLASS}>
         <h3 className={TITLE_CLASS}>MORE INFO</h3>
         <div className="space-y-3">
           {/* Transactions Sent */}
-          {isRegularAccount && (
+          {accountData && (
             <div className="flex items-center justify-between">
               <span className={LABEL_CLASS}>Transactions Sent</span>
               {isLoading ? (
                 <EnhancedSkeleton className="h-5 w-14" />
               ) : (
                 <span className="text-sm font-medium tabular-nums">
-                  {accountData?.sequence_number
+                  {accountData.sequence_number
                     ? Number(accountData.sequence_number).toLocaleString()
                     : "0"}
                 </span>
@@ -281,8 +259,8 @@ export function AccountOverview({
             </>
           ) : null}
 
-          {/* Auth Key (regular account) */}
-          {isRegularAccount && accountData?.authentication_key && (
+          {/* Auth Key */}
+          {accountData?.authentication_key && (
             <div className="flex items-center justify-between">
               <span className={LABEL_CLASS}>Auth Key</span>
               <CopyableAddress
@@ -295,7 +273,7 @@ export function AccountOverview({
           )}
 
           {/* Object Owner */}
-          {!isRegularAccount && objectData?.data?.owner && (
+          {objectData?.data?.owner && (
             <div className="flex items-center justify-between gap-2">
               <span className={LABEL_CLASS}>Owner</span>
               <div className="min-w-0">
@@ -308,7 +286,7 @@ export function AccountOverview({
             </div>
           )}
           {/* Object Transferrable */}
-          {!isRegularAccount && objectData && (
+          {objectData && (
             <div className="flex items-center justify-between">
               <span className={LABEL_CLASS}>Transferrable</span>
               <span className="text-sm font-medium">

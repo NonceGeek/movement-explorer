@@ -29,7 +29,6 @@ export function useGetAccountMoveFlow(
         const result = await sdk_v2_client.queryIndexer<{
           inflow: { aggregate: { sum: { amount: number | null } } };
           outflow: { aggregate: { sum: { amount: number | null } } };
-          gas: { aggregate: { sum: { amount: number | null } } };
         }>({
           query: {
             query: `
@@ -62,19 +61,6 @@ export function useGetAccountMoveFlow(
                     }
                   }
                 }
-                gas: coin_activities_aggregate(
-                  where: {
-                    owner_address: { _eq: $address }
-                    coin_type: { _eq: $coinType }
-                    is_gas_fee: { _eq: true }
-                  }
-                ) {
-                  aggregate {
-                    sum {
-                      amount
-                    }
-                  }
-                }
               }
             `,
             variables: {
@@ -86,11 +72,13 @@ export function useGetAccountMoveFlow(
 
         const inflowRaw = result.inflow?.aggregate?.sum?.amount ?? 0;
         const outflowRaw = result.outflow?.aggregate?.sum?.amount ?? 0;
-        const gasRaw = result.gas?.aggregate?.sum?.amount ?? 0;
 
         const totalInflow = BigInt(Math.round(inflowRaw));
-        // Outflow includes withdrawals + gas fees
-        const totalOutflow = BigInt(Math.round(outflowRaw)) + BigInt(Math.round(gasRaw));
+        // Gas fees already generate corresponding WithdrawEvents in
+        // coin_activities (is_gas_fee=false), so they are included in
+        // outflowRaw. Do NOT subtract GasFeeEvent separately to avoid
+        // double-counting.
+        const totalOutflow = BigInt(Math.round(outflowRaw));
         const netFlow = totalInflow - totalOutflow;
 
         return {

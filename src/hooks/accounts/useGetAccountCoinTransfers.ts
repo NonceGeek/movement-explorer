@@ -13,9 +13,11 @@ function buildCoinTransfersQuery(
   assetType?: string | null,
   timestampGte?: string | null,
   timestampLte?: string | null,
+  sender?: string | null,
 ): { query: string; variables: Record<string, unknown> } {
   const hasAsset = !!assetType;
   const hasTimestamp = !!timestampGte && !!timestampLte;
+  const hasSender = !!sender;
 
   // Build variable declarations
   const varParts = ["$address: String!", "$limit: Int", "$offset: Int"];
@@ -24,6 +26,7 @@ function buildCoinTransfersQuery(
     varParts.push("$timestampGte: timestamp");
     varParts.push("$timestampLte: timestamp");
   }
+  if (hasSender) varParts.push("$sender: String!");
 
   // Build where clause parts
   const whereParts = ["account_address: { _eq: $address }"];
@@ -31,10 +34,17 @@ function buildCoinTransfersQuery(
     ? "fungible_asset_activities: { is_gas_fee: { _eq: false }, asset_type: { _eq: $assetType } }"
     : "fungible_asset_activities: { is_gas_fee: { _eq: false } }";
   whereParts.push(faaFilter);
+
+  // Build user_transaction sub-filter
+  const utParts: string[] = [];
   if (hasTimestamp) {
-    whereParts.push(
-      "user_transaction: { timestamp: { _gte: $timestampGte, _lte: $timestampLte } }",
-    );
+    utParts.push("timestamp: { _gte: $timestampGte, _lte: $timestampLte }");
+  }
+  if (hasSender) {
+    utParts.push("sender: { _eq: $sender }");
+  }
+  if (utParts.length > 0) {
+    whereParts.push(`user_transaction: { ${utParts.join(", ")} }`);
   }
 
   const query = `
@@ -56,6 +66,7 @@ function buildCoinTransfersQuery(
     variables.timestampGte = timestampGte;
     variables.timestampLte = timestampLte;
   }
+  if (hasSender) variables.sender = sender;
 
   return { query, variables };
 }
@@ -74,6 +85,7 @@ export function useGetAccountCoinTransfers(
   assetType?: string | null,
   timestampGte?: string | null,
   timestampLte?: string | null,
+  sender?: string | null,
 ): UseQueryResult<number[], ResponseError> {
   const { network_value, sdk_v2_client } = useGlobalStore();
 
@@ -86,6 +98,7 @@ export function useGetAccountCoinTransfers(
       assetType ?? null,
       timestampGte ?? null,
       timestampLte ?? null,
+      sender ?? null,
       network_value,
     ],
     queryFn: async () => {
@@ -97,6 +110,7 @@ export function useGetAccountCoinTransfers(
           assetType,
           timestampGte,
           timestampLte,
+          sender,
         );
 
         const result = await sdk_v2_client.queryIndexer<{

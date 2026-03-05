@@ -15,28 +15,14 @@ import {
   ColumnFilters,
 } from "@/components/transactions";
 import {
-  DirectionColumnFilter,
-  DirectionFilterValue,
-} from "@/components/transactions/filters/DirectionColumnFilter";
-import {
-  DateRangeFilter,
+  DateRangeColumnFilter,
   DateRange,
 } from "@/components/transactions/filters/DateRangeFilter";
-import {
-  getTransactionDirection,
-  getTransactionFunction,
-  getTransactionAmount,
-} from "@/utils/transaction";
-import {
-  AmountRangeFilter,
-  AmountRange,
-} from "@/components/transactions/filters/AmountRangeFilter";
-import { FunctionColumnFilter } from "@/components/transactions/filters/FunctionColumnFilter";
+import { AddressColumnFilter } from "@/components/transactions/filters/AddressColumnFilter";
 import { Tabs, TabsContent, PillTabsList } from "@/components/ui/tabs";
 import { EmptyState } from "..";
-import { Activity, ArrowRight, SlidersHorizontal } from "lucide-react";
+import { Activity, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import CoinTransfersTab from "./CoinTransfersTab";
 import NFTTransfersTab from "./NFTTransfersTab";
 
@@ -108,11 +94,14 @@ function TransactionsSubTab({
   const totalTxCount =
     indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
 
+  // Filter state (declared before hooks that depend on them)
   const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
-  // Always fetch only the latest 25 transactions
+  // Always fetch only the latest 25 transactions (sender filter is server-side)
   const { data: transactionVersions, isLoading: transactionsLoading } =
-    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0, dateRange.from, dateRange.to);
+    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0, dateRange.from, dateRange.to, senderFilter);
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
@@ -131,13 +120,6 @@ function TransactionsSubTab({
     enabled: !!transactionVersions && transactionVersions.length > 0,
   });
 
-  // Timestamp display mode
-  const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
-  const [functionFilter, setFunctionFilter] = useState<string | null>(null);
-  const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
-  const [amountRange, setAmountRange] = useState<AmountRange>({ min: "", max: "" });
-
   // Prepare table data
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
     const version = "version" in tx ? parseInt(tx.version) : 0;
@@ -147,158 +129,106 @@ function TransactionsSubTab({
     };
   });
 
-  // Filter by direction and function
-  const filteredData = tableData
-    .filter((row) => {
-      if (directionFilter === "any") return true;
-      return getTransactionDirection(row.transaction, address) === directionFilter;
-    })
-    .filter((row) => {
-      if (!functionFilter) return true;
-      return getTransactionFunction(row.transaction) === functionFilter;
-    })
-    .filter((row) => {
-      if (statusFilter === "all") return true;
-      const success = "success" in row.transaction ? row.transaction.success : true;
-      return statusFilter === "success" ? success : !success;
-    })
-    .filter((row) => {
-      if (amountRange.min === "" && amountRange.max === "") return true;
-      const amount = getTransactionAmount(row.transaction);
-      if (amount === undefined) return amountRange.min === "" && amountRange.max === "";
-      // Convert from octas to MOVE (8 decimals)
-      const amountInMove = Number(amount) / 1e8;
-      if (amountRange.min !== "" && amountInMove < Number(amountRange.min)) return false;
-      if (amountRange.max !== "" && amountInMove > Number(amountRange.max)) return false;
-      return true;
-    });
-
   const columnFilters: ColumnFilters = {
-    direction: (
-      <DirectionColumnFilter
-        value={directionFilter}
-        onChange={setDirectionFilter}
+    timestamp: (
+      <DateRangeColumnFilter
+        dateRange={dateRange}
+        onDateRangeChange={setDateRange}
+        timestampMode={timestampMode}
+        onToggleTimestampMode={setTimestampMode}
       />
     ),
-    function: (
-      <FunctionColumnFilter
-        value={functionFilter}
-        onChange={setFunctionFilter}
-        transactions={tableData}
-      />
-    ),
-    amount: (
-      <AmountRangeFilter
-        value={amountRange}
-        onChange={setAmountRange}
+    sender: (
+      <AddressColumnFilter
+        label="Sender"
+        value={senderFilter}
+        onChange={setSenderFilter}
       />
     ),
   };
 
   const isLoading = transactionsLoading || detailsLoading;
 
+  const hasActiveFilters = dateRange.from !== null || senderFilter !== null;
+
+  // Show full empty state only when there are no filters active
+  if (!isLoading && (!tableData || tableData.length === 0) && !hasActiveFilters) {
+    return (
+      <EmptyState
+        icon={<Activity className="h-12 w-12" />}
+        title="No Transactions Yet"
+        description="This account hasn't made any transactions on the network."
+      />
+    );
+  }
+
   return (
-    <>
-      {!isLoading && (!tableData || tableData.length === 0) ? (
-        <EmptyState
-          icon={<Activity className="h-12 w-12" />}
-          title="No Transactions Yet"
-          description="This account hasn't made any transactions on the network."
-        />
-      ) : (
-        <div className="space-y-4">
-          {/* Info */}
-          {totalTxCount > 0 && (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">
+    <div className="space-y-4">
+      {/* Info */}
+      {(totalTxCount > 0 || hasActiveFilters) && (
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <p>
+            {tableData.length > 0 ? (
+              <>
                 Latest {Math.min(MAX_DISPLAY, totalTxCount).toLocaleString()} from a total of{" "}
-                {totalTxCount > MAX_DISPLAY ? (
-                  <Link
-                    href={`/transactions?address=${address}`}
-                    className="font-medium text-primary hover:underline"
-                  >
-                    {totalTxCount.toLocaleString()}
-                  </Link>
-                ) : (
-                  <span className="font-medium text-foreground">
-                    {totalTxCount.toLocaleString()}
-                  </span>
-                )}{" "}
+                <span className="font-medium text-foreground">
+                  {totalTxCount.toLocaleString()}
+                </span>{" "}
                 transactions
-                {(directionFilter !== "any" || functionFilter !== null || dateRange.from !== null || statusFilter !== "all" || amountRange.min !== "" || amountRange.max !== "") && (
-                  <>
-                    <span className="text-primary/80 ml-1">(filtered)</span>
-                    <button
-                      onClick={() => {
-                        setDirectionFilter("any");
-                        setFunctionFilter(null);
-                        setDateRange({ from: null, to: null });
-                        setStatusFilter("all");
-                        setAmountRange({ min: "", max: "" });
-                      }}
-                      className="text-xs text-primary hover:underline ml-2"
-                    >
-                      Clear Filters
-                    </button>
-                  </>
-                )}
-              </p>
-            </div>
+              </>
+            ) : (
+              <>No matching transactions</>
+            )}
+          </p>
+          {hasActiveFilters && (
+            <button
+              onClick={() => {
+                setDateRange({ from: null, to: null });
+                setSenderFilter(null);
+              }}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full cursor-pointer hover:bg-primary/20 transition-colors"
+            >
+              <X className="h-3 w-3" />
+              filtered
+            </button>
           )}
-
-          {/* Filter toolbar */}
-          <div className="flex items-center gap-4 flex-wrap">
-            <DateRangeFilter value={dateRange} onChange={setDateRange} />
-            <div className="flex items-center gap-2">
-              <span className="text-xs text-muted-foreground">Status:</span>
-              <ToggleGroup
-                value={statusFilter}
-                onValueChange={(v) => v && setStatusFilter(v as "all" | "success" | "failed")}
-                size="sm"
-              >
-                <ToggleGroupItem value="all">All</ToggleGroupItem>
-                <ToggleGroupItem value="success">Success</ToggleGroupItem>
-                <ToggleGroupItem value="failed">Failed</ToggleGroupItem>
-              </ToggleGroup>
-            </div>
-            <Button variant="ghost" size="sm" asChild className="ml-auto text-xs h-7">
-              <Link href={`/transactions?address=${address}`}>
-                <SlidersHorizontal className="h-3 w-3 mr-1" />
-                Advanced
-              </Link>
-            </Button>
-          </div>
-
-          <div className="overflow-x-auto">
-            <TransactionTable
-              data={filteredData}
-              columns={ACCOUNT_TRANSACTION_COLUMNS}
-              isLoading={isLoading}
-              loadingRowCount={MAX_DISPLAY}
-              timestampMode={timestampMode}
-              onToggleTimestampMode={() =>
-                setTimestampMode((prev) =>
-                  prev === "age" ? "dateTime" : "age",
-                )
-              }
-              address={address}
-              columnFilters={columnFilters}
-            />
-          </div>
-
-          {/* View all link */}
-          {!isLoading && totalTxCount > MAX_DISPLAY && (
-            <div className="flex justify-center pt-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href={`/transactions?address=${address}`}>
-                  View all {totalTxCount.toLocaleString()} transactions
-                  <ArrowRight className="h-4 w-4 ml-1" />
-                </Link>
-              </Button>
-            </div>
-          )}
+          <Link
+            href={`/transactions?address=${address}`}
+            className="inline-flex items-center gap-1 text-xs font-medium text-guild-green-500 hover:text-guild-green-400 transition-colors"
+          >
+            View All
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
         </div>
       )}
-    </>
+
+      <div className="overflow-x-auto">
+        <TransactionTable
+          data={tableData}
+          columns={ACCOUNT_TRANSACTION_COLUMNS}
+          isLoading={isLoading}
+          loadingRowCount={MAX_DISPLAY}
+          timestampMode={timestampMode}
+          onToggleTimestampMode={() =>
+            setTimestampMode((prev) =>
+              prev === "age" ? "dateTime" : "age",
+            )
+          }
+          address={address}
+          columnFilters={columnFilters}
+        />
+      </div>
+
+      {!isLoading && totalTxCount > MAX_DISPLAY && (
+        <div className="flex justify-center pt-2">
+          <Button variant="outline" size="sm" asChild>
+            <Link href={`/transactions?address=${address}`}>
+              View all {totalTxCount.toLocaleString()} transactions
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        </div>
+      )}
+    </div>
   );
 }

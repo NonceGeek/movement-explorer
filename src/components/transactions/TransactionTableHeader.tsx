@@ -53,15 +53,19 @@ export function TransactionTableHeader({
           </StyledTableHead>
         );
 
-      case "timestamp":
+      case "timestamp": {
+        const timestampFilter = columnFilters?.["timestamp"];
         return (
           <StyledTableHead key={column.key} className={widthClass}>
-            <TimestampModeToggle
-              mode={timestampMode}
-              setMode={onToggleTimestampMode}
-            />
+            {timestampFilter ?? (
+              <TimestampModeToggle
+                mode={timestampMode}
+                setMode={onToggleTimestampMode}
+              />
+            )}
           </StyledTableHead>
         );
+      }
 
       default: {
         const filter = columnFilters?.[column.key];

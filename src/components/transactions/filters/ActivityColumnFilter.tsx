@@ -1,12 +1,10 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { Funnel } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
   DropdownMenuContent,
-  DropdownMenuRadioGroup,
-  DropdownMenuRadioItem,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/utils/styling";
 
@@ -28,9 +26,10 @@ export function ActivityColumnFilter({
 }: ActivityColumnFilterProps) {
   const isActive = value !== null;
   const activeLabel = ACTIVITY_OPTIONS.find((o) => o.value === value)?.label;
+  const currentValue = value ?? "all";
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
@@ -41,20 +40,35 @@ export function ActivityColumnFilter({
           )}
         >
           {isActive ? `Activity: ${activeLabel}` : "Activity"}
-          <ChevronDown className="h-3 w-3" />
+          <span className="relative">
+            <Funnel className="h-3.5 w-3.5" />
+            {isActive && (
+              <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+            )}
+          </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-36">
-        <DropdownMenuRadioGroup
-          value={value ?? "all"}
-          onValueChange={(v) => onChange(v === "all" ? null : v)}
-        >
+      <DropdownMenuContent
+        align="start"
+        className="w-auto p-3 rounded-2xl"
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
+        <div className="flex items-center gap-1.5">
           {ACTIVITY_OPTIONS.map((opt) => (
-            <DropdownMenuRadioItem key={opt.value} value={opt.value}>
+            <button
+              key={opt.value}
+              onClick={() => onChange(opt.value === "all" ? null : opt.value)}
+              className={cn(
+                "py-1.5 px-3 text-xs font-bold uppercase tracking-wider rounded-full transition-colors cursor-pointer",
+                currentValue === opt.value
+                  ? "bg-primary text-primary-foreground"
+                  : "border border-border text-muted-foreground hover:text-foreground hover:border-foreground/30",
+              )}
+            >
               {opt.label}
-            </DropdownMenuRadioItem>
+            </button>
           ))}
-        </DropdownMenuRadioGroup>
+        </div>
       </DropdownMenuContent>
     </DropdownMenu>
   );

@@ -66,7 +66,10 @@
       "Bash(git checkout stash@{0} -- src/hooks/useGetPrice.ts)",
       "Bash(git revert --no-commit 0a4224d)",
       "Bash(git reset HEAD)",
-      "Bash(git reset --soft a750d2d)"
+      "Bash(git reset --soft a750d2d)",
+      "Bash(git merge feat/transaction-filters)",
+      "Bash(python3:*)",
+      "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d '{\"\"query\"\": \"\"query { deposits: coin_activities_aggregate\\(where: {owner_address: {_eq: \\\\\"\"0xe42a2c7d220023aa5bde908c141a377085529282661174e2f5dfc6979aeb1ada\\\\\"\"}, activity_type: {_eq: \\\\\"\"0x1::coin::DepositEvent\\\\\"\"}, coin_type: {_eq: \\\\\"\"0x1::aptos_coin::AptosCoin\\\\\"\"}, is_gas_fee: {_eq: false}}\\) { aggregate { count sum { amount } } } withdrawals: coin_activities_aggregate\\(where: {owner_address: {_eq: \\\\\"\"0xe42a2c7d220023aa5bde908c141a377085529282661174e2f5dfc6979aeb1ada\\\\\"\"}, activity_type: {_eq: \\\\\"\"0x1::coin::WithdrawEvent\\\\\"\"}, coin_type: {_eq: \\\\\"\"0x1::aptos_coin::AptosCoin\\\\\"\"}, is_gas_fee: {_eq: false}}\\) { aggregate { count sum { amount } } } gas: coin_activities_aggregate\\(where: {owner_address: {_eq: \\\\\"\"0xe42a2c7d220023aa5bde908c141a377085529282661174e2f5dfc6979aeb1ada\\\\\"\"}, coin_type: {_eq: \\\\\"\"0x1::aptos_coin::AptosCoin\\\\\"\"}, is_gas_fee: {_eq: true}}\\) { aggregate { count sum { amount } } } }\"\"}')"
     ]
   }
 }

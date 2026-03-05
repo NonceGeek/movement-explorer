@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import { ChevronDown, Search, X } from "lucide-react";
+import { Funnel, Search, X } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -46,7 +46,7 @@ export function CoinColumnFilter({ value, onChange }: CoinColumnFilterProps) {
   }, [search]);
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <button
           className={cn(
@@ -57,10 +57,15 @@ export function CoinColumnFilter({ value, onChange }: CoinColumnFilterProps) {
           )}
         >
           {isActive ? `Token: ${activeLabel}` : "Token"}
-          <ChevronDown className="h-3 w-3" />
+          <span className="relative">
+            <Funnel className="h-3.5 w-3.5" />
+            {isActive && (
+              <span className="absolute -top-1 -right-1 h-1.5 w-1.5 rounded-full bg-primary" />
+            )}
+          </span>
         </button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="w-56">
+      <DropdownMenuContent align="start" className="w-56 rounded-2xl">
         <div className="px-2 py-1.5">
           <div className="flex items-center gap-2 px-2 py-1 rounded-md border border-border bg-background">
             <Search className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

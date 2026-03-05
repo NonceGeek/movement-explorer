@@ -30,6 +30,8 @@ import { Wallet, Activity, Image, Database, Code } from "lucide-react";
 import { useGetUnifiedMOVEBalance } from "@/hooks/accounts/useGetAccountAPTBalance";
 import { useGetPrice } from "@/hooks/useGetPrice";
 import { useGetAccountCoins } from "@/hooks/accounts/useGetAccountCoins";
+import { useGetAccountFirstLastTx } from "@/hooks/accounts/useGetAccountFirstLastTx";
+import { useGetAccountMoveFlow } from "@/hooks/accounts/useGetAccountMoveFlow";
 import NFTsTab from "../components/Tabs/NFTsTab";
 import ModulesTab from "../components/Tabs/ModulesTab/ModulesTab";
 import CoinsTab from "../components/Tabs/CoinsTab";
@@ -53,6 +55,10 @@ export default function AccountDetailPage() {
     useGetUnifiedMOVEBalance(address);
   const { data: price, isLoading: priceLoading } = useGetPrice();
   const { data: accountCoins } = useGetAccountCoins(address);
+  const { data: timeline, isLoading: timelineLoading } =
+    useGetAccountFirstLastTx(address);
+  const { data: moveFlow, isLoading: moveFlowLoading } =
+    useGetAccountMoveFlow(address);
 
   const accountData = resources?.find((r) => r.type === "0x1::account::Account")
     ?.data as Types.AccountData | undefined;
@@ -244,6 +250,11 @@ export default function AccountDetailPage() {
           resourceCount={resources?.length || 0}
           isLoading={balanceLoading || priceLoading || resourcesLoading}
           onTabChange={handleTabChange}
+          timeline={timeline}
+          timelineLoading={timelineLoading}
+          moveFlow={moveFlow}
+          moveFlowLoading={moveFlowLoading}
+          accountType={accountType}
         />
 
         {/* Tabs */}

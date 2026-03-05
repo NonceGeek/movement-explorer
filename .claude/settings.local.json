@@ -54,7 +54,19 @@
       "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d '{\"\"query\"\":\"\"{ __type\\(name: \\\\\"\"account_transactions\\\\\"\"\\) { fields { name type { name kind ofType { name } } } } }\"\"}')",
       "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d '{:*)",
       "Bash(curl -s 'https://indexer.mainnet.movementnetwork.xyz/v1/graphql' -H 'Content-Type: application/json' -d @-)",
-      "Bash(npm run dev)"
+      "Bash(npm run dev)",
+      "Bash(curl -s --max-time 30 -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d @-)",
+      "Bash({)",
+      "Bash(\"query\": \"{ v2_deposit: fungible_asset_activities\\(where: {owner_address: {_eq: \"\"0x4877ee1d4970d17283fb9477094fd9b203e2c93ec6d6886e5d831c0b84c2ecf7\"\"}, type: {_eq: \"\"0x1::fungible_asset::Deposit\"\"}, is_gas_fee: {_eq: false}}, limit: 5, order_by: {transaction_version: desc}\\) { amount transaction_version token_standard asset_type } v2_withdraw: fungible_asset_activities\\(where: {owner_address: {_eq: \"\"0x4877ee1d4970d17283fb9477094fd9b203e2c93ec6d6886e5d831c0b84c2ecf7\"\"}, type: {_eq: \"\"0x1::fungible_asset::Withdraw\"\"}, is_gas_fee: {_eq: false}}, limit: 5, order_by: {transaction_version: desc}\\) { amount transaction_version token_standard asset_type } v2_gas: fungible_asset_activities\\(where: {owner_address: {_eq: \"\"0x4877ee1d4970d17283fb9477094fd9b203e2c93ec6d6886e5d831c0b84c2ecf7\"\"}, is_gas_fee: {_eq: true}}, limit: 5, order_by: {transaction_version: desc}\\) { amount transaction_version token_standard asset_type } }\")",
+      "Bash(})",
+      "Bash(QUERY)",
+      "Bash(git checkout main)",
+      "Bash(git stash pop)",
+      "Bash(git add src/hooks/accounts/useGetAccountTransactionVersions.ts)",
+      "Bash(git checkout stash@{0} -- src/hooks/useGetPrice.ts)",
+      "Bash(git revert --no-commit 0a4224d)",
+      "Bash(git reset HEAD)",
+      "Bash(git reset --soft a750d2d)"
     ]
   }
 }

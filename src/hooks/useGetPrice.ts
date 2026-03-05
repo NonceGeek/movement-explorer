@@ -52,7 +52,8 @@ export function useGetPrice(coinId: string = "movement") {
   return useQuery({
     queryKey: ["price", coinId],
     queryFn: () => getPrice(coinId),
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 5 * 60 * 1000, // 5 minutes — price data doesn't need to be real-time
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes to avoid CoinGecko 429
   });
 }
 
@@ -107,6 +108,7 @@ export function useGetPriceWithMarketCap(coinId: string = "movement") {
   return useQuery({
     queryKey: ["priceWithMarketCap", coinId],
     queryFn: () => getPriceWithMarketCap(coinId),
-    refetchInterval: 60000, // Refetch every minute
+    staleTime: 5 * 60 * 1000,
+    refetchInterval: 5 * 60 * 1000,
   });
 }

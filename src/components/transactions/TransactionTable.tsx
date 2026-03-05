@@ -24,6 +24,7 @@ export function TransactionTable({
   timestampMode,
   onToggleTimestampMode,
   address,
+  columnFilters,
 }: TransactionTableProps) {
 
   // Loading skeleton
@@ -34,6 +35,7 @@ export function TransactionTable({
           columns={columns}
           timestampMode={timestampMode}
           onToggleTimestampMode={onToggleTimestampMode}
+          columnFilters={columnFilters}
         />
         <TableBody>
           {Array.from({ length: loadingRowCount }).map((_, i) => (
@@ -56,6 +58,7 @@ export function TransactionTable({
         columns={columns}
         timestampMode={timestampMode}
         onToggleTimestampMode={onToggleTimestampMode}
+        columnFilters={columnFilters}
       />
       <TableBody>
         {data.map(({ version, transaction }) => (

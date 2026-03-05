@@ -11,10 +11,26 @@ import {
   TransactionTable,
   TOKEN_TRANSFER_COLUMNS,
   TransactionRowData,
+  ColumnFilters,
 } from "@/components/transactions";
+import {
+  DirectionColumnFilter,
+  DirectionFilterValue,
+} from "@/components/transactions/filters/DirectionColumnFilter";
+import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
+import {
+  DateRangeFilter,
+  DateRange,
+} from "@/components/transactions/filters/DateRangeFilter";
+import { getTransactionDirection, getTransactionAmount } from "@/utils/transaction";
+import {
+  AmountRangeFilter,
+  AmountRange,
+} from "@/components/transactions/filters/AmountRangeFilter";
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 
 const MAX_DISPLAY = 25;
 
@@ -23,10 +39,18 @@ interface CoinTransfersTabProps {
 }
 
 export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
-  const { data: totalCount } = useGetAccountCoinTransfersCount(address);
+  const [coinFilter, setCoinFilter] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+
+  const { data: totalCount } = useGetAccountCoinTransfersCount(
+    address,
+    coinFilter,
+    dateRange.from,
+    dateRange.to,
+  );
 
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0);
+    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0, coinFilter, dateRange.from, dateRange.to);
 
   // Fetch full transaction details (same as TransactionsSubTab)
   const { aptos_client } = useGlobalStore();
@@ -48,11 +72,67 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   });
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
+  const [directionFilter, setDirectionFilter] = useState<DirectionFilterValue>("any");
+  const [statusFilter, setStatusFilter] = useState<"all" | "success" | "failed">("all");
+  const [amountRange, setAmountRange] = useState<AmountRange>({ min: "", max: "" });
 
   const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
     const version = "version" in tx ? parseInt(tx.version) : 0;
     return { version, transaction: tx };
   });
+
+  // Filter by direction and status
+  const filteredData = tableData
+    .filter((row) => {
+      if (directionFilter === "any") return true;
+      return getTransactionDirection(row.transaction, address) === directionFilter;
+    })
+    .filter((row) => {
+      if (statusFilter === "all") return true;
+      const success = "success" in row.transaction ? row.transaction.success : true;
+      return statusFilter === "success" ? success : !success;
+    })
+    .filter((row) => {
+      if (amountRange.min === "" && amountRange.max === "") return true;
+      const amount = getTransactionAmount(row.transaction);
+      if (amount === undefined) return amountRange.min === "" && amountRange.max === "";
+      // Convert from octas to MOVE (8 decimals)
+      const amountInMove = Number(amount) / 1e8;
+      if (amountRange.min !== "" && amountInMove < Number(amountRange.min)) return false;
+      if (amountRange.max !== "" && amountInMove > Number(amountRange.max)) return false;
+      return true;
+    });
+
+  const columnFilters: ColumnFilters = {
+    direction: (
+      <DirectionColumnFilter
+        value={directionFilter}
+        onChange={setDirectionFilter}
+      />
+    ),
+    token: (
+      <CoinColumnFilter
+        value={coinFilter}
+        onChange={setCoinFilter}
+      />
+    ),
+    amount: (
+      <AmountRangeFilter
+        value={amountRange}
+        onChange={setAmountRange}
+      />
+    ),
+  };
+
+  const hasActiveFilters = directionFilter !== "any" || coinFilter !== null || statusFilter !== "all" || dateRange.from !== null || amountRange.min !== "" || amountRange.max !== "";
+
+  const clearAllFilters = () => {
+    setDirectionFilter("any");
+    setCoinFilter(null);
+    setStatusFilter("all");
+    setDateRange({ from: null, to: null });
+    setAmountRange({ min: "", max: "" });
+  };
 
   const isLoading = versionsLoading || detailsLoading;
   const displayCount = totalCount ?? (transactionVersions?.length || 0);
@@ -86,13 +166,41 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
                   </span>
                 )}{" "}
                 token transfers
+                {hasActiveFilters && (
+                  <>
+                    <span className="text-primary/80 ml-1">(filtered)</span>
+                    <button
+                      onClick={clearAllFilters}
+                      className="text-xs text-primary hover:underline ml-2"
+                    >
+                      Clear Filters
+                    </button>
+                  </>
+                )}
               </p>
             </div>
           )}
 
+          {/* Filter toolbar */}
+          <div className="flex items-center gap-4 flex-wrap">
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-muted-foreground">Status:</span>
+              <ToggleGroup
+                value={statusFilter}
+                onValueChange={(v) => v && setStatusFilter(v as "all" | "success" | "failed")}
+                size="sm"
+              >
+                <ToggleGroupItem value="all">All</ToggleGroupItem>
+                <ToggleGroupItem value="success">Success</ToggleGroupItem>
+                <ToggleGroupItem value="failed">Failed</ToggleGroupItem>
+              </ToggleGroup>
+            </div>
+            <DateRangeFilter value={dateRange} onChange={setDateRange} />
+          </div>
+
           <div className="overflow-x-auto">
             <TransactionTable
-              data={tableData}
+              data={filteredData}
               columns={TOKEN_TRANSFER_COLUMNS}
               isLoading={isLoading}
               loadingRowCount={MAX_DISPLAY}
@@ -103,6 +211,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
                 )
               }
               address={address}
+              columnFilters={columnFilters}
             />
           </div>
 

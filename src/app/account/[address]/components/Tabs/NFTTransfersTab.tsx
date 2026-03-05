@@ -14,6 +14,7 @@ import { useGetAccountNFTTransfersCount } from "@/hooks/accounts/useGetAccountNF
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { TimestampModeToggle } from "@/components/common/TimestampModeToggle";
 import { TimestampToggle } from "@/components/common/TimestampToggle";
+import { ActivityColumnFilter } from "@/components/transactions/filters/ActivityColumnFilter";
 import {
   TransactionTypeName,
   TRANSACTION_TYPE_INFO,
@@ -74,9 +75,11 @@ interface NFTTransfersTabProps {
 }
 
 export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
-  const { data: totalCount } = useGetAccountNFTTransfersCount(address);
+  const [activityFilter, setActivityFilter] = useState<string | null>(null);
+
+  const { data: totalCount } = useGetAccountNFTTransfersCount(address, activityFilter);
   const { data: activities, isLoading: activitiesLoading } =
-    useGetAccountNFTTransfers(address, MAX_DISPLAY, 0);
+    useGetAccountNFTTransfers(address, MAX_DISPLAY, 0, activityFilter);
 
   // Extract unique transaction versions to fetch full transaction details
   const uniqueVersions = useMemo(() => {
@@ -146,6 +149,17 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
               </span>
             )}{" "}
             NFT transfers
+            {activityFilter !== null && (
+              <>
+                <span className="text-primary/80 ml-1">(filtered)</span>
+                <button
+                  onClick={() => setActivityFilter(null)}
+                  className="text-xs text-primary hover:underline ml-2"
+                >
+                  Clear Filters
+                </button>
+              </>
+            )}
           </p>
         </div>
       )}
@@ -161,7 +175,12 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
                   setMode={setTimestampMode}
                 />
               </StyledTableHead>
-              <StyledTableHead className="w-[100px]">Activity</StyledTableHead>
+              <StyledTableHead className="w-[100px]">
+                <ActivityColumnFilter
+                  value={activityFilter}
+                  onChange={setActivityFilter}
+                />
+              </StyledTableHead>
               <StyledTableHead className="w-[180px]">Token</StyledTableHead>
               <StyledTableHead className="w-[150px]">From</StyledTableHead>
               <StyledTableHead className="w-[150px]">To</StyledTableHead>

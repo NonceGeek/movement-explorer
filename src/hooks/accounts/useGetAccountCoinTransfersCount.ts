@@ -2,9 +2,66 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { ResponseError } from "../../utils/api-client";
 import { useGlobalStore } from "../../store/useGlobalStore";
 
+/**
+ * Build the GraphQL query and variables for coin transfer count.
+ * Handles all 4 combinations: with/without assetType x with/without timestamp.
+ */
+function buildCoinTransfersCountQuery(
+  address: string,
+  assetType?: string | null,
+  timestampGte?: string | null,
+  timestampLte?: string | null,
+): { query: string; variables: Record<string, unknown> } {
+  const hasAsset = !!assetType;
+  const hasTimestamp = !!timestampGte && !!timestampLte;
+
+  // Build variable declarations
+  const varParts = ["$address: String!"];
+  if (hasAsset) varParts.push("$assetType: String!");
+  if (hasTimestamp) {
+    varParts.push("$timestampGte: timestamp");
+    varParts.push("$timestampLte: timestamp");
+  }
+
+  // Build where clause parts
+  const whereParts = ["account_address: { _eq: $address }"];
+  const faaFilter = hasAsset
+    ? "fungible_asset_activities: { is_gas_fee: { _eq: false }, asset_type: { _eq: $assetType } }"
+    : "fungible_asset_activities: { is_gas_fee: { _eq: false } }";
+  whereParts.push(faaFilter);
+  if (hasTimestamp) {
+    whereParts.push(
+      "user_transaction: { timestamp: { _gte: $timestampGte, _lte: $timestampLte } }",
+    );
+  }
+
+  const query = `
+    query GetAccountCoinTransfersCount(${varParts.join(", ")}) {
+      account_transactions_aggregate(
+        where: { ${whereParts.join(", ")} }
+      ) {
+        aggregate {
+          count
+        }
+      }
+    }
+  `;
+
+  const variables: Record<string, unknown> = { address };
+  if (hasAsset) variables.assetType = assetType;
+  if (hasTimestamp) {
+    variables.timestampGte = timestampGte;
+    variables.timestampLte = timestampLte;
+  }
+
+  return { query, variables };
+}
+
 export function useGetAccountCoinTransfersCount(
   address: string,
   assetType?: string | null,
+  timestampGte?: string | null,
+  timestampLte?: string | null,
 ): {
   isLoading: boolean;
   error: ResponseError | undefined;
@@ -20,47 +77,18 @@ export function useGetAccountCoinTransfersCount(
       "accountCoinTransfersCount",
       address,
       assetType ?? null,
+      timestampGte ?? null,
+      timestampLte ?? null,
       network_value,
     ],
     queryFn: async () => {
       try {
-        const query = assetType
-          ? `
-            query GetAccountCoinTransfersCountByAsset($address: String!, $assetType: String!) {
-              account_transactions_aggregate(
-                where: {
-                  account_address: { _eq: $address }
-                  fungible_asset_activities: {
-                    is_gas_fee: { _eq: false }
-                    asset_type: { _eq: $assetType }
-                  }
-                }
-              ) {
-                aggregate {
-                  count
-                }
-              }
-            }
-          `
-          : `
-            query GetAccountCoinTransfersCount($address: String!) {
-              account_transactions_aggregate(
-                where: {
-                  account_address: { _eq: $address }
-                  fungible_asset_activities: { is_gas_fee: { _eq: false } }
-                }
-              ) {
-                aggregate {
-                  count
-                }
-              }
-            }
-          `;
-
-        const variables: Record<string, unknown> = { address };
-        if (assetType) {
-          variables.assetType = assetType;
-        }
+        const { query, variables } = buildCoinTransfersCountQuery(
+          address,
+          assetType,
+          timestampGte,
+          timestampLte,
+        );
 
         const result = await sdk_v2_client.queryIndexer<{
           account_transactions_aggregate: {

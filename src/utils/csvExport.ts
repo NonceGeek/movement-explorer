@@ -1,94 +1,70 @@
 import { Types } from "aptos";
-
-interface TransactionCSVRow {
-  txnHash: string;
-  version: string;
-  type: string;
-  timestamp: string;
-  sender: string;
-  function: string;
-  gasUsed: string;
-  gasUnitPrice: string;
-  status: string;
-}
+import {
+  getTransactionSender,
+  getTransactionFunction,
+  getTransactionAmount,
+  getTransactionCounterparty,
+  formatMoveAmount,
+} from "@/utils/transaction";
 
 /**
- * Extract transaction data for CSV export
+ * Generate a CSV string from transaction data.
+ *
+ * Columns: Transaction Hash, Function, Timestamp, Sender, To,
+ *          Amount (MOVE), Gas Fee (MOVE)
  */
-function extractTransactionData(
-  tx: Types.Transaction,
-  version: number
-): TransactionCSVRow {
-  const isUserTx = "sender" in tx;
-  const timestamp =
-    "timestamp" in tx ? new Date(Number(tx.timestamp) / 1000).toISOString() : "";
-
-  let functionName = "";
-  if (isUserTx && "payload" in tx) {
-    const payload = tx.payload;
-    if ("function" in payload) {
-      functionName = payload.function;
-    } else if ("type" in payload) {
-      functionName = payload.type;
-    }
-  }
-
-  return {
-    txnHash: "hash" in tx ? tx.hash : "",
-    version: version.toString(),
-    type: tx.type,
-    timestamp,
-    sender: isUserTx ? tx.sender : "",
-    function: functionName,
-    gasUsed: "gas_used" in tx ? tx.gas_used : "",
-    gasUnitPrice: isUserTx ? tx.gas_unit_price : "",
-    status: "success" in tx ? (tx.success ? "Success" : "Failed") : "",
-  };
-}
-
-/**
- * Convert array of objects to CSV string
- */
-function arrayToCSV(data: TransactionCSVRow[]): string {
-  if (data.length === 0) return "";
-
+function generateCSV(
+  transactions: { version: number; transaction: Types.Transaction }[],
+): string {
   const headers = [
-    "Txn Hash",
-    "Version",
-    "Type",
-    "Timestamp (UTC)",
-    "Sender",
+    "Transaction Hash",
     "Function",
-    "Gas Used",
-    "Gas Unit Price",
-    "Status",
+    "Timestamp",
+    "Sender",
+    "To",
+    "Amount (MOVE)",
+    "Gas Fee (MOVE)",
   ];
 
-  const rows = data.map((row) =>
-    [
-      row.txnHash,
-      row.version,
-      row.type,
-      row.timestamp,
-      row.sender,
-      row.function,
-      row.gasUsed,
-      row.gasUnitPrice,
-      row.status,
+  const rows = transactions.map(({ transaction }) => {
+    const sender = getTransactionSender(transaction) ?? "";
+    const fn = getTransactionFunction(transaction) ?? "";
+
+    const timestamp =
+      "timestamp" in transaction
+        ? new Date(parseInt(transaction.timestamp) / 1000).toISOString()
+        : "";
+
+    const counterparty = getTransactionCounterparty(transaction);
+    const to = counterparty?.address ?? "";
+
+    const amount = getTransactionAmount(transaction);
+    const amountStr =
+      amount !== undefined && amount > 0 ? formatMoveAmount(amount) : "0";
+
+    const gasUsed = "gas_used" in transaction ? transaction.gas_used : "0";
+    const gasPrice =
+      "gas_unit_price" in transaction ? transaction.gas_unit_price : "0";
+    const gasFee = formatMoveAmount(BigInt(gasUsed) * BigInt(gasPrice));
+
+    return [
+      "hash" in transaction ? transaction.hash : "",
+      fn,
+      timestamp,
+      sender,
+      to,
+      amountStr,
+      gasFee,
     ]
-      .map((value) => {
-        // Escape quotes and wrap in quotes if contains comma or quote
-        const escaped = value.replace(/"/g, '""');
-        return /[,"\n]/.test(value) ? `"${escaped}"` : escaped;
-      })
-      .join(",")
-  );
+      .map((field) => `"${String(field).replace(/"/g, '""')}"`)
+      .join(",");
+  });
 
   return [headers.join(","), ...rows].join("\n");
 }
 
 /**
- * Trigger browser download of a file
+ * Trigger browser download of a file via the Blob API.
  */
 function downloadFile(content: string, filename: string, mimeType: string) {
   const blob = new Blob([content], { type: mimeType });
@@ -103,17 +79,18 @@ function downloadFile(content: string, filename: string, mimeType: string) {
 }
 
 /**
- * Download transactions as CSV file
+ * Download transactions as a CSV file.
+ *
+ * The exported CSV contains columns for Transaction Hash, Function,
+ * Timestamp, Sender, To, Amount (MOVE), and Gas Fee (MOVE).
  */
 export function downloadTransactionsAsCSV(
   transactions: { version: number; transaction: Types.Transaction }[],
-  filename?: string
+  filename?: string,
 ): void {
-  const csvData = transactions.map(({ version, transaction }) =>
-    extractTransactionData(transaction, version)
-  );
+  if (transactions.length === 0) return;
 
-  const csv = arrayToCSV(csvData);
+  const csv = generateCSV(transactions);
   const defaultFilename = `transactions-${new Date().toISOString().split("T")[0]}.csv`;
 
   downloadFile(csv, filename || defaultFilename, "text/csv;charset=utf-8;");

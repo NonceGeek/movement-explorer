@@ -256,7 +256,7 @@ export default function ModuleSidebar({
   };
 
   return (
-    <Card className="h-fit max-h-[calc(100vh-200px)] overflow-y-auto bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+    <Card className="h-fit max-h-[calc(100vh-140px)] overflow-y-auto bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>

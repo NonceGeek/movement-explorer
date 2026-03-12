@@ -398,7 +398,7 @@ export default function CodeTab({
       >
         {/* Sidebar — always mounted for transition, hidden on mobile */}
         {allModules.length > 0 && (
-          <div className="hidden md:block overflow-hidden min-w-0">
+          <div className="hidden md:block overflow-hidden min-w-0 sticky top-14 md:top-16">
             <ModuleSidebar
               modules={allModules}
               packages={packages}

@@ -123,14 +123,16 @@ export default function ModulesTabs({
   return (
     <div className="space-y-4">
       <Tabs value={currentTab} onValueChange={handleTabChange}>
-        <PillTabsList
-          items={(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => ({
-            value: tab,
-            label: TAB_LABELS[tab],
-          }))}
-          activeTab={currentTab}
-          onTabChange={handleTabChange}
-        />
+        <div className="pb-2">
+          <PillTabsList
+            items={(Object.keys(TAB_LABELS) as ModulesTabValue[]).map((tab) => ({
+              value: tab,
+              label: TAB_LABELS[tab],
+            }))}
+            activeTab={currentTab}
+            onTabChange={handleTabChange}
+          />
+        </div>
 
         <TabsContent value="code" className="mt-2">
           <CodeTab

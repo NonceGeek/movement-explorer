@@ -150,7 +150,7 @@ export default function ReadContract({
 
   if (modulesLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
         <div className="md:col-span-1 space-y-2">
           <EnhancedSkeleton className="h-8 w-32 mb-2" />
           {Array.from({ length: 4 }).map((_, i) => (
@@ -175,9 +175,9 @@ export default function ReadContract({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-start">
       {/* Sidebar */}
-      <div className="md:col-span-1">
+      <div className="md:col-span-1 sticky top-14 md:top-16">
         <ModuleSidebar
           modules={modules}
           packages={packages}

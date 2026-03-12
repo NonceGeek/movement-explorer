@@ -31,7 +31,12 @@ export function TransactionFunction({
     const parts = entryFunctionIdStr.split("::");
     if (parts.length < 3) {
       return (
-        <span className={cn("text-muted-foreground", className)}>
+        <span
+          className={cn(
+            "inline-flex items-center px-2 py-1 rounded-md bg-primary/15 text-primary font-medium hover:bg-primary/25 transition-all duration-200 text-sm",
+            className,
+          )}
+        >
           {entryFunctionIdStr}
         </span>
       );
@@ -58,7 +63,7 @@ export function TransactionFunction({
     return (
       <span
         className={cn(
-          "inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs font-mono text-muted-foreground",
+          "inline-flex items-center px-2 py-1 rounded-md bg-primary/15 text-primary font-medium hover:bg-primary/25 transition-all duration-200 text-sm",
           className,
         )}
       >
@@ -79,7 +84,7 @@ export function TransactionFunction({
       return (
         <span
           className={cn(
-            "inline-flex items-center px-2 py-1 rounded-md bg-muted/50 text-xs font-mono text-muted-foreground",
+            "inline-flex items-center px-2 py-1 rounded-md bg-primary/15 text-primary font-medium hover:bg-primary/25 transition-all duration-200 text-sm",
             className,
           )}
         >
@@ -106,7 +111,12 @@ export function TransactionFunction({
   if (parts.length < 3) {
     // Fallback for unexpected formats
     return (
-      <span className={cn("text-muted-foreground", className)}>
+      <span
+        className={cn(
+          "inline-flex items-center px-2 py-1 rounded-md bg-primary/15 text-primary font-medium hover:bg-primary/25 transition-all duration-200 text-sm",
+          className,
+        )}
+      >
         {functionFullStr}
       </span>
     );
@@ -312,11 +322,7 @@ function TransactionFunctionWithSource({
           <Link
             href={`/account/${address}/modules/write/${moduleName}/${functionName}`}
             className={cn(
-              "inline-flex items-center gap-1 rounded-md transition-all duration-200 text-sm",
-              description
-                ? "px-2 py-1 bg-primary/15 text-primary font-medium hover:bg-primary/25"
-                : "py-0.5 h-[30px] font-mono text-primary hover:bg-primary/10",
-              "max-w-[180px]",
+              "inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/15 text-primary font-medium hover:bg-primary/25 transition-all duration-200 text-sm max-w-[180px]",
               className,
             )}
             onClick={(e) => e.stopPropagation()}

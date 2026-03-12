@@ -1,7 +1,13 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
-import { formatAge, formatDateTimeUTC } from "@/utils/time";
+import { formatAge, formatDateTimeLocal, formatDateTimeUTC } from "@/utils/time";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TimestampToggleProps {
   timestamp: string | number | null | undefined;
@@ -14,13 +20,18 @@ export function TimestampToggle({
   timestampMode,
   onToggle,
 }: TimestampToggleProps) {
-  return (
+  const tooltipText = timestamp
+    ? timestampMode === "age"
+      ? formatDateTimeLocal(timestamp.toString())
+      : formatAge(timestamp.toString())
+    : undefined;
+
+  const content = (
     <div
       className="cursor-pointer hover:text-foreground/80 hover:bg-muted/50 py-1 rounded transition-colors inline-block"
       onClick={onToggle}
       role="button"
       tabIndex={0}
-      title="Click to toggle format"
     >
       <AnimatePresence mode="wait" initial={false}>
         <motion.div
@@ -38,5 +49,16 @@ export function TimestampToggle({
         </motion.div>
       </AnimatePresence>
     </div>
+  );
+
+  if (!tooltipText) return content;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="top">{tooltipText}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

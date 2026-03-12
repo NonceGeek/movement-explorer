@@ -16,3 +16,10 @@ export function formatDateTimeUTC(timestamp: string): string {
     .utc()
     .format("MMM DD, YYYY HH:mm:ss +UTC");
 }
+
+// Format timestamp as local date time (e.g., "Mar 12, 2026 23:17:37 +08:00")
+export function formatDateTimeLocal(timestamp: string): string {
+  return moment(parseInt(timestamp) / 1000).format(
+    "MMM DD, YYYY HH:mm:ss UTCZ",
+  );
+}

@@ -15,7 +15,18 @@ export { TransactionSummaryCard } from "./TransactionSummaryCard";
 export { TransactionDetailsTable } from "./TransactionDetailsTable";
 
 // SuiVision-style enhancements
-export { TransactionActionCard, parseTransactionActions } from "./TransactionActionCard";
+export {
+  TransactionActionCard,
+  parseTransactionActions,
+  TokenAmount,
+  DexBadge,
+  StakingPoolBadge,
+  ContractBadge,
+  FaTransferDescription,
+  ACTION_ICONS,
+  ACTION_COLORS,
+} from "./TransactionActionCard";
+export type { ParsedAction } from "./TransactionActionCard";
 export { PayloadDecoder } from "./PayloadDecoder";
 export { ChangesTab } from "./ChangesTab";
 export { EventsTab } from "./EventsTab";

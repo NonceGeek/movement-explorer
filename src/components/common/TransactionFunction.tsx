@@ -1,8 +1,9 @@
 "use client";
 
+import { useMemo } from "react";
 import Link from "next/link";
 import { Types } from "aptos";
-import { FileCheck } from "lucide-react";
+import { ArrowRight, FileCheck } from "lucide-react";
 import { cn } from "@/utils/styling";
 import {
   Tooltip,
@@ -14,6 +15,15 @@ import { useContractSourceAvailability } from "@/hooks/accounts/useContractSourc
 import { useGetFunctionParams } from "@/hooks/accounts/useGetFunctionParams";
 import { formatMovementPath } from "@/utils";
 import { getFunctionDescription } from "@/constants/contractFunctions";
+import {
+  parseTransactionActions,
+  TokenAmount,
+  DexBadge,
+  StakingPoolBadge,
+  ContractBadge,
+  FaTransferDescription,
+} from "@/app/txn/[hash]/components";
+import type { ParsedAction } from "@/app/txn/[hash]/components";
 
 interface TransactionFunctionProps {
   transaction?: Types.Transaction;
@@ -129,6 +139,7 @@ export function TransactionFunction({
 
   return (
     <TransactionFunctionWithSource
+      transaction={transaction}
       address={address}
       moduleName={moduleName}
       functionName={functionName}
@@ -293,7 +304,79 @@ function FunctionSignature({
   );
 }
 
+function TooltipActionSummary({ action }: { action: ParsedAction }) {
+  return (
+    <div className="flex flex-col gap-1.5">
+      {/* Action header: description + badge */}
+      <div className="flex items-center gap-1.5 flex-wrap text-sm">
+        {action.type === "transfer" && action.details?.metadata && action.details?.amount ? (
+          <FaTransferDescription
+            amount={action.details.amount}
+            metadataAddress={action.details.metadata}
+          />
+        ) : (
+          <span className="font-medium">{action.description}</span>
+        )}
+        {action.type === "swap" && (
+          <DexBadge
+            eventType={action.details?.dexEventType}
+            fallbackName={action.details?.dex}
+          />
+        )}
+        {(action.type === "stake" || action.type === "unstake" || action.type === "claim") &&
+          action.details?.contract && (
+            <StakingPoolBadge poolAddress={action.details.contract} />
+          )}
+        {action.type === "contract_call" && action.details?.contract && (
+          <ContractBadge contractAddress={action.details.contract} />
+        )}
+      </div>
+
+      {/* Action details */}
+      {action.details && (
+        <div className="text-sm text-muted-foreground space-y-1">
+          {/* From → To */}
+          {action.details.from && action.details.to && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="font-mono text-xs">{`${action.details.from.slice(0, 6)}...${action.details.from.slice(-4)}`}</span>
+              <ArrowRight className="h-3 w-3" />
+              <span className="font-mono text-xs">{`${action.details.to.slice(0, 6)}...${action.details.to.slice(-4)}`}</span>
+            </div>
+          )}
+          {/* Swap In → Out */}
+          {(action.details.amountIn || action.details.amountOut) && (
+            <div className="flex items-center gap-1.5 flex-wrap [&_span]:!inline [&_a]:!inline [&_img]:!inline">
+              {action.details.amountIn && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-muted-foreground text-xs">In:</span>
+                  <TokenAmount
+                    amount={action.details.amountIn}
+                    metadataAddress={action.details.metadataIn}
+                  />
+                </span>
+              )}
+              {action.details.amountIn && action.details.amountOut && (
+                <ArrowRight className="h-3 w-3" />
+              )}
+              {action.details.amountOut && (
+                <span className="inline-flex items-center gap-1">
+                  <span className="text-muted-foreground text-xs">Out:</span>
+                  <TokenAmount
+                    amount={action.details.amountOut}
+                    metadataAddress={action.details.metadataOut}
+                  />
+                </span>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function TransactionFunctionWithSource({
+  transaction,
   address,
   moduleName,
   functionName,
@@ -302,6 +385,7 @@ function TransactionFunctionWithSource({
   typeArgs,
   className,
 }: {
+  transaction?: Types.Transaction;
   address: string;
   moduleName: string;
   functionName: string;
@@ -314,6 +398,28 @@ function TransactionFunctionWithSource({
   const { params, isLoading: paramsLoading } = useGetFunctionParams(functionFullStr);
   const description = getFunctionDescription(functionFullStr);
   const displayName = description ?? functionName;
+
+  const actions = useMemo(
+    () => (transaction ? parseTransactionActions(transaction) : []),
+    [transaction],
+  );
+  const primaryAction = actions[0];
+
+  // Rich action types: summary alone is sufficient, no function signature needed
+  const RICH_ACTION_TYPES = new Set<ParsedAction["type"]>([
+    "transfer",
+    "swap",
+    "stake",
+    "unstake",
+    "claim",
+    "deploy",
+    "coin_mint",
+    "coin_burn",
+  ]);
+
+  const isRichAction = primaryAction && RICH_ACTION_TYPES.has(primaryAction.type);
+  // Generic types: show function signature as primary content
+  const showSignature = !isRichAction;
 
   return (
     <TooltipProvider>
@@ -334,37 +440,28 @@ function TransactionFunctionWithSource({
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right" className="p-3 max-w-80 sm:max-w-100">
-          <div className="flex flex-col gap-3 [&_span]:!block [&_svg]:!block">
-            <div className="space-y-1">
-              <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                Address
-              </span>
-              <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
-                {address}
+          <div className="flex flex-col gap-0">
+            {/* Action summary (always shown when available) */}
+            {primaryAction && (
+              <div className="[&_span]:!inline-flex [&_svg]:!inline [&_a]:!inline-flex [&_img]:!inline">
+                <TooltipActionSummary action={primaryAction} />
               </div>
-            </div>
+            )}
 
-            <div className="flex flex-col gap-3">
-              <div className="space-y-1">
-                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                  Module
-                </span>
-                <div className="font-mono text-xs text-foreground bg-muted/30 p-2 rounded border border-border/50 break-all whitespace-pre-wrap">
-                  {formatMovementPath(moduleName)}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
-                  Function
-                </span>
-                <div className="font-mono text-xs bg-primary/5 p-2 rounded border border-primary/10 [&_span]:!inline">
+            {/* Function signature: only for generic action types */}
+            {showSignature && (
+              <div className={cn("space-y-1", primaryAction && "mt-2")}>
+                <div className="font-mono text-xs bg-black/30 p-2 rounded border border-border/50 [&_span]:!inline">
                   <FunctionSignature functionName={functionName} params={params} args={args} typeArgs={typeArgs} isLoading={paramsLoading} />
                 </div>
               </div>
-            </div>
+            )}
 
             {hasSource && (
-              <div className="flex items-center gap-1.5 px-2 py-1.5 rounded bg-blue-500/15 border border-blue-500/20 text-white">
+              <div className={cn(
+                "flex items-center gap-1.5 px-2 py-1.5 rounded bg-blue-500/15 border border-blue-500/20 text-white [&_span]:!inline [&_svg]:!inline",
+                (isRichAction || showSignature) && "mt-2",
+              )}>
                 <FileCheck size={20} className="text-white fill-blue-500 shrink-0" />
                 <span className="text-xs">This contract is open source and the source code is available for viewing.</span>
               </div>

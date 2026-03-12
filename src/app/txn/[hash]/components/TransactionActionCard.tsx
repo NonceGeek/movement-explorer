@@ -71,7 +71,7 @@ export interface ParsedAction {
   };
 }
 
-const ACTION_ICONS: Record<ParsedAction["type"], React.ReactNode> = {
+export const ACTION_ICONS: Record<ParsedAction["type"], React.ReactNode> = {
   transfer: <Send className="h-5 w-5" />,
   swap: <ArrowLeftRight className="h-5 w-5" />,
   nft_mint: <Image className="h-5 w-5" />,
@@ -89,7 +89,7 @@ const ACTION_ICONS: Record<ParsedAction["type"], React.ReactNode> = {
   coin_burn: <Flame className="h-5 w-5" />,
 };
 
-const ACTION_COLORS: Record<ParsedAction["type"], string> = {
+export const ACTION_COLORS: Record<ParsedAction["type"], string> = {
   transfer: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   swap: "bg-purple-500/10 text-purple-500 border-purple-500/20",
   nft_mint: "bg-green-500/10 text-green-500 border-green-500/20",
@@ -946,7 +946,7 @@ function TokenIconFallback({ symbol }: { symbol: string }) {
 }
 
 // Component to display formatted token amount with symbol and icon
-function TokenAmount({
+export function TokenAmount({
   amount,
   metadataAddress,
 }: {
@@ -1028,7 +1028,7 @@ function TokenAmount({
 }
 
 // Component to display FA transfer description with resolved token name and amount
-function FaTransferDescription({
+export function FaTransferDescription({
   amount,
   metadataAddress,
 }: {
@@ -1101,7 +1101,7 @@ function FaTransferDescription({
 }
 
 // Component to display DEX name with dynamic package name
-function DexBadge({
+export function DexBadge({
   eventType,
   fallbackName,
 }: {
@@ -1150,7 +1150,7 @@ function DexBadge({
 }
 
 // Component to display staking pool with link to validator page
-function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
+export function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
   const label = useGetAccountLabel(poolAddress);
   const displayName =
     label?.name || `${poolAddress.slice(0, 6)}...${poolAddress.slice(-4)}`;
@@ -1179,7 +1179,7 @@ function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
 }
 
 // Component to display contract/package name badge with link to modules page
-function ContractBadge({ contractAddress }: { contractAddress: string }) {
+export function ContractBadge({ contractAddress }: { contractAddress: string }) {
   const { data: packageName } = useGetPackageName(contractAddress);
   const displayName =
     packageName ||

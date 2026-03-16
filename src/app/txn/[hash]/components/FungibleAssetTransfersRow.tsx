@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDown, ArrowUp, ExternalLink } from "lucide-react";
+import { ArrowDownLeft, ArrowUpRight, ExternalLink } from "lucide-react";
 import { type FungibleAssetActivity } from "@/hooks/transactions/useGetTransactionBalanceChanges";
 import { DetailRow } from "./DetailRow";
 import { cn } from "@/utils/styling";
@@ -58,9 +58,9 @@ export function FungibleAssetTransfersRow({
           return (
             <div key={i} className="flex items-center gap-2 text-sm">
               {isDeposit ? (
-                <ArrowDown className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                <ArrowDownLeft className="h-3.5 w-3.5 text-green-500 shrink-0" />
               ) : (
-                <ArrowUp className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                <ArrowUpRight className="h-3.5 w-3.5 text-red-400 shrink-0" />
               )}
               <span
                 className={cn(

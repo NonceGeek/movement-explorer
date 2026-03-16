@@ -1,4 +1,3 @@
-import { Types } from "aptos";
 import React, { useMemo, useState } from "react";
 import { BalanceChangeTable } from "./BalanceChangeTable";
 import {
@@ -6,10 +5,7 @@ import {
   getAssetSymbol,
   AggregatedBalance,
 } from "@/utils/transaction";
-import {
-  useGetTransactionBalanceChanges,
-  FungibleAssetActivity,
-} from "@/hooks/transactions/useGetTransactionBalanceChanges";
+import { type FungibleAssetActivity } from "@/hooks/transactions/useGetTransactionBalanceChanges";
 import { tryStandardizeAddress } from "@/utils";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
@@ -27,7 +23,8 @@ import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { CoinDescription } from "@/hooks/coins/types";
 
 interface BalanceChangeTabProps {
-  transaction: Types.Transaction;
+  activities: FungibleAssetActivity[];
+  isLoading: boolean;
 }
 
 type BalanceViewType = "summary" | "detail";
@@ -94,14 +91,9 @@ function findCoinData(
   return entry;
 }
 
-export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
+export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProps) {
   const { data: coinData } = useGetCoinList();
   const [viewType, setViewType] = useState<BalanceViewType>("summary");
-
-  const version = "version" in transaction ? transaction.version : undefined;
-
-  const { data: transactionChangesResponse, isLoading } =
-    useGetTransactionBalanceChanges(version ?? "");
 
   function convertAddress(a: FungibleAssetActivity) {
     return a.type.includes("GasFeeEvent")
@@ -137,9 +129,7 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
   }
 
   const balanceChanges = useMemo(() => {
-    if (!transactionChangesResponse?.fungible_asset_activities) return [];
-
-    const activities = transactionChangesResponse.fungible_asset_activities;
+    if (!activities || activities.length === 0) return [];
 
     // Find gas fee event to filter out duplicate withdraw events
     const gasFeeActivity = activities.find((a) =>
@@ -234,7 +224,7 @@ export function BalanceChangeTab({ transaction }: BalanceChangeTabProps) {
     }
 
     return changes;
-  }, [transactionChangesResponse]);
+  }, [activities, coinData]);
 
   if (isLoading) {
     return (

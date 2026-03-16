@@ -81,7 +81,17 @@
       "Bash(cat /Users/fun/Documents/GitHub/movement-explorer/src/app/validators/[[...tab]]/page.tsx)",
       "Bash(cat /Users/fun/Documents/GitHub/movement-explorer/src/app/validator/[address]/[[...tab]]/page.tsx)",
       "Bash(cat /Users/fun/Documents/GitHub/movement-explorer/src/app/account/[address]/components/Tabs/NFTsTab.tsx)",
-      "Bash(cat /Users/fun/Documents/GitHub/movement-explorer/src/app/\\\\\\(home\\\\\\)/components/CoreMetricsGrid.tsx)"
+      "Bash(cat /Users/fun/Documents/GitHub/movement-explorer/src/app/\\\\\\(home\\\\\\)/components/CoreMetricsGrid.tsx)",
+      "Bash(bun run build)",
+      "Bash(/Users/fun/.bun/bin/bun run build)",
+      "Bash(pnpm run build)",
+      "Bash(git add src/app/txn/[hash]/[[...tab]]/page.tsx)",
+      "Bash(git add src/app/txn/[hash]/components/FungibleAssetTransfersRow.tsx)",
+      "Bash(git add src/app/txn/[hash]/components/TransactionDetailsTable.tsx src/app/txn/[hash]/components/index.ts)",
+      "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{:*)",
+      "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"{ __schema { queryType { fields { name } } } }\"\"}')",
+      "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"{ __type\\(name: \\\\\"\"user_transactions_bool_exp\\\\\"\"\\) { inputFields { name } } }\"\"}')",
+      "Bash(curl -s \"https://mainnet.movementnetwork.xyz/v1/transactions/by_hash/0xa4734b7bc0276f03798f32a29aa57b7ca7a661deba7b83135381989ec7cd41ab\")"
     ]
   }
 }

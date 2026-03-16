@@ -5,6 +5,10 @@ import { PageContainer } from "@/components/layout";
 import { useGetTransaction } from "@/hooks/transactions/useGetTransaction";
 import { useGetBlockByVersion } from "@/hooks/blocks/useGetBlock";
 import { useGetPrice } from "@/hooks/useGetPrice";
+import {
+  useGetTransactionBalanceChanges,
+  type FungibleAssetActivity,
+} from "@/hooks/transactions/useGetTransactionBalanceChanges";
 import { useParams } from "next/navigation";
 import { useState, useMemo } from "react";
 import { Types } from "aptos";
@@ -181,6 +185,13 @@ export default function TransactionDetailPage() {
       parsedActions,
     };
   }, [tx]);
+
+  const { data: activitiesData, isLoading: activitiesLoading } =
+    useGetTransactionBalanceChanges(
+      txData.txVersion ? parseInt(txData.txVersion) : 0,
+    );
+  const fungibleAssetActivities =
+    activitiesData?.fungible_asset_activities ?? [];
 
   const tabItems = [
     {

@@ -51,7 +51,6 @@ import {
 } from "../components";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { HeaderCopyableAddress } from "@/components/common/HeaderCopyableAddress";
-import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import JsonViewer from "@/components/ui/json-viewer";
 import { TransactionDetailsTable } from "../components/TransactionDetailsTable";
@@ -342,6 +341,8 @@ export default function TransactionDetailPage() {
                     feePayer={txData.feePayer}
                     secondarySigners={txData.secondarySigners}
                     usdPrice={movePrice}
+                    fungibleAssetActivities={fungibleAssetActivities}
+                    onTabChange={handleTabChange}
                   />
                 )}
               </>
@@ -350,56 +351,10 @@ export default function TransactionDetailPage() {
 
           {/* Balance Change Tab */}
           <TabsContent value="balance">
-            {isLoading ? (
-              <div className="space-y-4">
-                <div className="flex justify-end space-x-2 text-sm">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-primary font-bold bg-primary/10"
-                    disabled
-                  >
-                    Non-aggregated
-                  </Button>
-                  <div className="w-px bg-border h-6 my-auto" />
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-muted-foreground"
-                    disabled
-                  >
-                    Aggregated
-                  </Button>
-                </div>
-
-                <Table>
-                  <TableHeader>
-                    <HeaderRow>
-                      <TableHead className="w-[20%]">Account</TableHead>
-                      <TableHead className="w-[10%]">Type</TableHead>
-                      <TableHead className="w-[15%]">Asset</TableHead>
-                      <TableHead className="w-[20%]">Asset Address</TableHead>
-                      <TableHead className="w-[10%]">Verified</TableHead>
-                      <TableHead className="text-right w-[25%]">Change</TableHead>
-                    </HeaderRow>
-                  </TableHeader>
-                  <TableBody>
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <TableRow key={i}>
-                        <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><EnhancedSkeleton className="h-5 w-16 rounded-full" /></TableCell>
-                        <TableCell><EnhancedSkeleton className="h-4 w-16" /></TableCell>
-                        <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
-                        <TableCell><EnhancedSkeleton className="h-4 w-12" /></TableCell>
-                        <TableCell className="text-right"><EnhancedSkeleton className="h-4 w-28 ml-auto" /></TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-            ) : tx ? (
-              <BalanceChangeTab transaction={tx} />
-            ) : null}
+            <BalanceChangeTab
+              activities={fungibleAssetActivities}
+              isLoading={activitiesLoading}
+            />
           </TabsContent>
 
           {/* Events Tab */}

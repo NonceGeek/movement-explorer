@@ -38,8 +38,17 @@ export function FungibleAssetTransfersRow({
     <DetailRow
       label={`Fungible Asset Transfers (${transfers.length})`}
       tooltip="Token movements for the transaction sender"
+      labelClassName="items-start"
     >
       <div className="space-y-1.5">
+        <button
+          onClick={() => onTabChange("balance")}
+          className="text-xs text-primary hover:underline transition-colors flex items-center gap-1"
+        >
+          View full breakdown
+          <ExternalLink className="h-3 w-3" />
+        </button>
+
         {transfers.map((activity, i) => {
           const isDeposit = activity.type.includes("Deposit");
           const decimals = activity.metadata?.decimals ?? 8;
@@ -66,14 +75,6 @@ export function FungibleAssetTransfersRow({
             </div>
           );
         })}
-
-        <button
-          onClick={() => onTabChange("balance")}
-          className="text-xs text-muted-foreground hover:text-primary transition-colors flex items-center gap-1 pt-1"
-        >
-          View full breakdown
-          <ExternalLink className="h-3 w-3" />
-        </button>
       </div>
     </DetailRow>
   );

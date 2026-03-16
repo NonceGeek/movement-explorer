@@ -36,7 +36,7 @@ export function FungibleAssetTransfersRow({
 
   return (
     <DetailRow
-      label={`Fungible Asset Transfers (${transfers.length})`}
+      label={`Token Transfers (${transfers.length})`}
       tooltip="Token movements for the transaction sender"
       labelClassName="items-start"
     >
@@ -45,7 +45,7 @@ export function FungibleAssetTransfersRow({
           onClick={() => onTabChange("balance")}
           className="text-xs text-primary hover:underline transition-colors flex items-center gap-1"
         >
-          View full breakdown
+          View Balance Changes
           <ExternalLink className="h-3 w-3" />
         </button>
 

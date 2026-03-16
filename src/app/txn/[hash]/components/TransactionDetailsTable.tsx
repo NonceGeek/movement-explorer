@@ -10,6 +10,8 @@ import { MoreDetailsToggle } from "./MoreDetailsToggle";
 import { TimestampAge } from "@/components/common/TimestampAge";
 import JsonViewer from "@/components/ui/json-viewer";
 import type { Types } from "aptos";
+import { FungibleAssetTransfersRow } from "./FungibleAssetTransfersRow";
+import { type FungibleAssetActivity } from "@/hooks/transactions/useGetTransactionBalanceChanges";
 
 interface GasInfo {
   gasUsed: string;
@@ -45,6 +47,8 @@ interface TransactionDetailsTableProps {
   feePayer?: string | null;
   secondarySigners?: string[] | null;
   usdPrice?: number | null;
+  fungibleAssetActivities?: FungibleAssetActivity[];
+  onTabChange?: (tab: string) => void;
 }
 
 export function TransactionDetailsTable({
@@ -69,6 +73,8 @@ export function TransactionDetailsTable({
   feePayer,
   secondarySigners,
   usdPrice,
+  fungibleAssetActivities,
+  onTabChange,
 }: TransactionDetailsTableProps) {
   const hasAdvancedDetails =
     sequenceNumber ||
@@ -160,6 +166,14 @@ export function TransactionDetailsTable({
             showLabel
           />
         </DetailRow>
+      )}
+
+      {fungibleAssetActivities && onTabChange && sender && (
+        <FungibleAssetTransfersRow
+          activities={fungibleAssetActivities}
+          senderAddress={sender}
+          onTabChange={onTabChange}
+        />
       )}
 
       {functionName && (

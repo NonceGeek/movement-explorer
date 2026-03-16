@@ -30,3 +30,4 @@ export type { ParsedAction } from "./TransactionActionCard";
 export { PayloadDecoder } from "./PayloadDecoder";
 export { ChangesTab } from "./ChangesTab";
 export { EventsTab } from "./EventsTab";
+export { FungibleAssetTransfersRow } from "./FungibleAssetTransfersRow";

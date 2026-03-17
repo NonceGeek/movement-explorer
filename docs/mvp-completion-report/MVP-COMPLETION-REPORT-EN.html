@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: #000; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 20pt; font-weight: bold; margin-top: 24pt; margin-bottom: 6pt; }
+  h2 { font-size: 14pt; font-weight: bold; margin-top: 20pt; margin-bottom: 4pt; }
+  h3 { font-size: 12pt; font-weight: bold; margin-top: 16pt; margin-bottom: 4pt; }
+  h4 { font-size: 11pt; font-weight: bold; margin-top: 12pt; margin-bottom: 4pt; }
+  p { margin: 6pt 0; }
+  blockquote { background: #f5f5f5; border-left: 4px solid #ccc; margin: 10pt 0; padding: 8pt 12pt; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+  th { background: #f0f0f0; font-weight: bold; text-align: left; padding: 6pt 10pt; border: 1px solid #ccc; }
+  td { padding: 5pt 10pt; border: 1px solid #ccc; }
+  ul, ol { margin: 6pt 0; padding-left: 24pt; }
+  li { margin: 3pt 0; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 20pt 0; }
+  .meta { color: #555; font-size: 10pt; margin: 4pt 0; }
+  img { max-width: 100%; height: auto; margin: 12pt 0; border: 1px solid #ddd; border-radius: 4px; display: block; }
+</style>
+</head>
+<body>
+
+<h1>Movement Explorer — MVP Project Completion Report</h1>
+
+<p class="meta"><strong>Project Name:</strong> Movement Explorer (Movement Blockchain Explorer)</p>
+<p class="meta"><strong>Planned Duration:</strong> 12 Weeks</p>
+<p class="meta"><strong>Current Status:</strong> Deployed to staging domain, preparing for official launch</p>
+<p class="meta"><strong>Document Version:</strong> v1.0</p>
+<p class="meta"><strong>Date:</strong> March 17, 2026</p>
+
+<hr>
+
+<h2>I. Project Overview</h2>
+
+<p>Movement Explorer is a professional blockchain explorer built for the Movement Network ecosystem. Users can query all public on-chain data through this platform, including transaction records, account information, block data, validator status, token assets, and network performance metrics.</p>
+
+<p>The project is built with a modern frontend tech stack, features responsive design, supports both desktop and mobile access, and delivers a smooth interactive experience.</p>
+
+<hr>
+
+<h2>II. Feature Delivery Summary</h2>
+
+<h3>2.1 Planned Features Delivery Status</h3>
+
+<table>
+  <tr><th>Feature Module</th><th>Phase</th><th>Status</th></tr>
+  <tr><td>Infrastructure Setup</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Homepage (Network Stats + Latest)</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Block List &amp; Detail Pages</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Transaction List &amp; Detail Pages</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Global Search</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Network Switching</td><td>Phase 1</td><td>✅ Completed</td></tr>
+  <tr><td>Transaction Detail (Full Tabs)</td><td>Phase 2</td><td>✅ Completed</td></tr>
+  <tr><td>Account Detail Page</td><td>Phase 2</td><td>✅ Completed</td></tr>
+  <tr><td>Analytics Dashboard</td><td>Phase 2</td><td>✅ Completed</td></tr>
+  <tr><td>Animations &amp; Transitions</td><td>Phase 2</td><td>✅ Completed</td></tr>
+  <tr><td>Performance Optimization</td><td>Phase 2</td><td>✅ Completed</td></tr>
+  <tr><td>Launch Preparation (Deploy + Domain)</td><td>Phase 2</td><td>🔄 In Progress</td></tr>
+</table>
+
+<h3>2.2 Over-Delivered Features</h3>
+
+<p>The following features were <strong>not in the original roadmap</strong> and were proactively added during development based on product needs:</p>
+
+<table>
+  <tr><th>Extra Feature</th><th>Description</th></tr>
+  <tr><td>Validator System</td><td>Validator list, detail pages, geographic distribution map</td></tr>
+  <tr><td>Wallet Connection</td><td>Integrates Aptos Wallet Standard, supports on-chain actions</td></tr>
+  <tr><td>Token / Asset Detail Pages</td><td>Standalone Coin, Fungible Asset, and NFT detail pages</td></tr>
+  <tr><td>CSV Data Export</td><td>Export transaction and block data as CSV files</td></tr>
+  <tr><td>Token / NFT Transfer Pages</td><td>Standalone transfer history query pages</td></tr>
+  <tr><td>Object Detail Page</td><td>Move Object data query page</td></tr>
+</table>
+
+<hr>
+
+<h2>III. Feature Details</h2>
+
+<h3>3.1 Homepage</h3>
+
+<p>The homepage is the first page users see upon entering the explorer, providing a global overview of the Movement network.</p>
+
+<p><strong>Core Metrics Display (6 items):</strong></p>
+<ul>
+  <li><strong>MOVE Price</strong> — Real-time token price with 24-hour change indicator</li>
+  <li><strong>Market Cap</strong> — Current total market capitalization</li>
+  <li><strong>Total Transactions</strong> — Cumulative network-wide transaction count</li>
+  <li><strong>Total Accounts</strong> — Total number of network accounts</li>
+  <li><strong>Peak TPS</strong> — Highest transactions per second in the past 30 days</li>
+  <li><strong>Avg Gas Price</strong> — Current average transaction fee</li>
+</ul>
+
+<p><strong>Transaction Trend Chart:</strong></p>
+<ul>
+  <li>14-day rolling transaction volume line chart with hover-to-view daily details</li>
+</ul>
+
+<p><strong>Latest Activity:</strong></p>
+<ul>
+  <li>Latest 10 user transactions displaying hash, type, time, sender, and status</li>
+</ul>
+
+<img src="images/homepage.png" alt="Homepage">
+
+<hr>
+
+<h3>3.2 Global Search</h3>
+
+<p>The search bar is located at the top of the homepage and in the navigation bar, enabling quick lookup of all on-chain data types.</p>
+
+<p><strong>Supported Search Types:</strong></p>
+<ul>
+  <li>Account addresses (auto-detects address format)</li>
+  <li>Transaction hashes</li>
+  <li>Block heights (numeric input)</li>
+  <li>Token names / symbols (e.g., MOVE, USDC, USDT)</li>
+  <li>Fungible Asset addresses</li>
+  <li>Move Object addresses</li>
+  <li>Emoji Coins (Emojicoins)</li>
+</ul>
+
+<p><strong>Interaction Features:</strong></p>
+<ul>
+  <li>Search-as-you-type with 500ms debounce optimization</li>
+  <li>Keyboard navigation: arrow keys to select results, Enter to confirm</li>
+  <li>Shortcut key <kbd>/</kbd> to quickly open search</li>
+  <li>Results grouped by type with type labels displayed</li>
+</ul>
+
+<img src="images/search-dropdown.png" alt="Search Dropdown">
+
+<hr>
+
+<h3>3.3 Transaction System</h3>
+
+<h4>Transaction List Page</h4>
+
+<p>Displays all network transactions in a table with paginated browsing. Switch between "User Transactions" and "All Transactions" views.</p>
+
+<p><strong>Features:</strong></p>
+<ul>
+  <li>Adjustable page size (10 / 25 / 50 items)</li>
+  <li>Checks for new transactions every 3 seconds with a top banner prompt</li>
+  <li>CSV export support</li>
+</ul>
+
+<p><strong>Account-Level Filtering (when entering from an account page):</strong></p>
+<p>When navigating from an account page, additional filters are available:</p>
+<ul>
+  <li><strong>Date Range Filter</strong> — Preset options and custom date selection</li>
+  <li><strong>Sender Address Filter</strong> — Filter by a specified address</li>
+  <li><strong>Token Type Filter</strong> — For token transfer records (MOVE, USDC, USDT, etc.)</li>
+  <li><strong>Activity Type Filter</strong> — For NFT transfer records (Mint, Transfer, Burn, etc.)</li>
+</ul>
+
+<img src="images/transaction-list.png" alt="Transaction List">
+<img src="images/transaction-list-with-filters.png" alt="Transaction List with Filters">
+
+<h4>Transaction Detail Page</h4>
+
+<p>Click any transaction to view its complete information.</p>
+
+<p><strong>Overview Information:</strong></p>
+<ul>
+  <li>Transaction version / hash</li>
+  <li>Status indicator (green for success, red for failure with error message)</li>
+  <li>Timestamp (relative time + UTC absolute time)</li>
+  <li>Gas fee (Gas used × unit price, converted to MOVE amount)</li>
+  <li>Sender address</li>
+</ul>
+
+<p><strong>Detail Tabs:</strong></p>
+<table>
+  <tr><th>Tab</th><th>Content</th></tr>
+  <tr><td>Balance Changes</td><td>Visual display of token inflows/outflows; green = received, red = spent</td></tr>
+  <tr><td>Events</td><td>All on-chain events triggered by the transaction; table and JSON views</td></tr>
+  <tr><td>Payload</td><td>Called function, type parameters, and arguments; JSON decode view</td></tr>
+  <tr><td>Changes</td><td>Global storage creates / modifications / deletions; table and JSON views</td></tr>
+  <tr><td>Raw JSON</td><td>Complete raw transaction JSON data</td></tr>
+</table>
+
+<img src="images/transaction-detail.png" alt="Transaction Detail">
+
+<hr>
+
+<h3>3.4 Block System</h3>
+
+<h4>Block List Page</h4>
+<p>Displays the latest blocks with a new-block check every 3 seconds and a top banner prompt when new blocks arrive.</p>
+<ul>
+  <li>Shows block height, hash, time, transaction count, and version range</li>
+  <li>Supports paginated browsing and CSV export</li>
+</ul>
+
+<h4>Block Detail Page</h4>
+<p>Click any block to view its details:</p>
+<ul>
+  <li>Block height, status, and hash</li>
+  <li>Timestamp (relative + absolute)</li>
+  <li>Transaction count and version range</li>
+  <li>Block proposer validator (clickable link)</li>
+  <li>Epoch and round numbers</li>
+  <li>Total gas consumed</li>
+  <li>Previous / Next block navigation buttons</li>
+  <li>Complete transaction list within the block</li>
+</ul>
+
+<img src="images/block-detail.png" alt="Block Detail">
+
+<hr>
+
+<h3>3.5 Account System</h3>
+
+<p>Enter or search any address to view the account's complete information.</p>
+
+<p><strong>Account Overview:</strong></p>
+<ul>
+  <li>Full address display with one-click copy button</li>
+  <li>MOVE balance (raw precision + USD estimate)</li>
+  <li>Account age (first transaction to latest transaction timeline)</li>
+  <li>MOVE fund flow visualization (inflow / outflow statistics)</li>
+  <li>Known address labels (e.g., official addresses, exchanges, verified projects)</li>
+</ul>
+
+<p><strong>Detail Tabs (5 total):</strong></p>
+<table>
+  <tr><th>Tab</th><th>Content</th></tr>
+  <tr><td>Transactions</td><td>Account transaction history with address / type filtering</td></tr>
+  <tr><td>Coins</td><td>All held tokens and balances with USD estimates, hide dust, and search</td></tr>
+  <tr><td>NFTs</td><td>Held NFT assets with grid / list view toggle and thumbnail previews</td></tr>
+  <tr><td>Modules</td><td>Deployed smart contracts with syntax-highlighted source and read/write interaction</td></tr>
+  <tr><td>Resources</td><td>Mounted Move resources in a tree-expandable structure</td></tr>
+</table>
+
+<img src="images/account-detail.png" alt="Account Detail">
+
+<hr>
+
+<h3>3.6 Validator System (Over-Delivered)</h3>
+
+<p>A dedicated validator section displaying the operational status of all Movement network validator nodes.</p>
+
+<h4>Validator List Page</h4>
+
+<p><strong>Network Statistics:</strong></p>
+<ul>
+  <li>Total active validators</li>
+  <li>Total voting power (staked amount)</li>
+  <li>Staking reward APY</li>
+  <li>Current epoch progress bar with countdown</li>
+</ul>
+
+<p><strong>Validator Table:</strong></p>
+<ul>
+  <li>Columns: Pool address, status, operator address, delegated amount, network share, commission rate, delegator count</li>
+  <li>Sortable by voting power, network share, and commission rate</li>
+  <li>Pagination support</li>
+</ul>
+
+<p><strong>Geographic Distribution Map:</strong></p>
+<ul>
+  <li>Interactive world map marking validator node physical locations</li>
+  <li>Displays country and city coverage counts</li>
+</ul>
+
+<img src="images/validator-list.png" alt="Validator List">
+
+<h4>Validator Detail Page</h4>
+<ul>
+  <li>Operator address and staking pool address</li>
+  <li>Commission rate</li>
+  <li>Pool balance (active / pending active / locked)</li>
+  <li>Delegator information</li>
+  <li>Network share percentage</li>
+</ul>
+
+<img src="images/validator-detail.png" alt="Validator Detail">
+
+<hr>
+
+<h3>3.7 Analytics Dashboard (Over-Delivered)</h3>
+
+<p>A dedicated analytics page providing multi-dimensional operational metrics for the Movement network.</p>
+
+<p><strong>9 Charts across 4 Sections:</strong></p>
+
+<p><strong>Network Activity:</strong></p>
+<ol>
+  <li>Daily user transaction volume</li>
+  <li>Daily peak TPS</li>
+</ol>
+
+<p><strong>User Metrics:</strong></p>
+<ol start="3">
+  <li>Daily Active Users (DAU)</li>
+  <li>Monthly Active Users (MAU)</li>
+  <li>Daily new accounts</li>
+</ol>
+
+<p><strong>Developer Activity:</strong></p>
+<ol start="6">
+  <li>Daily contracts deployed</li>
+  <li>Daily contract deployers</li>
+</ol>
+
+<p><strong>Gas &amp; Fees:</strong></p>
+<ol start="8">
+  <li>Daily total gas consumed</li>
+  <li>Daily average gas price</li>
+</ol>
+
+<p><strong>Interactive Features:</strong></p>
+<ul>
+  <li>Time range toggle (7 / 14 / 30 / 90 days)</li>
+  <li>Sidebar quick navigation (fixed on desktop, drawer on mobile)</li>
+  <li>Top unified metrics overview grid</li>
+  <li>Auto-highlights the current section on scroll</li>
+</ul>
+
+<img src="images/analytics-dashboard.png" alt="Analytics Dashboard">
+
+<hr>
+
+<h3>3.8 Token &amp; Asset Pages (Over-Delivered)</h3>
+
+<h4>Coin Detail Page</h4>
+<ul>
+  <li>Token overview: name, symbol, price, supply</li>
+  <li>Holder list</li>
+  <li>Transaction activity records</li>
+  <li>Verified token badge</li>
+</ul>
+
+<h4>Fungible Asset Detail Page</h4>
+<ul>
+  <li>Asset basic information</li>
+  <li>Holder details</li>
+  <li>Transfer history</li>
+</ul>
+
+<h4>NFT / Token Detail Page</h4>
+<ul>
+  <li>Metadata display (name, description, attributes)</li>
+  <li>Image / video preview (IPFS support)</li>
+  <li>Holder information</li>
+  <li>Activity records (transfer history)</li>
+</ul>
+
+<img src="images/coin-detail.png" alt="Coin Detail">
+
+<hr>
+
+<h3>3.9 Wallet Connection (Over-Delivered)</h3>
+
+<p>Supports connecting personal wallets to perform on-chain operations.</p>
+
+<p><strong>Wallet Support:</strong></p>
+<p>Automatically discovers compatible wallets installed by the user via the Aptos Wallet Standard. Representative wallets include:</p>
+<ul>
+  <li>Petra (Aptos Labs official wallet)</li>
+  <li>MSafe multi-signature wallet</li>
+</ul>
+
+<p><strong>Features:</strong></p>
+<ul>
+  <li>Modal-based wallet selection and connection</li>
+  <li>Connected wallet address displayed in the navigation bar</li>
+  <li>Auto-reconnect support</li>
+  <li>Direct staking operations once connected</li>
+</ul>
+
+<hr>
+
+<h3>3.10 Network Switching</h3>
+
+<p>Supports freely switching between different Movement networks:</p>
+
+<table>
+  <tr><th>Network</th><th>Description</th></tr>
+  <tr><td>Mainnet</td><td>Default network, production environment</td></tr>
+  <tr><td>Bardock Testnet</td><td>For development and testing purposes</td></tr>
+</table>
+
+<ul>
+  <li>Network selector located in the top navigation bar</li>
+  <li>Automatically refreshes all data upon network switch</li>
+  <li>Network state synced via URL parameters, enabling shareable network-specific links</li>
+</ul>
+
+<hr>
+
+<h3>3.11 CSV Data Export (Over-Delivered)</h3>
+
+<p>Both the transaction list and block list support exporting the current page data as CSV files, for offline analysis or record keeping.</p>
+
+<hr>
+
+<h3>3.12 Responsive Design &amp; Theming</h3>
+
+<p><strong>Device Adaptation:</strong></p>
+<ul>
+  <li>Desktop: Full layout with multi-column display</li>
+  <li>Tablet: Adaptive reduced-column layout</li>
+  <li>Mobile: Single-column stacked layout, drawer menu, touch-friendly</li>
+</ul>
+
+<p><strong>Theme Support:</strong></p>
+<ul>
+  <li>Light mode</li>
+</ul>
+
+<hr>
+
+<h2>IV. Page Inventory</h2>
+
+<p>This project includes <strong>15 independent pages / routes</strong>:</p>
+
+<table>
+  <tr><th>#</th><th>Page</th><th>Route</th><th>Description</th></tr>
+  <tr><td>1</td><td>Homepage</td><td>/</td><td>Network overview &amp; latest activity</td></tr>
+  <tr><td>2</td><td>Transaction List</td><td>/transactions</td><td>Network-wide transaction log</td></tr>
+  <tr><td>3</td><td>Transaction Detail</td><td>/txn/[hash]</td><td>Full single transaction info</td></tr>
+  <tr><td>4</td><td>Block List</td><td>/blocks</td><td>Latest block list</td></tr>
+  <tr><td>5</td><td>Block Detail</td><td>/block/[height]</td><td>Full single block info</td></tr>
+  <tr><td>6</td><td>Account Detail</td><td>/account/[address]</td><td>Account info &amp; assets</td></tr>
+  <tr><td>7</td><td>Validator List</td><td>/validators</td><td>Validator node overview</td></tr>
+  <tr><td>8</td><td>Validator Detail</td><td>/validator/[address]</td><td>Single validator info</td></tr>
+  <tr><td>9</td><td>Analytics</td><td>/analytics</td><td>Network metrics charts</td></tr>
+  <tr><td>10</td><td>Coin Detail</td><td>/coin/[struct]</td><td>Token info &amp; activity</td></tr>
+  <tr><td>11</td><td>FA Detail</td><td>/fa/[address]</td><td>Fungible Asset info</td></tr>
+  <tr><td>12</td><td>Token Detail</td><td>/token/[tokenId]</td><td>NFT / Token info</td></tr>
+  <tr><td>13</td><td>Object Detail</td><td>/object/[address]</td><td>Move Object info</td></tr>
+  <tr><td>14</td><td>Token Transfers</td><td>/token-transfers</td><td>Token transfer records</td></tr>
+  <tr><td>15</td><td>NFT Transfers</td><td>/nft-transfers</td><td>NFT transfer records</td></tr>
+</table>
+
+<hr>
+
+<h2>V. Technical Architecture Summary</h2>
+
+<table>
+  <tr><th>Dimension</th><th>Selection</th></tr>
+  <tr><td>Frontend</td><td>Next.js 16 + React 19</td></tr>
+  <tr><td>Language</td><td>TypeScript (fully typed)</td></tr>
+  <tr><td>UI Components</td><td>Movement Design System + Radix UI</td></tr>
+  <tr><td>Styling</td><td>Tailwind CSS v4</td></tr>
+  <tr><td>State Management</td><td>Zustand (global state) + TanStack Query (server-side data cache)</td></tr>
+  <tr><td>Charts</td><td>Chart.js</td></tr>
+  <tr><td>Maps</td><td>React Simple Maps</td></tr>
+  <tr><td>Animation</td><td>Framer Motion</td></tr>
+  <tr><td>Blockchain SDK</td><td>Aptos TS SDK (REST + GraphQL dual channel)</td></tr>
+  <tr><td>Package Manager</td><td>pnpm</td></tr>
+</table>
+
+<p><strong>Data Fetching Architecture:</strong></p>
+<ul>
+  <li>Three independent data clients: Aptos SDK v1 (REST), SDK v2 (blocks / balances), GraphQL Indexer (complex aggregation queries)</li>
+  <li>69 custom data query hooks covering all business scenarios</li>
+  <li>Data caching strategy: 60-second cache TTL with automatic background refresh</li>
+</ul>
+
+<hr>
+
+<h2>VI. Project Metrics</h2>
+
+<table>
+  <tr><th>Metric</th><th>Value</th></tr>
+  <tr><td>Source Code Files</td><td>225+</td></tr>
+  <tr><td>Custom React Components</td><td>100+</td></tr>
+  <tr><td>Data Query Hooks</td><td>69</td></tr>
+  <tr><td>Main Pages / Routes</td><td>15</td></tr>
+  <tr><td>Analytics Chart Types</td><td>9</td></tr>
+  <tr><td>Supported Wallets</td><td>6</td></tr>
+  <tr><td>Supported Networks</td><td>2 (Mainnet + Testnet)</td></tr>
+</table>
+
+<hr>
+
+<h2>VII. Known Limitations &amp; Pending Items</h2>
+
+<h3>7.1 Transaction Direction Filtering Limited (Awaiting Indexer Upgrade)</h3>
+
+<p><strong>Current Situation:</strong></p>
+
+<p>On an account's transaction history page, users typically want to filter transactions by <strong>direction</strong>, such as:</p>
+<ul>
+  <li><strong>Sent</strong> (transactions I sent to others)</li>
+  <li><strong>Received</strong> (transactions others sent to me)</li>
+  <li><strong>Self-transfer</strong> (transactions I sent to myself)</li>
+  <li><strong>Contract calls</strong> (I called a smart contract, not a transfer)</li>
+  <li><strong>Associated</strong> (I'm neither sender nor receiver, but the transaction involves me)</li>
+</ul>
+
+<p>Currently, the Indexer data service <strong>only provides a "sender" field and no "receiver" field</strong>, which means:</p>
+<ul>
+  <li>"Sent" can be roughly filtered (sender = my address)</li>
+  <li><strong>"Received", "Self-transfer", and "Associated" cannot be filtered server-side</strong> due to the missing receiver field</li>
+  <li>"Sent" and "Contract calls" also cannot be precisely distinguished server-side</li>
+</ul>
+
+<p><strong>Current Workaround:</strong></p>
+<p>The explorer currently parses each transaction's details on the client side to determine direction, but this approach <strong>only applies to the currently displayed page</strong> (typically 25 records) and cannot filter across all historical transactions.</p>
+
+<p><strong>Resolution Path:</strong></p>
+<p>An indexer upgrade request has been submitted to the Movement technical team, requiring the backend to add the following fields to the data API:</p>
+
+<table>
+  <tr><th>Required Field</th><th>Purpose</th></tr>
+  <tr><td>Receiver address</td><td>Enable precise Sent / Received / Self-transfer / Associated filtering</td></tr>
+  <tr><td>Transaction type tag</td><td>Distinguish between "transfer" and "contract call"</td></tr>
+  <tr><td>Amount range filter</td><td>Support filtering by transfer amount size</td></tr>
+  <tr><td>Function name filter</td><td>Support filtering by specific operation called</td></tr>
+</table>
+
+<p><strong>Note:</strong> NFT-related transfer records already have all of the above fields and can be filtered normally. This issue only affects Coin (token) transfer records. Once the indexer is upgraded, the explorer can adapt quickly with minimal code changes.</p>
+
+<hr>
+
+<h2>VIII. Current Status &amp; Next Steps</h2>
+
+<p><strong>Current Status:</strong></p>
+<ul>
+  <li>✅ All core feature development complete</li>
+  <li>✅ Deployed to staging domain and accessible</li>
+  <li>🔄 Preparing official domain configuration and public launch</li>
+  <li>⏳ Some advanced filtering features pending indexer upgrade (see Section VII)</li>
+</ul>
+
+<p><strong>Future Extension Directions (For Reference):</strong></p>
+<table>
+  <tr><th>Direction</th><th>Description</th></tr>
+  <tr><td>Indexer Upgrade Adaptation</td><td>Complete transaction direction filtering once Indexer adds fields</td></tr>
+  <tr><td>Internationalization (i18n)</td><td>Support Chinese / English multi-language switching</td></tr>
+  <tr><td>Enhanced Search</td><td>Fuzzy search, dropdown auto-complete suggestions</td></tr>
+  <tr><td>More Analytics Metrics</td><td>Additional dimensions of network data charts</td></tr>
+</table>
+
+<hr>
+
+<h2>IX. Summary</h2>
+
+<blockquote>
+  <strong>Community Feedback Note:</strong> All user feedback and suggestions received in the community group have been addressed and improvements have been fully incorporated into the current version.
+</blockquote>
+
+<p>Movement Explorer MVP has delivered all planned core features on schedule, covering Phase 1 and Phase 2 modules including the homepage, transactions, blocks, accounts, search, network switching, and analytics dashboard. On top of that, additional features were delivered including the validator system, wallet connection, token asset detail pages, and CSV export.</p>
+
+<p>One known limitation exists: transaction direction filtering (received/sent/self-transfer, etc.) for token transfers is constrained by missing fields in the Indexer data service, and currently only works within the current page view. This issue has been reported to the Movement backend team and will be fully supported once the data service is upgraded.</p>
+
+<p>The project is currently deployed to the staging environment with core features running stably, and is ready to proceed to official launch.</p>
+
+</body>
+</html>

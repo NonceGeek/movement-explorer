@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.6; color: #000; max-width: 900px; margin: 40px auto; padding: 0 20px; }
+  h1 { font-size: 20pt; font-weight: bold; margin-top: 24pt; margin-bottom: 6pt; }
+  h2 { font-size: 14pt; font-weight: bold; margin-top: 20pt; margin-bottom: 4pt; }
+  h3 { font-size: 12pt; font-weight: bold; margin-top: 16pt; margin-bottom: 4pt; }
+  h4 { font-size: 11pt; font-weight: bold; margin-top: 12pt; margin-bottom: 4pt; }
+  p { margin: 6pt 0; }
+  blockquote { background: #f5f5f5; border-left: 4px solid #ccc; margin: 10pt 0; padding: 8pt 12pt; }
+  table { border-collapse: collapse; width: 100%; margin: 10pt 0; }
+  th { background: #f0f0f0; font-weight: bold; text-align: left; padding: 6pt 10pt; border: 1px solid #ccc; }
+  td { padding: 5pt 10pt; border: 1px solid #ccc; }
+  ul, ol { margin: 6pt 0; padding-left: 24pt; }
+  li { margin: 3pt 0; }
+  hr { border: none; border-top: 1px solid #ccc; margin: 20pt 0; }
+  .meta { color: #555; font-size: 10pt; margin: 4pt 0; }
+  img { max-width: 100%; height: auto; margin: 12pt 0; border: 1px solid #ddd; border-radius: 4px; display: block; }
+</style>
+</head>
+<body>
+
+<h1>Movement Explorer — MVP 项目完结汇报</h1>
+
+<p class="meta"><strong>项目名称：</strong>Movement Explorer（Movement 区块链浏览器）</p>
+<p class="meta"><strong>计划周期：</strong>12 周</p>
+<p class="meta"><strong>当前状态：</strong>已部署至测试域名，准备正式上线</p>
+<p class="meta"><strong>文档版本：</strong>v1.0</p>
+<p class="meta"><strong>日期：</strong>2026 年 3 月 17 日</p>
+
+<hr>
+
+<h2>一、项目概述</h2>
+
+<p>Movement Explorer 是为 Movement Network 生态打造的专业区块链浏览器。用户可通过本平台查询链上所有公开数据，包括交易记录、账户信息、区块数据、验证者状态、代币资产以及网络运行指标等。</p>
+
+<p>本项目采用现代前端技术栈构建，具备响应式设计，支持桌面端和移动端访问，提供流畅的交互体验。</p>
+
+<hr>
+
+<h2>二、功能交付总览</h2>
+
+<h3>2.1 规划功能交付情况</h3>
+
+<table>
+  <tr><th>功能模块</th><th>规划阶段</th><th>交付状态</th></tr>
+  <tr><td>基础架构搭建</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>首页（网络统计 + 最新动态）</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>区块列表与详情页</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>交易列表与详情页</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>全局搜索</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>网络切换</td><td>Phase 1</td><td>✅ 已完成</td></tr>
+  <tr><td>交易详情（完整 Tabs）</td><td>Phase 2</td><td>✅ 已完成</td></tr>
+  <tr><td>账户详情页</td><td>Phase 2</td><td>✅ 已完成</td></tr>
+  <tr><td>数据分析面板（Dashboard）</td><td>Phase 2</td><td>✅ 已完成</td></tr>
+  <tr><td>动画与过渡效果</td><td>Phase 2</td><td>✅ 已完成</td></tr>
+  <tr><td>性能优化</td><td>Phase 2</td><td>✅ 已完成</td></tr>
+  <tr><td>上线准备（部署 + 域名）</td><td>Phase 2</td><td>🔄 进行中</td></tr>
+</table>
+
+<h3>2.2 超额交付功能</h3>
+
+<p>以下功能<strong>不在原始路线图规划内</strong>，在开发过程中根据产品需要主动补充实现：</p>
+
+<table>
+  <tr><th>额外功能</th><th>说明</th></tr>
+  <tr><td>验证者系统</td><td>验证者列表、详情页、地理分布图</td></tr>
+  <tr><td>钱包连接</td><td>集成 Aptos Wallet Standard，支持链上操作</td></tr>
+  <tr><td>代币/资产详情页</td><td>独立的 Coin、Fungible Asset、NFT 详情页</td></tr>
+  <tr><td>CSV 数据导出</td><td>交易和区块数据支持导出为 CSV 文件</td></tr>
+  <tr><td>代币转账/NFT 转账页面</td><td>独立的转账记录查询页面</td></tr>
+  <tr><td>Object 详情页</td><td>Move Object 数据查询页面</td></tr>
+</table>
+
+<hr>
+
+<h2>三、功能详情</h2>
+
+<h3>3.1 首页</h3>
+
+<p>首页是用户进入浏览器的第一个页面，提供 Movement 网络的全局概览。</p>
+
+<p><strong>核心指标展示（6 项）：</strong></p>
+<ul>
+  <li><strong>MOVE 价格</strong> — 实时代币价格，附 24 小时涨跌幅指示</li>
+  <li><strong>市值</strong> — 当前市场总市值</li>
+  <li><strong>总交易数</strong> — 全网累计交易笔数</li>
+  <li><strong>总账户数</strong> — 全网账户总量</li>
+  <li><strong>峰值 TPS</strong> — 30 天内最高每秒交易处理量</li>
+  <li><strong>平均 Gas 价格</strong> — 当前平均交易手续费</li>
+</ul>
+
+<p><strong>交易趋势图：</strong></p>
+<ul>
+  <li>14 天滚动交易量折线图，鼠标悬浮可查看每日详细数据</li>
+</ul>
+
+<p><strong>最新动态：</strong></p>
+<ul>
+  <li>最新 10 笔用户交易，显示交易哈希、类型、时间、发送方、状态</li>
+</ul>
+
+<img src="images/homepage.png" alt="Homepage">
+
+<hr>
+
+<h3>3.2 全局搜索</h3>
+
+<p>搜索栏位于首页顶部和导航栏中，支持快速查找链上各类数据。</p>
+
+<p><strong>支持的搜索类型：</strong></p>
+<ul>
+  <li>账户地址（自动识别地址格式）</li>
+  <li>交易哈希（Hash）</li>
+  <li>区块高度（纯数字）</li>
+  <li>代币名称 / 符号（如 MOVE、USDC、USDT）</li>
+  <li>Fungible Asset 地址</li>
+  <li>Move Object 地址</li>
+  <li>Emoji 币（Emojicoin）</li>
+</ul>
+
+<p><strong>交互特性：</strong></p>
+<ul>
+  <li>输入即搜索，500 毫秒防抖优化</li>
+  <li>键盘导航：上下箭头选择结果，回车确认跳转</li>
+  <li>快捷键 <kbd>/</kbd> 快速打开搜索</li>
+  <li>搜索结果按类型分组，并显示类型标签</li>
+</ul>
+
+<img src="images/search-dropdown.png" alt="Search Dropdown">
+
+<hr>
+
+<h3>3.3 交易系统</h3>
+
+<h4>交易列表页</h4>
+
+<p>以表格形式展示全网交易记录，支持分页浏览。可在「用户交易」和「全部交易」两种视图间切换。</p>
+
+<p><strong>功能：</strong></p>
+<ul>
+  <li>分页大小可调（10 / 25 / 50 条）</li>
+  <li>每 3 秒检测一次新交易，有新交易时顶部提示用户刷新</li>
+  <li>支持导出 CSV 文件</li>
+</ul>
+
+<p><strong>账户维度筛选（从账户页进入时）：</strong></p>
+<p>当通过账户页进入交易列表时，额外支持：</p>
+<ul>
+  <li><strong>日期范围筛选</strong> — 快捷选项及自定义日期</li>
+  <li><strong>发送方地址筛选</strong> — 按指定地址过滤</li>
+  <li><strong>代币类型筛选</strong> — 可用于代币转账记录（MOVE、USDC、USDT 等）</li>
+  <li><strong>活动类型筛选</strong> — 可用于 NFT 转账记录（铸造、转账、销毁等）</li>
+</ul>
+
+<img src="images/transaction-list.png" alt="Transaction List">
+<img src="images/transaction-list-with-filters.png" alt="Transaction List with Filters">
+
+<h4>交易详情页</h4>
+
+<p>点击任意交易进入详情页，展示交易的完整信息。</p>
+
+<p><strong>概览信息：</strong></p>
+<ul>
+  <li>交易版本号 / 哈希</li>
+  <li>状态标识（成功为绿色，失败为红色并显示错误信息）</li>
+  <li>时间戳（相对时间 + UTC 绝对时间）</li>
+  <li>Gas 手续费（Gas 用量 × 单价，换算为 MOVE 金额）</li>
+  <li>发送方地址</li>
+</ul>
+
+<p><strong>详情标签页：</strong></p>
+<table>
+  <tr><th>标签页</th><th>内容</th></tr>
+  <tr><td>余额变动</td><td>直观展示代币流入/流出，绿色表示收入、红色表示支出</td></tr>
+  <tr><td>事件 (Events)</td><td>交易触发的所有链上事件，支持表格和 JSON 两种查看方式</td></tr>
+  <tr><td>载荷 (Payload)</td><td>调用的函数、类型参数、调用参数，支持 JSON 解码视图</td></tr>
+  <tr><td>变更 (Changes)</td><td>全局存储的创建 / 修改 / 删除记录，支持表格和 JSON 查看</td></tr>
+  <tr><td>Raw JSON</td><td>完整交易原始 JSON 数据</td></tr>
+</table>
+
+<img src="images/transaction-detail.png" alt="Transaction Detail">
+
+<hr>
+
+<h3>3.4 区块系统</h3>
+
+<h4>区块列表页</h4>
+<p>展示最新区块列表，每 3 秒检测一次新区块，有新区块时顶部提示用户刷新。</p>
+<ul>
+  <li>显示区块高度、哈希、时间、交易数、版本范围</li>
+  <li>支持分页浏览和 CSV 导出</li>
+</ul>
+
+<h4>区块详情页</h4>
+<p>点击区块进入详情页，展示：</p>
+<ul>
+  <li>区块高度、状态、哈希</li>
+  <li>时间戳（相对 + 绝对）</li>
+  <li>包含的交易数量及版本范围</li>
+  <li>出块验证者（可点击跳转）</li>
+  <li>纪元（Epoch）和轮次（Round）编号</li>
+  <li>Gas 消耗总量</li>
+  <li>上一区块 / 下一区块导航按钮</li>
+  <li>区块内完整交易列表</li>
+</ul>
+
+<img src="images/block-detail.png" alt="Block Detail">
+
+<hr>
+
+<h3>3.5 账户系统</h3>
+
+<p>输入或搜索任意地址即可查看该账户的完整信息。</p>
+
+<p><strong>账户概览：</strong></p>
+<ul>
+  <li>完整地址显示，附一键复制按钮</li>
+  <li>MOVE 余额（原始精度 + 美元估值）</li>
+  <li>账户年龄（首笔交易 ~ 最近交易的时间线）</li>
+  <li>MOVE 资金流向可视化（流入/流出统计）</li>
+  <li>已知地址标签（如官方地址、交易所、已验证项目）</li>
+</ul>
+
+<p><strong>详情标签页（共 5 个）：</strong></p>
+<table>
+  <tr><th>标签页</th><th>内容</th></tr>
+  <tr><td>交易</td><td>该账户的交易历史，支持地址 / 类型筛选</td></tr>
+  <tr><td>代币 (Coins)</td><td>持有的所有代币及余额，支持美元估值、隐藏小额资产、搜索</td></tr>
+  <tr><td>NFT</td><td>持有的 NFT 资产，支持网格 / 列表视图切换，显示图片缩略图</td></tr>
+  <tr><td>模块 (Modules)</td><td>账户部署的智能合约，支持源码高亮显示和合约交互（读/写）</td></tr>
+  <tr><td>资源 (Resources)</td><td>账户挂载的 Move 资源，树形结构展开查看</td></tr>
+</table>
+
+<img src="images/account-detail.png" alt="Account Detail">
+
+<hr>
+
+<h3>3.6 验证者系统（超额交付）</h3>
+
+<p>独立的验证者板块，展示 Movement 网络所有验证节点的运行状态。</p>
+
+<h4>验证者列表页</h4>
+
+<p><strong>网络统计：</strong></p>
+<ul>
+  <li>活跃验证者总数</li>
+  <li>总投票权重（质押量）</li>
+  <li>质押奖励年化收益率</li>
+  <li>当前纪元进度条（含倒计时）</li>
+</ul>
+
+<p><strong>验证者表格：</strong></p>
+<ul>
+  <li>列：质押池地址、状态、运营方地址、委托金额、网络占比、佣金率、委托人数</li>
+  <li>支持按投票权重、网络占比、佣金率排序</li>
+  <li>支持分页</li>
+</ul>
+
+<p><strong>地理分布图：</strong></p>
+<ul>
+  <li>交互式世界地图，标注验证节点物理位置</li>
+  <li>显示节点覆盖的国家数、城市数</li>
+</ul>
+
+<img src="images/validator-list.png" alt="Validator List">
+
+<h4>验证者详情页</h4>
+<ul>
+  <li>运营方地址和质押池地址</li>
+  <li>佣金比例</li>
+  <li>质押池余额（活跃 / 待激活 / 锁定）</li>
+  <li>委托人信息</li>
+  <li>网络占比</li>
+</ul>
+
+<img src="images/validator-detail.png" alt="Validator Detail">
+
+<hr>
+
+<h3>3.7 数据分析面板（Analytics Dashboard）</h3>
+
+<p>独立的数据分析页面，提供 Movement 网络的多维度运行指标。</p>
+
+<p><strong>9 种图表，分 4 个版块：</strong></p>
+
+<p><strong>网络活跃度：</strong></p>
+<ol>
+  <li>每日用户交易量</li>
+  <li>每日峰值 TPS</li>
+</ol>
+
+<p><strong>用户指标：</strong></p>
+<ol start="3">
+  <li>每日活跃用户数（DAU）</li>
+  <li>月活跃用户数（MAU）</li>
+  <li>每日新增账户数</li>
+</ol>
+
+<p><strong>开发者活跃度：</strong></p>
+<ol start="6">
+  <li>每日部署合约数</li>
+  <li>每日合约部署者数</li>
+</ol>
+
+<p><strong>Gas 与手续费：</strong></p>
+<ol start="8">
+  <li>每日 Gas 消耗总量</li>
+  <li>每日平均 Gas 单价</li>
+</ol>
+
+<p><strong>交互功能：</strong></p>
+<ul>
+  <li>时间范围切换（7 天 / 14 天 / 30 天 / 90 天）</li>
+  <li>侧边栏快速导航（桌面端固定，移动端抽屉式）</li>
+  <li>顶部统一指标概览网格</li>
+  <li>滚动时自动高亮当前查看板块</li>
+</ul>
+
+<img src="images/analytics-dashboard.png" alt="Analytics Dashboard">
+
+<hr>
+
+<h3>3.8 代币与资产页面（超额交付）</h3>
+
+<h4>Coin 详情页</h4>
+<ul>
+  <li>代币概览：名称、符号、价格、供应量</li>
+  <li>持有者列表</li>
+  <li>交易活动记录</li>
+  <li>已验证代币标识</li>
+</ul>
+
+<h4>Fungible Asset 详情页</h4>
+<ul>
+  <li>资产基本信息</li>
+  <li>持有者详情</li>
+  <li>转账历史</li>
+</ul>
+
+<h4>NFT / Token 详情页</h4>
+<ul>
+  <li>元数据展示（名称、描述、属性）</li>
+  <li>图片 / 视频预览（支持 IPFS）</li>
+  <li>持有者信息</li>
+  <li>活动记录（转账历史）</li>
+</ul>
+
+<img src="images/coin-detail.png" alt="Coin Detail">
+
+<hr>
+
+<h3>3.9 钱包连接（超额交付）</h3>
+
+<p>支持用户连接个人钱包，实现链上操作。</p>
+
+<p><strong>钱包支持方式：</strong></p>
+<p>通过 Aptos Wallet Standard 自动发现用户已安装的兼容钱包，代表性支持包括：</p>
+<ul>
+  <li>Petra（Aptos Labs 官方钱包）</li>
+  <li>MSafe 多签钱包</li>
+</ul>
+
+<p><strong>功能：</strong></p>
+<ul>
+  <li>弹窗式钱包选择与连接</li>
+  <li>连接后在导航栏显示当前钱包地址</li>
+  <li>支持自动重连</li>
+  <li>连接钱包后可直接进行质押操作</li>
+</ul>
+
+<hr>
+
+<h3>3.10 网络切换</h3>
+
+<p>支持在不同 Movement 网络间自由切换：</p>
+
+<table>
+  <tr><th>网络</th><th>说明</th></tr>
+  <tr><td>Mainnet（主网）</td><td>默认网络，正式运行环境</td></tr>
+  <tr><td>Bardock Testnet（测试网）</td><td>开发和测试用途</td></tr>
+</table>
+
+<ul>
+  <li>网络选择器位于页面顶部导航栏</li>
+  <li>切换网络后自动刷新所有数据</li>
+  <li>网络状态通过 URL 参数同步，支持分享带网络信息的链接</li>
+</ul>
+
+<hr>
+
+<h3>3.11 CSV 数据导出（超额交付）</h3>
+
+<p>交易列表和区块列表均支持将当前页数据导出为 CSV 文件，方便用户进行离线分析或记录留存。</p>
+
+<hr>
+
+<h3>3.12 响应式设计与主题</h3>
+
+<p><strong>设备适配：</strong></p>
+<ul>
+  <li>桌面端：完整布局，多栏展示</li>
+  <li>平板端：自适应缩减列数</li>
+  <li>移动端：单栏堆叠布局，抽屉式菜单，触控友好</li>
+</ul>
+
+<p><strong>主题支持：</strong></p>
+<ul>
+  <li>亮色模式</li>
+</ul>
+
+<hr>
+
+<h2>四、页面清单</h2>
+
+<p>本项目共包含 <strong>15 个独立页面 / 路由</strong>：</p>
+
+<table>
+  <tr><th>序号</th><th>页面</th><th>路径</th><th>说明</th></tr>
+  <tr><td>1</td><td>首页</td><td>/</td><td>网络概览与最新动态</td></tr>
+  <tr><td>2</td><td>交易列表</td><td>/transactions</td><td>全网交易记录</td></tr>
+  <tr><td>3</td><td>交易详情</td><td>/txn/[hash]</td><td>单笔交易完整信息</td></tr>
+  <tr><td>4</td><td>区块列表</td><td>/blocks</td><td>最新区块列表</td></tr>
+  <tr><td>5</td><td>区块详情</td><td>/block/[height]</td><td>单个区块完整信息</td></tr>
+  <tr><td>6</td><td>账户详情</td><td>/account/[address]</td><td>账户信息与资产</td></tr>
+  <tr><td>7</td><td>验证者列表</td><td>/validators</td><td>验证节点概览</td></tr>
+  <tr><td>8</td><td>验证者详情</td><td>/validator/[address]</td><td>单个验证者信息</td></tr>
+  <tr><td>9</td><td>数据分析</td><td>/analytics</td><td>网络运行指标图表</td></tr>
+  <tr><td>10</td><td>Coin 详情</td><td>/coin/[struct]</td><td>代币信息与活动</td></tr>
+  <tr><td>11</td><td>FA 详情</td><td>/fa/[address]</td><td>Fungible Asset 信息</td></tr>
+  <tr><td>12</td><td>Token 详情</td><td>/token/[tokenId]</td><td>NFT / Token 信息</td></tr>
+  <tr><td>13</td><td>Object 详情</td><td>/object/[address]</td><td>Move Object 信息</td></tr>
+  <tr><td>14</td><td>代币转账</td><td>/token-transfers</td><td>代币转账记录</td></tr>
+  <tr><td>15</td><td>NFT 转账</td><td>/nft-transfers</td><td>NFT 转账记录</td></tr>
+</table>
+
+<hr>
+
+<h2>五、技术架构摘要</h2>
+
+<table>
+  <tr><th>维度</th><th>选型</th></tr>
+  <tr><td>前端框架</td><td>Next.js 16 + React 19</td></tr>
+  <tr><td>开发语言</td><td>TypeScript（全量类型安全）</td></tr>
+  <tr><td>UI 组件库</td><td>Movement Design System + Radix UI</td></tr>
+  <tr><td>样式方案</td><td>Tailwind CSS v4</td></tr>
+  <tr><td>状态管理</td><td>Zustand（全局状态）+ TanStack Query（服务端数据缓存）</td></tr>
+  <tr><td>图表库</td><td>Chart.js</td></tr>
+  <tr><td>地图</td><td>React Simple Maps</td></tr>
+  <tr><td>动画</td><td>Framer Motion</td></tr>
+  <tr><td>区块链 SDK</td><td>Aptos TS SDK（REST + GraphQL 双通道）</td></tr>
+  <tr><td>包管理</td><td>pnpm</td></tr>
+</table>
+
+<p><strong>数据获取架构：</strong></p>
+<ul>
+  <li>三个独立的数据客户端：Aptos SDK v1（REST）、SDK v2（区块 / 余额）、GraphQL Indexer（复杂聚合查询）</li>
+  <li>69 个自定义数据查询 Hook，覆盖所有业务场景</li>
+  <li>数据缓存策略：60 秒缓存有效期，自动后台刷新</li>
+</ul>
+
+<hr>
+
+<h2>六、项目数据</h2>
+
+<table>
+  <tr><th>指标</th><th>数值</th></tr>
+  <tr><td>源代码文件数</td><td>225+</td></tr>
+  <tr><td>自定义 React 组件</td><td>100+</td></tr>
+  <tr><td>数据查询 Hook</td><td>69 个</td></tr>
+  <tr><td>主要页面 / 路由</td><td>15 个</td></tr>
+  <tr><td>分析图表类型</td><td>9 种</td></tr>
+  <tr><td>支持钱包</td><td>6 种</td></tr>
+  <tr><td>支持网络</td><td>2 个（主网 + 测试网）</td></tr>
+</table>
+
+<hr>
+
+<h2>七、已知限制与待解决事项</h2>
+
+<h3>7.1 交易方向筛选受限（依赖索引器数据服务升级）</h3>
+
+<p><strong>现状说明：</strong></p>
+
+<p>在账户的交易记录页面中，用户通常希望能按「方向」筛选交易，例如：</p>
+<ul>
+  <li><strong>转出</strong>（我转给别人的）</li>
+  <li><strong>转入</strong>（别人转给我的）</li>
+  <li><strong>自转</strong>（我转给自己的）</li>
+  <li><strong>合约调用</strong>（我调用了一个智能合约，而不是转账）</li>
+  <li><strong>关联交易</strong>（我不是发送方也不是接收方，但交易与我有关）</li>
+</ul>
+
+<p>目前，索引器数据服务（Indexer）<strong>只提供了「发送方」字段，没有提供「接收方」字段</strong>。这意味着：</p>
+<ul>
+  <li>「转出」可以基本筛选出来（发送方 = 我的地址）</li>
+  <li><strong>「转入」「自转」「关联交易」无法在后端筛选</strong>，因为没有接收方信息可供查询</li>
+  <li>「转出」和「合约调用」也无法在后端精确区分</li>
+</ul>
+
+<p><strong>当前的临时方案：</strong></p>
+<p>浏览器目前在前端（用户浏览器端）解析每笔交易的详细内容来判断方向，但这种方式<strong>只能对当前页面显示的数据生效</strong>（通常为 25 条），无法对全部历史交易进行筛选。</p>
+
+<p><strong>解决路径：</strong></p>
+<p>已向 Movement 技术团队提出索引器数据服务升级需求，需要后端在数据接口中增加以下字段：</p>
+
+<table>
+  <tr><th>需要的字段</th><th>作用</th></tr>
+  <tr><td>接收方地址</td><td>实现转入、转出、自转、关联交易的精确筛选</td></tr>
+  <tr><td>交易类型标识</td><td>区分「转账」和「合约调用」</td></tr>
+  <tr><td>金额范围筛选</td><td>支持按转账金额大小进行过滤</td></tr>
+  <tr><td>函数名称筛选</td><td>支持按调用的具体操作进行过滤</td></tr>
+</table>
+
+<p><strong>备注：</strong>NFT（数字藏品）相关的转账记录已具备上述所有字段，可以正常筛选。此问题仅影响代币（Coin）转账记录。一旦索引器数据服务完成升级，浏览器端可快速适配，无需大幅修改。</p>
+
+<hr>
+
+<h2>八、当前状态与后续工作</h2>
+
+<p><strong>当前状态：</strong></p>
+<ul>
+  <li>✅ 所有核心功能开发完成</li>
+  <li>✅ 已部署至测试域名，可正常访问</li>
+  <li>🔄 准备正式域名配置与上线发布</li>
+  <li>⏳ 部分高级筛选功能等待索引器数据服务升级（详见第七章）</li>
+</ul>
+
+<p><strong>后续可扩展方向（供参考）：</strong></p>
+<table>
+  <tr><th>方向</th><th>说明</th></tr>
+  <tr><td>索引器数据服务升级适配</td><td>待 Indexer 新增字段后，完善交易方向筛选</td></tr>
+  <tr><td>国际化（i18n）</td><td>支持中文 / 英文等多语言切换</td></tr>
+  <tr><td>搜索增强</td><td>模糊搜索、下拉自动补全建议</td></tr>
+  <tr><td>更多分析指标</td><td>更多维度的网络数据图表</td></tr>
+</table>
+
+<hr>
+
+<h2>九、总结</h2>
+
+<blockquote>
+  <strong>群内反馈优化说明：</strong>社区群内收到的所有用户反馈与建议均已完成优化，相关改进已全部落地至当前版本。
+</blockquote>
+
+<p>Movement Explorer MVP 版本已按计划完成全部核心功能的开发与交付，涵盖首页、交易、区块、账户、搜索、网络切换、数据分析面板等 Phase 1 与 Phase 2 规划的所有模块。在此基础上，还额外交付了验证者系统、钱包连接、代币资产详情页、CSV 导出等增值功能。</p>
+
+<p>目前存在一项已知限制：代币交易的方向筛选（转入/转出/自转等）受索引器数据服务字段缺失影响，仅能在当前页面范围内生效。该问题已向 Movement 后端团队反馈，待数据服务升级后即可完整支持。</p>
+
+<p>项目当前已部署至测试环境，核心功能运行稳定，准备进入正式上线阶段。</p>
+
+</body>
+</html>

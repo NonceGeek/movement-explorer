@@ -24,6 +24,14 @@ export const NAV_ITEMS: NavItem[] = [
   },
   { href: "/validators", label: "Validators" },
   { href: "/analytics", label: "Analytics" },
+  {
+    label: "Developers",
+    items: [
+      { href: "/developers", label: "Overview" },
+      { href: "/developers/api", label: "API Docs" },
+      { href: "/developers/guides", label: "Guides" },
+    ],
+  },
 ] as const;
 
 // Keep for backward compatibility

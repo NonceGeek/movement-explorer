@@ -35,10 +35,10 @@ export function generateCurl(params: SnippetParams): string {
   const url = buildUrl(params.baseUrl, params.path, params.pathParams, params.queryParams);
 
   if (params.method === "GET") {
-    return `curl ${url}`;
+    return `curl "${url}"`;
   }
 
-  const parts = [`curl -X ${params.method} ${url}`];
+  const parts = [`curl -X ${params.method} "${url}"`];
   if (params.body) {
     parts.push(`  -H "Content-Type: application/json"`);
     parts.push(`  -d '${JSON.stringify(params.body, null, 2)}'`);
@@ -120,14 +120,14 @@ import (
 
 func main() {
     payload := []byte(\`${JSON.stringify(params.body ?? {}, null, 2)}\`)
-    resp, err := http.NewRequest("${params.method}", "${url}", bytes.NewBuffer(payload))
+    req, err := http.NewRequest("${params.method}", "${url}", bytes.NewBuffer(payload))
     if err != nil {
         panic(err)
     }
-    resp.Header.Set("Content-Type", "application/json")
+    req.Header.Set("Content-Type", "application/json")
 
     client := &http.Client{}
-    response, _ := client.Do(resp)
+    response, _ := client.Do(req)
     defer response.Body.Close()
 
     body, _ := io.ReadAll(response.Body)

@@ -117,7 +117,7 @@ export default function ApiDocsPage() {
         )}
 
         {error && (
-          <div className="flex items-center gap-2 p-4 rounded-lg bg-red-50 text-red-700 border border-red-200">
+          <div className="flex items-center gap-2 p-4 rounded-lg bg-destructive/10 text-destructive border border-destructive/30">
             <AlertCircle className="h-5 w-5 flex-shrink-0" />
             <span>Failed to load API specification. Please try again.</span>
           </div>

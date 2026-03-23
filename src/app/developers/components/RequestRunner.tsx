@@ -39,8 +39,14 @@ export default function RequestRunner({ method, url, body }: RequestRunnerProps)
       setResponseTime(elapsed);
       setStatusCode(res.status);
 
-      const data = await res.json();
-      setResponse(JSON.stringify(data, null, 2));
+      const contentType = res.headers.get('content-type');
+      if (contentType?.includes('application/json')) {
+        const data = await res.json();
+        setResponse(JSON.stringify(data, null, 2));
+      } else {
+        const text = await res.text();
+        setResponse(text);
+      }
     } catch (err) {
       const elapsed = Math.round(performance.now() - start);
       setResponseTime(elapsed);

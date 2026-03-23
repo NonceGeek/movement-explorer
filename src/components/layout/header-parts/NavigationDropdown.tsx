@@ -73,8 +73,16 @@ export function NavigationDropdown({ label, items }: NavigationDropdownProps) {
         )}
       >
         {items.map((item) => {
-          const isItemActive =
+          const isItemMatch =
             pathname === item.href || pathname.startsWith(`${item.href}/`);
+          // Only highlight if no other sibling item has a more specific (longer) match
+          const hasMoreSpecificMatch = isItemMatch && items.some(
+            (other) =>
+              other.href !== item.href &&
+              other.href.length > item.href.length &&
+              (pathname === other.href || pathname.startsWith(`${other.href}/`)),
+          );
+          const isItemActive = isItemMatch && !hasMoreSpecificMatch;
           return (
             <DropdownMenuItem key={item.href} asChild>
               <Link

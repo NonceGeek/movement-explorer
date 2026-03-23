@@ -73,9 +73,17 @@ export default function NavMobile() {
                       </div>
                       <div className="flex flex-col gap-1">
                         {item.items.map((subItem) => {
-                          const isActive =
+                          const isMatch =
                             pathname === subItem.href ||
                             pathname.startsWith(`${subItem.href}/`);
+                          // Only highlight if no sibling has a more specific (longer) match
+                          const hasMoreSpecific = isMatch && item.items.some(
+                            (other) =>
+                              other.href !== subItem.href &&
+                              other.href.length > subItem.href.length &&
+                              (pathname === other.href || pathname.startsWith(`${other.href}/`)),
+                          );
+                          const isActive = isMatch && !hasMoreSpecific;
                           return (
                             <Link
                               key={subItem.href}

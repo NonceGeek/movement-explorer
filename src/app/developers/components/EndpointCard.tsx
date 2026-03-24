@@ -4,11 +4,11 @@ import { useState } from "react";
 import { cn } from "@/utils/styling";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { ParsedEndpoint, SchemaObject } from "@/types/openapi";
+import type { ParsedEndpoint } from "@/types/openapi";
 import ParameterForm from "./ParameterForm";
 import RequestRunner from "./RequestRunner";
 import CodeSnippetTabs from "./CodeSnippetTabs";
-import RequestBodyForm from "./RequestBodyForm";
+import RequestBodyForm, { defaultForType } from "./RequestBodyForm";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "bg-blue-100 text-blue-700 border-blue-200",
@@ -17,22 +17,6 @@ const METHOD_COLORS: Record<string, string> = {
   DELETE: "bg-red-100 text-red-700 border-red-200",
 };
 
-/** Generate a placeholder JSON body from a schema */
-function schemaToTemplate(schema?: SchemaObject): unknown {
-  if (!schema) return {};
-  if (schema.type === "string") return schema.default ?? "";
-  if (schema.type === "integer" || schema.type === "number") return schema.default ?? 0;
-  if (schema.type === "boolean") return schema.default ?? false;
-  if (schema.type === "array") return [schemaToTemplate(schema.items)];
-  if (schema.properties) {
-    const obj: Record<string, unknown> = {};
-    for (const [key, prop] of Object.entries(schema.properties)) {
-      obj[key] = schemaToTemplate(prop);
-    }
-    return obj;
-  }
-  return {};
-}
 
 interface EndpointCardProps {
   endpoint: ParsedEndpoint;
@@ -47,7 +31,7 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
   // Request body state for POST/PUT
   const bodySchema = endpoint.requestBody?.content?.["application/json"]?.schema;
   const [bodyValue, setBodyValue] = useState<Record<string, unknown>>(() =>
-    bodySchema ? (schemaToTemplate(bodySchema) as Record<string, unknown>) : {}
+    bodySchema ? (defaultForType(bodySchema) as Record<string, unknown>) : {}
   );
 
   const handleParamChange = (name: string, value: string) => {

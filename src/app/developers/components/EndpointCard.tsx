@@ -4,10 +4,11 @@ import { useState } from "react";
 import { cn } from "@/utils/styling";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { ChevronDown, ChevronUp } from "lucide-react";
-import type { ParsedEndpoint } from "@/types/openapi";
+import type { ParsedEndpoint, SchemaObject } from "@/types/openapi";
 import ParameterForm from "./ParameterForm";
 import RequestRunner from "./RequestRunner";
 import CodeSnippetTabs from "./CodeSnippetTabs";
+import RequestBodyForm from "./RequestBodyForm";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "bg-blue-100 text-blue-700 border-blue-200",
@@ -16,6 +17,23 @@ const METHOD_COLORS: Record<string, string> = {
   DELETE: "bg-red-100 text-red-700 border-red-200",
 };
 
+/** Generate a placeholder JSON body from a schema */
+function schemaToTemplate(schema?: SchemaObject): unknown {
+  if (!schema) return {};
+  if (schema.type === "string") return schema.default ?? "";
+  if (schema.type === "integer" || schema.type === "number") return schema.default ?? 0;
+  if (schema.type === "boolean") return schema.default ?? false;
+  if (schema.type === "array") return [schemaToTemplate(schema.items)];
+  if (schema.properties) {
+    const obj: Record<string, unknown> = {};
+    for (const [key, prop] of Object.entries(schema.properties)) {
+      obj[key] = schemaToTemplate(prop);
+    }
+    return obj;
+  }
+  return {};
+}
+
 interface EndpointCardProps {
   endpoint: ParsedEndpoint;
 }
@@ -23,10 +41,36 @@ interface EndpointCardProps {
 export default function EndpointCard({ endpoint }: EndpointCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
+  const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const { network_value } = useGlobalStore();
+
+  // Request body state for POST/PUT
+  const bodySchema = endpoint.requestBody?.content?.["application/json"]?.schema;
+  const [bodyValue, setBodyValue] = useState<Record<string, unknown>>(() =>
+    bodySchema ? (schemaToTemplate(bodySchema) as Record<string, unknown>) : {}
+  );
 
   const handleParamChange = (name: string, value: string) => {
     setParamValues((prev) => ({ ...prev, [name]: value }));
+    if (value && validationErrors.has(name)) {
+      setValidationErrors((prev) => {
+        const next = new Set(prev);
+        next.delete(name);
+        return next;
+      });
+    }
+  };
+
+  const missingRequired = endpoint.parameters
+    .filter((p) => p.required && !(paramValues[p.name] ?? "").trim());
+
+  const handleTryRequest = () => {
+    if (missingRequired.length > 0) {
+      setValidationErrors(new Set(missingRequired.map((p) => p.name)));
+      return false;
+    }
+    setValidationErrors(new Set());
+    return true;
   };
 
   // Split params by type for URL building
@@ -57,7 +101,7 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
       {/* Header - always visible */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors text-left"
+        className="w-full flex items-center gap-3 p-4 hover:bg-muted/30 transition-colors text-left cursor-pointer"
       >
         <span
           className={cn(
@@ -98,17 +142,36 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
                 parameters={endpoint.parameters}
                 values={paramValues}
                 onChange={handleParamChange}
+                errorParams={validationErrors}
+              />
+            </div>
+          )}
+
+          {/* Request Body */}
+          {bodySchema && (
+            <div>
+              <h4 className="text-sm font-semibold mb-3">Request Body</h4>
+              <RequestBodyForm
+                schema={bodySchema}
+                value={bodyValue}
+                onChange={setBodyValue}
               />
             </div>
           )}
 
           {/* Try it */}
-          <div>
-            <h4 className="text-sm font-semibold mb-3">Try It</h4>
-            <div className="mb-2 font-mono text-xs text-muted-foreground break-all">
-              {endpoint.method} {fullUrl}
+          <div className="space-y-3">
+            <h4 className="text-sm font-semibold">Try It</h4>
+            <div className="rounded-md bg-muted/30 border border-border/30 px-3 py-2 font-mono text-xs text-muted-foreground break-all">
+              <span className="font-semibold text-foreground">{endpoint.method}</span>{" "}
+              {fullUrl}
             </div>
-            <RequestRunner method={endpoint.method} url={fullUrl} />
+            <RequestRunner
+              method={endpoint.method}
+              url={fullUrl}
+              body={bodySchema ? bodyValue : undefined}
+              onBeforeRun={handleTryRequest}
+            />
           </div>
 
           {/* Code Snippets */}

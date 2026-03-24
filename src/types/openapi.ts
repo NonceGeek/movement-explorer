@@ -7,6 +7,7 @@ export interface OpenApiSpec {
   };
   paths: Record<string, PathItem>;
   tags?: ApiTag[];
+  components?: { schemas?: Record<string, SchemaObject> };
 }
 
 export interface ApiTag {

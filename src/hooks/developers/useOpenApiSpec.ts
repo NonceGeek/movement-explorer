@@ -8,9 +8,44 @@ import type {
   EndpointGroup,
   PathItem,
   Operation,
+  SchemaObject,
 } from "@/types/openapi";
 
+/** Recursively resolve $ref references from components/schemas (max depth 10) */
+function resolveRefs(
+  schema: SchemaObject,
+  schemas: Record<string, SchemaObject>,
+  depth = 0
+): SchemaObject {
+  if (depth > 10) return schema;
+
+  if (schema.$ref) {
+    const name = schema.$ref.split("/").pop()!;
+    const resolved = schemas[name];
+    if (!resolved) return schema;
+    return resolveRefs(resolved, schemas, depth + 1);
+  }
+
+  const result: SchemaObject = { ...schema };
+
+  if (result.properties) {
+    result.properties = Object.fromEntries(
+      Object.entries(result.properties).map(([k, v]) => [
+        k,
+        resolveRefs(v, schemas, depth + 1),
+      ])
+    );
+  }
+
+  if (result.items) {
+    result.items = resolveRefs(result.items, schemas, depth + 1);
+  }
+
+  return result;
+}
+
 function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
+  const schemas = spec.components?.schemas ?? {};
   const endpointsByTag = new Map<string, ParsedEndpoint[]>();
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
@@ -29,7 +64,26 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
         description: operation.description ?? "",
         tag,
         parameters: operation.parameters ?? [],
-        requestBody: operation.requestBody,
+        requestBody: operation.requestBody
+          ? {
+              ...operation.requestBody,
+              content: operation.requestBody.content
+                ? Object.fromEntries(
+                    Object.entries(operation.requestBody.content).map(
+                      ([contentType, mediaType]) => [
+                        contentType,
+                        {
+                          ...mediaType,
+                          schema: mediaType.schema
+                            ? resolveRefs(mediaType.schema, schemas)
+                            : undefined,
+                        },
+                      ]
+                    )
+                  )
+                : undefined,
+            }
+          : undefined,
         responses: operation.responses ?? {},
       };
 

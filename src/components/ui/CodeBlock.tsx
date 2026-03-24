@@ -19,7 +19,7 @@ function getHighlighter() {
   if (!highlighterPromise) {
     highlighterPromise = createHighlighter({
       themes: [movementTheme],
-      langs: ["rust", "toml"],
+      langs: ["rust", "toml", "bash", "javascript", "python", "go", "json"],
     });
   }
   return highlighterPromise;

@@ -16,7 +16,10 @@ import { removeSignerParam, isValidStruct, abbreviateType } from "@/utils";
 import { useWallet } from "@aptos-labs/wallet-adapter-react";
 import { Loader2 } from "lucide-react";
 import { useForm, Controller } from "react-hook-form";
-import { getMoveTypeValidator, validateLedgerVersion } from "@/utils/moveTypeValidator";
+import {
+  getMoveTypeValidator,
+  validateLedgerVersion,
+} from "@/utils/moveTypeValidator";
 
 interface ContractFormProps {
   module: Types.MoveModule;
@@ -201,7 +204,9 @@ export default function ContractForm({
           {/* Type Arguments */}
           {fn.generic_type_params.length > 0 && (
             <div className="space-y-3 pb-4 border-b border-border/50">
-              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Type Arguments</Label>
+              <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Type Arguments
+              </Label>
               {fn.generic_type_params.map((tp, i) => {
                 const name = typeParamNames?.[i] ?? `T${i}`;
                 const constraints = tp.constraints;
@@ -223,7 +228,8 @@ export default function ContractForm({
                       rules={{
                         required: "Type argument is required",
                         validate: (v: string) =>
-                          isValidStruct(v.trim()) || "Invalid type (expected addr::module::name)",
+                          isValidStruct(v.trim()) ||
+                          "Invalid type (expected addr::module::name)",
                       }}
                       render={({ field, fieldState }) => (
                         <>
@@ -252,7 +258,9 @@ export default function ContractForm({
 
           {/* Arguments */}
           {(hasSigner || fnParams.length > 0) && (
-            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Arguments</Label>
+            <Label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+              Arguments
+            </Label>
           )}
 
           {/* Signer (if needed) */}
@@ -377,10 +385,7 @@ export default function ContractForm({
                     className="w-32"
                   >
                     {isLoading ? (
-                      <>
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                        {isView ? "Viewing..." : "Running..."}
-                      </>
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     ) : isView ? (
                       "View"
                     ) : (

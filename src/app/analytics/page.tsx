@@ -127,7 +127,17 @@ export default function AnalyticsPage() {
       <PageContainer>
         {/* Page Title */}
         <div className="mb-6">
-          <h1 className="text-3xl font-bold">Analytics</h1>
+          <div className="flex items-center justify-between">
+            <h1 className="text-3xl font-bold">Analytics</h1>
+            <Button
+              variant="outline"
+              size="icon"
+              className="lg:hidden"
+              onClick={() => setIsMobileSidebarOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
+          </div>
           <p className="text-muted-foreground mt-2">
             Network statistics and performance metrics
           </p>

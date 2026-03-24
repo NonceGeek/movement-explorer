@@ -7,7 +7,6 @@ import {
   Users,
   Code,
   Fuel,
-  X,
 } from "lucide-react";
 import SidebarNavItem from "./SidebarNavItem";
 import { Sheet, SheetContent } from "@/components/ui/sheet";
@@ -84,12 +83,11 @@ export default function AnalyticsSidebar({
       {/* Desktop Sidebar - Sticky, always stays at top */}
       <aside
         className={cn(
-          "hidden lg:block w-[250px] flex-shrink-0 self-start sticky top-32 z-10",
+          "hidden lg:block w-[250px] shrink-0 self-start sticky top-32 z-10",
           "bg-card/80 backdrop-blur-sm border border-border/30 rounded-lg",
           "max-h-[calc(100vh-6rem)] overflow-hidden"
         )}
       >
-
         <div className="overflow-y-auto max-h-[calc(100vh-10rem)] p-4 space-y-1">
           {SIDEBAR_SECTIONS.map((section) => (
             <SidebarNavItem
@@ -102,6 +100,23 @@ export default function AnalyticsSidebar({
           ))}
         </div>
       </aside>
+
+      {/* Mobile sheet */}
+      <Sheet open={isMobileOpen} onOpenChange={onMobileToggle}>
+        <SheetContent side="left" className="w-[260px] p-0">
+          <div className="pt-12 overflow-y-auto max-h-screen p-4 space-y-1">
+            {SIDEBAR_SECTIONS.map((section) => (
+              <SidebarNavItem
+                key={section.id}
+                label={section.title}
+                icon={<section.icon className="h-4 w-4" />}
+                isActive={activeSection === section.id}
+                onClick={() => handleSectionClick(section.id)}
+              />
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
     </>
   );
 }

@@ -3,6 +3,13 @@
 import { Fragment } from "react";
 import { Plus, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { cn } from "@/utils/styling";
 import type { SchemaObject } from "@/types/openapi";
 
@@ -58,18 +65,18 @@ function StringEnumField({
   onChange: (v: string) => void;
 }) {
   return (
-    <select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-    >
-      <option value="">Select...</option>
-      {options.map((opt) => (
-        <option key={opt} value={opt}>
-          {opt}
-        </option>
-      ))}
-    </select>
+    <Select value={value} onValueChange={onChange}>
+      <SelectTrigger size="sm" className="w-full font-mono text-sm">
+        <SelectValue placeholder="Select..." />
+      </SelectTrigger>
+      <SelectContent>
+        {options.map((opt) => (
+          <SelectItem key={opt} value={opt} className="font-mono text-sm">
+            {opt}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -81,14 +88,15 @@ function BooleanField({
   onChange: (v: boolean) => void;
 }) {
   return (
-    <select
-      value={String(value)}
-      onChange={(e) => onChange(e.target.value === "true")}
-      className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
-    >
-      <option value="false">false</option>
-      <option value="true">true</option>
-    </select>
+    <Select value={String(value)} onValueChange={(v) => onChange(v === "true")}>
+      <SelectTrigger size="sm" className="w-full font-mono text-sm">
+        <SelectValue />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="false" className="font-mono text-sm">false</SelectItem>
+        <SelectItem value="true" className="font-mono text-sm">true</SelectItem>
+      </SelectContent>
+    </Select>
   );
 }
 
@@ -254,18 +262,21 @@ export default function RequestBodyForm({
 
       return (
         <div className="space-y-2">
-          <select
+          <Select
             value={currentType}
-            onChange={(e) => updateField(key, { [discriminatorProp]: e.target.value })}
-            className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+            onValueChange={(v) => updateField(key, { [discriminatorProp]: v })}
           >
-            <option value="">Select type...</option>
-            {variantOptions.map((v) => (
-              <option key={v} value={v}>
-                {v}
-              </option>
-            ))}
-          </select>
+            <SelectTrigger size="sm" className="w-full font-mono text-sm">
+              <SelectValue placeholder="Select type..." />
+            </SelectTrigger>
+            <SelectContent>
+              {variantOptions.map((v) => (
+                <SelectItem key={v} value={v} className="font-mono text-sm">
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           {variantSchema &&
             variantSchema.properties &&
             Object.keys(variantSchema.properties).length > 0 && (

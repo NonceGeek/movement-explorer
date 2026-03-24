@@ -91,7 +91,27 @@
       "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{:*)",
       "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"{ __schema { queryType { fields { name } } } }\"\"}')",
       "Bash(curl -s -X POST https://indexer.mainnet.movementnetwork.xyz/v1/graphql -H \"Content-Type: application/json\" -d '{\"\"query\"\": \"\"{ __type\\(name: \\\\\"\"user_transactions_bool_exp\\\\\"\"\\) { inputFields { name } } }\"\"}')",
-      "Bash(curl -s \"https://mainnet.movementnetwork.xyz/v1/transactions/by_hash/0xa4734b7bc0276f03798f32a29aa57b7ca7a661deba7b83135381989ec7cd41ab\")"
+      "Bash(curl -s \"https://mainnet.movementnetwork.xyz/v1/transactions/by_hash/0xa4734b7bc0276f03798f32a29aa57b7ca7a661deba7b83135381989ec7cd41ab\")",
+      "Bash(pnpm exec next build)",
+      "Bash(pnpm dlx shadcn@latest add \"@react-bits/SplitText-TS-TW\")",
+      "WebFetch(domain:www.aidimsum.com)",
+      "Bash(pnpm dlx shadcn@latest add \"@react-bits/TextType-TS-TW\")",
+      "WebFetch(domain:mainnet.movementnetwork.xyz)",
+      "Bash(curl -sL \"https://mainnet.movementnetwork.xyz/v1/spec.yaml\")",
+      "Bash(node -e \":*)",
+      "Bash(git add src/app/developers/components/RequestBodyForm.tsx)",
+      "Bash(git add src/app/developers/components/EndpointCard.tsx)",
+      "mcp__plugin_playwright_playwright__browser_wait_for",
+      "Bash(curl -s \"https://mainnet.movementnetwork.xyz/v1/spec.yaml\")",
+      "Bash(git add src/types/openapi.ts src/hooks/developers/useOpenApiSpec.ts)",
+      "Bash(git add src/types/openapi.ts src/hooks/developers/useOpenApiSpec.ts src/app/developers/components/RequestBodyForm.tsx)",
+      "Bash(node /tmp/debug-schema.js)",
+      "Bash(node /tmp/debug-schema.mjs)",
+      "Bash(node /tmp/debug2.mjs)",
+      "Bash(node -e \"require\\(''./messages/zh-CN.json''\\); require\\(''./messages/en.json''\\); console.log\\(''JSON valid''\\)\")",
+      "Bash(git add messages/zh-CN.json messages/en.json)",
+      "Bash(git add \"app/[locale]/\\(home\\)/_components/category-tabs.tsx\")",
+      "Bash(git add \"app/[locale]/\\(home\\)/_components/search-result-item.tsx\")"
     ]
   }
 }

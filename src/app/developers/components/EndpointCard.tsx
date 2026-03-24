@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/styling";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { ChevronDown, ChevronUp } from "lucide-react";
@@ -113,9 +114,19 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
         <div className="border-t p-4 space-y-6">
           {/* Description */}
           {endpoint.description && (
-            <p className="text-sm text-muted-foreground">
+            <ReactMarkdown
+              components={{
+                p: ({ children }) => <p className="text-sm text-muted-foreground mb-2 last:mb-0">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc pl-5 space-y-0.5 my-2 text-sm text-muted-foreground">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal pl-5 space-y-0.5 my-2 text-sm text-muted-foreground">{children}</ol>,
+                li: ({ children }) => <li>{children}</li>,
+                strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
+                code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded font-mono text-xs">{children}</code>,
+                a: ({ href, children }) => <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary underline underline-offset-2 hover:text-primary/80">{children}</a>,
+              }}
+            >
               {endpoint.description}
-            </p>
+            </ReactMarkdown>
           )}
 
           {/* Parameters */}

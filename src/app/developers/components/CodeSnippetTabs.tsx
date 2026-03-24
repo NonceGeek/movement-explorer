@@ -3,11 +3,19 @@
 import { useState } from "react";
 import { cn } from "@/utils/styling";
 import { Copy, Check } from "lucide-react";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import {
   SNIPPET_GENERATORS,
   SNIPPET_LABELS,
   type SnippetLanguage,
 } from "@/utils/codeSnippets";
+
+const SHIKI_LANG: Record<SnippetLanguage, string> = {
+  curl: "bash",
+  javascript: "javascript",
+  python: "python",
+  go: "go",
+};
 
 interface CodeSnippetTabsProps {
   method: string;
@@ -42,7 +50,7 @@ export default function CodeSnippetTabs(props: CodeSnippetTabsProps) {
               key={lang}
               onClick={() => setActiveTab(lang)}
               className={cn(
-                "px-3 py-2 text-xs font-medium transition-colors",
+                "px-3 py-2 text-xs font-medium transition-colors cursor-pointer",
                 activeTab === lang
                   ? "text-foreground border-b-2 border-guild-green"
                   : "text-muted-foreground hover:text-foreground"
@@ -54,7 +62,7 @@ export default function CodeSnippetTabs(props: CodeSnippetTabsProps) {
         </div>
         <button
           onClick={handleCopy}
-          className="p-2 text-muted-foreground hover:text-foreground"
+          className="p-2 text-muted-foreground hover:text-foreground cursor-pointer"
         >
           {copied ? (
             <Check className="h-3.5 w-3.5" />
@@ -65,9 +73,11 @@ export default function CodeSnippetTabs(props: CodeSnippetTabsProps) {
       </div>
 
       {/* Code */}
-      <pre className="p-4 text-sm font-mono overflow-x-auto bg-background">
-        {snippet}
-      </pre>
+      <CodeBlock
+        code={snippet}
+        language={SHIKI_LANG[activeTab]}
+        maxHeight="300px"
+      />
     </div>
   );
 }

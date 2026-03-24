@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import { cn } from "@/utils/styling";
 import { Play, Loader2, Copy, Check } from "lucide-react";
 
@@ -9,21 +10,26 @@ interface RequestRunnerProps {
   method: string;
   url: string;
   body?: object;
+  onBeforeRun?: () => boolean;
 }
 
-export default function RequestRunner({ method, url, body }: RequestRunnerProps) {
+export default function RequestRunner({ method, url, body, onBeforeRun }: RequestRunnerProps) {
   const [response, setResponse] = useState<string | null>(null);
   const [statusCode, setStatusCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responseTime, setResponseTime] = useState<number | null>(null);
+  const [isJson, setIsJson] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const handleRun = async () => {
+    if (onBeforeRun && !onBeforeRun()) return;
+
     setLoading(true);
     setError(null);
     setResponse(null);
     setStatusCode(null);
+    setIsJson(false);
 
     const start = performance.now();
 
@@ -42,6 +48,7 @@ export default function RequestRunner({ method, url, body }: RequestRunnerProps)
       const contentType = res.headers.get('content-type');
       if (contentType?.includes('application/json')) {
         const data = await res.json();
+        setIsJson(true);
         setResponse(JSON.stringify(data, null, 2));
       } else {
         const text = await res.text();
@@ -69,14 +76,13 @@ export default function RequestRunner({ method, url, body }: RequestRunnerProps)
         onClick={handleRun}
         disabled={loading}
         size="sm"
-        className="bg-guild-green hover:bg-guild-green/90 text-white"
       >
         {loading ? (
           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
         ) : (
           <Play className="h-4 w-4 mr-2" />
         )}
-        Send Request
+        {loading ? "Sending..." : "Send Request"}
       </Button>
 
       {(response || error) && (
@@ -107,7 +113,7 @@ export default function RequestRunner({ method, url, body }: RequestRunnerProps)
             {response && (
               <button
                 onClick={handleCopy}
-                className="text-muted-foreground hover:text-foreground"
+                className="text-muted-foreground hover:text-foreground cursor-pointer"
               >
                 {copied ? (
                   <Check className="h-4 w-4" />
@@ -119,13 +125,17 @@ export default function RequestRunner({ method, url, body }: RequestRunnerProps)
           </div>
 
           {/* Response body */}
-          <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
-            {error ? (
+          {error ? (
+            <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
               <span className="text-red-600">{error}</span>
-            ) : (
-              response
-            )}
-          </pre>
+            </pre>
+          ) : response && isJson ? (
+            <CodeBlock code={response} language="json" maxHeight="400px" />
+          ) : (
+            <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
+              {response}
+            </pre>
+          )}
         </div>
       )}
     </div>

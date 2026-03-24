@@ -26,7 +26,25 @@ function resolveRefs(
     return resolveRefs(resolved, schemas, depth + 1);
   }
 
+  // allOf: merge all sub-schemas into one (used for discriminated variant schemas)
+  if (schema.allOf) {
+    const merged: SchemaObject = {};
+    for (const sub of schema.allOf) {
+      const resolved = resolveRefs(sub, schemas, depth + 1);
+      if (resolved.type) merged.type = resolved.type;
+      if (resolved.description && !merged.description) merged.description = resolved.description;
+      if (resolved.properties) merged.properties = { ...merged.properties, ...resolved.properties };
+      if (resolved.required) merged.required = [...(merged.required ?? []), ...resolved.required];
+    }
+    return merged;
+  }
+
   const result: SchemaObject = { ...schema };
+
+  // oneOf: resolve each variant's $ref so RequestBodyForm can inspect their properties
+  if (result.oneOf) {
+    result.oneOf = result.oneOf.map((sub) => resolveRefs(sub, schemas, depth + 1));
+  }
 
   if (result.properties) {
     result.properties = Object.fromEntries(

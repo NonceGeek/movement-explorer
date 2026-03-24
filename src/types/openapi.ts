@@ -61,6 +61,10 @@ export interface SchemaObject {
   items?: SchemaObject;
   required?: string[];
   $ref?: string;
+  oneOf?: SchemaObject[];
+  allOf?: SchemaObject[];
+  anyOf?: SchemaObject[];
+  discriminator?: { propertyName: string; mapping?: Record<string, string> };
 }
 
 /** Parsed endpoint ready for display */

@@ -224,6 +224,65 @@ export default function RequestBodyForm({
       );
     }
 
+    // oneOf with discriminator -> variant selector + variant fields
+    if (prop.oneOf && prop.discriminator) {
+      const discriminatorProp = prop.discriminator.propertyName;
+      const variantOptions = Object.keys(prop.discriminator.mapping ?? {});
+      const fieldValue =
+        value[key] && typeof value[key] === "object" && !Array.isArray(value[key])
+          ? (value[key] as Record<string, unknown>)
+          : {};
+      const currentType = String(fieldValue[discriminatorProp] ?? "");
+
+      // Find variant whose discriminator enum matches the selected type
+      const selectedVariant = prop.oneOf.find(
+        (v) => v.properties?.[discriminatorProp]?.enum?.includes(currentType)
+      );
+
+      // Variant schema with discriminator field excluded (it's fixed by the selector)
+      const variantSchema = selectedVariant
+        ? {
+            ...selectedVariant,
+            properties: Object.fromEntries(
+              Object.entries(selectedVariant.properties ?? {}).filter(
+                ([k]) => k !== discriminatorProp
+              )
+            ),
+            required: (selectedVariant.required ?? []).filter((r) => r !== discriminatorProp),
+          }
+        : null;
+
+      return (
+        <div className="space-y-2">
+          <select
+            value={currentType}
+            onChange={(e) => updateField(key, { [discriminatorProp]: e.target.value })}
+            className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
+          >
+            <option value="">Select type...</option>
+            {variantOptions.map((v) => (
+              <option key={v} value={v}>
+                {v}
+              </option>
+            ))}
+          </select>
+          {variantSchema &&
+            variantSchema.properties &&
+            Object.keys(variantSchema.properties).length > 0 && (
+              <div className="border-l-2 border-border pl-4">
+                <RequestBodyForm
+                  schema={variantSchema}
+                  value={fieldValue}
+                  onChange={(v) =>
+                    updateField(key, { ...v, [discriminatorProp]: currentType })
+                  }
+                />
+              </div>
+            )}
+        </div>
+      );
+    }
+
     // nested object -> recursive sub-form
     if (prop.type === "object" || prop.properties) {
       const nested =

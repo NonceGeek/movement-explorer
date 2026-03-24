@@ -18,7 +18,7 @@ const TYPE_COLORS: Record<string, string> = {
 
 /** Returns a sensible empty default for a given schema type. */
 export function defaultForType(schema?: SchemaObject): unknown {
-  if (!schema) return {};
+  if (!schema) return "";
   if (schema.type === "string") return schema.default ?? "";
   if (schema.type === "integer" || schema.type === "number")
     return schema.default ?? 0;
@@ -33,7 +33,7 @@ export function defaultForType(schema?: SchemaObject): unknown {
     }
     return obj;
   }
-  return {};
+  return "";
 }
 
 /** Human-readable type label, e.g. "array[string]" */
@@ -86,8 +86,8 @@ function BooleanField({
       onChange={(e) => onChange(e.target.value === "true")}
       className="w-full rounded-md border border-border bg-muted/30 px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-ring"
     >
-      <option value="true">true</option>
       <option value="false">false</option>
+      <option value="true">true</option>
     </select>
   );
 }
@@ -121,7 +121,7 @@ function ArrayField({
   return (
     <div className="space-y-2">
       {items.map((item, index) => (
-        <div key={index} className="flex items-center gap-2">
+        <div key={`item-${index}`} className="flex items-center gap-2">
           {itemType === "number" || itemType === "integer" ? (
             <Input
               type="number"
@@ -130,7 +130,7 @@ function ArrayField({
                 const v = e.target.value;
                 updateItem(
                   index,
-                  v === "" ? "" : itemType === "integer" ? parseInt(v, 10) : parseFloat(v),
+                  itemType === "integer" ? parseInt(v, 10) || 0 : parseFloat(v) || 0,
                 );
               }}
               className="font-mono text-sm flex-1"
@@ -146,7 +146,7 @@ function ArrayField({
           <button
             type="button"
             onClick={() => removeItem(index)}
-            className="p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            className="cursor-pointer p-1 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
             aria-label={`Remove item ${index + 1}`}
           >
             <X className="h-4 w-4" />
@@ -156,7 +156,7 @@ function ArrayField({
       <button
         type="button"
         onClick={addItem}
-        className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="cursor-pointer flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
       >
         <Plus className="h-3 w-3" />
         Add item
@@ -250,14 +250,12 @@ export default function RequestBodyForm({
           value={value[key] !== undefined ? String(value[key]) : ""}
           onChange={(e) => {
             const v = e.target.value;
-            if (v === "") {
-              updateField(key, "");
-            } else {
-              updateField(
-                key,
-                prop.type === "integer" ? parseInt(v, 10) : parseFloat(v),
-              );
-            }
+            updateField(
+              key,
+              prop.type === "integer"
+                ? parseInt(v, 10) || 0
+                : parseFloat(v) || 0,
+            );
           }}
           className="font-mono text-sm"
         />

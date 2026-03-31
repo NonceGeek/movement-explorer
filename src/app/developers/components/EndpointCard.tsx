@@ -61,10 +61,12 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
   // Split params by type for URL building
   const pathParams: Record<string, string> = {};
   const queryParams: Record<string, string> = {};
+  const headerParams: Record<string, string> = {};
   for (const param of endpoint.parameters) {
     const value = paramValues[param.name] ?? "";
     if (param.in === "path") pathParams[param.name] = value;
     if (param.in === "query" && value) queryParams[param.name] = value;
+    if (param.in === "header" && value) headerParams[param.name] = value;
   }
 
   // Build the full request URL for RequestRunner
@@ -165,6 +167,7 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
               method={endpoint.method}
               url={fullUrl}
               body={bodySchema ? bodyValue : undefined}
+              headers={headerParams}
               onBeforeRun={handleTryRequest}
             />
           </div>
@@ -178,6 +181,8 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
               path={endpoint.path}
               pathParams={pathParams}
               queryParams={queryParams}
+              headers={headerParams}
+              body={bodySchema ? bodyValue : undefined}
             />
           </div>
         </div>

@@ -10,10 +10,11 @@ interface RequestRunnerProps {
   method: string;
   url: string;
   body?: object;
+  headers?: Record<string, string>;
   onBeforeRun?: () => boolean;
 }
 
-export default function RequestRunner({ method, url, body, onBeforeRun }: RequestRunnerProps) {
+export default function RequestRunner({ method, url, body, headers, onBeforeRun }: RequestRunnerProps) {
   const [response, setResponse] = useState<string | null>(null);
   const [statusCode, setStatusCode] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
@@ -35,9 +36,13 @@ export default function RequestRunner({ method, url, body, onBeforeRun }: Reques
 
     try {
       const options: RequestInit = { method };
+      const reqHeaders: Record<string, string> = { ...headers };
       if (body && method !== "GET") {
-        options.headers = { "Content-Type": "application/json" };
+        reqHeaders["Content-Type"] = "application/json";
         options.body = JSON.stringify(body);
+      }
+      if (Object.keys(reqHeaders).length > 0) {
+        options.headers = reqHeaders;
       }
 
       const res = await fetch(url, options);

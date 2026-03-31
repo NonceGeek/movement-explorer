@@ -23,6 +23,7 @@ interface CodeSnippetTabsProps {
   path: string;
   pathParams?: Record<string, string>;
   queryParams?: Record<string, string>;
+  headers?: Record<string, string>;
   body?: object;
 }
 

@@ -23,7 +23,10 @@ function resolveRefs(
     const name = schema.$ref.split("/").pop()!;
     const resolved = schemas[name];
     if (!resolved) return schema;
-    return resolveRefs(resolved, schemas, depth + 1);
+    const result = resolveRefs(resolved, schemas, depth + 1);
+    // Preserve the $ref schema name as title so UI can display it
+    if (!result.title) result.title = name;
+    return result;
   }
 
   // allOf: merge all sub-schemas into one (used for discriminated variant schemas)
@@ -47,9 +50,12 @@ function resolveRefs(
 
   const result: SchemaObject = { ...schema };
 
-  // oneOf: resolve each variant's $ref so RequestBodyForm can inspect their properties
+  // oneOf / anyOf: resolve each variant's $ref so UI can inspect their properties
   if (result.oneOf) {
     result.oneOf = result.oneOf.map((sub) => resolveRefs(sub, schemas, depth + 1));
+  }
+  if (result.anyOf) {
+    result.anyOf = result.anyOf.map((sub) => resolveRefs(sub, schemas, depth + 1));
   }
 
   if (result.properties) {
@@ -68,8 +74,20 @@ function resolveRefs(
   return result;
 }
 
+function resolveResponseRef(
+  resp: import("@/types/openapi").ResponseObject,
+  componentResponses: Record<string, import("@/types/openapi").ResponseObject>,
+): import("@/types/openapi").ResponseObject {
+  if (resp.$ref) {
+    const name = resp.$ref.split("/").pop()!;
+    return componentResponses[name] ?? resp;
+  }
+  return resp;
+}
+
 function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
   const schemas = spec.components?.schemas ?? {};
+  const componentResponses = spec.components?.responses ?? {};
   const endpointsByTag = new Map<string, ParsedEndpoint[]>();
 
   for (const [path, pathItem] of Object.entries(spec.paths)) {
@@ -82,6 +100,7 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
       const tag = operation.tags?.[0] ?? "Other";
       const endpoint: ParsedEndpoint = {
         id: `${method}-${path}`.replace(/[{}\/]/g, "-"),
+        operationId: operation.operationId ?? `${method}-${path}`.replace(/[{}\/]/g, "-"),
         method: method.toUpperCase() as ParsedEndpoint["method"],
         path,
         summary: operation.summary ?? "",
@@ -113,7 +132,9 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
           : undefined,
         responses: operation.responses
           ? Object.fromEntries(
-              Object.entries(operation.responses).map(([code, resp]) => [
+              Object.entries(operation.responses).map(([code, rawResp]) => {
+                const resp = resolveResponseRef(rawResp, componentResponses);
+                return [
                 code,
                 {
                   ...resp,
@@ -131,7 +152,8 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
                       )
                     : undefined,
                 },
-              ])
+              ];
+              })
             )
           : {},
       };

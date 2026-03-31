@@ -51,15 +51,15 @@ const FEATURE_CARDS = [
     cta: "Coming Soon",
     disabled: true,
   },
-  {
-    title: "AI Assistant",
-    description:
-      "Ask questions about on-chain data in natural language. Powered by AI with direct blockchain access.",
-    icon: Bot,
-    href: "/developers/ai",
-    cta: "Coming Soon",
-    disabled: true,
-  },
+  // {
+  //   title: "AI Assistant",
+  //   description:
+  //     "Ask questions about on-chain data in natural language. Powered by AI with direct blockchain access.",
+  //   icon: Bot,
+  //   href: "/developers/ai",
+  //   cta: "Coming Soon",
+  //   disabled: true,
+  // },
 ];
 
 export default function DevelopersPage() {

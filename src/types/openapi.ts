@@ -7,7 +7,10 @@ export interface OpenApiSpec {
   };
   paths: Record<string, PathItem>;
   tags?: ApiTag[];
-  components?: { schemas?: Record<string, SchemaObject> };
+  components?: {
+    schemas?: Record<string, SchemaObject>;
+    responses?: Record<string, ResponseObject>;
+  };
 }
 
 export interface ApiTag {
@@ -49,9 +52,11 @@ export interface RequestBody {
 export interface ResponseObject {
   description?: string;
   content?: Record<string, { schema?: SchemaObject }>;
+  $ref?: string;
 }
 
 export interface SchemaObject {
+  title?: string;
   type?: string;
   format?: string;
   enum?: string[];
@@ -71,6 +76,7 @@ export interface SchemaObject {
 /** Parsed endpoint ready for display */
 export interface ParsedEndpoint {
   id: string;
+  operationId: string;
   method: "GET" | "POST" | "PUT" | "DELETE";
   path: string;
   summary: string;

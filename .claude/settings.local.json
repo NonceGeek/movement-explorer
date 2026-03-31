@@ -111,7 +111,12 @@
       "Bash(node -e \"require\\(''./messages/zh-CN.json''\\); require\\(''./messages/en.json''\\); console.log\\(''JSON valid''\\)\")",
       "Bash(git add messages/zh-CN.json messages/en.json)",
       "Bash(git add \"app/[locale]/\\(home\\)/_components/category-tabs.tsx\")",
-      "Bash(git add \"app/[locale]/\\(home\\)/_components/search-result-item.tsx\")"
+      "Bash(git add \"app/[locale]/\\(home\\)/_components/search-result-item.tsx\")",
+      "Bash(curl -s https://mainnet.movementnetwork.xyz/v1/spec.yaml)",
+      "Bash(curl -s https://mainnet.movementnetwork.xyz/v1/spec.json)",
+      "Bash(curl -s http://localhost:3000)",
+      "mcp__plugin_playwright_playwright__browser_close",
+      "Bash(pkill -f \"chrome.*mcp-chrome\")"
     ]
   }
 }

@@ -5,9 +5,28 @@ import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Bot, Briefcase, Menu } from "lucide-react";
+import { ArrowLeft, Bot, Briefcase, Menu, Copy, Check } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import DevelopersSidebar from "../components/DevelopersSidebar";
 import { GUIDES, type Guide } from "./data";
+
+function CopyCodeButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="absolute top-2 right-2 p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      title="Copy code"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
 
 const CATEGORY_META = {
   ai: { label: "AI Integration", icon: Bot },
@@ -27,30 +46,77 @@ function GuideContent({ guide, onBack }: { guide: Guide; onBack: () => void }) {
         <ArrowLeft className="h-4 w-4 mr-1" />
         All Guides
       </Button>
-      <div className="prose prose-sm max-w-none dark:prose-invert">
-        <div
-          dangerouslySetInnerHTML={{
-            __html: simpleMarkdownToHtml(guide.content),
-          }}
-        />
-      </div>
+      <ReactMarkdown
+        components={{
+          h2: ({ children }) => (
+            <h2 className="text-xl font-bold mt-8 mb-3">{children}</h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-lg font-semibold mt-6 mb-2">{children}</h3>
+          ),
+          p: ({ children }) => (
+            <p className="text-sm text-muted-foreground mb-3 last:mb-0">{children}</p>
+          ),
+          ul: ({ children }) => (
+            <ul className="list-disc pl-5 space-y-1 my-2 text-sm text-muted-foreground">{children}</ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="list-decimal pl-5 space-y-1 my-2 text-sm text-muted-foreground">{children}</ol>
+          ),
+          li: ({ children }) => <li>{children}</li>,
+          strong: ({ children }) => (
+            <strong className="font-semibold text-foreground">{children}</strong>
+          ),
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-guild-green/30 pl-4 my-4 text-sm text-muted-foreground">
+              {children}
+            </blockquote>
+          ),
+          a: ({ href, children }) => (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-guild-green hover:underline">
+              {children}
+            </a>
+          ),
+          code: ({ className, children, ...props }) => {
+            const match = /language-(\w+)/.exec(className ?? "");
+            const codeStr = String(children).replace(/\n$/, "");
+            if (match) {
+              return (
+                <div className="my-4 relative group">
+                  <CodeBlock code={codeStr} language={match[1]} maxHeight="400px" />
+                  <CopyCodeButton code={codeStr} />
+                </div>
+              );
+            }
+            return (
+              <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono" {...props}>
+                {children}
+              </code>
+            );
+          },
+          pre: ({ children }) => <>{children}</>,
+          table: ({ children }) => (
+            <div className="my-4 overflow-x-auto">
+              <table className="w-full text-sm border-collapse">
+                {children}
+              </table>
+            </div>
+          ),
+          thead: ({ children }) => (
+            <thead className="border-b border-border">{children}</thead>
+          ),
+          th: ({ children }) => (
+            <th className="text-left py-2 px-3 font-semibold text-foreground">{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className="py-2 px-3 text-muted-foreground border-b border-border/30">{children}</td>
+          ),
+        }}
+      >
+        {guide.content}
+      </ReactMarkdown>
     </div>
   );
-}
-
-/** Minimal markdown to HTML for guide content */
-function simpleMarkdownToHtml(md: string): string {
-  return md
-    .replace(/^### (.+)$/gm, '<h3 class="text-lg font-semibold mt-6 mb-2">$1</h3>')
-    .replace(/^## (.+)$/gm, '<h2 class="text-xl font-bold mt-8 mb-3">$1</h2>')
-    .replace(/^> (.+)$/gm, '<blockquote class="border-l-4 border-guild-green/30 pl-4 my-4 text-sm text-muted-foreground">$1</blockquote>')
-    .replace(/```(\w*)\n([\s\S]*?)```/g, '<pre class="bg-muted rounded-lg p-4 my-4 overflow-x-auto text-sm font-mono"><code>$2</code></pre>')
-    .replace(/`([^`]+)`/g, '<code class="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">$1</code>')
-    .replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>")
-    .replace(/^\d+\.\s+(.+)$/gm, '<li class="ml-4 list-decimal">$1</li>')
-    .replace(/^- (.+)$/gm, '<li class="ml-4 list-disc">$1</li>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="text-guild-green hover:underline">$1</a>')
-    .replace(/\n\n/g, "<br/><br/>");
 }
 
 export default function GuidesPage() {

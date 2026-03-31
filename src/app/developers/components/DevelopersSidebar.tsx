@@ -53,13 +53,13 @@ const SIDEBAR_ITEMS: SidebarItem[] = [
     href: "/developers/api-keys",
     badge: "Soon",
   },
-  {
-    id: "ai-assistant",
-    title: "AI Assistant",
-    icon: Bot,
-    href: "/developers/ai",
-    badge: "Soon",
-  },
+  // {
+  //   id: "ai-assistant",
+  //   title: "AI Assistant",
+  //   icon: Bot,
+  //   href: "/developers/ai",
+  //   badge: "Soon",
+  // },
 ];
 
 interface DevelopersSidebarProps {

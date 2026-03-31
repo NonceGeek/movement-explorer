@@ -13,6 +13,7 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils/styling";
 import type { SchemaObject } from "@/types/openapi";
+import type { ValidationErrors } from "@/hooks/developers/useSchemaValidation";
 
 // Colors aligned with shiki JSON syntax highlighting tokens (same as ParameterForm)
 const TYPE_COLORS: Record<string, string> = {
@@ -204,12 +205,17 @@ interface RequestBodyFormProps {
   schema: SchemaObject;
   value: Record<string, unknown>;
   onChange: (value: Record<string, unknown>) => void;
+  errors?: ValidationErrors;
+  /** Prefix for nested field error paths */
+  fieldPrefix?: string;
 }
 
 export default function RequestBodyForm({
   schema,
   value,
   onChange,
+  errors,
+  fieldPrefix = "",
 }: RequestBodyFormProps) {
   const properties = schema.properties;
   if (!properties) return null;
@@ -218,6 +224,12 @@ export default function RequestBodyForm({
 
   const updateField = (fieldName: string, fieldValue: unknown) => {
     onChange({ ...value, [fieldName]: fieldValue });
+  };
+
+  const getFieldError = (key: string): string | undefined => {
+    if (!errors?.hasErrors) return undefined;
+    const path = fieldPrefix ? `${fieldPrefix}.${key}` : key;
+    return errors.fieldErrors.get(path);
   };
 
   // Renders the input control for a single property
@@ -300,6 +312,8 @@ export default function RequestBodyForm({
                   onChange={(v) =>
                     updateField(key, { ...v, [discriminatorProp]: currentType })
                   }
+                  errors={errors}
+                  fieldPrefix={fieldPrefix ? `${fieldPrefix}.${key}` : key}
                 />
               </div>
             )}
@@ -319,6 +333,8 @@ export default function RequestBodyForm({
             schema={prop}
             value={nested}
             onChange={(v) => updateField(key, v)}
+            errors={errors}
+            fieldPrefix={fieldPrefix ? `${fieldPrefix}.${key}` : key}
           />
         </div>
       );
@@ -385,6 +401,9 @@ export default function RequestBodyForm({
                 </p>
               )}
               {renderControl(key, prop)}
+              {getFieldError(key) && (
+                <p className="text-xs text-destructive mt-1">{getFieldError(key)}</p>
+              )}
             </div>
           );
         })}
@@ -413,6 +432,9 @@ export default function RequestBodyForm({
               </div>
               <div className="pt-0.5">
                 {renderControl(key, prop)}
+                {getFieldError(key) && (
+                  <p className="text-xs text-destructive mt-1">{getFieldError(key)}</p>
+                )}
                 {prop.description && (
                   <p className="text-xs text-muted-foreground mt-1">
                     {prop.description}

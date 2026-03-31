@@ -11,6 +11,7 @@ import RequestRunner from "./RequestRunner";
 import CodeSnippetTabs from "./CodeSnippetTabs";
 import RequestBodyForm, { defaultForType } from "./RequestBodyForm";
 import ResponseSchemaView from "./ResponseSchemaView";
+import { useSchemaValidation } from "@/hooks/developers/useSchemaValidation";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "bg-blue-100 text-blue-700 border-blue-200",
@@ -36,6 +37,9 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
     bodySchema ? (defaultForType(bodySchema) as Record<string, unknown>) : {}
   );
 
+  const { validate: validateBody, errors: bodyErrors, clearErrors: clearBodyErrors } =
+    useSchemaValidation(bodySchema);
+
   const handleParamChange = (name: string, value: string) => {
     setParamValues((prev) => ({ ...prev, [name]: value }));
     if (value && validationErrors.has(name)) {
@@ -56,6 +60,12 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
       return false;
     }
     setValidationErrors(new Set());
+
+    // Validate request body schema
+    if (bodySchema && !validateBody(bodyValue)) {
+      return false;
+    }
+    clearBodyErrors();
     return true;
   };
 
@@ -153,6 +163,7 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
                 schema={bodySchema}
                 value={bodyValue}
                 onChange={setBodyValue}
+                errors={bodyErrors}
               />
             </div>
           )}

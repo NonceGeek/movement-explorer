@@ -23,13 +23,15 @@ const TYPE_COLORS: Record<string, string> = {
   object: "text-[var(--color-byzantine-blue-200)]",
 };
 
-/** Returns a sensible empty default for a given schema type. */
+/** Returns a sensible default for a given schema type.
+ *  Priority: example > default > type-inferred empty value */
 export function defaultForType(schema?: SchemaObject): unknown {
   if (!schema) return "";
-  if (schema.type === "string") return schema.default ?? "";
-  if (schema.type === "integer" || schema.type === "number")
-    return schema.default ?? 0;
-  if (schema.type === "boolean") return schema.default ?? false;
+  if (schema.example !== undefined) return schema.example;
+  if (schema.default !== undefined) return schema.default;
+  if (schema.type === "string") return "";
+  if (schema.type === "integer" || schema.type === "number") return 0;
+  if (schema.type === "boolean") return false;
   if (schema.type === "array") return [];
   if (schema.type === "object" || schema.properties) {
     const obj: Record<string, unknown> = {};

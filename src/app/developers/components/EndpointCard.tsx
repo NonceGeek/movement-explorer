@@ -10,6 +10,7 @@ import ParameterForm from "./ParameterForm";
 import RequestRunner from "./RequestRunner";
 import CodeSnippetTabs from "./CodeSnippetTabs";
 import RequestBodyForm, { defaultForType } from "./RequestBodyForm";
+import ResponseSchemaView from "./ResponseSchemaView";
 
 const METHOD_COLORS: Record<string, string> = {
   GET: "bg-blue-100 text-blue-700 border-blue-200",
@@ -171,6 +172,11 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
               onBeforeRun={handleTryRequest}
             />
           </div>
+
+          {/* Response Schema */}
+          {endpoint.responses && Object.keys(endpoint.responses).length > 0 && (
+            <ResponseSchemaView responses={endpoint.responses} />
+          )}
 
           {/* Code Snippets */}
           <div>

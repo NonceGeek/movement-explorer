@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import { cn } from "@/utils/styling";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -23,10 +23,17 @@ const METHOD_COLORS: Record<string, string> = {
 
 interface EndpointCardProps {
   endpoint: ParsedEndpoint;
+  autoExpand?: boolean;
 }
 
-export default function EndpointCard({ endpoint }: EndpointCardProps) {
+export default function EndpointCard({ endpoint, autoExpand }: EndpointCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
+
+  // Auto-expand when triggered from sidebar click
+  useEffect(() => {
+    if (autoExpand) setIsExpanded(true);
+  }, [autoExpand]);
+
   const [paramValues, setParamValues] = useState<Record<string, string>>({});
   const [validationErrors, setValidationErrors] = useState<Set<string>>(new Set());
   const { network_value } = useGlobalStore();
@@ -171,17 +178,19 @@ export default function EndpointCard({ endpoint }: EndpointCardProps) {
           {/* Try it */}
           <div className="space-y-3">
             <h4 className="text-sm font-semibold">Try It</h4>
-            <div className="rounded-md bg-muted/30 border border-border/30 px-3 py-2 font-mono text-xs text-muted-foreground break-all">
-              <span className="font-semibold text-foreground">{endpoint.method}</span>{" "}
-              {fullUrl}
+            <div className="flex items-center gap-2">
+              <div className="flex-1 min-w-0 rounded-md bg-muted/30 border border-border/30 px-3 py-2 font-mono text-xs text-muted-foreground truncate">
+                <span className="font-semibold text-foreground">{endpoint.method}</span>{" "}
+                {fullUrl}
+              </div>
+              <RequestRunner
+                method={endpoint.method}
+                url={fullUrl}
+                body={bodySchema ? bodyValue : undefined}
+                headers={headerParams}
+                onBeforeRun={handleTryRequest}
+              />
             </div>
-            <RequestRunner
-              method={endpoint.method}
-              url={fullUrl}
-              body={bodySchema ? bodyValue : undefined}
-              headers={headerParams}
-              onBeforeRun={handleTryRequest}
-            />
           </div>
 
           {/* Response Schema */}

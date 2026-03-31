@@ -75,74 +75,80 @@ export default function RequestRunner({ method, url, body, headers, onBeforeRun 
     setTimeout(() => setCopied(false), 2000);
   };
 
-  return (
-    <div className="space-y-3">
-      <Button
-        onClick={handleRun}
-        disabled={loading}
-        size="sm"
-      >
-        {loading ? (
-          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-        ) : (
-          <Play className="h-4 w-4 mr-2" />
-        )}
-        {loading ? "Sending..." : "Send Request"}
-      </Button>
+  const sendButton = (
+    <Button
+      onClick={handleRun}
+      disabled={loading}
+      size="sm"
+      className="shrink-0"
+    >
+      {loading ? (
+        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+      ) : (
+        <Play className="h-4 w-4 mr-2" />
+      )}
+      {loading ? "Sending..." : "Send Request"}
+    </Button>
+  );
 
-      {(response || error) && (
-        <div className="rounded-lg border overflow-hidden">
-          {/* Status bar */}
-          <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b text-sm">
-            <div className="flex items-center gap-3">
-              {statusCode && (
-                <span
-                  className={cn(
-                    "font-mono font-medium",
-                    statusCode < 300
-                      ? "text-green-600"
-                      : statusCode < 400
-                        ? "text-yellow-600"
-                        : "text-red-600"
-                  )}
-                >
-                  {statusCode}
-                </span>
+  const responsePanel = (response || error) ? (
+    <div className="rounded-lg border overflow-hidden">
+      {/* Status bar */}
+      <div className="flex items-center justify-between px-3 py-2 bg-muted/50 border-b text-sm">
+        <div className="flex items-center gap-3">
+          {statusCode && (
+            <span
+              className={cn(
+                "font-mono font-medium",
+                statusCode < 300
+                  ? "text-green-600"
+                  : statusCode < 400
+                    ? "text-yellow-600"
+                    : "text-red-600"
               )}
-              {responseTime !== null && (
-                <span className="text-muted-foreground">
-                  {responseTime}ms
-                </span>
-              )}
-            </div>
-            {response && (
-              <button
-                onClick={handleCopy}
-                className="text-muted-foreground hover:text-foreground cursor-pointer"
-              >
-                {copied ? (
-                  <Check className="h-4 w-4" />
-                ) : (
-                  <Copy className="h-4 w-4" />
-                )}
-              </button>
-            )}
-          </div>
-
-          {/* Response body */}
-          {error ? (
-            <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
-              <span className="text-red-600">{error}</span>
-            </pre>
-          ) : response && isJson ? (
-            <CodeBlock code={response} language="json" maxHeight="400px" />
-          ) : (
-            <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
-              {response}
-            </pre>
+            >
+              {statusCode}
+            </span>
+          )}
+          {responseTime !== null && (
+            <span className="text-muted-foreground">
+              {responseTime}ms
+            </span>
           )}
         </div>
+        {response && (
+          <button
+            onClick={handleCopy}
+            className="text-muted-foreground hover:text-foreground cursor-pointer"
+          >
+            {copied ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Copy className="h-4 w-4" />
+            )}
+          </button>
+        )}
+      </div>
+
+      {/* Response body */}
+      {error ? (
+        <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
+          <span className="text-red-600">{error}</span>
+        </pre>
+      ) : response && isJson ? (
+        <CodeBlock code={response} language="json" maxHeight="400px" />
+      ) : (
+        <pre className="p-4 text-sm font-mono overflow-x-auto max-h-[400px] overflow-y-auto bg-background">
+          {response}
+        </pre>
       )}
     </div>
+  ) : null;
+
+  return (
+    <>
+      {sendButton}
+      {responsePanel}
+    </>
   );
 }

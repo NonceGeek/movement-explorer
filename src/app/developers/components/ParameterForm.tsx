@@ -32,12 +32,15 @@ export default function ParameterForm({
 
   const pathParams = parameters.filter((p) => p.in === "path");
   const queryParams = parameters.filter((p) => p.in === "query");
+  const headerParams = parameters.filter((p) => p.in === "header");
 
   const groups: { label: string; params: Parameter[] }[] = [];
   if (pathParams.length > 0)
     groups.push({ label: "Path Parameters", params: pathParams });
   if (queryParams.length > 0)
     groups.push({ label: "Query Parameters", params: queryParams });
+  if (headerParams.length > 0)
+    groups.push({ label: "Header Parameters", params: headerParams });
 
   return (
     <>

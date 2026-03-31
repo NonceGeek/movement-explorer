@@ -32,9 +32,15 @@ function resolveRefs(
     for (const sub of schema.allOf) {
       const resolved = resolveRefs(sub, schemas, depth + 1);
       if (resolved.type) merged.type = resolved.type;
+      if (resolved.format && !merged.format) merged.format = resolved.format;
       if (resolved.description && !merged.description) merged.description = resolved.description;
+      if (resolved.example !== undefined && merged.example === undefined) merged.example = resolved.example;
+      if (resolved.enum && !merged.enum) merged.enum = resolved.enum;
       if (resolved.properties) merged.properties = { ...merged.properties, ...resolved.properties };
       if (resolved.required) merged.required = [...(merged.required ?? []), ...resolved.required];
+      if (resolved.items && !merged.items) merged.items = resolved.items;
+      if (resolved.oneOf && !merged.oneOf) merged.oneOf = resolved.oneOf;
+      if (resolved.discriminator && !merged.discriminator) merged.discriminator = resolved.discriminator;
     }
     return merged;
   }
@@ -81,7 +87,10 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
         summary: operation.summary ?? "",
         description: operation.description ?? "",
         tag,
-        parameters: operation.parameters ?? [],
+        parameters: (operation.parameters ?? []).map((p) => ({
+          ...p,
+          schema: p.schema ? resolveRefs(p.schema, schemas) : undefined,
+        })),
         requestBody: operation.requestBody
           ? {
               ...operation.requestBody,
@@ -102,7 +111,29 @@ function parseSpec(spec: OpenApiSpec): EndpointGroup[] {
                 : undefined,
             }
           : undefined,
-        responses: operation.responses ?? {},
+        responses: operation.responses
+          ? Object.fromEntries(
+              Object.entries(operation.responses).map(([code, resp]) => [
+                code,
+                {
+                  ...resp,
+                  content: resp.content
+                    ? Object.fromEntries(
+                        Object.entries(resp.content).map(([ct, media]) => [
+                          ct,
+                          {
+                            ...media,
+                            schema: media.schema
+                              ? resolveRefs(media.schema, schemas)
+                              : undefined,
+                          },
+                        ])
+                      )
+                    : undefined,
+                },
+              ])
+            )
+          : {},
       };
 
       if (!endpointsByTag.has(tag)) {

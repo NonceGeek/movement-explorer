@@ -67,10 +67,19 @@ export default function ParameterForm({
                       )}
                     >
                       {param.schema?.type ?? "string"}
+                      {param.schema?.format && (
+                        <span className="text-muted-foreground/50 ml-1">
+                          ({param.schema.format})
+                        </span>
+                      )}
                     </span>
                   </div>
                   <Input
-                    placeholder={param.description || param.name}
+                    placeholder={
+                      param.schema?.example !== undefined
+                        ? String(param.schema.example)
+                        : param.description || param.name
+                    }
                     value={values[param.name] ?? ""}
                     onChange={(e) => onChange(param.name, e.target.value)}
                     className={cn(
@@ -117,11 +126,20 @@ export default function ParameterForm({
                       )}
                     >
                       {param.schema?.type ?? "string"}
+                      {param.schema?.format && (
+                        <span className="text-muted-foreground/50 ml-1">
+                          ({param.schema.format})
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="pt-0.5">
                     <Input
-                      placeholder={param.description || param.name}
+                      placeholder={
+                        param.schema?.example !== undefined
+                          ? String(param.schema.example)
+                          : param.description || param.name
+                      }
                       value={values[param.name] ?? ""}
                       onChange={(e) => onChange(param.name, e.target.value)}
                       className={cn(

@@ -10,6 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/utils/styling";
 import type { SchemaObject } from "@/types/openapi";
 
@@ -57,7 +58,8 @@ function typeLabel(schema: SchemaObject): string {
 // Sub-components for each field type
 // ---------------------------------------------------------------------------
 
-function StringEnumField({
+/** Renders pill tabs for <=4 options, falls back to Select for more */
+function TabOrSelect({
   value,
   options,
   onChange,
@@ -66,6 +68,25 @@ function StringEnumField({
   options: string[];
   onChange: (v: string) => void;
 }) {
+  if (options.length <= 4) {
+    return (
+      <Tabs value={value} onValueChange={onChange}>
+        <TabsList variant="pill" className="gap-1.5">
+          {options.map((opt) => (
+            <TabsTrigger
+              key={opt}
+              value={opt}
+              variant="pill"
+              className="text-xs px-3 py-1.5 font-mono"
+            >
+              {opt}
+            </TabsTrigger>
+          ))}
+        </TabsList>
+      </Tabs>
+    );
+  }
+
   return (
     <Select value={value} onValueChange={onChange}>
       <SelectTrigger size="sm" className="w-full font-mono text-sm">
@@ -201,10 +222,10 @@ export default function RequestBodyForm({
 
   // Renders the input control for a single property
   const renderControl = (key: string, prop: SchemaObject) => {
-    // string with enum -> dropdown
+    // string with enum -> pill tabs or dropdown
     if (prop.type === "string" && prop.enum) {
       return (
-        <StringEnumField
+        <TabOrSelect
           value={String(value[key] ?? "")}
           options={prop.enum}
           onChange={(v) => updateField(key, v)}
@@ -264,21 +285,11 @@ export default function RequestBodyForm({
 
       return (
         <div className="space-y-2">
-          <Select
+          <TabOrSelect
             value={currentType}
-            onValueChange={(v) => updateField(key, { [discriminatorProp]: v })}
-          >
-            <SelectTrigger size="sm" className="w-full font-mono text-sm">
-              <SelectValue placeholder="Select type..." />
-            </SelectTrigger>
-            <SelectContent>
-              {variantOptions.map((v) => (
-                <SelectItem key={v} value={v} className="font-mono text-sm">
-                  {v}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={variantOptions}
+            onChange={(v) => updateField(key, { [discriminatorProp]: v })}
+          />
           {variantSchema &&
             variantSchema.properties &&
             Object.keys(variantSchema.properties).length > 0 && (

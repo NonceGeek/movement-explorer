@@ -56,6 +56,7 @@ export interface SchemaObject {
   format?: string;
   enum?: string[];
   default?: unknown;
+  example?: unknown;
   description?: string;
   properties?: Record<string, SchemaObject>;
   items?: SchemaObject;

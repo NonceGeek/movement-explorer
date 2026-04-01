@@ -60,8 +60,8 @@ export default function WalletButton({
             <Button
               onClick={connected ? handleClick : onConnectWalletClick}
               variant={connected ? "outline" : "default"}
-              size="default"
-              className={cn("gap-2 font-medium")}
+              size="sm"
+              className={cn("gap-2 font-medium h-9")}
             >
               {connected ? (
                 <>

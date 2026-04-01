@@ -350,7 +350,7 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="w-full h-10 pl-10 pr-24 bg-background/40 backdrop-blur-sm border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-300 focus:border-guild-green-300 focus:bg-background/60 focus:shadow-[0_0_0_3px_rgba(3,55,255,0.08)]"
+            className="w-full h-11 pl-10 pr-24 bg-background/40 backdrop-blur-sm border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-300 focus:border-guild-green-300 focus:bg-background/60 focus:shadow-[0_0_0_3px_rgba(3,55,255,0.08)]"
           />
 
           {isLoading ? (
@@ -365,7 +365,7 @@ export function SearchBar({
               </kbd>
               <button
                 type="submit"
-                className="h-7 px-3 bg-guild-green-300 hover:bg-guild-green-400 text-black text-xs font-semibold rounded-full transition-all duration-200 hover:shadow-sm cursor-pointer"
+                className="h-8 px-3 bg-guild-green-300 hover:bg-guild-green-400 text-black text-sm font-semibold rounded-full transition-all duration-200 hover:shadow-sm cursor-pointer"
               >
                 Search
               </button>

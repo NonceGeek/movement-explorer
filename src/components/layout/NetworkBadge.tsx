@@ -76,10 +76,10 @@ export default function NetworkBadge() {
       <DropdownMenuTrigger
         className={cn(
           "flex items-center gap-1.5 px-2.5 py-1.5",
-          "rounded-lg border border-border/60 bg-background/40",
+          "rounded-full border border-primary bg-background/40",
           "text-sm font-medium text-muted-foreground",
           "hover:bg-background/60 hover:text-foreground",
-          "transition-all outline-none",
+          "transition-all outline-none cursor-pointer",
         )}
       >
         <span>{getShortNetworkName(network_name)}</span>

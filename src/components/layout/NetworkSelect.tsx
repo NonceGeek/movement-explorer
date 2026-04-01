@@ -106,11 +106,11 @@ export default function NetworkSelect() {
         onMouseLeave={handleClose}
         className={cn(
           "flex items-center justify-between gap-1.5",
-          "w-[180px] h-10 px-3 py-2",
+          "w-[180px] h-9 px-3 py-2",
           "rounded-full border-2 border-primary bg-background",
-          "text-base font-normal capitalize",
+          "text-sm font-normal capitalize",
           "hover:bg-primary hover:text-primary-foreground",
-          "transition-all outline-none",
+          "transition-all outline-none cursor-pointer",
         )}
       >
         {getDisplayNetworkName(network_name)}

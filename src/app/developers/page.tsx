@@ -13,8 +13,11 @@ import {
   ArrowRight,
   Terminal,
   Menu,
+  Copy,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
+import { CodeBlock } from "@/components/ui/CodeBlock";
 import DevelopersSidebar from "./components/DevelopersSidebar";
 
 const FEATURE_CARDS = [
@@ -62,6 +65,25 @@ const FEATURE_CARDS = [
   // },
 ];
 
+function CopyButton({ code }: { code: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      onClick={async () => {
+        await navigator.clipboard.writeText(code);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+      className="absolute top-2 right-2 p-1.5 rounded-md bg-muted/80 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+      title="Copy code"
+    >
+      {copied ? <Check className="h-3.5 w-3.5 text-green-500" /> : <Copy className="h-3.5 w-3.5" />}
+    </button>
+  );
+}
+
+const QUICK_START_CODE = "curl https://mainnet.movementnetwork.xyz/v1/info";
+
 export default function DevelopersPage() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
@@ -106,10 +128,13 @@ export default function DevelopersPage() {
                 <p className="text-sm text-muted-foreground mb-4">
                   Get started with a simple API call:
                 </p>
-                <div className="bg-background rounded-lg p-4 font-mono text-sm overflow-x-auto">
-                  <span className="text-muted-foreground">$</span>{" "}
-                  <span className="text-guild-green">curl</span>{" "}
-                  https://mainnet.movementnetwork.xyz/v1/info
+                <div className="relative group">
+                  <CodeBlock
+                    code={QUICK_START_CODE}
+                    language="bash"
+                    maxHeight="none"
+                  />
+                  <CopyButton code={QUICK_START_CODE} />
                 </div>
               </CardContent>
             </Card>

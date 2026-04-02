@@ -2,7 +2,7 @@
 
 import PageNavigation from "@/components/layout/PageNavigation";
 import { PageContainer } from "@/components/layout";
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, useCallback, useMemo, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Types } from "aptos";
@@ -18,12 +18,8 @@ import {
 } from "@/components/ui/table";
 import { EnhancedSkeleton } from "@/components/ui/skeleton";
 import { useGlobalStore } from "@/store/useGlobalStore";
-import {
-  useQuery,
-  useIsFetching,
-  keepPreviousData,
-} from "@tanstack/react-query";
-import { getLedgerInfo, getRecentBlocks } from "@/services";
+import { useQuery, useIsFetching } from "@tanstack/react-query";
+import { getLedgerInfo } from "@/services";
 import { NewDataNotification } from "@/components/common/NewDataNotification";
 import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
@@ -39,8 +35,9 @@ import {
   BlockTableFooter,
   BlockRowData,
 } from "@/components/blocks";
+import { useStreamingBlocks } from "@/hooks/blocks/useStreamingBlocks";
 
-const POLL_INTERVAL = 3000;
+const POLL_INTERVAL = 15000;
 const COLUMN_COUNT = 6;
 
 function getTransactionCount(block: Types.Block): string {
@@ -99,66 +96,49 @@ function BlocksContent() {
   const queryMaxHeight =
     frozenMaxHeight > 0 ? frozenMaxHeight : latestMaxHeight;
 
-  // Calculate start height for current page (descending order)
-  const getStartHeightForPage = useCallback(
-    (page: number) => {
-      if (queryMaxHeight === 0) return 0;
-      // Page 1 shows newest blocks (highest heights)
-      // Page 2 shows older blocks, etc.
-      return queryMaxHeight - (page - 1) * currentLimit;
-    },
-    [queryMaxHeight, currentLimit]
+  // Calculate block heights for current page (descending order)
+  const blockHeights = useMemo(() => {
+    if (queryMaxHeight === 0) return undefined;
+    const startHeight = queryMaxHeight - (currentPage - 1) * currentLimit;
+    const heights: number[] = [];
+    for (let i = 0; i < currentLimit; i++) {
+      const h = startHeight - i;
+      if (h >= 0) heights.push(h);
+    }
+    return heights;
+  }, [queryMaxHeight, currentPage, currentLimit]);
+
+  const hasNextPage = blockHeights
+    ? blockHeights[blockHeights.length - 1] - 1 > 0
+    : false;
+
+  // Stream block details as they resolve
+  const {
+    rows: streamingRows,
+    isStreaming,
+    isComplete,
+  } = useStreamingBlocks(
+    blockHeights,
+    aptos_client,
+    queryMaxHeight > 0,
   );
 
-  // Fetch blocks for current page
-  const {
-    data: fetchedData,
-    isLoading: isBlocksLoading,
-    isFetching,
-  } = useQuery({
-    queryKey: [
-      "blocks",
-      "paged",
-      network_value,
-      queryMaxHeight,
-      currentPage,
-      currentLimit,
-    ],
-    queryFn: async () => {
-      const startHeight = getStartHeightForPage(currentPage);
-      const blocks = await getRecentBlocks(startHeight, currentLimit, aptos_client);
-      // Has next page if we can go further back (lowest block height > 0)
-      const lowestHeight = startHeight - currentLimit + 1;
-      return {
-        blocks,
-        hasNextPage: lowestHeight > 0,
-      };
-    },
-    enabled: queryMaxHeight > 0,
-    placeholderData: keepPreviousData,
-  });
-
-  const blocks = fetchedData?.blocks ?? [];
-  const hasNextPage = fetchedData?.hasNextPage ?? false;
+  // Only fully loaded rows (for toolbar download)
+  const loadedRows: BlockRowData[] = streamingRows
+    .filter((r) => r.block !== null)
+    .map((r) => ({ blockHeight: r.blockHeight, block: r.block! }));
 
   const isLoading =
-    (isLedgerLoading && frozenMaxHeight === 0) ||
-    (isBlocksLoading && queryMaxHeight > 0);
-
-  // Transform blocks to table data
-  const tableData: BlockRowData[] = blocks.map((block) => ({
-    blockHeight: parseInt(block.block_height),
-    block,
-  }));
+    (isLedgerLoading && frozenMaxHeight === 0) && streamingRows.length === 0;
 
   // Update isFirstLoad
   useEffect(() => {
-    if (!isBlocksLoading && blocks.length > 0) {
+    if (isComplete && streamingRows.length > 0) {
       setIsFirstLoad(false);
     }
-  }, [isBlocksLoading, blocks]);
+  }, [isComplete, streamingRows.length]);
 
-  const isRefreshing = isFetching && !isFirstLoad;
+  const isRefreshing = isStreaming && !isFirstLoad;
 
   // URL sync handlers
   const updateURL = useCallback(
@@ -213,14 +193,14 @@ function BlocksContent() {
           currentPage={currentPage}
           hasNextPage={hasNextPage}
           onPageChange={handlePageChange}
-          blocks={tableData}
+          blocks={loadedRows}
           isLoading={isLoading}
           infoText={
-            queryMaxHeight > 0 && (
+            (latestMaxHeight > 0 || queryMaxHeight > 0) && (
               <>
                 Network Height{" "}
                 <span className="font-medium text-foreground">
-                  #{queryMaxHeight}
+                  #{latestMaxHeight > 0 ? latestMaxHeight : queryMaxHeight}
                 </span>
               </>
             )
@@ -228,7 +208,7 @@ function BlocksContent() {
         />
 
         <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-          <TableLoadingBar visible={isFetching && !isLoading} />
+          <TableLoadingBar visible={isStreaming && !isLoading} />
           <StyledTable>
             <StyledTableHeader>
               <StyledTableHeaderRow>
@@ -260,64 +240,73 @@ function BlocksContent() {
                       </TableCell>
                     </TableRow>
                   ))
-                : blocks.map((block: Types.Block) => (
-                    <StyledTableRow
-                      key={block.block_height}
-                      className="animate-in slide-in-from-top-2 fade-in duration-500 cursor-pointer"
-                      onClick={(e) => {
-                        const target = e.target as HTMLElement;
-                        if (target.closest('a, button, [role="button"]')) return;
-                        router.push(`/block/${block.block_height}`);
-                      }}
-                    >
-                      <TableCell>
-                        <Link
-                          href={`/block/${block.block_height}`}
-                          className="text-primary hover:underline font-mono tabular-nums"
-                        >
-                          {block.block_height}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <CopyableAddress
-                          address={block.block_hash}
-                          className="text-primary"
-                          truncateLength={{ start: 10, end: 8 }}
-                          copyTooltip="Copy hash"
-                        />
-                      </TableCell>
-                      <TableCell className="text-foreground/80 text-sm whitespace-nowrap min-w-[120px]">
-                        <TimestampToggle
-                          timestamp={block.block_timestamp}
-                          timestampMode={timestampMode}
-                          onToggle={() =>
-                            setTimestampMode((prev) =>
-                              prev === "age" ? "dateTime" : "age",
-                            )
-                          }
-                        />
-                      </TableCell>
-                      <TableCell className="text-right font-mono tabular-nums">
-                        {getTransactionCount(block)}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link
-                          href={`/txn/${block.first_version}`}
-                          className="text-primary hover:underline font-mono tabular-nums"
-                        >
-                          {block.first_version}
-                        </Link>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <Link
-                          href={`/txn/${block.last_version}`}
-                          className="text-primary hover:underline font-mono tabular-nums"
-                        >
-                          {block.last_version}
-                        </Link>
-                      </TableCell>
-                    </StyledTableRow>
-                  ))}
+                : streamingRows.map((row) =>
+                    row.block ? (
+                      <StyledTableRow
+                        key={row.blockHeight}
+                        className="animate-in slide-in-from-top-2 fade-in duration-500 cursor-pointer"
+                        onClick={(e) => {
+                          const target = e.target as HTMLElement;
+                          if (target.closest('a, button, [role="button"]'))
+                            return;
+                          router.push(`/block/${row.blockHeight}`);
+                        }}
+                      >
+                        <TableCell>
+                          <Link
+                            href={`/block/${row.block.block_height}`}
+                            className="text-primary hover:underline font-mono tabular-nums"
+                          >
+                            {row.block.block_height}
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <CopyableAddress
+                            address={row.block.block_hash}
+                            className="text-primary"
+                            truncateLength={{ start: 10, end: 8 }}
+                            copyTooltip="Copy hash"
+                          />
+                        </TableCell>
+                        <TableCell className="text-foreground/80 text-sm whitespace-nowrap min-w-[120px]">
+                          <TimestampToggle
+                            timestamp={row.block.block_timestamp}
+                            timestampMode={timestampMode}
+                            onToggle={() =>
+                              setTimestampMode((prev) =>
+                                prev === "age" ? "dateTime" : "age",
+                              )
+                            }
+                          />
+                        </TableCell>
+                        <TableCell className="text-right font-mono tabular-nums">
+                          {getTransactionCount(row.block)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            href={`/txn/${row.block.first_version}`}
+                            className="text-primary hover:underline font-mono tabular-nums"
+                          >
+                            {row.block.first_version}
+                          </Link>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Link
+                            href={`/txn/${row.block.last_version}`}
+                            className="text-primary hover:underline font-mono tabular-nums"
+                          >
+                            {row.block.last_version}
+                          </Link>
+                        </TableCell>
+                      </StyledTableRow>
+                    ) : (
+                      <TableRow key={row.blockHeight} className="h-16">
+                        <TableCell colSpan={COLUMN_COUNT}>
+                          <EnhancedSkeleton className="h-13 w-full" />
+                        </TableCell>
+                      </TableRow>
+                    ),
+                  )}
             </TableBody>
           </StyledTable>
         </div>

@@ -6,6 +6,7 @@
 // Types
 export type {
   BlockRowData,
+  StreamingBlockRowData,
   DownloadBlockDataProps,
   BlockTableToolbarProps,
   BlockTableFooterProps,

@@ -10,6 +10,14 @@ export interface BlockRowData {
 }
 
 /**
+ * Streaming block row data — block is null while still loading
+ */
+export interface StreamingBlockRowData {
+  blockHeight: number;
+  block: Types.Block | null;
+}
+
+/**
  * Props for the DownloadBlockData component
  */
 export interface DownloadBlockDataProps {

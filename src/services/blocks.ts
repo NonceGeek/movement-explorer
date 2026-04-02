@@ -8,21 +8,12 @@ export async function getRecentBlocks(
   count: number,
   client: AptosClient
 ): Promise<Types.Block[]> {
-  const blocks = [];
-  for (let i = 0; i < count + 1; i++) {
-    if (currentBlockHeight - i >= 0) {
-      const block = await client.getBlockByHeight(
-        currentBlockHeight - i,
-        false
-      );
-      blocks.push(block);
-    }
-  }
   const blockPromises = [];
   // Don't await here, or they'll be in serial
   for (let i = 0; i < count; i++) {
-    const block = client.getBlockByHeight(currentBlockHeight - i, false);
-    blockPromises.push(block);
+    if (currentBlockHeight - i >= 0) {
+      blockPromises.push(client.getBlockByHeight(currentBlockHeight - i, false));
+    }
   }
   return Promise.all(blockPromises);
 }

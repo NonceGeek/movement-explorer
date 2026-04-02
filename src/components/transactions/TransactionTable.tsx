@@ -88,7 +88,7 @@ export function TransactionTable({
                 timestampMode={timestampMode}
                 onToggleTimestampMode={onToggleTimestampMode}
                 address={address}
-                className="animate-in fade-in zoom-in-95 duration-500 ease-out"
+                className="animate-in slide-in-from-top-2 fade-in duration-500"
               />
             ) : (
               <TableRow key={version} className="h-16">

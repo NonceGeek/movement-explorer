@@ -65,7 +65,13 @@ export function AllTransactions({ headerEndDecorator }: AllTransactionsProps) {
 
   const latestMaxVersion = ledgerInfo ? parseInt(ledgerInfo.ledger_version) : 0;
 
-  // Initialize frozenMaxVersion once on first load
+  // Reset frozenMaxVersion when network changes
+  useEffect(() => {
+    setFrozenMaxVersion(0);
+    setIsFirstLoad(true);
+  }, [network_value]);
+
+  // Initialize frozenMaxVersion once on first load (or after network reset)
   useEffect(() => {
     if (frozenMaxVersion === 0 && latestMaxVersion > 0) {
       setFrozenMaxVersion(latestMaxVersion);

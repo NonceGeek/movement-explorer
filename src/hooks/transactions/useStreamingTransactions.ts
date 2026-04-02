@@ -25,6 +25,7 @@ export function useStreamingTransactions(
   versions: number[] | undefined,
   client: AptosClient,
   enabled: boolean = true,
+  networkKey?: string,
 ): UseStreamingTransactionsResult {
   // Map of version -> transaction (filled as fetches resolve)
   const [loadedMap, setLoadedMap] = useState<Map<number, Types.Transaction>>(
@@ -36,8 +37,8 @@ export function useStreamingTransactions(
 
   // Detect stale state: versions changed but useEffect hasn't fired yet
   const versionsKey = useMemo(
-    () => (versions ? versions.join(",") : ""),
-    [versions],
+    () => (versions ? `${networkKey || ""}:${versions.join(",")}` : ""),
+    [versions, networkKey],
   );
   const activeKeyRef = useRef("");
   const isStale = versionsKey !== activeKeyRef.current;
@@ -65,7 +66,7 @@ export function useStreamingTransactions(
     const session = ++sessionRef.current;
 
     // Mark this versions set as active (resolves stale detection)
-    activeKeyRef.current = versions ? versions.join(",") : "";
+    activeKeyRef.current = versions ? `${networkKey || ""}:${versions.join(",")}` : "";
 
     // Reset loaded data
     setLoadedMap(new Map());
@@ -115,7 +116,7 @@ export function useStreamingTransactions(
     return () => {
       timers.forEach(clearTimeout);
     };
-  }, [versions, client, enabled]);
+  }, [versions, client, enabled, networkKey]);
 
   return {
     rows,

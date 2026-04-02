@@ -23,6 +23,7 @@ export function useStreamingBlocks(
   heights: number[] | undefined,
   client: AptosClient,
   enabled: boolean = true,
+  networkKey?: string,
 ): UseStreamingBlocksResult {
   const [loadedMap, setLoadedMap] = useState<Map<number, Types.Block>>(
     () => new Map(),
@@ -31,8 +32,8 @@ export function useStreamingBlocks(
   const sessionRef = useRef(0);
 
   const heightsKey = useMemo(
-    () => (heights ? heights.join(",") : ""),
-    [heights],
+    () => (heights ? `${networkKey || ""}:${heights.join(",")}` : ""),
+    [heights, networkKey],
   );
   const activeKeyRef = useRef("");
   const isStale = heightsKey !== activeKeyRef.current;
@@ -55,7 +56,7 @@ export function useStreamingBlocks(
 
   useEffect(() => {
     const session = ++sessionRef.current;
-    activeKeyRef.current = heights ? heights.join(",") : "";
+    activeKeyRef.current = heights ? `${networkKey || ""}:${heights.join(",")}` : "";
     setLoadedMap(new Map());
 
     if (!enabled || !heights || heights.length === 0) {
@@ -102,7 +103,7 @@ export function useStreamingBlocks(
     return () => {
       timers.forEach(clearTimeout);
     };
-  }, [heights, client, enabled]);
+  }, [heights, client, enabled, networkKey]);
 
   return {
     rows,

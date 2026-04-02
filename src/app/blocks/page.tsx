@@ -82,7 +82,13 @@ function BlocksContent() {
 
   const latestMaxHeight = ledgerInfo ? parseInt(ledgerInfo.block_height) : 0;
 
-  // Initialize frozenMaxHeight once on first load
+  // Reset frozenMaxHeight and pagination when network changes
+  useEffect(() => {
+    setFrozenMaxHeight(0);
+    setIsFirstLoad(true);
+  }, [network_value]);
+
+  // Initialize frozenMaxHeight once on first load (or after network reset)
   useEffect(() => {
     if (frozenMaxHeight === 0 && latestMaxHeight > 0) {
       setFrozenMaxHeight(latestMaxHeight);
@@ -121,6 +127,7 @@ function BlocksContent() {
     blockHeights,
     aptos_client,
     queryMaxHeight > 0,
+    network_value,
   );
 
   // Only fully loaded rows (for toolbar download)

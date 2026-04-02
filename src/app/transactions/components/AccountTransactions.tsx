@@ -81,6 +81,8 @@ export function AccountTransactions({
   } = useStreamingTransactions(
     transactionVersions && transactionVersions.length > 0 ? transactionVersions : undefined,
     aptos_client,
+    true,
+    network_value,
   );
 
   // Only loaded rows (for toolbar/download — excludes skeleton placeholders)

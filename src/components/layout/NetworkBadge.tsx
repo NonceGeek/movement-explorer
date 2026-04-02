@@ -52,6 +52,7 @@ export default function NetworkBadge() {
     setOpen(false);
 
     const newParams = new URLSearchParams(searchParams.toString());
+    newParams.delete("page");
     if (networkName === defaultNetworkName) {
       newParams.delete("network");
     } else {

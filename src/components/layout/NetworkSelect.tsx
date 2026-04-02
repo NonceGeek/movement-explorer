@@ -75,8 +75,9 @@ export default function NetworkSelect() {
     }
     setOpen(false);
 
-    // Update URL with network param
+    // Update URL with network param, reset pagination
     const newParams = new URLSearchParams(searchParams.toString());
+    newParams.delete("page");
 
     if (networkName === defaultNetworkName) {
       // Remove network param for default (mainnet)

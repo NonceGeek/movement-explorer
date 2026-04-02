@@ -113,7 +113,13 @@ export function UserTransactions({
 
   const latestVersionRaw = polledLatestVersion ?? 0;
 
-  // Initialize frozenLatestVersion on first valid load
+  // Reset frozenLatestVersion when network changes
+  useEffect(() => {
+    setFrozenLatestVersion(0);
+    setIsFirstLoad(true);
+  }, [network_value]);
+
+  // Initialize frozenLatestVersion on first valid load (or after network reset)
   useEffect(() => {
     if (frozenLatestVersion === 0 && latestVersionRaw > 0) {
       setFrozenLatestVersion(latestVersionRaw);
@@ -165,6 +171,7 @@ export function UserTransactions({
     versions.length > 0 ? versions : undefined,
     aptos_client,
     frozenLatestVersion > 0 || latestVersionRaw > 0,
+    network_value,
   );
 
   // Only loaded rows (for toolbar/download — excludes skeleton placeholders)

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useCallback, useEffect, useRef } from "react";
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useGlobalStore } from "@/store/useGlobalStore";
@@ -12,11 +11,10 @@ import {
 } from "@/store/useTransactionPaginationStore";
 import { useGetAccountTransactionVersions } from "@/hooks/accounts/useGetAccountTransactionVersions";
 import { useGetAccountTransactionCount } from "@/hooks/accounts/useGetAccountTransactionCount";
-import { getTransaction } from "@/services";
+import { useStreamingTransactions } from "@/hooks/transactions/useStreamingTransactions";
 import {
   TransactionTable,
   ACCOUNT_TRANSACTION_COLUMNS,
-  TransactionRowData,
   TransactionTableToolbar,
   TransactionTableFooter,
   ColumnFilters,
@@ -76,45 +74,19 @@ export function AccountTransactions({
   const { data: transactionVersions, isLoading: versionsLoading } =
     useGetAccountTransactionVersions(address, currentLimit, offset, dateRange.from, dateRange.to, senderFilter);
 
-  // Fetch full transaction details
+  // Stream transaction details as they resolve
   const {
-    data: fetchedData,
-    isLoading: detailsLoading,
-    isFetching,
-  } = useQuery({
-    queryKey: [
-      "accountTransactionsPagedDetails",
-      address,
-      network_value,
-      currentPage,
-      currentLimit,
-      transactionVersions,
-    ],
-    queryFn: async () => {
-      if (!transactionVersions || transactionVersions.length === 0) {
-        return { transactions: [] };
-      }
+    rows: tableData,
+    isStreaming,
+  } = useStreamingTransactions(
+    transactionVersions && transactionVersions.length > 0 ? transactionVersions : undefined,
+    aptos_client,
+  );
 
-      const details = await Promise.all(
-        transactionVersions.map((v) =>
-          getTransaction({ txnHashOrVersion: v }, aptos_client),
-        ),
-      );
+  // Only loaded rows (for toolbar/download — excludes skeleton placeholders)
+  const loadedRows = tableData.filter((r) => r.transaction !== null) as import("@/components/transactions").TransactionRowData[];
 
-      return { transactions: details };
-    },
-    enabled: !!transactionVersions && transactionVersions.length > 0,
-    placeholderData: keepPreviousData,
-  });
-
-  const transactions = fetchedData?.transactions ?? [];
-  const isLoading = versionsLoading || (detailsLoading && transactions.length === 0);
-
-  // Transform to table data
-  const tableData: TransactionRowData[] = transactions.map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return { version, transaction: tx };
-  });
+  const isLoading = versionsLoading && tableData.length === 0;
 
   // URL sync handlers
   const updateURL = useCallback(
@@ -210,7 +182,7 @@ export function AccountTransactions({
         currentPage={currentPage}
         totalPages={totalPages}
         onPageChange={handlePageChange}
-        transactions={tableData}
+        transactions={loadedRows}
         isLoading={isLoading}
         infoText={
           <div className="flex items-center gap-2">
@@ -237,7 +209,7 @@ export function AccountTransactions({
 
       {/* Table */}
       <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <TableLoadingBar visible={isFetching && !isLoading} />
+        <TableLoadingBar visible={isStreaming && !isLoading} />
         <TransactionTable
           data={tableData}
           columns={ACCOUNT_TRANSACTION_COLUMNS}

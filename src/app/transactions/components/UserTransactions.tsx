@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   useQuery,
   useIsFetching,
-  keepPreviousData,
 } from "@tanstack/react-query";
 import { gql } from "@apollo/client";
 import { useApolloClient } from "@apollo/client/react";
@@ -15,11 +14,10 @@ import {
   PageSize,
   DEFAULT_PAGE_SIZE,
 } from "@/store/useTransactionPaginationStore";
-import { getTransaction } from "@/services";
+import { useStreamingTransactions } from "@/hooks/transactions/useStreamingTransactions";
 import {
   TransactionTable,
   ALL_TRANSACTION_COLUMNS,
-  TransactionRowData,
   TransactionTableToolbar,
   TransactionTableFooter,
 } from "@/components/transactions";
@@ -95,11 +93,11 @@ export function UserTransactions({
 
   const isListFetching =
     useIsFetching({
-      queryKey: ["userTransactions", "paged", network_value],
+      queryKey: ["userTransactions", "versions", network_value],
     }) > 0;
 
   // Poll for the latest version to detect new transactions
-  const { data: polledLatestVersion } = useQuery({
+  const { data: polledLatestVersion, isLoading: isLatestLoading } = useQuery({
     queryKey: ["userTransactions", "latest", network_value],
     queryFn: async () => {
       const response = await apolloClient.query<TopUserTransactionResponse>({
@@ -125,15 +123,14 @@ export function UserTransactions({
   const hasNewData =
     frozenLatestVersion > 0 && latestVersionRaw > frozenLatestVersion;
 
-  // Fetch transactions for current page
+  // Step 1: Fetch versions via GraphQL
   const {
-    data: fetchedData,
-    isLoading: isTxLoading,
-    isFetching,
+    data: versionsData,
+    isLoading: versionsLoading,
   } = useQuery({
     queryKey: [
       "userTransactions",
-      "paged",
+      "versions",
       network_value,
       frozenLatestVersion,
       currentPage,
@@ -141,12 +138,10 @@ export function UserTransactions({
     ],
     queryFn: async () => {
       const offset = (currentPage - 1) * currentLimit;
-      const requestLimit = currentLimit;
 
-      // Step 1: Fetch versions via GraphQL
       const response = await apolloClient.query<UserTransactionsQueryResponse>({
         query: USER_TRANSACTIONS_QUERY,
-        variables: { limit: requestLimit, offset },
+        variables: { limit: currentLimit, offset },
         fetchPolicy: "network-only",
       });
 
@@ -154,45 +149,37 @@ export function UserTransactions({
         parseInt(t.version)
       );
 
-      // Only use the first currentLimit versions for display
-      const versions = allVersions.slice(0, currentLimit);
-
-      if (versions.length === 0) {
-        return { transactions: [] };
-      }
-
-      // Step 2: Fetch full transaction details via Aptos client
-      const details = await Promise.all(
-        versions.map((v) =>
-          getTransaction({ txnHashOrVersion: v }, aptos_client)
-        )
-      );
-
-      return { transactions: details };
+      return allVersions.slice(0, currentLimit);
     },
     enabled: frozenLatestVersion > 0 || latestVersionRaw > 0,
-    placeholderData: keepPreviousData,
   });
 
-  const transactions = fetchedData?.transactions ?? [];
+  const versions = versionsData ?? [];
 
-  const isLoading =
-    isTxLoading && (frozenLatestVersion > 0 || latestVersionRaw > 0);
+  // Step 2: Stream transaction details as they resolve
+  const {
+    rows: tableData,
+    isStreaming,
+    isComplete,
+  } = useStreamingTransactions(
+    versions.length > 0 ? versions : undefined,
+    aptos_client,
+    frozenLatestVersion > 0 || latestVersionRaw > 0,
+  );
 
-  // Transform to table data
-  const tableData: TransactionRowData[] = transactions.map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return { version, transaction: tx };
-  });
+  // Only loaded rows (for toolbar/download — excludes skeleton placeholders)
+  const loadedRows = tableData.filter((r) => r.transaction !== null) as import("@/components/transactions").TransactionRowData[];
+
+  const isLoading = (versionsLoading || isLatestLoading) && tableData.length === 0;
 
   // Update isFirstLoad
   useEffect(() => {
-    if (!isTxLoading && transactions.length > 0) {
+    if (isComplete && tableData.length > 0) {
       setIsFirstLoad(false);
     }
-  }, [isTxLoading, transactions]);
+  }, [isComplete, tableData.length]);
 
-  const isRefreshing = isFetching && !isFirstLoad;
+  const isRefreshing = isStreaming && !isFirstLoad;
 
   // URL sync handlers
   const updateURL = useCallback(
@@ -248,7 +235,7 @@ export function UserTransactions({
         currentPage={currentPage}
         totalPages={MAX_PAGES}
         onPageChange={handlePageChange}
-        transactions={tableData}
+        transactions={loadedRows}
         isLoading={isLoading}
         infoText={
           <>
@@ -263,7 +250,7 @@ export function UserTransactions({
 
       {/* Table */}
       <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <TableLoadingBar visible={isFetching && !isLoading} />
+        <TableLoadingBar visible={isStreaming && !isLoading} />
         <TransactionTable
           data={tableData}
           columns={ALL_TRANSACTION_COLUMNS}

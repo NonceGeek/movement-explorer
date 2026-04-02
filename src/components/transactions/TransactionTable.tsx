@@ -16,6 +16,7 @@ import { TransactionTableRow } from "./TransactionTableRow";
  * Unified Transaction Table Component
  *
  * Renders a static table with CSS slide-in + fade-in animation for rows.
+ * Supports streaming mode: rows with transaction=null render as skeletons.
  */
 export function TransactionTable({
   data,
@@ -77,18 +78,28 @@ export function TransactionTable({
             </TableCell>
           </TableRow>
         ) : (
-          data.map(({ version, transaction }) => (
-            <TransactionTableRow
-              key={version}
-              version={version}
-              transaction={transaction}
-              columns={columns}
-              timestampMode={timestampMode}
-              onToggleTimestampMode={onToggleTimestampMode}
-              address={address}
-              className="animate-in slide-in-from-top-2 fade-in duration-500"
-            />
-          ))
+          data.map(({ version, transaction }) =>
+            transaction ? (
+              <TransactionTableRow
+                key={version}
+                version={version}
+                transaction={transaction}
+                columns={columns}
+                timestampMode={timestampMode}
+                onToggleTimestampMode={onToggleTimestampMode}
+                address={address}
+                className="animate-in fade-in zoom-in-95 duration-500 ease-out"
+              />
+            ) : (
+              <TableRow key={version} className="h-16">
+                {columns.map((col) => (
+                  <TableCell key={col.key} className={col.width || ""}>
+                    <EnhancedSkeleton className="h-8 w-full" />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ),
+          )
         )}
       </TableBody>
     </StyledTable>

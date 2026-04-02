@@ -9,6 +9,7 @@ export type {
   TransactionColumnConfig,
   ColumnFilters,
   TransactionRowData,
+  StreamingRowData,
   TransactionTableProps,
   TransactionTableRowProps,
   TransactionPaginationProps,

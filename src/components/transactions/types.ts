@@ -37,9 +37,15 @@ export interface TransactionRowData {
   transaction: Types.Transaction;
 }
 
+// Row data that supports streaming (transaction can be null = still loading)
+export interface StreamingRowData {
+  version: number;
+  transaction: Types.Transaction | null;
+}
+
 // Main table props
 export interface TransactionTableProps {
-  data: TransactionRowData[];
+  data: (TransactionRowData | StreamingRowData)[];
   columns: TransactionColumnConfig[];
   isLoading?: boolean;
   loadingRowCount?: number;

@@ -19,7 +19,8 @@ export type CustomBadgeVariant =
   | "custom-example"
   | "success"
   | "error"
-  | "warning";
+  | "warning"
+  | "primary";
 
 /**
  * 3. 组合最终的 Variant 类型 (Design System + Custom)
@@ -54,6 +55,10 @@ function Badge({ className, variant, asChild = false, ...props }: BadgeProps) {
     resolvedVariant = "default";
     customClassName =
       "bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20";
+  } else if (variant === "primary") {
+    resolvedVariant = "default";
+    customClassName =
+      "bg-guild-green-500/10 text-guild-green-500 hover:bg-guild-green-500/20";
   } else {
     resolvedVariant = variant as VariantProps<
       typeof dsBadgeVariants

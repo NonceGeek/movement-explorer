@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
+import { EventDataView } from "./EventDataView";
 import { cn } from "@/utils/styling";
 import { ChevronDown, ChevronRight, Table2 } from "lucide-react";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
@@ -255,11 +256,13 @@ function EventRow({ event, isExpanded, onToggle }: EventRowProps) {
       {isExpanded && event.eventData !== undefined && (
         <TableRow className="hover:bg-transparent border-b border-border/30">
           <TableCell colSpan={4} className="p-0">
-            <div className="bg-muted/20 px-6 py-4">
-              <div className="text-xs text-muted-foreground mb-2 font-medium">
+            <div className="pt-3 pb-1">
+              <Badge variant="primary" className="text-[10px] font-semibold uppercase tracking-wider">
                 Event Data
-              </div>
-              <JsonViewer data={event.eventData} initialDepth={1} />
+              </Badge>
+            </div>
+            <div className="bg-muted/20 px-6 pt-2 pb-4">
+              <EventDataView data={event.eventData} />
             </div>
           </TableCell>
         </TableRow>

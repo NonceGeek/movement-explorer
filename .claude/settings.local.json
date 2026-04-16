@@ -116,7 +116,8 @@
       "Bash(curl -s https://mainnet.movementnetwork.xyz/v1/spec.json)",
       "Bash(curl -s http://localhost:3000)",
       "mcp__plugin_playwright_playwright__browser_close",
-      "Bash(pkill -f \"chrome.*mcp-chrome\")"
+      "Bash(pkill -f \"chrome.*mcp-chrome\")",
+      "Bash(git mv:*)"
     ]
   }
 }

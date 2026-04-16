@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
+import { EventDataView } from "./EventDataView";
 import { cn } from "@/utils/styling";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
@@ -554,56 +555,62 @@ function ResourceModuleLink({
 
 function ChangeDetail({ change }: { change: ParsedChange }) {
   return (
-    <div className="bg-muted/20 px-6 py-4 space-y-3">
-      {/* Metadata grid */}
-      <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs items-baseline">
-        {change.handle ? (
-          <>
-            <span className="text-muted-foreground whitespace-nowrap">
-              Handle
-            </span>
-            <span>
-              <CopyableAddress
-                address={change.handle}
-                truncateLength={{ start: 10, end: 8 }}
-                variant="hash"
-              />
-            </span>
-          </>
-        ) : null}
-        {change.tableKey ? (
-          <>
-            <span className="text-muted-foreground whitespace-nowrap">
-              Key
-            </span>
-            <span className="font-mono break-all max-h-16 overflow-auto">
-              {change.tableKey}
-            </span>
-          </>
-        ) : null}
-        {change.value ? (
-          <>
-            <span className="text-muted-foreground whitespace-nowrap">
-              Value
-            </span>
-            <span className="font-mono break-all max-h-16 overflow-auto">
-              {change.value}
-            </span>
-          </>
-        ) : null}
-      </div>
-
-      {/* Data */}
-      {change.data != null && (
-        <div>
-          <div className="text-xs text-muted-foreground mb-1.5 font-medium">
-            Data
-          </div>
-          <div className="max-h-80 overflow-auto rounded-lg">
-            <JsonViewer data={change.data} initialDepth={1} />
+    <>
+      {/* Metadata */}
+      {(change.handle || change.tableKey || change.value) && (
+        <div className="bg-muted/20 px-6 py-4">
+          <div className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1.5 text-xs items-baseline">
+            {change.handle ? (
+              <>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  Handle
+                </span>
+                <span>
+                  <CopyableAddress
+                    address={change.handle}
+                    truncateLength={{ start: 10, end: 8 }}
+                    variant="hash"
+                  />
+                </span>
+              </>
+            ) : null}
+            {change.tableKey ? (
+              <>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  Key
+                </span>
+                <span className="font-mono break-all max-h-16 overflow-auto">
+                  {change.tableKey}
+                </span>
+              </>
+            ) : null}
+            {change.value ? (
+              <>
+                <span className="text-muted-foreground whitespace-nowrap">
+                  Value
+                </span>
+                <span className="font-mono break-all max-h-16 overflow-auto">
+                  {change.value}
+                </span>
+              </>
+            ) : null}
           </div>
         </div>
       )}
-    </div>
+
+      {/* Data */}
+      {change.data != null && (
+        <>
+          <div className="pt-3 pb-1">
+            <Badge variant="primary" className="text-[10px] font-semibold uppercase tracking-wider">
+              State Data
+            </Badge>
+          </div>
+          <div className="bg-muted/20 px-6 pt-2 pb-4">
+            <EventDataView data={change.data} />
+          </div>
+        </>
+      )}
+    </>
   );
 }

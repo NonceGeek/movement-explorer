@@ -10,6 +10,7 @@ import {
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
   standardizeAddress,
+  tryStandardizeAddress,
   // getLocalStorageWithExpiry,
   // setLocalStorageWithExpiry,
   // fetchJsonResponse,
@@ -95,57 +96,53 @@ export function useGetAccountLabel(
     queryKey: ["accountLabel", address, networkName],
     retry: 1, // Only retry once for MNS API failures
     queryFn: async (): Promise<AccountLabel | null> => {
-      try {
-        const standardizedAddress = standardizeAddress(address);
-        const lowercaseAddress = standardizedAddress.toLowerCase();
+      const standardizedAddress = tryStandardizeAddress(address);
+      if (!standardizedAddress) return null;
+      const lowercaseAddress = standardizedAddress.toLowerCase();
 
-        // Check known verified addresses first
-        const knownName = knownAddresses[lowercaseAddress];
-        if (knownName) {
-          return {
-            name: knownName,
-            type: AccountLabelType.VERIFIED,
-          };
-        }
-
-        // Check scam addresses
-        const scamName = scamAddresses[lowercaseAddress];
-        if (scamName) {
-          return {
-            name: scamName,
-            type: AccountLabelType.SCAM,
-          };
-        }
-
-        // MNS API is currently unavailable - commented out until service is ready
-        // // Check localStorage cache for ANS name
-        // if (shouldCache) {
-        //   const cachedName = getLocalStorageWithExpiry(`${address}:name`);
-        //   if (cachedName) {
-        //     return {
-        //       name: `${cachedName}.move`,
-        //       type: AccountLabelType.ANS,
-        //     };
-        //   }
-        // }
-        //
-        // // Fetch ANS name from API
-        // const mnsName = await fetchMNSName(address, networkName);
-        // if (mnsName) {
-        //   if (shouldCache) {
-        //     setLocalStorageWithExpiry(`${address}:name`, mnsName, TTL);
-        //   }
-        //   return {
-        //     name: `${mnsName}.move`,
-        //     type: AccountLabelType.ANS,
-        //   };
-        // }
-
-        return null;
-      } catch (error) {
-        console.error("Error fetching account label:", error);
-        return null;
+      // Check known verified addresses first
+      const knownName = knownAddresses[lowercaseAddress];
+      if (knownName) {
+        return {
+          name: knownName,
+          type: AccountLabelType.VERIFIED,
+        };
       }
+
+      // Check scam addresses
+      const scamName = scamAddresses[lowercaseAddress];
+      if (scamName) {
+        return {
+          name: scamName,
+          type: AccountLabelType.SCAM,
+        };
+      }
+
+      // MNS API is currently unavailable - commented out until service is ready
+      // // Check localStorage cache for ANS name
+      // if (shouldCache) {
+      //   const cachedName = getLocalStorageWithExpiry(`${address}:name`);
+      //   if (cachedName) {
+      //     return {
+      //       name: `${cachedName}.move`,
+      //       type: AccountLabelType.ANS,
+      //     };
+      //   }
+      // }
+      //
+      // // Fetch ANS name from API
+      // const mnsName = await fetchMNSName(address, networkName);
+      // if (mnsName) {
+      //   if (shouldCache) {
+      //     setLocalStorageWithExpiry(`${address}:name`, mnsName, TTL);
+      //   }
+      //   return {
+      //     name: `${mnsName}.move`,
+      //     type: AccountLabelType.ANS,
+      //   };
+      // }
+
+      return null;
     },
     staleTime: 60 * 1000, // 1 minute
     enabled: !!address,

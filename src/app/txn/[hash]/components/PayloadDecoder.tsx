@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import JsonViewer from "@/components/ui/json-viewer";
@@ -404,10 +404,11 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
       {viewMode === "raw" ? (
         <JsonViewer data={payload} initialDepth={2} />
       ) : (
-        <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
+        <div className="space-y-4">
+          <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
           {/* Payload Type */}
-          <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
-            <span className="text-sm text-muted-foreground uppercase tracking-wider">
+          <div className="px-5 py-2.5 flex items-center gap-2.5 bg-muted/40">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/70">
               Type
             </span>
             <Badge variant="secondary" className="capitalize">
@@ -430,7 +431,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
             <>
               {/* Address */}
               <div className="px-5 py-3 flex items-center gap-3">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">
+                <span className="text-sm text-muted-foreground shrink-0 min-w-40">
                   Address
                 </span>
                 <CopyableAddress
@@ -442,7 +443,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
 
               {/* Module */}
               <div className="px-5 py-3 flex items-center gap-3">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider shrink-0">
+                <span className="text-sm text-muted-foreground shrink-0 min-w-40">
                   Module
                 </span>
                 <Link
@@ -454,11 +455,11 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
               </div>
 
               {/* Signature */}
-              <div className="px-5 py-3">
-                <div className="text-sm text-muted-foreground uppercase tracking-wider mb-2">
+              <div className="px-5 py-3 flex items-start gap-3">
+                <span className="text-sm text-muted-foreground shrink-0 mt-1.5 min-w-40">
                   Signature
-                </div>
-                <div className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all [&_span]:inline">
+                </span>
+                <div className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all [&_span]:inline flex-1 min-w-0">
                   <Link
                     href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
                     className="text-guild-green-500 font-medium hover:underline"
@@ -621,9 +622,15 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                 </div>
               </div>
 
+            </>
+          )}
+          </div>
+
+          {entryPayload && (
+            <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
               {/* Arguments Header */}
-              <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
-                <span className="text-sm text-muted-foreground uppercase tracking-wider">
+              <div className="px-5 py-2.5 flex items-center gap-2.5 bg-muted/40">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/70">
                   Arguments
                 </span>
                 <Badge variant="secondary" className="text-xs">
@@ -637,30 +644,61 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                   No arguments
                 </div>
               ) : (
-                decodedArgs.map((arg) => (
-                  <div key={arg.index} className="px-5 py-3">
-                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
-                      {arg.name.startsWith("arg_") && (
-                        <span className="text-xs text-muted-foreground/50 shrink-0 font-mono">
-                          #{arg.index}
-                        </span>
-                      )}
-                      <span className="text-sm font-medium text-foreground/70 font-mono">
-                        {arg.name}
-                      </span>
-                      <TypeBadge type={arg.type} />
-                    </div>
-                    <div className="min-w-0 pl-4">
-                      <ArgumentValue arg={arg} />
-                    </div>
-                  </div>
-                ))
+                <div className="grid grid-cols-[minmax(160px,280px)_1fr]">
+                  {decodedArgs.map((arg, idx) => {
+                    const notLast = idx < decodedArgs.length - 1;
+                    const isFallback = arg.name.startsWith("arg_");
+                    const borderClass = notLast
+                      ? "border-b border-border/20"
+                      : "";
+                    return (
+                      <Fragment key={arg.index}>
+                        <div className={cn("px-5 py-3", borderClass)}>
+                          <div className="text-sm text-muted-foreground font-mono wrap-break-word mb-1.5">
+                            {isFallback
+                              ? `#${arg.index}`
+                              : arg.name.replace(/_/g, "_​")}
+                          </div>
+                          <TypeBadge type={arg.type} />
+                        </div>
+                        <div
+                          className={cn("px-5 py-3 min-w-0", borderClass)}
+                        >
+                          <ArgumentValue arg={arg} />
+                        </div>
+                      </Fragment>
+                    );
+                  })}
+                </div>
               )}
-            </>
+            </div>
           )}
         </div>
       )}
     </div>
+  );
+}
+
+const LONG_VALUE_THRESHOLD = 120;
+
+function FoldedLongString({ value }: { value: string }) {
+  return (
+    <details className="group">
+      <summary className="cursor-pointer flex items-center gap-2 text-sm font-mono text-muted-foreground hover:text-foreground [&::-webkit-details-marker]:hidden list-none">
+        <ChevronRight className="size-3.5 shrink-0 transition-transform group-open:rotate-90" />
+        <span className="break-all min-w-0 flex-1">
+          <span className="text-foreground/80">{value.slice(0, 40)}</span>
+          <span className="opacity-50">…</span>
+          <span className="text-foreground/80">{value.slice(-16)}</span>
+        </span>
+        <span className="opacity-60 shrink-0 text-xs">
+          {value.length.toLocaleString()} chars
+        </span>
+      </summary>
+      <div className="mt-2 font-mono text-sm break-all bg-muted/30 px-3 py-2 rounded-lg max-h-60 overflow-auto">
+        {value}
+      </div>
+    </details>
   );
 }
 
@@ -728,8 +766,11 @@ function SmartValue({
 
   // vector<u8> hex bytes (serialized as a single hex string)
   if (typeHint === "vector<u8>" && typeof value === "string") {
+    if (value.length > LONG_VALUE_THRESHOLD) {
+      return <FoldedLongString value={value} />;
+    }
     return (
-      <div className="font-mono text-sm bg-muted/30 px-3 py-2 rounded-lg break-all max-h-32 overflow-auto">
+      <div className="font-mono text-sm bg-muted/30 px-3 py-2 rounded-lg break-all">
         {value}
       </div>
     );
@@ -869,18 +910,8 @@ function SmartValue({
       return <JsonViewer data={jsonResult.data} initialDepth={1} />;
     }
     // Large string
-    if (value.length > 100) {
-      return (
-        <details className="group">
-          <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-            {value.slice(0, 60)}...
-            <span className="ml-1 opacity-60">({value.length} chars)</span>
-          </summary>
-          <div className="mt-2 font-mono text-sm break-all bg-muted/30 px-3 py-2 rounded-lg max-h-40 overflow-auto">
-            {value}
-          </div>
-        </details>
-      );
+    if (value.length > LONG_VALUE_THRESHOLD) {
+      return <FoldedLongString value={value} />;
     }
     // Short string / number-like
     return <span className="font-mono text-sm break-all">{value}</span>;

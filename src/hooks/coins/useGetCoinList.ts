@@ -43,7 +43,7 @@ export function useGetCoinList(options?: { retry?: number | boolean }) {
         const response = await fetch(url, { method: "GET" });
         priceData = await response.json();
       } catch (error) {
-        console.error("Failed to fetch coin prices:", error);
+        console.warn("Failed to fetch coin prices:", error);
         return { data: coins };
       }
 

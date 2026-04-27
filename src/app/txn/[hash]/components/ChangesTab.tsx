@@ -350,7 +350,7 @@ function ChangesTable({
 }: ChangesTableProps) {
   return (
     <div className="overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-      <Table className="min-w-[640px]">
+      <Table className="[&_table]:table-fixed">
         <TableHeader>
           <HeaderRow>
             <SortableHeader
@@ -449,7 +449,7 @@ function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
         </TableCell>
 
         {/* Resource / Module */}
-        <TableCell>
+        <TableCell className="min-w-0">
           {change.moduleLink ? (
             <ResourceModuleLink
               rawType={change.resourceType || change.displayName}
@@ -457,7 +457,7 @@ function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
               href={change.moduleLink}
             />
           ) : (
-            <span className="font-mono text-sm text-foreground">
+            <span className="block truncate font-mono text-sm text-foreground">
               {change.displayName}
             </span>
           )}
@@ -506,7 +506,7 @@ function ResourceModuleLink({
         <TooltipTrigger asChild>
           <Link
             href={href}
-            className="font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors"
+            className="block max-w-full truncate font-mono text-sm text-primary hover:bg-primary/10 rounded-md px-1 py-0.5 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             {displayName}

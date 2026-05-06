@@ -51,7 +51,7 @@ function MetricCard({
           "cursor-pointer",
         ],
         // Highlight style
-        isHighlight && "border-guild-green-500/50 bg-guild-green-500/5"
+        isHighlight && "border-primary/50 bg-primary/5"
       )}
     >
       {/* Header: Label & Tooltip */}
@@ -89,7 +89,7 @@ function MetricCard({
             <div
               className={cn(
                 "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
-                isHighlight ? "text-guild-green-500" : "text-foreground"
+                isHighlight ? "text-primary" : "text-foreground"
               )}
             >
               {typeof value === "number" ? (
@@ -105,7 +105,7 @@ function MetricCard({
           <div
             className={cn(
               "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
-              isHighlight ? "text-guild-green-500" : "text-foreground"
+              isHighlight ? "text-primary" : "text-foreground"
             )}
           >
             {typeof value === "number" ? (

@@ -87,9 +87,9 @@ export function UserTransactionRowCells({
             truncateLength={{ start: 10, end: 0 }}
             icon={
               status ? (
-                <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
+                <CircleCheckBig className="h-4 w-4 text-(--ms-good) shrink-0" />
               ) : (
-                <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+                <XCircle className="h-4 w-4 text-destructive shrink-0" />
               )
             }
           />
@@ -200,7 +200,7 @@ export function UserTransactionRow({
   return (
     <TableRow
       className={cn(
-        "hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-14",
+        "hover:bg-accent group transition-colors border-b border-border/30 h-14",
         className,
       )}
     >

@@ -190,7 +190,7 @@ export function LatestUserTransactions({
         <Button
           variant="link"
           asChild
-          className="text-guild-green-500 hover:text-guild-green-400 gap-1.5"
+          className="text-primary hover:text-primary/80 gap-1.5"
         >
           <Link href="/transactions?type=user">
             View All

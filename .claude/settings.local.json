@@ -117,7 +117,16 @@
       "Bash(curl -s http://localhost:3000)",
       "mcp__plugin_playwright_playwright__browser_close",
       "Bash(pkill -f \"chrome.*mcp-chrome\")",
-      "Bash(git mv:*)"
+      "Bash(git mv:*)",
+      "Bash(git add *)",
+      "Bash(git -C /Users/fun/Documents/GitHub/movement-explorer add src/styles/theme.css)",
+      "Bash(git -C /Users/fun/Documents/GitHub/movement-explorer commit -m \"feat\\(theme\\): create new theme.css with --ms-* warm cream palette\")",
+      "Bash(git -C /Users/fun/Documents/GitHub/movement-explorer rev-parse HEAD)",
+      "Bash(git -C /Users/fun/Documents/GitHub/movement-explorer status)",
+      "Bash(git stash *)",
+      "Bash(git checkout *)",
+      "Bash(awk -F: '{print $2}')",
+      "Bash(node -e ' *)"
     ]
   }
 }

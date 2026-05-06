@@ -23,7 +23,7 @@ ChartJS.register(
   Legend
 );
 
-// Chart colors - guild-green-500 (#58c589)
+// Chart colors
 const LINE_COLOR = "rgba(88, 197, 137, 0.9)";
 const GRADIENT_START = "rgba(88, 197, 137, 0.3)";
 const GRADIENT_END = "rgba(88, 197, 137, 0.02)";

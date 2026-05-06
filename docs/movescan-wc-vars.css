@@ -1,0 +1,87 @@
+:root,
+[data-theme="light"] {
+  /* Surfaces */
+  --ms-bg:            #FAF7F2;            /* page bg + top nav */
+  --ms-nav:           #FAF7F2;
+  --ms-card:          #FFFFFF;            /* cards */
+  --ms-card-2:        #F4EFE6;            /* alt surface (table header, subtle bg) */
+
+  /* Borders */
+  --ms-line:          #E7E0D2;            /* dividers, card outlines */
+  --ms-line-2:        #D9CFBB;            /* inputs, buttons, stronger outlines */
+
+  /* Ink (text) */
+  --ms-ink:           #1D1B16;            /* primary text */
+  --ms-ink-2:         #4A463C;            /* secondary text */
+  --ms-ink-3:         #807A6B;            /* muted / helper text */
+
+  /* Accent (sienna) */
+  --ms-accent:        #7A4B1F;            /* primary CTA, links, brand */
+  --ms-accent-2:      #B06A2C;            /* hover / secondary accent */
+  --ms-accent-soft:   #F0E4D0;            /* pill / chip backgrounds */
+  --ms-accent-fill:   rgba(122, 75, 31, 0.08);
+  --ms-on-accent:     #FAF7F2;            /* text/icon on accent fill */
+
+  /* Status */
+  --ms-good:          #2F6B3D;
+  --ms-good-soft:     #E2ECD9;
+  --ms-bad:           #8A2A1F;
+  --ms-info:          #2C4A6B;
+  --ms-info-soft:     #D9E2EC;
+}
+
+[data-theme="dark"] {
+  /* Surfaces */
+  --ms-bg:            #0D0C0A;
+  --ms-nav:           #0D0C0A;
+  --ms-card:          #161410;
+  --ms-card-2:        #0D0C0A;
+
+  /* Borders */
+  --ms-line:          #26221A;
+  --ms-line-2:        #3A3325;
+
+  /* Ink (text) */
+  --ms-ink:           #FAF7F2;
+  --ms-ink-2:         #B4AD9C;
+  --ms-ink-3:         #807A6B;
+
+  /* Accent — cream-on-near-black */
+  --ms-accent:        #FAF7F2;
+  --ms-accent-2:      #FFFFFF;
+  --ms-accent-soft:   rgba(250, 247, 242, 0.08);
+  --ms-accent-fill:   rgba(250, 247, 242, 0.06);
+  --ms-on-accent:     #0D0C0A;
+
+  /* Status — collapse to cream in dark invert */
+  --ms-good:          #FAF7F2;
+  --ms-good-soft:     rgba(250, 247, 242, 0.08);
+  --ms-bad:           #FAF7F2;
+  --ms-info:          #FAF7F2;
+  --ms-info-soft:     rgba(250, 247, 242, 0.08);
+}
+
+/* Optional: respect OS preference if you don't want a manual toggle */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --ms-bg:            #0D0C0A;
+    --ms-nav:           #0D0C0A;
+    --ms-card:          #161410;
+    --ms-card-2:        #0D0C0A;
+    --ms-line:          #26221A;
+    --ms-line-2:        #3A3325;
+    --ms-ink:           #FAF7F2;
+    --ms-ink-2:         #B4AD9C;
+    --ms-ink-3:         #807A6B;
+    --ms-accent:        #FAF7F2;
+    --ms-accent-2:      #FFFFFF;
+    --ms-accent-soft:   rgba(250, 247, 242, 0.08);
+    --ms-accent-fill:   rgba(250, 247, 242, 0.06);
+    --ms-on-accent:     #0D0C0A;
+    --ms-good:          #FAF7F2;
+    --ms-good-soft:     rgba(250, 247, 242, 0.08);
+    --ms-bad:           #FAF7F2;
+    --ms-info:          #FAF7F2;
+    --ms-info-soft:     rgba(250, 247, 242, 0.08);
+  }
+}

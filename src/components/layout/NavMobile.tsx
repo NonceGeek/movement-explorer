@@ -136,6 +136,15 @@ export default function NavMobile() {
               {/* Divider */}
               <div className="h-px bg-border/40 my-6 mx-6" />
 
+              {/* Theme */}
+              <div className="px-6">
+                <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground/70 mb-4 px-2">Theme</p>
+                <ThemeToggle />
+              </div>
+
+              {/* Divider */}
+              <div className="h-px bg-border/40 my-6 mx-6" />
+
               {/* Wallet Connector */}
               <div className="px-6">
                 <p className="text-sm font-medium uppercase tracking-wider text-muted-foreground/70 mb-4 px-2">Wallet</p>

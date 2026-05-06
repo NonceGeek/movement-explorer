@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { WalletConnector } from "@/components/wallet";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NavMobile from "./NavMobile";
+import ThemeToggle from "./ThemeToggle";
 import { Logo, NavigationLink, NavigationDropdown } from "./header-parts";
 import { NAV_ITEMS, isNavDropdown } from "./types";
 import { cn } from "@/utils/styling";
@@ -103,6 +104,11 @@ export default function Header() {
               {/* Network Selector (Desktop) */}
               <div className="hidden md:block">
                 <NetworkSelect />
+              </div>
+
+              {/* Theme Toggle (Desktop) */}
+              <div className="hidden md:block">
+                <ThemeToggle />
               </div>
 
               {/* Wallet Connector (Desktop) */}

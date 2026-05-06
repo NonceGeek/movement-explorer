@@ -111,73 +111,51 @@
  * Use body+[data-slot] for specificity (0,0,1,1) so utility classes don't win.
  * ============================================================================ */
 
-body [data-slot="dropdown-menu-content"],
-body [data-slot="dropdown-menu-sub-content"],
-body [data-slot="hover-card-content"],
-body [data-slot="popover-content"],
-body [data-slot="select-content"] {
+/* Container slots: set bg + text color so unstyled children inherit. */
+[data-slot="dropdown-menu-content"],
+[data-slot="dropdown-menu-sub-content"],
+[data-slot="hover-card-content"],
+[data-slot="popover-content"],
+[data-slot="select-content"] {
   background: var(--popover);
   color: var(--popover-foreground);
   backdrop-filter: none;
   border-color: var(--border);
 }
 
-body [data-slot="dropdown-menu-item"],
-body [data-slot="dropdown-menu-sub-trigger"],
-body [data-slot="dropdown-menu-checkbox-item"],
-body [data-slot="dropdown-menu-radio-item"],
-body [data-slot="select-item"] {
-  color: var(--popover-foreground);
-}
-
-body [data-slot="dropdown-menu-item"]:focus,
-body [data-slot="dropdown-menu-item"][data-highlighted],
-body [data-slot="dropdown-menu-sub-trigger"]:focus,
-body [data-slot="dropdown-menu-sub-trigger"][data-highlighted],
-body [data-slot="dropdown-menu-checkbox-item"]:focus,
-body [data-slot="dropdown-menu-radio-item"]:focus,
-body [data-slot="select-item"]:focus,
-body [data-slot="select-item"][data-highlighted] {
+/* Item slots: only override the design-system's hardcoded brand-color hover/
+   focus states. Use :where() to keep specificity at (0,0,0,N) so consumer
+   classes (e.g. NetworkSelect's `bg-primary text-primary-foreground` for
+   the active item) still win. Skip overriding when the consumer has applied
+   their own bg-* / text-* utilities for the focused/highlighted state. */
+:where([data-slot="dropdown-menu-item"]):focus-visible,
+:where([data-slot="dropdown-menu-item"])[data-highlighted],
+:where([data-slot="dropdown-menu-sub-trigger"]):focus-visible,
+:where([data-slot="dropdown-menu-sub-trigger"])[data-highlighted],
+:where([data-slot="dropdown-menu-checkbox-item"]):focus-visible,
+:where([data-slot="dropdown-menu-radio-item"]):focus-visible,
+:where([data-slot="select-item"]):focus-visible,
+:where([data-slot="select-item"])[data-highlighted] {
   background: var(--accent);
   color: var(--accent-foreground);
 }
 
-body [data-slot="dropdown-menu-label"],
-body [data-slot="dropdown-menu-shortcut"] {
+:where([data-slot="select-item"])[data-state="checked"] {
+  background: var(--primary);
+  color: var(--primary-foreground);
+}
+
+:where([data-slot="dropdown-menu-label"]),
+:where([data-slot="dropdown-menu-shortcut"]) {
   color: var(--muted-foreground);
 }
 
-body [data-slot="dropdown-menu-separator"] {
+:where([data-slot="dropdown-menu-separator"]) {
   background: var(--border);
 }
 
-body [data-slot="input"],
-body [data-slot="textarea"] {
-  color: var(--foreground);
-}
-
-body [data-slot="max-button"] {
-  color: var(--primary);
-}
-
-body [data-slot="toggle"] {
-  color: var(--foreground);
-}
-
-body [data-slot="toggle"][data-state="on"] {
-  color: var(--primary);
-}
-
-body [data-slot="slider-track"] {
+:where([data-slot="slider-track"]) {
   background: var(--secondary);
-}
-
-body [data-slot="table-head"] {
-  color: var(--muted-foreground);
-}
-
-body [data-slot="table-cell"] {
-  color: var(--foreground);
 }
 
 /* ============================================================================

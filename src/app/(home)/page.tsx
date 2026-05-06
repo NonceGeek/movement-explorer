@@ -87,8 +87,8 @@ export default function HomePage() {
         />
 
         {/* Centered Glow above search bar */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-guild-green-500/20 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-byzantine-blue-500/15 blur-[100px] rounded-full pointer-events-none" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-(--ms-accent)/15 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-(--ms-accent-2)/12 blur-[100px] rounded-full pointer-events-none" />
 
         {/* Hero Section - Content with container */}
         <section className="relative pt-10 md:pt-10 z-20">

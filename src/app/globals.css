@@ -101,6 +101,86 @@
 
 
 /* ============================================================================
+ * DESIGN SYSTEM DARK-FIRST OVERRIDES
+ *
+ * The bundled @movementlabsxyz/movement-design-system shadcn components were
+ * authored assuming a dark theme (hardcoded text-white / bg-white/24 etc.).
+ * These selectors retarget the broken slots to our theme-aware tokens so the
+ * components work correctly in both light and dark modes.
+ *
+ * Use body+[data-slot] for specificity (0,0,1,1) so utility classes don't win.
+ * ============================================================================ */
+
+body [data-slot="dropdown-menu-content"],
+body [data-slot="dropdown-menu-sub-content"],
+body [data-slot="hover-card-content"],
+body [data-slot="popover-content"],
+body [data-slot="select-content"] {
+  background: var(--popover);
+  color: var(--popover-foreground);
+  backdrop-filter: none;
+  border-color: var(--border);
+}
+
+body [data-slot="dropdown-menu-item"],
+body [data-slot="dropdown-menu-sub-trigger"],
+body [data-slot="dropdown-menu-checkbox-item"],
+body [data-slot="dropdown-menu-radio-item"],
+body [data-slot="select-item"] {
+  color: var(--popover-foreground);
+}
+
+body [data-slot="dropdown-menu-item"]:focus,
+body [data-slot="dropdown-menu-item"][data-highlighted],
+body [data-slot="dropdown-menu-sub-trigger"]:focus,
+body [data-slot="dropdown-menu-sub-trigger"][data-highlighted],
+body [data-slot="dropdown-menu-checkbox-item"]:focus,
+body [data-slot="dropdown-menu-radio-item"]:focus,
+body [data-slot="select-item"]:focus,
+body [data-slot="select-item"][data-highlighted] {
+  background: var(--accent);
+  color: var(--accent-foreground);
+}
+
+body [data-slot="dropdown-menu-label"],
+body [data-slot="dropdown-menu-shortcut"] {
+  color: var(--muted-foreground);
+}
+
+body [data-slot="dropdown-menu-separator"] {
+  background: var(--border);
+}
+
+body [data-slot="input"],
+body [data-slot="textarea"] {
+  color: var(--foreground);
+}
+
+body [data-slot="max-button"] {
+  color: var(--primary);
+}
+
+body [data-slot="toggle"] {
+  color: var(--foreground);
+}
+
+body [data-slot="toggle"][data-state="on"] {
+  color: var(--primary);
+}
+
+body [data-slot="slider-track"] {
+  background: var(--secondary);
+}
+
+body [data-slot="table-head"] {
+  color: var(--muted-foreground);
+}
+
+body [data-slot="table-cell"] {
+  color: var(--foreground);
+}
+
+/* ============================================================================
  * FIXED DOTTED BACKGROUND PATTERN
  * Site-wide subtle dotted pattern (opacity reduced ~50% from homepage values)
  * ============================================================================ */

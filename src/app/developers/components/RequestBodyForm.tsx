@@ -17,12 +17,12 @@ import type { ValidationErrors } from "@/hooks/developers/useSchemaValidation";
 
 // Colors aligned with shiki JSON syntax highlighting tokens (same as ParameterForm)
 const TYPE_COLORS: Record<string, string> = {
-  string: "text-[var(--color-moveus-marigold-400)]",
-  integer: "text-[var(--color-oracle-orange-400)]",
-  number: "text-[var(--color-oracle-orange-400)]",
-  boolean: "text-[var(--color-guild-green-300)]",
-  array: "text-[var(--color-protocol-pink-300)]",
-  object: "text-[var(--color-byzantine-blue-200)]",
+  string: "text-[var(--shiki-token-string)]",
+  integer: "text-[var(--shiki-token-constant)]",
+  number: "text-[var(--shiki-token-constant)]",
+  boolean: "text-[var(--shiki-token-keyword)]",
+  array: "text-[var(--shiki-token-function)]",
+  object: "text-[var(--shiki-token-link)]",
 };
 
 /** Returns a sensible default for a given schema type.

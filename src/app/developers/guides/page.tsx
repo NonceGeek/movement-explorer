@@ -68,12 +68,12 @@ function GuideContent({ guide, onBack }: { guide: Guide; onBack: () => void }) {
             <strong className="font-semibold text-foreground">{children}</strong>
           ),
           blockquote: ({ children }) => (
-            <blockquote className="border-l-4 border-guild-green/30 pl-4 my-4 text-sm text-muted-foreground">
+            <blockquote className="border-l-4 border-primary/30 pl-4 my-4 text-sm text-muted-foreground">
               {children}
             </blockquote>
           ),
           a: ({ href, children }) => (
-            <a href={href} target="_blank" rel="noopener noreferrer" className="text-guild-green hover:underline">
+            <a href={href} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
               {children}
             </a>
           ),
@@ -178,14 +178,14 @@ export default function GuidesPage() {
                   return (
                     <div key={category} className="mb-8">
                       <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        {meta && <meta.icon className="h-5 w-5 text-guild-green" />}
+                        {meta && <meta.icon className="h-5 w-5 text-primary" />}
                         {meta?.label ?? category}
                       </h2>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {guides.map((guide) => (
                           <Card
                             key={guide.slug}
-                            className="cursor-pointer hover:border-guild-green/30 transition-colors"
+                            className="cursor-pointer hover:border-primary/30 transition-colors"
                             onClick={() => setSelectedGuide(guide)}
                           >
                             <CardContent className="p-5">

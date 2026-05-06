@@ -122,7 +122,7 @@ export default function DevelopersPage() {
             </div>
 
             {/* Quick Start */}
-            <Card className="mb-8 border-guild-green/30 bg-guild-green/5">
+            <Card className="mb-8 border-primary/30 bg-primary/5">
               <CardContent className="p-6">
                 <h2 className="text-lg font-semibold mb-3">Quick Start</h2>
                 <p className="text-sm text-muted-foreground mb-4">
@@ -145,13 +145,13 @@ export default function DevelopersPage() {
                 <Card
                   key={card.title}
                   className={
-                    card.disabled ? "opacity-60" : "hover:border-guild-green/30 transition-colors"
+                    card.disabled ? "opacity-60" : "hover:border-primary/30 transition-colors"
                   }
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start gap-4">
-                      <div className="p-2 rounded-lg bg-guild-green/10">
-                        <card.icon className="h-5 w-5 text-guild-green" />
+                      <div className="p-2 rounded-lg bg-primary/10">
+                        <card.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h3 className="font-semibold mb-1">{card.title}</h3>
@@ -165,7 +165,7 @@ export default function DevelopersPage() {
                         ) : (
                           <Link
                             href={card.href}
-                            className="text-sm text-guild-green hover:underline inline-flex items-center gap-1"
+                            className="text-sm text-primary hover:underline inline-flex items-center gap-1"
                           >
                             {card.cta}
                             <ArrowRight className="h-3 w-3" />

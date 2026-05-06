@@ -1,7 +1,7 @@
 /* 1. 组件样式 */
 @import "@movementlabsxyz/movement-design-system/component-styles";
-/* 2. 主题变量 (颜色、圆角等) */
-@import "@movementlabsxyz/movement-design-system/theme";
+/* 2. 主题变量 (颜色、圆角等) — single source of truth, replaces design-system theme */
+@import "../styles/theme.css";
 /* 3. Tailwind CSS */
 @import "tailwindcss";
 @import "tw-animate-css";

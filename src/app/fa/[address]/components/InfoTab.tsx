@@ -32,7 +32,7 @@ function SupplyIcon({ hasSupply }: { hasSupply: boolean }) {
       <Tooltip>
         <TooltipTrigger asChild>
           {hasSupply ? (
-            <CheckCircle2 className="h-4 w-4 text-guild-green-500" />
+            <CheckCircle2 className="h-4 w-4 text-(--ms-good)" />
           ) : (
             <HelpCircle className="h-4 w-4 text-muted-foreground" />
           )}

@@ -121,7 +121,7 @@ export function StakeOperationActivities({
                   <TableCell className="text-right">
                     <Link
                       href={`/txn/${activity.transaction_version}`}
-                      className="text-guild-green-500 hover:text-guild-green-500/80 font-mono text-sm transition-colors"
+                      className="text-primary hover:text-primary/80 font-mono text-sm transition-colors"
                     >
                       {activity.transaction_version}
                     </Link>

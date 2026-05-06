@@ -63,9 +63,9 @@ function getActivityName(type: string): string {
 function getActivityStyle(activityName: string): string {
   switch (activityName.toLowerCase()) {
     case "mint":
-      return "bg-guild-green-500/15 text-guild-green-500 border-guild-green-500/30";
+      return "bg-(--ms-good)/15 text-(--ms-good) border-(--ms-good)/30";
     case "burn":
-      return "bg-oracle-orange-500/15 text-oracle-orange-500 border-oracle-orange-500/30";
+      return "bg-destructive/15 text-destructive border-destructive/30";
     case "transfer":
       return "bg-blue-500/15 text-blue-500 border-blue-500/30";
     default:
@@ -168,7 +168,7 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
           )}
           <Link
             href={`/nft-transfers?address=${address}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-guild-green-500 hover:text-guild-green-400 transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
           >
             View All
             <ArrowRight size={14} strokeWidth={2.5} />
@@ -328,9 +328,9 @@ function NFTActivityRow({
             truncateLength={{ start: 10, end: 0 }}
             icon={
               status ? (
-                <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
+                <CircleCheckBig className="h-4 w-4 text-(--ms-good) shrink-0" />
               ) : (
-                <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+                <XCircle className="h-4 w-4 text-destructive shrink-0" />
               )
             }
           />

@@ -172,7 +172,7 @@ function NFTGrid({ tokens }: { tokens: TokenOwnership[] }) {
           key={token.token_data_id}
           href={`/token/${token.token_data_id}`}
         >
-          <Card className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden hover:border-guild-green-500/50 transition-colors cursor-pointer">
+          <Card className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden hover:border-primary/50 transition-colors cursor-pointer">
             <div className="aspect-square relative bg-muted flex items-center justify-center overflow-hidden">
               <NFTMediaPreview
                 uri={token.current_token_data?.token_uri}

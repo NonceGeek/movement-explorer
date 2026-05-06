@@ -96,7 +96,7 @@ export default function ContractForm({
       <CardHeader>
         <pre className="font-mono text-sm leading-relaxed whitespace-pre-wrap m-0 p-0 bg-transparent">
           <span
-            style={{ color: "var(--color-protocol-pink-300)" }}
+            style={{ color: "var(--shiki-token-function)" }}
             className="text-base font-semibold"
           >
             {fn.name}
@@ -115,7 +115,7 @@ export default function ContractForm({
                       {", "}
                     </span>
                   )}
-                  <span style={{ color: "var(--color-oracle-orange-400)" }}>
+                  <span style={{ color: "var(--shiki-token-constant)" }}>
                     {typeParamNames?.[i] ?? `T${i}`}
                   </span>
                 </span>
@@ -140,7 +140,7 @@ export default function ContractForm({
                     return (
                       <span key={`p-${i}`}>
                         {"    "}
-                        <span style={{ color: "var(--color-guild-green-300)" }}>
+                        <span style={{ color: "var(--shiki-token-keyword)" }}>
                           {p}
                         </span>
                         {!isLast && (
@@ -174,7 +174,7 @@ export default function ContractForm({
                         </>
                       )}
                       <span
-                        style={{ color: "var(--color-byzantine-blue-200)" }}
+                        style={{ color: "var(--shiki-token-link)" }}
                       >
                         {short}
                       </span>

@@ -25,25 +25,25 @@ const ICON_SIZES = {
 
 const AVATAR_COLORS: Record<AccountType, string[]> = {
   account: [
-    "#6ce2a1", // guild-green-400
-    "#0337ff", // byzantine-blue-400
-    "#ffd935", // moveus-marigold-400
-    "#eb66cf", // protocol-pink-400
-    "#FF6642", // oracle-orange-400
+    "#6ce2a1", // green
+    "#0337ff", // blue
+    "#ffd935", // yellow
+    "#eb66cf", // pink
+    "#FF6642", // orange
   ],
   object: [
-    "#0337ff", // byzantine-blue-400
+    "#0337ff", // blue
     "#7c3aed", // violet-600
     "#6366f1", // indigo-500
     "#3b82f6", // blue-500
     "#06b6d4", // cyan-500
   ],
   token: [
-    "#ffd935", // moveus-marigold-400
-    "#FF6642", // oracle-orange-400
+    "#ffd935", // yellow
+    "#FF6642", // orange
     "#f59e0b", // amber-500
     "#ef4444", // red-500
-    "#eb66cf", // protocol-pink-400
+    "#eb66cf", // pink
   ],
 };
 

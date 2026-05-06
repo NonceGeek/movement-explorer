@@ -146,7 +146,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
           )}
           <Link
             href={`/token-transfers?address=${address}`}
-            className="inline-flex items-center gap-1 text-xs font-medium text-guild-green-500 hover:text-guild-green-400 transition-colors"
+            className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:text-primary/80 transition-colors"
           >
             View All
             <ArrowRight size={14} strokeWidth={2.5} />

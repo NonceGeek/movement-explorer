@@ -25,7 +25,7 @@ export function CoinRow({ coin }: { coin: CoinRowType }) {
         <div className="inline-flex items-center gap-1 transition-all duration-200 hover:bg-primary/10 rounded-md pl-2 py-0.5 pr-2">
           <Link
             href={href}
-            className="text-guild-green-500 hover:text-guild-green-500/80 transition-colors text-sm"
+            className="text-primary hover:text-primary/80 transition-colors text-sm"
             onClick={(e) => e.stopPropagation()}
           >
             {coin.name} ({coin.symbol})

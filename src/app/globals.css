@@ -107,8 +107,8 @@
 
 .bg-dotted-pattern {
   background-image:
-    radial-gradient(circle, rgba(129, 255, 186, 0.15) 1.2px, transparent 1.2px),
-    radial-gradient(circle, rgba(0, 45, 214, 0.09) 1px, transparent 1px);
+    radial-gradient(circle, color-mix(in srgb, var(--ms-accent) 15%, transparent) 1.2px, transparent 1.2px),
+    radial-gradient(circle, color-mix(in srgb, var(--ms-ink-3) 18%, transparent) 1px, transparent 1px);
   background-size: 24px 24px, 24px 24px;
   background-position: 0 0, 12px 12px;
 }

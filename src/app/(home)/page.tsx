@@ -95,7 +95,7 @@ export default function HomePage() {
           <div className="container max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-12 py-8 md:py-10 relative">
             <div className="max-w-230 space-y-3">
               {/* Hero Title */}
-              <h1 className="text-2xl md:text-[32px] md:leading-tight font-semibold text-white font-heading">
+              <h1 className="text-2xl md:text-[32px] md:leading-tight font-semibold text-foreground font-heading">
                 Explore the Movement Network
               </h1>
 

@@ -462,7 +462,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
                 <div className="font-mono text-sm bg-muted/30 px-3 py-1.5 rounded-lg break-all [&_span]:inline flex-1 min-w-0">
                   <Link
                     href={`/account/${moduleAddr}/modules/code/${moduleName}/${funcName}`}
-                    className="text-guild-green-500 font-medium hover:underline"
+                    className="text-primary font-medium hover:underline"
                   >
                     {funcName}
                   </Link>

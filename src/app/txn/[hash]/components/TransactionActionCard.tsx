@@ -939,7 +939,7 @@ export function TransactionActionCard({
 function TokenIconFallback({ symbol }: { symbol: string }) {
   const text = symbol ? symbol.slice(0, 2).toUpperCase() : "";
   return (
-    <div className="h-4 w-4 rounded-full bg-guild-green-500/20 flex items-center justify-center text-[10px] font-semibold text-guild-green-300 shrink-0">
+    <div className="h-4 w-4 rounded-full bg-accent flex items-center justify-center text-[10px] font-semibold text-accent-foreground shrink-0">
       {text || <Coins className="h-2.5 w-2.5" />}
     </div>
   );
@@ -981,7 +981,7 @@ export function TokenAmount({
   const TokenNameContent = (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-guild-green-300 hover:text-guild-green-300/80 transition-colors",
+        "inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors",
         assetHref && "cursor-pointer"
       )}
     >
@@ -995,7 +995,7 @@ export function TokenAmount({
             // Replace with fallback on error
             const fallback = document.createElement("div");
             fallback.className =
-              "h-4 w-4 rounded-full bg-guild-green-500/20 flex items-center justify-center text-[10px] font-semibold text-guild-green-300 shrink-0";
+              "h-4 w-4 rounded-full bg-accent flex items-center justify-center text-[10px] font-semibold text-accent-foreground shrink-0";
             fallback.textContent = symbol.slice(0, 2).toUpperCase();
             e.currentTarget.replaceWith(fallback);
           }}
@@ -1057,7 +1057,7 @@ export function FaTransferDescription({
   const tokenBadge = (
     <span
       className={cn(
-        "inline-flex items-center gap-1 text-guild-green-300 hover:text-guild-green-300/80 transition-colors font-medium",
+        "inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors font-medium",
         assetHref && "cursor-pointer"
       )}
     >
@@ -1069,7 +1069,7 @@ export function FaTransferDescription({
           onError={(e) => {
             const fallback = document.createElement("div");
             fallback.className =
-              "h-4 w-4 rounded-full bg-guild-green-500/20 flex items-center justify-center text-[10px] font-semibold text-guild-green-300 shrink-0";
+              "h-4 w-4 rounded-full bg-accent flex items-center justify-center text-[10px] font-semibold text-accent-foreground shrink-0";
             fallback.textContent = symbol.slice(0, 2).toUpperCase();
             e.currentTarget.replaceWith(fallback);
           }}
@@ -1124,7 +1124,7 @@ export function DexBadge({
       className={cn(
         "inline-flex items-center text-sm font-medium transition-colors",
         modulesLink &&
-          "text-guild-green-300 hover:text-guild-green-300/80 cursor-pointer"
+          "text-primary hover:text-primary/80 cursor-pointer"
       )}
     >
       {displayName}
@@ -1158,7 +1158,7 @@ export function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
 
   const nameContent = (
     <span
-      className="inline-flex items-center text-sm font-medium text-guild-green-300 hover:text-guild-green-300/80 transition-colors cursor-pointer"
+      className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
     >
       {displayName}
     </span>
@@ -1187,7 +1187,7 @@ export function ContractBadge({ contractAddress }: { contractAddress: string }) 
   const modulesLink = `/account/${contractAddress}/modules`;
 
   const nameContent = (
-    <span className="inline-flex items-center text-sm font-medium text-guild-green-300 hover:text-guild-green-300/80 transition-colors cursor-pointer">
+    <span className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer">
       {displayName}
     </span>
   );
@@ -1258,7 +1258,7 @@ function NftActionDetail({
           {tokenHref ? (
             <a
               href={tokenHref}
-              className="text-guild-green-300 hover:text-guild-green-300/80 transition-colors font-medium"
+              className="text-primary hover:text-primary/80 transition-colors font-medium"
               onClick={(e) => e.stopPropagation()}
             >
               {tokenDisplayName}
@@ -1278,7 +1278,7 @@ function NftActionDetail({
           {collectionHref ? (
             <a
               href={collectionHref}
-              className="text-guild-green-300 hover:text-guild-green-300/80 transition-colors font-medium"
+              className="text-primary hover:text-primary/80 transition-colors font-medium"
               onClick={(e) => e.stopPropagation()}
             >
               {collectionDisplayName ||
@@ -1328,7 +1328,7 @@ function ActionItem({ action }: { action: ParsedAction }) {
             action.details.contract ? (
               <a
                 href={`/account/${action.details.contract}/modules/code/${action.details.function.split("::")[0]}`}
-                className="text-sm font-mono font-medium text-guild-green-300 hover:text-guild-green-300/80 transition-colors"
+                className="text-sm font-mono font-medium text-primary hover:text-primary/80 transition-colors"
                 onClick={(e) => e.stopPropagation()}
               >
                 {action.details.function}

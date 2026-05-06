@@ -218,7 +218,7 @@ function EventRow({ event, isExpanded, onToggle }: EventRowProps) {
   return (
     <>
       <TableRow
-        className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-12 cursor-pointer"
+        className="hover:bg-accent group transition-colors border-b border-border/30 h-12 cursor-pointer"
         onClick={onToggle}
       >
         <TableCell>

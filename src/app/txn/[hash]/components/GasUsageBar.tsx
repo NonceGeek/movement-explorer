@@ -24,9 +24,9 @@ export function GasUsageBar({
   const percentage = max > 0 ? (used / max) * 100 : 0;
 
   const getProgressColor = (pct: number) => {
-    if (pct < 50) return "bg-guild-green-500";
+    if (pct < 50) return "bg-[var(--ms-good)] dark:bg-[var(--ms-ink-2)]";
     if (pct < 80) return "bg-yellow-500";
-    return "bg-oracle-orange-500";
+    return "bg-[var(--ms-bad)] dark:bg-[var(--ms-ink)]";
   };
 
   const feeValue = gasFee

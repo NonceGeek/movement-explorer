@@ -413,7 +413,7 @@ function ChangeRow({ change, isExpanded, onToggle }: ChangeRowProps) {
   return (
     <>
       <TableRow
-        className="hover:bg-guild-green-500/10 group transition-colors border-b border-border/30 h-12 cursor-pointer"
+        className="hover:bg-accent group transition-colors border-b border-border/30 h-12 cursor-pointer"
         onClick={onToggle}
       >
         {/* Address / Handle */}
@@ -536,7 +536,7 @@ function ResourceModuleLink({
                   <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                     Struct
                   </span>
-                  <div className="font-mono text-xs text-guild-green-500 font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
+                  <div className="font-mono text-xs text-primary font-medium bg-primary/5 p-2 rounded border border-primary/10 break-all whitespace-pre-wrap">
                     {formatMovementPath(parsed.structName)}
                   </div>
                 </div>

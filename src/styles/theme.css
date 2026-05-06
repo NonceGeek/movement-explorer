@@ -1,0 +1,377 @@
+/* src/styles/theme.css
+ *
+ * SINGLE SOURCE OF TRUTH for color tokens.
+ * Replaces @movementlabsxyz/movement-design-system/theme.
+ *
+ * Layer 1: Non-color primitives (copied verbatim from design system)
+ * Layer 2: Brand color palettes (kept for Shiki + TrendIndicator)
+ * Layer 3: --color-* semantic refs (Tailwind v4 bridge)
+ * Layer 4: --ms-* raw values (light + dark)
+ * Layer 5: Semantic token remap (--background -> --ms-bg, etc.)
+ *
+ * Import order in globals.css MUST be: component-styles -> theme.css -> tailwindcss
+ */
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  /* === LAYER 1: Spacing (copied from design system) === */
+  --spacing-0: 0px;
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+  --spacing-5: 20px;
+  --spacing-6: 24px;
+  --spacing-7: 28px;
+  --spacing-8: 32px;
+  --spacing-9: 36px;
+  --spacing-10: 40px;
+  --spacing-12: 48px;
+  --spacing-14: 56px;
+  --spacing-16: 64px;
+  --spacing-20: 80px;
+  --spacing-24: 96px;
+  --spacing-28: 112px;
+  --spacing-32: 128px;
+  --spacing-36: 144px;
+  --spacing-40: 160px;
+  --spacing-44: 176px;
+  --spacing-48: 192px;
+  --spacing-52: 208px;
+  --spacing-56: 224px;
+  --spacing-60: 240px;
+  --spacing-64: 256px;
+  --spacing-72: 288px;
+  --spacing-80: 320px;
+  --spacing-96: 384px;
+  --spacing-100: 400px;
+  --spacing-px: 1px;
+
+  /* Sizes (copy of spacing scale plus semantic) */
+  --size-0: 0px;
+  --size-1: 4px;
+  --size-2: 8px;
+  --size-3: 12px;
+  --size-4: 16px;
+  --size-5: 20px;
+  --size-6: 24px;
+  --size-7: 28px;
+  --size-8: 32px;
+  --size-9: 36px;
+  --size-10: 40px;
+  --size-12: 48px;
+  --size-14: 56px;
+  --size-16: 64px;
+  --size-20: 80px;
+  --size-24: 96px;
+  --size-28: 112px;
+  --size-32: 128px;
+  --size-36: 144px;
+  --size-40: 160px;
+  --size-44: 176px;
+  --size-48: 192px;
+  --size-52: 208px;
+  --size-56: 224px;
+  --size-60: 240px;
+  --size-64: 256px;
+  --size-72: 288px;
+  --size-80: 320px;
+  --size-96: 384px;
+  --size-100: 400px;
+  --size-px: 1px;
+  --size-prose: 65ch;
+  --size-full: 100%;
+  --size-min: min-content;
+  --size-max: max-content;
+  --size-fit: fit-content;
+
+  /* Radii */
+  --radius-sm: 2px;
+  --radius-base: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+  --radius-3xl: 24px;
+  --radius-full: 9999px;
+  --radius: var(--radius-md);
+
+  /* Border widths */
+  --border-width-0: 0px;
+  --border-width-1: 1px;
+  --border-width-2: 2px;
+  --border-width-3: 3px;
+  --border-width-4: 4px;
+  --border-width-5: 5px;
+  --border-width-6: 6px;
+  --border-width-7: 7px;
+  --border-width-8: 8px;
+
+  /* Shadows */
+  --shadow-xs: 0 0 0 1px #0000000d;
+  --shadow-sm: 0 1px 2px 0 #0000000d;
+  --shadow-base: 0 1px 2px 0 #0000000d, 0 1px 3px 0 #0000000d;
+  --shadow-md: 0 2px 4px -1px #00000005, 0 4px 6px -1px #00000014;
+  --shadow-lg: 0 4px 6px -2px #00000005, 0 10px 15px -3px #0000000d;
+  --shadow-xl: 0 10px 10px -5px #00000005, 0 20px 25px -5px #0000000d;
+  --shadow-2xl: 0 25px 50px -12px #00000040;
+  --shadow-inner: inset 0 2px 4px 0 #00000006;
+  --shadow-none: none;
+
+  /* Z-index scale */
+  --z-index-hide: -1;
+  --z-index-auto: auto;
+  --z-index-base: 0;
+  --z-index-docked: 10;
+  --z-index-dropdown: 1000;
+  --z-index-sticky: 1100;
+  --z-index-banner: 1200;
+  --z-index-overlay: 1300;
+  --z-index-modal: 1400;
+  --z-index-popover: 1500;
+  --z-index-skip-link: 1600;
+  --z-index-toast: 1700;
+  --z-index-tooltip: 1800;
+
+  /* Font families */
+  --font-heading: "TWK Everett", sans-serif;
+  --font-body: var(--font-inter, "Inter"), -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: "TWK Everett Mono", "Consolas", "Menlo", monospace;
+
+  /* Container */
+  --container-center: true;
+  --container-padding: 2rem;
+  --container-2xl: 1400px;
+
+  /* === LAYER 2: Brand color palettes (kept for Shiki + TrendIndicator) === */
+  /* Moveus Marigold */
+  --color-moveus-marigold-50: #fffbeb;
+  --color-moveus-marigold-100: #fff2bd;
+  --color-moveus-marigold-200: #ffea90;
+  --color-moveus-marigold-300: #ffe162;
+  --color-moveus-marigold-400: #ffd935;
+  --color-moveus-marigold-500: #ddba22;
+  --color-moveus-marigold-600: #bb9b13;
+  --color-moveus-marigold-700: #997e08;
+  --color-moveus-marigold-800: #776100;
+  --color-moveus-marigold-900: #554500;
+
+  /* Guild Green */
+  --color-guild-green-50: #f2fff8;
+  --color-guild-green-100: #ccffe3;
+  --color-guild-green-200: #a7ffce;
+  --color-guild-green-300: #81ffba;
+  --color-guild-green-400: #6ce2a1;
+  --color-guild-green-500: #58c589;
+  --color-guild-green-600: #47a872;
+  --color-guild-green-700: #368a5c;
+  --color-guild-green-800: #286d47;
+  --color-guild-green-900: #1b5033;
+
+  /* Byzantine Blue */
+  --color-byzantine-blue-50: #c2ceff;
+  --color-byzantine-blue-100: #859dff;
+  --color-byzantine-blue-200: #5c7cff;
+  --color-byzantine-blue-300: #335cff;
+  --color-byzantine-blue-400: #0337ff;
+  --color-byzantine-blue-500: #002cd6;
+  --color-byzantine-blue-600: #0024ad;
+  --color-byzantine-blue-700: #001b85;
+  --color-byzantine-blue-800: #00135c;
+  --color-byzantine-blue-900: #000c3d;
+
+  /* Protocol Pink */
+  --color-protocol-pink-50: #fff1fc;
+  --color-protocol-pink-100: #ffc9f3;
+  --color-protocol-pink-200: #ffa0eb;
+  --color-protocol-pink-300: #ff77e2;
+  --color-protocol-pink-400: #eb66cf;
+  --color-protocol-pink-500: #ce52b4;
+  --color-protocol-pink-600: #b14199;
+  --color-protocol-pink-700: #94317f;
+  --color-protocol-pink-800: #762365;
+  --color-protocol-pink-900: #59184b;
+
+  /* Oracle Orange */
+  --color-oracle-orange-50: #ffefec;
+  --color-oracle-orange-100: #ffcdc2;
+  --color-oracle-orange-200: #ffab97;
+  --color-oracle-orange-300: #ff886d;
+  --color-oracle-orange-400: #FF6642;
+  --color-oracle-orange-500: #ea5330;
+  --color-oracle-orange-600: #c83e1e;
+  --color-oracle-orange-700: #a62c10;
+  --color-oracle-orange-800: #841d05;
+  --color-oracle-orange-900: #621300;
+
+  /* Neutrals */
+  --color-neutrals-white: #ffffff;
+  --color-neutrals-black: #000000;
+  --color-neutrals-white-alpha-50: #ffffff0a;
+  --color-neutrals-white-alpha-100: #ffffff0f;
+  --color-neutrals-white-alpha-200: #ffffff14;
+  --color-neutrals-white-alpha-300: #ffffff29;
+  --color-neutrals-white-alpha-400: #ffffff3d;
+  --color-neutrals-white-alpha-500: #ffffff5c;
+  --color-neutrals-white-alpha-600: #ffffff7a;
+  --color-neutrals-white-alpha-700: #ffffffa3;
+  --color-neutrals-white-alpha-800: #ffffffcc;
+  --color-neutrals-white-alpha-900: #ffffffeb;
+  --color-neutrals-black-alpha-50: #0000000a;
+  --color-neutrals-black-alpha-100: #0000000f;
+  --color-neutrals-black-alpha-200: #00000014;
+  --color-neutrals-black-alpha-300: #00000029;
+  --color-neutrals-black-alpha-400: #0000003d;
+  --color-neutrals-black-alpha-500: #0000005c;
+  --color-neutrals-black-alpha-600: #0000007a;
+  --color-neutrals-black-alpha-700: #000000a3;
+  --color-neutrals-black-alpha-800: #000000cc;
+  --color-neutrals-black-alpha-900: #000000eb;
+
+  /* === LAYER 3: --color-* semantic refs (Tailwind v4 bridge) === */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/* === LAYER 4: --ms-* raw values (LIGHT) === */
+:root,
+.light {
+  --ms-bg:            #FAF7F2;
+  --ms-nav:           #FAF7F2;
+  --ms-card:          #FFFFFF;
+  --ms-card-2:        #F4EFE6;
+  --ms-line:          #E7E0D2;
+  --ms-line-2:        #D9CFBB;
+  --ms-ink:           #1D1B16;
+  --ms-ink-2:         #4A463C;
+  --ms-ink-3:         #807A6B;
+  --ms-accent:        #7A4B1F;
+  --ms-accent-2:      #B06A2C;
+  --ms-accent-soft:   #F0E4D0;
+  --ms-accent-fill:   rgba(122, 75, 31, 0.08);
+  --ms-on-accent:     #FAF7F2;
+  --ms-good:          #2F6B3D;
+  --ms-good-soft:     #E2ECD9;
+  --ms-bad:           #8A2A1F;
+  --ms-info:          #2C4A6B;
+  --ms-info-soft:     #D9E2EC;
+
+  /* === LAYER 5: Semantic token remap (LIGHT) === */
+  --background:              var(--ms-bg);
+  --foreground:              var(--ms-ink);
+  --card:                    var(--ms-card);
+  --card-foreground:         var(--ms-ink);
+  --popover:                 var(--ms-card);
+  --popover-foreground:      var(--ms-ink);
+  --primary:                 var(--ms-accent);
+  --primary-foreground:      var(--ms-on-accent);
+  --secondary:               var(--ms-card-2);
+  --secondary-foreground:    var(--ms-ink);
+  --accent:                  var(--ms-accent-soft);
+  --accent-foreground:       var(--ms-accent);
+  --muted:                   var(--ms-card-2);
+  --muted-foreground:        var(--ms-ink-3);
+  --destructive:             var(--ms-bad);
+  --destructive-foreground:  var(--ms-on-accent);
+  --success:                 var(--ms-good);
+  --success-foreground:      var(--ms-on-accent);
+  --warning:                 var(--ms-accent-2);
+  --warning-foreground:      var(--ms-on-accent);
+  --error:                   var(--ms-bad);
+  --error-foreground:        var(--ms-on-accent);
+  --info:                    var(--ms-info);
+  --info-foreground:         var(--ms-on-accent);
+  --border:                  var(--ms-line);
+  --input:                   var(--ms-line-2);
+  --ring:                    var(--ms-accent);
+
+  /* Charts (use --ms-* — single accent + neutral stops) */
+  --chart-1: var(--ms-accent);
+  --chart-2: var(--ms-accent-2);
+  --chart-3: var(--ms-ink-2);
+  --chart-4: var(--ms-good);
+  --chart-5: var(--ms-bad);
+
+  /* Sidebar */
+  --sidebar:                    var(--ms-nav);
+  --sidebar-foreground:         var(--ms-ink);
+  --sidebar-primary:            var(--ms-accent);
+  --sidebar-primary-foreground: var(--ms-on-accent);
+  --sidebar-accent:             var(--ms-accent-soft);
+  --sidebar-accent-foreground:  var(--ms-accent);
+  --sidebar-border:             var(--ms-line);
+  --sidebar-ring:               var(--ms-accent);
+
+  /* Semantic-* (shadcn dependents) */
+  --semantic-bg-base:        var(--ms-bg);
+  --semantic-bg-alt-1:       var(--ms-card);
+  --semantic-bg-alt-2:       var(--ms-card-2);
+  --semantic-fg-base:        var(--ms-ink);
+  --semantic-fg-muted:       var(--ms-ink-2);
+  --semantic-fg-subtle:      var(--ms-ink-3);
+  --semantic-border-default: var(--ms-line);
+  --semantic-border-strong:  var(--ms-line-2);
+}
+
+/* === LAYER 4 + 5: DARK overrides === */
+.dark {
+  --ms-bg:            #0D0C0A;
+  --ms-nav:           #0D0C0A;
+  --ms-card:          #161410;
+  --ms-card-2:        #0D0C0A;
+  --ms-line:          #26221A;
+  --ms-line-2:        #3A3325;
+  --ms-ink:           #FAF7F2;
+  --ms-ink-2:         #B4AD9C;
+  --ms-ink-3:         #807A6B;
+  --ms-accent:        #FAF7F2;
+  --ms-accent-2:      #FFFFFF;
+  --ms-accent-soft:   rgba(250, 247, 242, 0.08);
+  --ms-accent-fill:   rgba(250, 247, 242, 0.06);
+  --ms-on-accent:     #0D0C0A;
+  --ms-good:          #FAF7F2;
+  --ms-good-soft:     rgba(250, 247, 242, 0.08);
+  --ms-bad:           #FAF7F2;
+  --ms-info:          #FAF7F2;
+  --ms-info-soft:     rgba(250, 247, 242, 0.08);
+  /* All semantic tokens auto-update via var() refs above. */
+}

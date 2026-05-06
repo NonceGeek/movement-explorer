@@ -27,8 +27,8 @@ export default function NotFound() {
       />
 
       {/* Glow Effects */}
-      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-guild-green-500/15 blur-[120px] rounded-full pointer-events-none" />
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[200px] bg-byzantine-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-(--ms-accent)/15 blur-[120px] rounded-full pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[200px] bg-(--ms-accent-2)/10 blur-[100px] rounded-full pointer-events-none" />
 
       {/* Content */}
       <div className="relative z-10 text-center px-4 font-heading">
@@ -37,7 +37,7 @@ export default function NotFound() {
           <span className="text-[120px] md:text-[180px] font-bold leading-none text-transparent bg-clip-text bg-linear-to-b from-white/20 to-white/5 select-none">
             404
           </span>
-          <span className="absolute inset-0 flex items-center justify-center text-[120px] md:text-[180px] font-bold leading-none text-transparent bg-clip-text bg-linear-to-b from-guild-green-400 to-guild-green-600/50">
+          <span className="absolute inset-0 flex items-center justify-center text-[120px] md:text-[180px] font-bold leading-none text-transparent bg-clip-text bg-linear-to-b from-(--ms-accent) to-(--ms-accent-2)/50">
             404
           </span>
         </div>

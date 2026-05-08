@@ -65,12 +65,8 @@ export default function HomePage() {
 
   return (
     <div className="min-h-screen">
-      {/* Hero + Stats Section with Dotted Background - Full Width */}
+      {/* Hero + Stats Section - Full Width */}
       <div className="relative overflow-hidden">
-        {/* Hero dotted pattern (light only — dark gets a clean black bg per design) */}
-        <div
-          className="absolute inset-0 pointer-events-none bg-hero-dots dark:hidden"
-        />
 
         {/* Centered Glow above search bar */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-(--ms-accent)/15 blur-[120px] rounded-full pointer-events-none" />

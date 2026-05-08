@@ -8,6 +8,8 @@ import { Branding } from "@movementlabsxyz/movement-design-system";
 export function Logo() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  // Standard next-themes hydration guard — intentional setState in effect.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
 
   // SSR + first paint: use "white" so the dark-default initial render isn't

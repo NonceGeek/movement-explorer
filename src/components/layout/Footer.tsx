@@ -45,6 +45,8 @@ const resourceLinks = [
 export default function Footer() {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  // Standard next-themes hydration guard — intentional setState in effect.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setMounted(true), []);
   const brandingColor = mounted && resolvedTheme === "light" ? "black" : "white";
 

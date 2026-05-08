@@ -21,13 +21,13 @@ import type {
 const MARKER_COLOR = "#7A4B1F";
 const MIN_NODE_COUNT_SHOWN_IN_MARKER = 5;
 
-// Land/stroke colors mirror src/styles/theme.css --ms-ink-2 / --ms-line-2
-// in each theme. SVG fill/stroke take plain color strings so we resolve
-// per resolvedTheme rather than reading CSS vars.
-const LAND_FILL_LIGHT = "#4A463C";
-const LAND_FILL_DARK = "#26221A";
-const LAND_STROKE_LIGHT = "#807A6B";
-const LAND_STROKE_DARK = "#3A3325";
+// Land/stroke colors invert per theme: dark land on cream (light) vs.
+// light land on near-black (dark) so the map keeps clear contrast in
+// both modes. Values mirror tokens from src/styles/theme.css.
+const LAND_FILL_LIGHT = "#4A463C";   // ms-ink-2 light — warm dark brown
+const LAND_FILL_DARK  = "#B4AD9C";   // ms-ink-2 dark  — warm light cream
+const LAND_STROKE_LIGHT = "#807A6B"; // ms-ink-3
+const LAND_STROKE_DARK  = "#807A6B"; // ms-ink-3 (same in both — neutral)
 
 function getCircleRadius(currentGroupSize: number) {
   return Math.pow(currentGroupSize, 1 / 4) * 4;

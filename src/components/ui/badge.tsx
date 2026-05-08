@@ -58,7 +58,7 @@ function Badge({ className, variant, asChild = false, ...props }: BadgeProps) {
   } else if (variant === "primary") {
     resolvedVariant = "default";
     customClassName =
-      "bg-guild-green-500/10 text-guild-green-500 hover:bg-guild-green-500/20";
+      "bg-primary/10 text-primary hover:bg-primary/20";
   } else {
     resolvedVariant = variant as VariantProps<
       typeof dsBadgeVariants

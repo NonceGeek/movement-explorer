@@ -82,7 +82,7 @@ const sizeStyles: Record<ToggleGroupSize, string> = {
 
 const activeStyles: Record<ToggleGroupVariant, string> = {
   default: "bg-background text-foreground shadow-sm",
-  brand: "bg-guild-green-500 text-black shadow-sm",
+  brand: "bg-primary text-primary-foreground shadow-sm",
 };
 
 const ToggleGroupItem = React.forwardRef<

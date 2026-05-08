@@ -78,7 +78,7 @@ export function DetailSection({
           {title}
         </div>
       )}
-      <div className="bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden px-5">
+      <div className="bg-card backdrop-blur-sm border border-border/50 rounded-xl overflow-hidden px-5">
         {children}
       </div>
     </div>

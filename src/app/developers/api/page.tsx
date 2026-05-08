@@ -141,7 +141,7 @@ function ApiSidebar({
       <aside
         className={cn(
           "hidden lg:block w-[260px] shrink-0 self-start sticky top-32 z-10",
-          "bg-card/80 backdrop-blur-sm border border-border/30 rounded-lg",
+          "bg-card backdrop-blur-sm border border-border/30 rounded-lg",
           "max-h-[calc(100vh-6rem)] overflow-hidden"
         )}
       >
@@ -263,7 +263,7 @@ export default function ApiDocsPage() {
           <div className="flex gap-6">
             {/* Sidebar skeleton */}
             <aside className="hidden lg:block w-[260px] shrink-0">
-              <div className="bg-card/80 border border-border/30 rounded-lg p-3 space-y-1">
+              <div className="bg-card border border-border/30 rounded-lg p-3 space-y-1">
                 {[75, 55, 90, 65, 80, 45, 70, 60].map((w, i) => (
                   <EnhancedSkeleton
                     key={i}

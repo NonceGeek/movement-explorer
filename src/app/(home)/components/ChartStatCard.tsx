@@ -180,7 +180,7 @@ export function ChartStatCard({
   };
 
   return (
-    <div className="p-4 md:p-5 h-full flex flex-col bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+    <div className="p-4 md:p-5 h-full flex flex-col bg-card backdrop-blur-sm rounded-xl border border-border/50">
       {/* Header: Label & Tooltip */}
       <div className="flex items-center gap-1.5 mb-1.5">
         <span className="text-xs text-muted-foreground font-medium tracking-wider">

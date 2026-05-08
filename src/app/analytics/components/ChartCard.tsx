@@ -8,7 +8,7 @@ type ChartCardProps = {
 
 export default function ChartCard({ children }: ChartCardProps) {
   return (
-    <Card className="border border-border/50 bg-card/50">
+    <Card className="border border-border/50 bg-card">
       <CardContent className="p-4">{children}</CardContent>
     </Card>
   );

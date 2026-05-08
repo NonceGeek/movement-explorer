@@ -29,7 +29,7 @@ export default function EnhancedChartCard({
     <Card
       className={cn(
         // Etherscan-style borders and shadows
-        "border border-border/30 bg-card/50",
+        "border border-border/30 bg-card",
         "shadow-sm hover:shadow-md",
         // Smooth transitions
         "transition-all duration-300",

@@ -211,7 +211,7 @@ export function LatestUserTransactions({
                 <Link
                   key={version}
                   href={`/txn/${version}`}
-                  className="block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50 p-4 sm:p-5 transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md"
+                  className="block bg-card backdrop-blur-sm rounded-lg border border-border/50 p-4 sm:p-5 transition-all active:scale-[0.98] hover:bg-card hover:border-primary/30 hover:shadow-md"
                 >
                   <MobileTransactionCardContent
                     version={version}

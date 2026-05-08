@@ -234,7 +234,7 @@ export default function RunContract({
       {/* Main Content */}
       <div className="md:col-span-3">
         {!connected ? (
-          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+          <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <div className="flex flex-col items-center gap-4 py-8">
                 <p className="text-muted-foreground text-center">
@@ -312,7 +312,7 @@ export default function RunContract({
             }
           />
         ) : (
-          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+          <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <p className="text-muted-foreground">
                 Select an entry function from the sidebar

@@ -24,7 +24,7 @@ export default function SimpleChartCard({
   return (
     <Card
       className={cn(
-        "border border-border/30 bg-card/50 backdrop-blur-sm overflow-hidden",
+        "border border-border/30 bg-card backdrop-blur-sm overflow-hidden",
         className
       )}
     >

@@ -155,7 +155,7 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-3 bg-card backdrop-blur-md border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Check if only result is "No Results" */}
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -253,7 +253,7 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border border-border/60 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-3 bg-card backdrop-blur-md border border-border/60 rounded-xl shadow-lg overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Check if only result is "No Results" */}
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
@@ -375,7 +375,7 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-xl border border-border/40 rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-2 bg-card backdrop-blur-xl border border-border/40 rounded-xl shadow-xl shadow-black/10 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex items-center gap-2.5 px-4 py-3.5 text-sm text-muted-foreground">
                 <SearchX size={16} className="text-muted-foreground/50" />
@@ -447,7 +447,7 @@ export function SearchBar({
 
       {/* Results dropdown */}
       {isOpen && results.length > 0 && (
-        <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-100 w-full mt-2 bg-card backdrop-blur-sm border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Check if only result is "No Results" */}
           {results.length === 1 && results[0].type === "none" ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">

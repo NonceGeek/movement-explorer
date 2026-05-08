@@ -33,7 +33,7 @@ export default function ChartSection({
   return (
     <section
       id={`section-${id}`}
-      className="rounded-lg border border-border/30 bg-card/50 backdrop-blur-sm scroll-mt-6"
+      className="rounded-lg border border-border/30 bg-card backdrop-blur-sm scroll-mt-6"
     >
       <button
         onClick={() => setIsOpen(!isOpen)}

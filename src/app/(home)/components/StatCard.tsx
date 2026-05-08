@@ -93,7 +93,7 @@ interface StatsRowProps {
  */
 export function StatsRow({ children }: StatsRowProps) {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 *:border-border/30 [&>*:first-child]:col-span-2 sm:[&>*:first-child]:col-span-1 [&>*:nth-child(even)]:border-r [&>*:nth-child(odd)]:border-r-0 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(3n)]:border-r-0 lg:[&>*:nth-child(3n)]:border-r lg:[&>*:nth-child(5n)]:border-r-0 [&>*:nth-last-child(n+3)]:border-b sm:[&>*:nth-last-child(n+3)]:border-b-0 sm:[&>*:nth-last-child(n+4)]:border-b lg:*:border-b-0">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 *:border-border/30 [&>*:first-child]:col-span-2 sm:[&>*:first-child]:col-span-1 [&>*:nth-child(even)]:border-r [&>*:nth-child(odd)]:border-r-0 sm:[&>*:nth-child(odd)]:border-r sm:[&>*:nth-child(3n)]:border-r-0 lg:[&>*:nth-child(3n)]:border-r lg:[&>*:nth-child(5n)]:border-r-0 [&>*:nth-last-child(n+3)]:border-b sm:[&>*:nth-last-child(n+3)]:border-b-0 sm:[&>*:nth-last-child(n+4)]:border-b lg:*:border-b-0">
       {children}
     </div>
   );
@@ -102,7 +102,7 @@ export function StatsRow({ children }: StatsRowProps) {
 // 保留旧的 StatCard 组件用于向后兼容（独立卡片场景）
 export function StatCard(props: StatItemProps) {
   return (
-    <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+    <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50">
       <StatItem {...props} />
     </div>
   );

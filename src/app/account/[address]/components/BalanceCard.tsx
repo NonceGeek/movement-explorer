@@ -51,7 +51,7 @@ export default function BalanceCard({ address }: BalanceCardProps) {
   if (!balance) return null;
 
   return (
-    <Card className="h-full bg-card/50 backdrop-blur-sm">
+    <Card className="h-full bg-card backdrop-blur-sm">
       <CardContent className="pt-6 flex flex-col justify-center h-full gap-1">
         <div className="flex items-center gap-2">
           <span className="text-2xl font-bold">{formattedBalance} MOVE</span>

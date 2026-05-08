@@ -300,7 +300,7 @@ export default function CodeTab({
   return (
     <div className="space-y-2">
       {/* Mobile navigation */}
-      <Card className="md:hidden bg-card/50 backdrop-blur-sm rounded-xl border-border/50 py-0!">
+      <Card className="md:hidden bg-card backdrop-blur-sm rounded-xl border-border/50 py-0!">
         <CardContent className="py-3 px-4">
           <div className="flex flex-wrap items-center gap-3">
             {/* Package selector */}
@@ -421,7 +421,7 @@ export default function CodeTab({
           {viewingModule && selectedModuleSource ? (
             <>
               {/* Source Code */}
-              <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+              <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
                 <CardHeader>
                   <div className="flex flex-col gap-2">
                     {/* Row 1: breadcrumb + actions */}

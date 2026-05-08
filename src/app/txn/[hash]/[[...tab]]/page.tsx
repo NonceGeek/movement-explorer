@@ -409,7 +409,7 @@ export default function TransactionDetailPage() {
                   </ToggleGroupItem>
                 </ToggleGroup>
 
-                <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
+                <div className="bg-card backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
                   {/* Type row */}
                   <div className="px-5 py-3 flex items-center gap-3 bg-muted/20">
                     <EnhancedSkeleton className="h-4 w-8" />

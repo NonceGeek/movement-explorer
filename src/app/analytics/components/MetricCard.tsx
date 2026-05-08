@@ -27,7 +27,7 @@ export default function MetricCard({
   trend,
 }: MetricCardProps) {
   return (
-    <Card className="border border-border/30 bg-card/50 h-[120px] shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300">
+    <Card className="border border-border/30 bg-card h-[120px] shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300">
       <CardContent className="p-5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground font-medium">
@@ -78,7 +78,7 @@ export function DoubleMetricCard({
   trend2,
 }: DoubleMetricCardProps) {
   return (
-    <Card className="border border-border/30 bg-card/50 h-[120px] shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300">
+    <Card className="border border-border/30 bg-card h-[120px] shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300">
       <CardContent className="p-5 flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <span className="text-xs text-muted-foreground font-medium">

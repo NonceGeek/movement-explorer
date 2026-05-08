@@ -80,7 +80,7 @@ function SectionCard({
   return (
     <div
       className={cn(
-        "rounded-lg border border-border bg-card/50 p-4",
+        "rounded-lg border border-border bg-card p-4",
         className
       )}
     >

@@ -34,7 +34,7 @@ export default function MovePackageManifest({
   };
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+    <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
           <CardTitle className="text-base flex items-center gap-2">

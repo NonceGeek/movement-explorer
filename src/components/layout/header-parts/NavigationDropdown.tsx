@@ -67,7 +67,7 @@ export function NavigationDropdown({ label, items }: NavigationDropdownProps) {
         onMouseLeave={handleClose}
         className={cn(
           "rounded-2xl p-3 min-w-48 space-y-1.5",
-          "bg-card/95 backdrop-blur-xl",
+          "bg-card backdrop-blur-xl",
           "border border-border/60",
           "shadow-xl shadow-black/10",
         )}

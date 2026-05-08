@@ -54,7 +54,7 @@ export function StakeOperationActivities({
   if (!connected) return null;
 
   return (
-    <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300">
+    <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300">
       <div className="border-b border-border/30 py-4 px-5">
         <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
           Staking Activity History

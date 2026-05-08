@@ -66,7 +66,7 @@ export default function PackageContent({
   };
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+    <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader>
         <div className="flex items-center justify-between gap-2">
           {/* Desktop breadcrumb: toggle / pkg / Package Manifest */}

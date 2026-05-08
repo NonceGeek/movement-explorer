@@ -43,7 +43,7 @@ export default function EnhancedMetricCard({
   return (
     <Card
       className={cn(
-        "border border-border/30 bg-card/50 shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300",
+        "border border-border/60 bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300",
         height
       )}
     >

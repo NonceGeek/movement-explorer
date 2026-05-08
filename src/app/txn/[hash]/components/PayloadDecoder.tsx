@@ -405,7 +405,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
         <JsonViewer data={payload} initialDepth={2} />
       ) : (
         <div className="space-y-4">
-          <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
+          <div className="bg-card backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
           {/* Payload Type */}
           <div className="px-5 py-2.5 flex items-center gap-2.5 bg-muted/40">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/70">
@@ -627,7 +627,7 @@ export function PayloadDecoder({ payload, className }: PayloadDecoderProps) {
           </div>
 
           {entryPayload && (
-            <div className="bg-card/50 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
+            <div className="bg-card backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden divide-y divide-border/20">
               {/* Arguments Header */}
               <div className="px-5 py-2.5 flex items-center gap-2.5 bg-muted/40">
                 <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-foreground/70">

@@ -253,7 +253,7 @@ export default function ReadContract({
             }
           />
         ) : (
-          <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+          <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
             <CardContent className="pt-6">
               <p className="text-muted-foreground">
                 Select a view function from the sidebar

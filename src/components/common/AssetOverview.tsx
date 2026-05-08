@@ -89,7 +89,7 @@ export function AssetOverview({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
       {/* Card 1: Overview */}
-      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 md:p-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
           OVERVIEW
         </h3>
@@ -159,7 +159,7 @@ export function AssetOverview({
       </div>
 
       {/* Card 2: Token Info */}
-      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 md:p-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
           TOKEN INFO
         </h3>
@@ -226,7 +226,7 @@ export function AssetOverview({
       </div>
 
       {/* Card 3: More Info */}
-      <div className="p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 md:p-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <h3 className="text-xs text-muted-foreground font-medium tracking-wider mb-3">
           MORE INFO
         </h3>

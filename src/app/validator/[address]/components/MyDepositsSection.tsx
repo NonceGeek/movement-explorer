@@ -29,7 +29,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   if (!connected) {
     return (
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
+      <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
         <div className="border-b border-border/30 py-4 px-5">
           <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
             My Deposits
@@ -61,7 +61,7 @@ export function MyDepositsSection({ validatorAddress }: MyDepositsProps) {
 
   return (
     <>
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
+      <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
         {/* Header with title and action buttons */}
         <div className="border-b border-border/30 py-4 px-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">

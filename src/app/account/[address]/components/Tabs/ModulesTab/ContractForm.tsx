@@ -92,7 +92,7 @@ export default function ContractForm({
       : null;
 
   return (
-    <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+    <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader>
         <pre className="font-mono text-sm leading-relaxed whitespace-pre-wrap m-0 p-0 bg-transparent">
           <span

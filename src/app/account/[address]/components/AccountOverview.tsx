@@ -11,7 +11,7 @@ import type { AccountTimeline } from "@/hooks/accounts/useGetAccountFirstLastTx"
 import type { AccountMoveFlow } from "@/hooks/accounts/useGetAccountMoveFlow";
 
 const CARD_CLASS =
-  "p-4 md:p-5 bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5";
+  "p-4 md:p-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5";
 
 const TITLE_CLASS =
   "text-sm text-muted-foreground font-medium tracking-wider mb-4";

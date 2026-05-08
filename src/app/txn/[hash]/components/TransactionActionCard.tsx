@@ -919,7 +919,7 @@ export function TransactionActionCard({
   return (
     <div
       className={cn(
-        "bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-4 mb-4",
+        "bg-card backdrop-blur-sm border border-border/50 rounded-xl p-4 mb-4",
         className
       )}
     >

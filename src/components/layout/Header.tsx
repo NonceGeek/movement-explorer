@@ -46,7 +46,7 @@ export default function Header() {
     <header
       className={cn(
         "z-50 w-full border-b backdrop-blur-xl transition-all duration-300",
-        "bg-card/50",
+        "bg-card",
         "border-border/40",
         // Only sticky on homepage; on sub-pages it scrolls away naturally
         isHomePage ? "sticky top-0" : "relative",

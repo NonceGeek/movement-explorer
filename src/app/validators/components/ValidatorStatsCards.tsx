@@ -53,7 +53,7 @@ export function ValidatorStatsCards({
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 mb-8">
       {/* 1. Active Nodes */}
-      <div className="p-4 h-[110px] flex flex-col justify-between bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 h-[110px] flex flex-col justify-between bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground font-medium tracking-wider">
             ACTIVE VALIDATOR NODES
@@ -72,7 +72,7 @@ export function ValidatorStatsCards({
       </div>
 
       {/* 2. Current Epoch with Progress */}
-      <div className="p-4 h-[110px] flex flex-col justify-between bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 h-[110px] flex flex-col justify-between bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground font-medium tracking-wider">
             CURRENT EPOCH
@@ -105,7 +105,7 @@ export function ValidatorStatsCards({
       </div>
 
       {/* 3. Total MOVE Staked */}
-      <div className="p-4 h-[110px] flex flex-col justify-between bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card/80 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
+      <div className="p-4 h-[110px] flex flex-col justify-between bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5">
         <div className="flex items-center gap-1.5">
           <span className="text-xs text-muted-foreground font-medium tracking-wider">
             TOTAL MOVE STAKED

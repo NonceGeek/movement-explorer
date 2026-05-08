@@ -40,11 +40,11 @@ function MetricCard({
     <div
       className={cn(
         "p-4 h-[110px] flex flex-col justify-between",
-        "bg-card/50 backdrop-blur-sm rounded-xl border border-border/50",
+        "bg-card backdrop-blur-sm rounded-xl border border-border/50",
         "transition-all duration-300",
         // Clickable card hover effects
         href && [
-          "hover:bg-card/80",
+          "hover:bg-card",
           "hover:border-primary/40",
           "hover:shadow-lg hover:shadow-primary/10",
           "hover:-translate-y-0.5",

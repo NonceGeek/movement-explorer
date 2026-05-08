@@ -218,9 +218,9 @@ export function MobileTransactionCard({
     <Link
       href={`/txn/${version}`}
       className={cn(
-        "block bg-card/50 backdrop-blur-sm rounded-lg border border-border/50",
+        "block bg-card backdrop-blur-sm rounded-lg border border-border/50",
         "p-3 sm:p-4",
-        "transition-all active:scale-[0.98] hover:bg-card/80 hover:border-primary/30 hover:shadow-md",
+        "transition-all active:scale-[0.98] hover:bg-card hover:border-primary/30 hover:shadow-md",
         className
       )}
     >

@@ -82,7 +82,7 @@ export function StakingBar({
 
   if (isLoading) {
     return (
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
+      <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="flex flex-wrap gap-6">
               {Array.from({ length: 3 }).map((_, i) => (
@@ -111,7 +111,7 @@ export function StakingBar({
 
   return (
     <>
-      <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
+      <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 p-5 transition-all duration-300">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             {/* Stats */}
             <div className="flex flex-wrap gap-6 md:gap-8">

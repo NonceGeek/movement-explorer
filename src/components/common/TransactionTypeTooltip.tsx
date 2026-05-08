@@ -24,7 +24,7 @@ export function TransactionTypeTooltip() {
         <Info className="h-4 w-4 text-muted-foreground transition-colors" />
       </button>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-card/60 backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl p-0 overflow-hidden">
+        <DialogContent className="max-w-md bg-card backdrop-blur-xl border border-border/50 rounded-xl shadow-2xl p-0 overflow-hidden">
           <DialogHeader className="bg-muted/30 px-5 pt-5 pb-3 border-b border-border/30">
             <DialogTitle className="text-sm font-medium text-foreground">
               Transaction Types

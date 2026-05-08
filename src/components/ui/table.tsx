@@ -103,7 +103,7 @@ const StyledTable = React.forwardRef<
   <Table
     ref={ref}
     className={cn(
-      "bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-0 table-fixed overflow-y-hidden [&_td]:px-3 [&_th]:px-3",
+      "bg-card backdrop-blur-sm rounded-xl border border-border/50 p-0 table-fixed overflow-y-hidden [&_td]:px-3 [&_th]:px-3",
       className,
     )}
     {...props}

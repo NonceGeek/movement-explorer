@@ -165,7 +165,7 @@ export default function ModuleSidebar({
 
   if (sortedModuleNames.length === 0) {
     return (
-      <Card className="bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+      <Card className="bg-card backdrop-blur-sm rounded-xl border-border/50">
         <CardContent className="pt-6">
           <p className="text-muted-foreground text-sm">No functions found</p>
         </CardContent>
@@ -256,7 +256,7 @@ export default function ModuleSidebar({
   };
 
   return (
-    <Card className="h-fit max-h-[calc(100vh-140px)] overflow-y-auto bg-card/50 backdrop-blur-sm rounded-xl border-border/50">
+    <Card className="h-fit max-h-[calc(100vh-140px)] overflow-y-auto bg-card backdrop-blur-sm rounded-xl border-border/50">
       <CardHeader className="pb-3">
         <CardTitle className="text-base">{title}</CardTitle>
       </CardHeader>

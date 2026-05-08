@@ -156,7 +156,7 @@ function ValidatorContent() {
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-destructive/50 p-6">
+        <div className="bg-card backdrop-blur-sm rounded-xl border border-destructive/50 p-6">
           <p className="text-destructive">Error loading validator</p>
           <p className="text-muted-foreground mt-2">{error.message}</p>
         </div>
@@ -235,7 +235,7 @@ function ValidatorContent() {
         {isLoading ? (
           <div className="space-y-6">
             {/* Overview Card Skeleton */}
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
+            <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
                 <div className="flex items-center gap-3">
@@ -269,7 +269,7 @@ function ValidatorContent() {
             </div>
 
             {/* Staking Breakdown Skeleton */}
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+            <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50">
               <div className="border-b border-border/30 py-4 px-5">
                 <EnhancedSkeleton className="h-5 w-40" />
               </div>
@@ -289,7 +289,7 @@ function ValidatorContent() {
         ) : (
           <>
             {/* Overview Card */}
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 overflow-hidden transition-all duration-300">
+            <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 overflow-hidden transition-all duration-300">
               {/* Card Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
                 <div className="flex items-center gap-3">
@@ -465,7 +465,7 @@ function ValidatorContent() {
             </div>
 
             {/* Staking Breakdown */}
-            <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
+            <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 mb-6 transition-all duration-300">
               <div className="border-b border-border/30 py-4 px-5">
                 <span className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
                   Staking Breakdown
@@ -570,7 +570,7 @@ export default function ValidatorDetailPage() {
       fallback={
         <div className="container mx-auto px-4 py-8 space-y-6">
           {/* Overview Card Skeleton */}
-          <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
+          <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50 overflow-hidden">
             <div className="flex items-center justify-between gap-3 px-5 py-4 border-b border-border/30">
               <div className="flex items-center gap-3">
                 <EnhancedSkeleton className="w-10 h-10 rounded-full" />
@@ -601,7 +601,7 @@ export default function ValidatorDetailPage() {
             </div>
           </div>
           {/* Staking Breakdown Skeleton */}
-          <div className="bg-card/50 backdrop-blur-sm rounded-xl border border-border/50">
+          <div className="bg-card backdrop-blur-sm rounded-xl border border-border/50">
             <div className="border-b border-border/30 py-4 px-5">
               <EnhancedSkeleton className="h-5 w-40" />
             </div>

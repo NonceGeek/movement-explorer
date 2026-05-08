@@ -193,7 +193,7 @@ export function TransactionHistoryChart({
   }
 
   return (
-    <div className="h-full bg-card/50 backdrop-blur-sm rounded-xl border border-border/50 p-4">
+    <div className="h-full bg-card backdrop-blur-sm rounded-xl border border-border/50 p-4">
       {/* Chart Title */}
       <div className="mb-3">
         <h3 className="text-sm font-medium text-muted-foreground tracking-wider">

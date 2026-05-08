@@ -96,7 +96,7 @@ export default function NetworkBadge() {
         sideOffset={8}
         className={cn(
           "w-48 rounded-xl p-2 space-y-1",
-          "bg-card/95 backdrop-blur-xl",
+          "bg-card backdrop-blur-xl",
           "border border-border/60",
           "shadow-xl shadow-black/10",
         )}

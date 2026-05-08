@@ -40,7 +40,7 @@ export function TransactionSummaryCard({
   return (
     <div
       className={cn(
-        "bg-card/50 backdrop-blur-sm border border-border/50 rounded-xl p-5 mb-6",
+        "bg-card backdrop-blur-sm border border-border/50 rounded-xl p-5 mb-6",
         className
       )}
     >

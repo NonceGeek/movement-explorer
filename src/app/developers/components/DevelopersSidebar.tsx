@@ -133,7 +133,7 @@ export default function DevelopersSidebar({
       <aside
         className={cn(
           "hidden lg:block w-[250px] flex-shrink-0 self-start sticky top-32 z-10",
-          "bg-card/80 backdrop-blur-sm border border-border/30 rounded-lg",
+          "bg-card backdrop-blur-sm border border-border/30 rounded-lg",
           "max-h-[calc(100vh-6rem)] overflow-hidden"
         )}
       >

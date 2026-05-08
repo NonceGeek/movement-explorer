@@ -12,13 +12,9 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
-import {
-  BACKGROUND_COLOR,
-  BACKGROUND_COLOR_END,
-  COLOR,
-  HIGHLIGHT_COLOR,
-  GRID_LINE_COLOR,
-} from "../utils";
+import { useMemo } from "react";
+import { useTheme } from "next-themes";
+import { getChartColors } from "../utils";
 
 ChartJS.register(
   CategoryScale,
@@ -40,19 +36,21 @@ type LineChartProps = {
   decimals?: number;
 };
 
-/**
- * LineChart - Enhanced with Etherscan-style gradients and improved tooltips
- * Features:
- * - Guild Green gradient fills
- * - Subtle dashed grid lines
- * - Enhanced tooltips with context
- */
 export default function LineChart({
   labels,
   dataset,
-  fill = true, // Enable gradient fill by default (Etherscan style)
+  fill = true,
   tooltipsLabelFunc,
 }: LineChartProps) {
+  const { resolvedTheme } = useTheme();
+  const {
+    COLOR,
+    BACKGROUND_COLOR,
+    BACKGROUND_COLOR_END,
+    HIGHLIGHT_COLOR,
+    GRID_LINE_COLOR,
+  } = useMemo(() => getChartColors(), [resolvedTheme]);
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,

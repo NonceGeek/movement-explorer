@@ -1,12 +1,36 @@
 import { DailyAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
 
-// Chart colors - Guild Green (Movement brand color)
-// Keeping brand identity while applying Etherscan-style design
-export const COLOR = "rgba(88, 197, 137, 0.9)"; // Guild Green line color
-export const BACKGROUND_COLOR = "rgba(88, 197, 137, 0.4)"; // Gradient start - more visible
-export const BACKGROUND_COLOR_END = "rgba(88, 197, 137, 0)"; // Gradient end - fully transparent
-export const HIGHLIGHT_COLOR = "#6bd69b"; // Lighter green for hover
-export const GRID_LINE_COLOR = "rgba(156, 163, 175, 0.15)"; // Subtle grid lines
+// Chart colors are read from --ms-* CSS variables at runtime so charts
+// follow the active light/dark theme. Chart libraries (Chart.js, Recharts)
+// expect color strings, not CSS var references, so we resolve them on the
+// fly via getComputedStyle and feed the resolved values into chart options.
+function readVar(name: string): string {
+  if (typeof window === "undefined") return "";
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+}
+
+export type ChartColors = {
+  COLOR: string;
+  BACKGROUND_COLOR: string;
+  BACKGROUND_COLOR_END: string;
+  HIGHLIGHT_COLOR: string;
+  GRID_LINE_COLOR: string;
+};
+
+export function getChartColors(): ChartColors {
+  // Fallbacks (light-mode --ms-* values) cover SSR and test contexts where
+  // window/computed style aren't available.
+  const accent = readVar("--ms-accent") || "#7A4B1F";
+  const accent2 = readVar("--ms-accent-2") || "#B06A2C";
+  const ink3 = readVar("--ms-ink-3") || "#807A6B";
+  return {
+    COLOR: `color-mix(in srgb, ${accent} 90%, transparent)`,
+    BACKGROUND_COLOR: `color-mix(in srgb, ${accent} 40%, transparent)`,
+    BACKGROUND_COLOR_END: `color-mix(in srgb, ${accent} 0%, transparent)`,
+    HIGHLIGHT_COLOR: accent2,
+    GRID_LINE_COLOR: `color-mix(in srgb, ${ink3} 25%, transparent)`,
+  };
+}
 
 // Number formatter with K/M/G suffixes
 export function numberFormatter(num: number, digits: number): string {

@@ -10,12 +10,9 @@ import {
   Legend,
 } from "chart.js";
 import { Bar } from "react-chartjs-2";
-import {
-  BACKGROUND_COLOR,
-  BACKGROUND_COLOR_END,
-  COLOR,
-  GRID_LINE_COLOR,
-} from "../utils";
+import { useMemo } from "react";
+import { useTheme } from "next-themes";
+import { getChartColors } from "../utils";
 
 ChartJS.register(
   CategoryScale,
@@ -31,14 +28,11 @@ type BarChartProps = {
   dataset: number[];
 };
 
-/**
- * BarChart - Enhanced with Etherscan-style gradients
- * Features:
- * - Guild Green gradient bar fills
- * - Subtle grid lines
- * - Enhanced tooltips
- */
 export default function BarChart({ labels, dataset }: BarChartProps) {
+  const { resolvedTheme } = useTheme();
+  const { COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR_END, GRID_LINE_COLOR } =
+    useMemo(() => getChartColors(), [resolvedTheme]);
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,

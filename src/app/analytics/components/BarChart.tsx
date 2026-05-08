@@ -30,7 +30,7 @@ type BarChartProps = {
 
 export default function BarChart({ labels, dataset }: BarChartProps) {
   const { resolvedTheme } = useTheme();
-  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
+  const colors = useMemo(() => getChartColors(resolvedTheme), [resolvedTheme]);
   const {
     COLOR,
     BACKGROUND_COLOR,

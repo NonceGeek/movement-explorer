@@ -1,14 +1,11 @@
 import { DailyAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
 
-// Chart colors are read from --ms-* CSS variables at runtime so charts
-// follow the active light/dark theme. Chart.js draws to <canvas>, which
-// expects plain CSS color strings, so we resolve hex tokens to rgba()
-// (avoiding color-mix() — canvas support is uneven across browsers).
-function readVar(name: string): string {
-  if (typeof window === "undefined") return "";
-  return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
-}
-
+// Chart colors are derived from the resolved theme, mirroring the values
+// in src/styles/theme.css. We can't read CSS variables via getComputedStyle
+// during React render because next-themes applies the .dark class via an
+// effect that hasn't committed yet, so reads return stale values.
+// Keeping the values inline (synced with theme.css) is the most reliable
+// path for canvas-based chart libraries.
 function hexToRgba(hex: string, alpha: number): string {
   const h = hex.replace(/^#/, "");
   const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
@@ -17,6 +14,36 @@ function hexToRgba(hex: string, alpha: number): string {
   const b = parseInt(full.slice(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
+
+type Tokens = {
+  accent: string;
+  accent2: string;
+  ink: string;
+  ink2: string;
+  ink3: string;
+  line: string;
+  card: string;
+};
+
+const LIGHT_TOKENS: Tokens = {
+  accent:  "#7A4B1F",
+  accent2: "#B06A2C",
+  ink:     "#1D1B16",
+  ink2:    "#4A463C",
+  ink3:    "#807A6B",
+  line:    "#E7E0D2",
+  card:    "#FFFFFF",
+};
+
+const DARK_TOKENS: Tokens = {
+  accent:  "#FAF7F2",
+  accent2: "#FFFFFF",
+  ink:     "#FAF7F2",
+  ink2:    "#B4AD9C",
+  ink3:    "#807A6B",
+  line:    "#26221A",
+  card:    "#161410",
+};
 
 export type ChartColors = {
   // Primary series
@@ -41,15 +68,9 @@ export type ChartColors = {
   TOOLTIP_BORDER: string;
 };
 
-export function getChartColors(): ChartColors {
-  // Fallbacks cover SSR / test contexts where computed style isn't available.
-  const accent  = readVar("--ms-accent")   || "#7A4B1F";
-  const accent2 = readVar("--ms-accent-2") || "#B06A2C";
-  const ink     = readVar("--ms-ink")      || "#1D1B16";
-  const ink2    = readVar("--ms-ink-2")    || "#4A463C";
-  const ink3    = readVar("--ms-ink-3")    || "#807A6B";
-  const line    = readVar("--ms-line")     || "#E7E0D2";
-  const card    = readVar("--ms-card")     || "#FFFFFF";
+export function getChartColors(resolvedTheme?: string): ChartColors {
+  const t = resolvedTheme === "dark" ? DARK_TOKENS : LIGHT_TOKENS;
+  const { accent, accent2, ink, ink2, ink3, line, card } = t;
 
   return {
     COLOR:                hexToRgba(accent, 1.0),

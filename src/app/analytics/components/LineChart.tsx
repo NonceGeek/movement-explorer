@@ -43,7 +43,7 @@ export default function LineChart({
   tooltipsLabelFunc,
 }: LineChartProps) {
   const { resolvedTheme } = useTheme();
-  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
+  const colors = useMemo(() => getChartColors(resolvedTheme), [resolvedTheme]);
   const {
     COLOR,
     BACKGROUND_COLOR,

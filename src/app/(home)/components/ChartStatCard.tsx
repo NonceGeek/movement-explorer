@@ -64,7 +64,7 @@ export function ChartStatCard({
   chartLabels,
 }: ChartStatCardProps) {
   const { resolvedTheme } = useTheme();
-  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
+  const colors = useMemo(() => getChartColors(resolvedTheme), [resolvedTheme]);
   const {
     COLOR: LINE_COLOR,
     BACKGROUND_COLOR: GRADIENT_START,

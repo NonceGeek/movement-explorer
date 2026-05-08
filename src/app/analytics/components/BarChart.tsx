@@ -30,8 +30,18 @@ type BarChartProps = {
 
 export default function BarChart({ labels, dataset }: BarChartProps) {
   const { resolvedTheme } = useTheme();
-  const { COLOR, BACKGROUND_COLOR, BACKGROUND_COLOR_END, GRID_LINE_COLOR } =
-    useMemo(() => getChartColors(), [resolvedTheme]);
+  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
+  const {
+    COLOR,
+    BACKGROUND_COLOR,
+    BACKGROUND_COLOR_MID,
+    BACKGROUND_COLOR_END,
+    GRID_LINE_COLOR,
+    AXIS_LABEL_COLOR,
+    TOOLTIP_BG,
+    TOOLTIP_FG,
+    TOOLTIP_BORDER,
+  } = colors;
 
   const options = {
     responsive: true,
@@ -49,11 +59,11 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
       },
       tooltip: {
         usePointStyle: true,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleColor: "#fff",
-        bodyColor: "#fff",
+        backgroundColor: TOOLTIP_BG,
+        titleColor: TOOLTIP_FG,
+        bodyColor: TOOLTIP_FG,
         padding: 12,
-        borderColor: COLOR,
+        borderColor: TOOLTIP_BORDER,
         borderWidth: 1,
         labelPointStyle: {
           pointStyle: "circle" as const,
@@ -73,7 +83,7 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
           autoSkip: true,
           maxTicksLimit: 4,
           maxRotation: 0,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
         },
         border: {
           display: false,
@@ -83,7 +93,7 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
         ticks: {
           autoSkip: true,
           maxTicksLimit: 3,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
         },
         grid: {
           display: true, // Show grid lines (Etherscan style)
@@ -108,8 +118,9 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
         backgroundColor: (context: any) => {
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 200);
-          gradient.addColorStop(0, BACKGROUND_COLOR); // Top: more opaque
-          gradient.addColorStop(1, BACKGROUND_COLOR_END); // Bottom: transparent
+          gradient.addColorStop(0, BACKGROUND_COLOR);     // strong top
+          gradient.addColorStop(0.6, BACKGROUND_COLOR_MID); // soft mid
+          gradient.addColorStop(1, BACKGROUND_COLOR_END);   // fully transparent
           return gradient;
         },
         borderColor: COLOR,

@@ -53,12 +53,18 @@ export function TransactionHistoryChart({
   isLoading,
 }: TransactionHistoryChartProps) {
   const { resolvedTheme } = useTheme();
+  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
   const {
     COLOR: LINE_COLOR,
     BACKGROUND_COLOR: GRADIENT_START,
+    BACKGROUND_COLOR_MID: GRADIENT_MID,
     BACKGROUND_COLOR_END: GRADIENT_END,
     GRID_LINE_COLOR,
-  } = useMemo(() => getChartColors(), [resolvedTheme]);
+    AXIS_LABEL_COLOR,
+    TOOLTIP_BG,
+    TOOLTIP_FG,
+    TOOLTIP_BORDER,
+  } = colors;
 
   const options = {
     responsive: true,
@@ -73,11 +79,11 @@ export function TransactionHistoryChart({
       },
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(0, 0, 0, 0.85)",
-        titleColor: "#fff",
-        bodyColor: "#fff",
+        backgroundColor: TOOLTIP_BG,
+        titleColor: TOOLTIP_FG,
+        bodyColor: TOOLTIP_FG,
         padding: 12,
-        borderColor: LINE_COLOR,
+        borderColor: TOOLTIP_BORDER,
         borderWidth: 1,
         displayColors: false,
         callbacks: {
@@ -100,7 +106,7 @@ export function TransactionHistoryChart({
           autoSkip: true,
           maxTicksLimit: 7,
           maxRotation: 0,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
           font: {
             size: 11,
           },
@@ -121,7 +127,7 @@ export function TransactionHistoryChart({
         ticks: {
           autoSkip: true,
           maxTicksLimit: 5,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
           font: {
             size: 11,
           },
@@ -139,7 +145,7 @@ export function TransactionHistoryChart({
         radius: 0,
         hoverRadius: 5,
         hoverBorderWidth: 2,
-        hoverBorderColor: "#fff",
+        hoverBorderColor: TOOLTIP_BG,
         backgroundColor: LINE_COLOR,
       },
       line: {
@@ -168,6 +174,7 @@ export function TransactionHistoryChart({
             chartArea.bottom
           );
           gradient.addColorStop(0, GRADIENT_START);
+          gradient.addColorStop(0.6, GRADIENT_MID);
           gradient.addColorStop(1, GRADIENT_END);
           return gradient;
         },

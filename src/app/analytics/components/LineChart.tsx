@@ -43,13 +43,19 @@ export default function LineChart({
   tooltipsLabelFunc,
 }: LineChartProps) {
   const { resolvedTheme } = useTheme();
+  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
   const {
     COLOR,
     BACKGROUND_COLOR,
+    BACKGROUND_COLOR_MID,
     BACKGROUND_COLOR_END,
     HIGHLIGHT_COLOR,
     GRID_LINE_COLOR,
-  } = useMemo(() => getChartColors(), [resolvedTheme]);
+    AXIS_LABEL_COLOR,
+    TOOLTIP_BG,
+    TOOLTIP_FG,
+    TOOLTIP_BORDER,
+  } = colors;
 
   const options = {
     responsive: true,
@@ -67,11 +73,11 @@ export default function LineChart({
       },
       tooltip: {
         usePointStyle: true,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleColor: "#fff",
-        bodyColor: "#fff",
+        backgroundColor: TOOLTIP_BG,
+        titleColor: TOOLTIP_FG,
+        bodyColor: TOOLTIP_FG,
         padding: 12,
-        borderColor: COLOR,
+        borderColor: TOOLTIP_BORDER,
         borderWidth: 1,
         callbacks: {
           label: tooltipsLabelFunc,
@@ -90,7 +96,7 @@ export default function LineChart({
           autoSkip: true,
           maxTicksLimit: 4,
           maxRotation: 0,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
         },
         border: {
           display: false,
@@ -100,7 +106,7 @@ export default function LineChart({
         ticks: {
           autoSkip: true,
           maxTicksLimit: 3,
-          color: "rgba(156, 163, 175, 0.8)",
+          color: AXIS_LABEL_COLOR,
         },
         grid: {
           display: true, // Show grid lines (Etherscan style)
@@ -121,7 +127,7 @@ export default function LineChart({
         radius: 3,
         hoverRadius: 5,
         hoverBorderWidth: 2,
-        hoverBorderColor: "#fff",
+        hoverBorderColor: TOOLTIP_BG,
       },
     },
   };
@@ -148,8 +154,9 @@ export default function LineChart({
             0,
             chartArea.bottom
           );
-          gradient.addColorStop(0, BACKGROUND_COLOR); // Top: more opaque
-          gradient.addColorStop(1, BACKGROUND_COLOR_END); // Bottom: transparent
+          gradient.addColorStop(0, BACKGROUND_COLOR);     // strong top
+          gradient.addColorStop(0.6, BACKGROUND_COLOR_MID); // soft mid
+          gradient.addColorStop(1, BACKGROUND_COLOR_END);   // fully transparent
           return gradient;
         },
         tension: 0.4, // Smooth curves

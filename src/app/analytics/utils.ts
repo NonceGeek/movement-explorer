@@ -1,34 +1,76 @@
 import { DailyAnalyticsData } from "@/hooks/analytics/useGetAnalyticsData";
 
 // Chart colors are read from --ms-* CSS variables at runtime so charts
-// follow the active light/dark theme. Chart libraries (Chart.js, Recharts)
-// expect color strings, not CSS var references, so we resolve them on the
-// fly via getComputedStyle and feed the resolved values into chart options.
+// follow the active light/dark theme. Chart.js draws to <canvas>, which
+// expects plain CSS color strings, so we resolve hex tokens to rgba()
+// (avoiding color-mix() — canvas support is uneven across browsers).
 function readVar(name: string): string {
   if (typeof window === "undefined") return "";
   return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
 }
 
+function hexToRgba(hex: string, alpha: number): string {
+  const h = hex.replace(/^#/, "");
+  const full = h.length === 3 ? h.split("").map((c) => c + c).join("") : h;
+  const r = parseInt(full.slice(0, 2), 16);
+  const g = parseInt(full.slice(2, 4), 16);
+  const b = parseInt(full.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 export type ChartColors = {
+  // Primary series
   COLOR: string;
-  BACKGROUND_COLOR: string;
-  BACKGROUND_COLOR_END: string;
+  BACKGROUND_COLOR: string;       // gradient stop 0  (top, most opaque)
+  BACKGROUND_COLOR_MID: string;   // gradient stop ~0.6
+  BACKGROUND_COLOR_END: string;   // gradient stop 1  (bottom, transparent)
+  // Secondary series (for multi-line / multi-bar charts)
+  SECONDARY_COLOR: string;
+  SECONDARY_BG: string;
+  SECONDARY_BG_END: string;
+  // Tertiary (neutral, for comparison)
+  TERTIARY_COLOR: string;
+  // Hover marker
   HIGHLIGHT_COLOR: string;
+  // Axis & grid
   GRID_LINE_COLOR: string;
+  AXIS_LABEL_COLOR: string;
+  // Tooltip (theme-aware so it works in both modes)
+  TOOLTIP_BG: string;
+  TOOLTIP_FG: string;
+  TOOLTIP_BORDER: string;
 };
 
 export function getChartColors(): ChartColors {
-  // Fallbacks (light-mode --ms-* values) cover SSR and test contexts where
-  // window/computed style aren't available.
-  const accent = readVar("--ms-accent") || "#7A4B1F";
+  // Fallbacks cover SSR / test contexts where computed style isn't available.
+  const accent  = readVar("--ms-accent")   || "#7A4B1F";
   const accent2 = readVar("--ms-accent-2") || "#B06A2C";
-  const ink3 = readVar("--ms-ink-3") || "#807A6B";
+  const ink     = readVar("--ms-ink")      || "#1D1B16";
+  const ink2    = readVar("--ms-ink-2")    || "#4A463C";
+  const ink3    = readVar("--ms-ink-3")    || "#807A6B";
+  const line    = readVar("--ms-line")     || "#E7E0D2";
+  const card    = readVar("--ms-card")     || "#FFFFFF";
+
   return {
-    COLOR: `color-mix(in srgb, ${accent} 90%, transparent)`,
-    BACKGROUND_COLOR: `color-mix(in srgb, ${accent} 40%, transparent)`,
-    BACKGROUND_COLOR_END: `color-mix(in srgb, ${accent} 0%, transparent)`,
+    COLOR:                hexToRgba(accent, 1.0),
+    BACKGROUND_COLOR:     hexToRgba(accent, 0.55),
+    BACKGROUND_COLOR_MID: hexToRgba(accent, 0.14),
+    BACKGROUND_COLOR_END: hexToRgba(accent, 0),
+
+    SECONDARY_COLOR:    hexToRgba(accent2, 1.0),
+    SECONDARY_BG:       hexToRgba(accent2, 0.4),
+    SECONDARY_BG_END:   hexToRgba(accent2, 0),
+
+    TERTIARY_COLOR: hexToRgba(ink2, 0.85),
+
     HIGHLIGHT_COLOR: accent2,
-    GRID_LINE_COLOR: `color-mix(in srgb, ${ink3} 25%, transparent)`,
+
+    GRID_LINE_COLOR:   hexToRgba(line, 0.55),
+    AXIS_LABEL_COLOR:  hexToRgba(ink3, 0.85),
+
+    TOOLTIP_BG:     hexToRgba(card, 0.95),
+    TOOLTIP_FG:     ink,
+    TOOLTIP_BORDER: hexToRgba(accent, 0.4),
   };
 }
 

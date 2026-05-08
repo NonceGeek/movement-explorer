@@ -64,11 +64,16 @@ export function ChartStatCard({
   chartLabels,
 }: ChartStatCardProps) {
   const { resolvedTheme } = useTheme();
+  const colors = useMemo(() => getChartColors(), [resolvedTheme]);
   const {
     COLOR: LINE_COLOR,
     BACKGROUND_COLOR: GRADIENT_START,
+    BACKGROUND_COLOR_MID: GRADIENT_MID,
     BACKGROUND_COLOR_END: GRADIENT_END,
-  } = useMemo(() => getChartColors(), [resolvedTheme]);
+    TOOLTIP_BG,
+    TOOLTIP_FG,
+    TOOLTIP_BORDER,
+  } = colors;
 
   const options = {
     responsive: true,
@@ -83,9 +88,11 @@ export function ChartStatCard({
       },
       tooltip: {
         enabled: true,
-        backgroundColor: "rgba(0, 0, 0, 0.8)",
-        titleColor: "#fff",
-        bodyColor: "#fff",
+        backgroundColor: TOOLTIP_BG,
+        titleColor: TOOLTIP_FG,
+        bodyColor: TOOLTIP_FG,
+        borderColor: TOOLTIP_BORDER,
+        borderWidth: 1,
         padding: 8,
         displayColors: false,
       },
@@ -162,6 +169,7 @@ export function ChartStatCard({
             chartArea.bottom
           );
           gradient.addColorStop(0, GRADIENT_START);
+          gradient.addColorStop(0.6, GRADIENT_MID);
           gradient.addColorStop(1, GRADIENT_END);
           return gradient;
         },

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTheme } from "next-themes";
 import {
   ComposableMap,
   Geographies,
@@ -19,6 +20,14 @@ import type {
 
 const MARKER_COLOR = "#7A4B1F";
 const MIN_NODE_COUNT_SHOWN_IN_MARKER = 5;
+
+// Land/stroke colors mirror src/styles/theme.css --ms-ink-2 / --ms-line-2
+// in each theme. SVG fill/stroke take plain color strings so we resolve
+// per resolvedTheme rather than reading CSS vars.
+const LAND_FILL_LIGHT = "#4A463C";
+const LAND_FILL_DARK = "#26221A";
+const LAND_STROKE_LIGHT = "#807A6B";
+const LAND_STROKE_DARK = "#3A3325";
 
 function getCircleRadius(currentGroupSize: number) {
   return Math.pow(currentGroupSize, 1 / 4) * 4;
@@ -89,6 +98,11 @@ interface MapProps {
 }
 
 export default function ValidatorsWorldMap({ validatorGeoGroups }: MapProps) {
+  const { resolvedTheme } = useTheme();
+  const isDark = resolvedTheme === "dark";
+  const landFill = isDark ? LAND_FILL_DARK : LAND_FILL_LIGHT;
+  const landStroke = isDark ? LAND_STROKE_DARK : LAND_STROKE_LIGHT;
+
   return (
     <div className="w-full h-full">
       <ComposableMap
@@ -106,8 +120,8 @@ export default function ValidatorsWorldMap({ validatorGeoGroups }: MapProps) {
               <Geography
                 key={geo.rsmKey}
                 geography={geo}
-                fill="#1e2d24"
-                stroke="#2d4a35"
+                fill={landFill}
+                stroke={landStroke}
                 strokeWidth={0.5}
                 style={{
                   default: { outline: "0" },

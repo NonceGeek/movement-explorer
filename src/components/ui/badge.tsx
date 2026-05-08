@@ -47,14 +47,16 @@ function Badge({ className, variant, asChild = false, ...props }: BadgeProps) {
     customClassName = "bg-purple-500 text-white";
   } else if (variant === "success") {
     resolvedVariant = "default"; // Use default structure but override colors
-    customClassName = "bg-green-500/10 text-green-300 hover:bg-green-500/20";
+    customClassName =
+      "bg-(--ms-good)/15 text-(--ms-good) hover:bg-(--ms-good)/25";
   } else if (variant === "error") {
     resolvedVariant = "default";
-    customClassName = "bg-red-500/10 text-red-300 hover:bg-red-500/20";
+    customClassName =
+      "bg-(--ms-bad)/15 text-(--ms-bad) hover:bg-(--ms-bad)/25";
   } else if (variant === "warning") {
     resolvedVariant = "default";
     customClassName =
-      "bg-yellow-500/10 text-yellow-300 hover:bg-yellow-500/20";
+      "bg-(--ms-accent-2)/15 text-(--ms-accent-2) hover:bg-(--ms-accent-2)/25";
   } else if (variant === "primary") {
     resolvedVariant = "default";
     customClassName =

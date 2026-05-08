@@ -168,6 +168,14 @@
   color: var(--muted-foreground);
 }
 
+/* Card: design-system Card's default variant ships with a glass-background
+   (linear-gradient with translucent black) that reads as a murky grey
+   smudge on the cream theme. Force a flat background so bg-card / bg-* on
+   the consumer wrapper paints cleanly. */
+:where([data-slot="card"]) {
+  background-image: none;
+}
+
 /* ============================================================================
  * FIXED DOTTED BACKGROUND PATTERN
  * Site-wide subtle dotted pattern (opacity reduced ~50% from homepage values)

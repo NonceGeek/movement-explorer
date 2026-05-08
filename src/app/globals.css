@@ -159,6 +159,15 @@
   background: var(--secondary);
 }
 
+/* Tables: design-system's table-cell / table-head ship with text-white. */
+:where([data-slot="table-cell"]) {
+  color: var(--foreground);
+}
+
+:where([data-slot="table-head"]) {
+  color: var(--muted-foreground);
+}
+
 /* ============================================================================
  * FIXED DOTTED BACKGROUND PATTERN
  * Site-wide subtle dotted pattern (opacity reduced ~50% from homepage values)

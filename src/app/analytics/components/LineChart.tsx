@@ -71,7 +71,7 @@ export default function LineChart({
         titleColor: "#fff",
         bodyColor: "#fff",
         padding: 12,
-        borderColor: "rgba(88, 197, 137, 0.3)",
+        borderColor: COLOR,
         borderWidth: 1,
         callbacks: {
           label: tooltipsLabelFunc,

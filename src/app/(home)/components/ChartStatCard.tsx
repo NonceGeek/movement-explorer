@@ -18,6 +18,9 @@ import {
   Tooltip as ChartTooltip,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { useMemo } from "react";
+import { useTheme } from "next-themes";
+import { getChartColors } from "@/app/analytics/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -27,11 +30,6 @@ ChartJS.register(
   Filler,
   ChartTooltip
 );
-
-// Chart colors
-const LINE_COLOR = "rgba(88, 197, 137, 0.9)";
-const GRADIENT_START = "rgba(88, 197, 137, 0.35)";
-const GRADIENT_END = "rgba(88, 197, 137, 0.02)";
 
 export interface ChartStatCardProps {
   label: string;
@@ -65,6 +63,13 @@ export function ChartStatCard({
   chartData,
   chartLabels,
 }: ChartStatCardProps) {
+  const { resolvedTheme } = useTheme();
+  const {
+    COLOR: LINE_COLOR,
+    BACKGROUND_COLOR: GRADIENT_START,
+    BACKGROUND_COLOR_END: GRADIENT_END,
+  } = useMemo(() => getChartColors(), [resolvedTheme]);
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,

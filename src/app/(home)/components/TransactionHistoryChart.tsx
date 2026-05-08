@@ -12,6 +12,9 @@ import {
   Legend,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { useMemo } from "react";
+import { useTheme } from "next-themes";
+import { getChartColors } from "@/app/analytics/utils";
 
 ChartJS.register(
   CategoryScale,
@@ -22,12 +25,6 @@ ChartJS.register(
   ChartTooltip,
   Legend
 );
-
-// Chart colors
-const LINE_COLOR = "rgba(88, 197, 137, 0.9)";
-const GRADIENT_START = "rgba(88, 197, 137, 0.3)";
-const GRADIENT_END = "rgba(88, 197, 137, 0.02)";
-const GRID_LINE_COLOR = "rgba(156, 163, 175, 0.1)";
 
 interface TransactionHistoryChartProps {
   chartData: number[];
@@ -55,6 +52,14 @@ export function TransactionHistoryChart({
   chartLabels,
   isLoading,
 }: TransactionHistoryChartProps) {
+  const { resolvedTheme } = useTheme();
+  const {
+    COLOR: LINE_COLOR,
+    BACKGROUND_COLOR: GRADIENT_START,
+    BACKGROUND_COLOR_END: GRADIENT_END,
+    GRID_LINE_COLOR,
+  } = useMemo(() => getChartColors(), [resolvedTheme]);
+
   const options = {
     responsive: true,
     maintainAspectRatio: false,
@@ -72,7 +77,7 @@ export function TransactionHistoryChart({
         titleColor: "#fff",
         bodyColor: "#fff",
         padding: 12,
-        borderColor: "rgba(88, 197, 137, 0.3)",
+        borderColor: LINE_COLOR,
         borderWidth: 1,
         displayColors: false,
         callbacks: {

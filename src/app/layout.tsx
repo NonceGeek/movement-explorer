@@ -31,7 +31,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} antialiased min-h-screen flex flex-col`}
       >
-        <NextTopLoader color="#58c589" showSpinner={false} />
+        <NextTopLoader color="#7A4B1F" showSpinner={false} />
         <Providers>
           <LayoutBackground>
             <Header />

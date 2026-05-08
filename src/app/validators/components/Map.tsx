@@ -17,7 +17,7 @@ import type {
   ValidatorGeoGroup,
 } from "@/hooks/validators/useGetValidatorSetGeoData";
 
-const MARKER_COLOR = "#58c589";
+const MARKER_COLOR = "#7A4B1F";
 const MIN_NODE_COUNT_SHOWN_IN_MARKER = 5;
 
 function getCircleRadius(currentGroupSize: number) {

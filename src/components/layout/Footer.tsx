@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { Branding } from "@movementlabsxyz/movement-design-system";
 
@@ -41,6 +43,11 @@ const resourceLinks = [
 ];
 
 export default function Footer() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  const brandingColor = mounted && resolvedTheme === "light" ? "black" : "white";
+
   return (
     <footer className="border-t border-border/50 bg-muted/30 backdrop-blur-sm">
       <div className="container mx-auto px-4 py-12">
@@ -51,7 +58,7 @@ export default function Footer() {
               <Branding
                 theme="industries"
                 variant="logomark"
-                color="white"
+                color={brandingColor}
                 className="h-full w-auto max-h-24"
               />
             </Link>

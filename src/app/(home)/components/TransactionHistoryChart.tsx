@@ -203,7 +203,7 @@ export function TransactionHistoryChart({
 
       {/* Chart */}
       <div className="h-[calc(100%-36px)]">
-        <Line options={options} data={data} />
+        <Line key={resolvedTheme} options={options} data={data} />
       </div>
     </div>
   );

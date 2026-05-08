@@ -167,7 +167,7 @@ export default function LineChart({
 
   return (
     <div className="h-[120px]">
-      <Line options={options} data={data} />
+      <Line key={resolvedTheme} options={options} data={data} />
     </div>
   );
 }

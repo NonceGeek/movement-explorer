@@ -220,7 +220,7 @@ export function ChartStatCard({
       {/* Chart - takes remaining space */}
       <div className="flex-1 min-h-[80px]">
         {chartData.length > 0 ? (
-          <Line options={options} data={data} />
+          <Line key={resolvedTheme} options={options} data={data} />
         ) : (
           <EnhancedSkeleton className="h-full w-full" />
         )}

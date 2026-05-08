@@ -133,7 +133,7 @@ export default function BarChart({ labels, dataset }: BarChartProps) {
 
   return (
     <div className="h-[120px]">
-      <Bar options={options} data={data} />
+      <Bar key={resolvedTheme} options={options} data={data} />
     </div>
   );
 }

@@ -17,13 +17,14 @@ export function LayoutBackground({ children }: LayoutBackgroundProps) {
 
   return (
     <div className="flex-1 flex flex-col relative">
-      {/* Subtle ambient glow at top — sienna in light, cream in dark */}
+      {/* Very subtle ambient atmosphere — barely visible, gives the page a
+          faint warmth without competing with content. */}
       <div
-        className="fixed top-0 left-1/2 -translate-x-1/2 w-[600px] h-[250px] bg-(--ms-accent)/10 blur-[100px] rounded-full pointer-events-none z-10"
+        className="fixed top-0 left-1/2 -translate-x-1/2 w-[800px] h-[300px] bg-(--ms-accent)/4 blur-[160px] rounded-full pointer-events-none z-10"
         aria-hidden="true"
       />
       <div
-        className="fixed top-8 left-1/2 -translate-x-1/2 w-100 h-[200px] bg-(--ms-accent-2)/8 blur-[80px] rounded-full pointer-events-none z-10"
+        className="fixed top-8 left-1/2 -translate-x-1/2 w-[500px] h-[220px] bg-(--ms-accent-2)/3 blur-[140px] rounded-full pointer-events-none z-10"
         aria-hidden="true"
       />
 

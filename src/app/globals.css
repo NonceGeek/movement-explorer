@@ -189,6 +189,31 @@
   background-position: 0 0, 12px 12px;
 }
 
+/* Dark mode: drop dot pattern decoration entirely (cream invert prefers
+   clean near-black surfaces). */
+.dark .bg-dotted-pattern {
+  background-image: none;
+}
+
+/* Hero dot pattern — bigger / softer than the global one, with a fade
+   mask so the dots blend toward the page edges. Used only in light;
+   home page hides it in dark via dark:hidden. */
+.bg-hero-dots {
+  background-image:
+    radial-gradient(circle, color-mix(in srgb, var(--ms-accent) 20%, transparent) 1.2px, transparent 1.2px),
+    radial-gradient(circle, color-mix(in srgb, var(--ms-ink-3) 16%, transparent) 1px, transparent 1px);
+  background-size: 24px 24px, 24px 24px;
+  background-position: 0 0, 12px 12px;
+  mask-image:
+    linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
+    linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%);
+  -webkit-mask-composite: source-in;
+}
+
 .bg-dotted-pattern-mask {
   mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);
   -webkit-mask-image: linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%);

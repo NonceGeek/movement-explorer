@@ -67,23 +67,9 @@ export default function HomePage() {
     <div className="min-h-screen">
       {/* Hero + Stats Section with Dotted Background - Full Width */}
       <div className="relative overflow-hidden">
-        {/* Dotted Background Pattern - Full width, no container constraints */}
+        {/* Hero dotted pattern (light only — dark gets a clean black bg per design) */}
         <div
-          className="absolute inset-0 pointer-events-none"
-          style={{
-            backgroundImage: `
-              radial-gradient(circle, rgba(129, 255, 186, 0.3) 1.2px, transparent 1.2px),
-              radial-gradient(circle, rgba(0, 45, 214, 0.18) 1px, transparent 1px)
-            `,
-            backgroundSize: "24px 24px, 24px 24px",
-            backgroundPosition: "0 0, 12px 12px",
-            maskImage: `linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
-                        linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)`,
-            maskComposite: "intersect",
-            WebkitMaskImage: `linear-gradient(to bottom, black 0%, black 50%, transparent 100%),
-                              linear-gradient(to right, transparent 0%, black 20%, black 80%, transparent 100%)`,
-            WebkitMaskComposite: "source-in",
-          }}
+          className="absolute inset-0 pointer-events-none bg-hero-dots dark:hidden"
         />
 
         {/* Centered Glow above search bar */}

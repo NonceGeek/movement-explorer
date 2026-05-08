@@ -289,8 +289,8 @@
   --ms-accent-soft:   #F0E4D0;
   --ms-accent-fill:   rgba(122, 75, 31, 0.08);
   --ms-on-accent:     #FAF7F2;
-  --ms-good:          #2F6B3D;
-  --ms-good-soft:     #E2ECD9;
+  --ms-good:          #5C8E2C;          /* warm olive-green, sits next to sienna cleanly */
+  --ms-good-soft:     #E8EDC8;
   --ms-bad:           #8A2A1F;
   --ms-info:          #2C4A6B;
   --ms-info-soft:     #D9E2EC;
@@ -369,8 +369,8 @@
   --ms-accent-fill:   rgba(250, 247, 242, 0.06);
   --ms-on-accent:     #0D0C0A;
   /* Status keeps proper hue in dark — brighter variants tuned for near-black bg. */
-  --ms-good:          #6CD69B;
-  --ms-good-soft:     rgba(108, 214, 155, 0.15);
+  --ms-good:          #A8D466;          /* warm yellow-green, brightened for dark bg */
+  --ms-good-soft:     rgba(168, 212, 102, 0.15);
   --ms-bad:           #FF6642;
   --ms-info:          #5C7CFF;
   --ms-info-soft:     rgba(92, 124, 255, 0.15);

@@ -49,25 +49,25 @@ export default function GasPriceIndicator() {
             className="p-3"
           >
             <div className="space-y-2 text-xs">
-              <p className="text-[11px] font-semibold text-white tracking-wide uppercase">
+              <p className="text-[11px] font-semibold text-popover-foreground tracking-wide uppercase">
                 Gas Price (per unit)
               </p>
-              <div className="h-px bg-white/10" />
+              <div className="h-px bg-border" />
               <div className="flex items-center justify-between gap-6">
-                <p className="text-white/50">Low</p>
-                <p className="font-mono text-white/90">
+                <p className="text-muted-foreground">Low</p>
+                <p className="font-mono text-popover-foreground/90">
                   {gasPrice.deprioritized_gas_estimate} Octas
                 </p>
               </div>
               <div className="flex items-center justify-between gap-6">
-                <p className="text-white/50">Standard</p>
-                <p className="font-mono text-white/90">
+                <p className="text-muted-foreground">Standard</p>
+                <p className="font-mono text-popover-foreground/90">
                   {gasPrice.gas_estimate} Octas
                 </p>
               </div>
               <div className="flex items-center justify-between gap-6">
-                <p className="text-white/50">Fast</p>
-                <p className="font-mono text-white/90">
+                <p className="text-muted-foreground">Fast</p>
+                <p className="font-mono text-popover-foreground/90">
                   {gasPrice.prioritized_gas_estimate} Octas
                 </p>
               </div>

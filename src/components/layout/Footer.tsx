@@ -57,7 +57,7 @@ export default function Footer() {
             </Link>
             <div className="space-y-2">
               <Link href="/" className="block w-fit">
-                <span className="text-2xl font-heading font-bold text-white">
+                <span className="text-2xl font-heading font-bold text-foreground">
                   MoveScan
                 </span>
               </Link>

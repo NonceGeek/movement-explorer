@@ -152,7 +152,7 @@ export default function BlockDetailPage() {
               showFull
               showCopyButton
               variant="muted"
-              className="text-white"
+              className="text-foreground"
             />
           </DetailRow>
           <DetailRow label="Timestamp">

@@ -116,7 +116,8 @@
 [data-slot="dropdown-menu-sub-content"],
 [data-slot="hover-card-content"],
 [data-slot="popover-content"],
-[data-slot="select-content"] {
+[data-slot="select-content"],
+[data-slot="tooltip-content"] {
   background: var(--popover);
   color: var(--popover-foreground);
   backdrop-filter: none;

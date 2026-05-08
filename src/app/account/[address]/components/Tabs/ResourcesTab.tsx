@@ -440,7 +440,7 @@ function ResourceModuleLink({
                 <span className="text-xs uppercase text-muted-foreground font-bold tracking-wider">
                   Address
                 </span>
-                <div className="font-mono text-xs text-white break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
+                <div className="font-mono text-xs text-foreground break-all bg-muted/30 p-2 rounded border border-border/50 leading-relaxed">
                   {parsed.addr}
                 </div>
               </div>

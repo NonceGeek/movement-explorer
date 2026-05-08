@@ -26,7 +26,7 @@ export function TimestampModeToggle({
         className={cn(
           "px-3 py-1 text-xs font-medium rounded relative z-10 transition-colors duration-200 cursor-pointer",
           mode === "age"
-            ? "text-black"
+            ? "text-primary-foreground"
             : "text-muted-foreground hover:text-foreground",
         )}
       >
@@ -37,7 +37,7 @@ export function TimestampModeToggle({
         className={cn(
           "px-3 py-1 text-xs font-medium rounded relative z-10 transition-colors duration-200 cursor-pointer",
           mode === "dateTime"
-            ? "text-black"
+            ? "text-primary-foreground"
             : "text-muted-foreground hover:text-foreground",
         )}
       >

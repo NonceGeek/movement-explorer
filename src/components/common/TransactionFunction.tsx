@@ -256,7 +256,7 @@ function FunctionSignature({
 
   if (isLoading) {
     return (
-      <span className="text-guild-green-500 font-medium">
+      <span className="text-primary font-medium">
         {functionName}
         {typeArgDisplay && (
           <span className="text-blue-400">{typeArgDisplay}</span>
@@ -274,7 +274,7 @@ function FunctionSignature({
 
   if (mergedParams.length === 0) {
     return (
-      <span className="text-guild-green-500 font-medium">
+      <span className="text-primary font-medium">
         {functionName}
         {typeArgDisplay && (
           <span className="text-blue-400">{typeArgDisplay}</span>
@@ -286,7 +286,7 @@ function FunctionSignature({
 
   return (
     <>
-      <span className="text-guild-green-500 font-medium">{functionName}</span>
+      <span className="text-primary font-medium">{functionName}</span>
       {typeArgDisplay && (
         <span className="text-blue-400">{typeArgDisplay}</span>
       )}

@@ -36,9 +36,9 @@ export function TransactionTypeTooltip() {
               return (
                 <div
                   key={type}
-                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-guild-green-500/10 transition-colors group"
+                  className="flex items-start gap-3 px-3 py-2.5 rounded-lg hover:bg-accent transition-colors group"
                 >
-                  <span className="text-muted-foreground group-hover:text-guild-green-500 transition-colors mt-0.5 shrink-0">
+                  <span className="text-muted-foreground group-hover:text-primary transition-colors mt-0.5 shrink-0">
                     {info.icon}
                   </span>
                   <div className="space-y-0.5 min-w-0">

@@ -67,7 +67,7 @@ export default function WalletButton({
                 <>
                   <Avatar border="guild" className="h-6 w-6">
                     <AvatarImage src={wallet?.icon} alt={wallet?.name} />
-                    <AvatarFallback className="text-xs bg-moveus-marigold-500 text-black">
+                    <AvatarFallback className="text-xs bg-(--ms-accent-2) text-(--ms-on-accent)">
                       {wallet?.name?.[0] || "W"}
                     </AvatarFallback>
                   </Avatar>

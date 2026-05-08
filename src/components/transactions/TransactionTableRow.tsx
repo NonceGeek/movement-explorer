@@ -136,9 +136,9 @@ export function TransactionTableRowCells({
                 truncateLength={{ start: 10, end: 0 }}
                 icon={
                   status ? (
-                    <CircleCheckBig className="h-4 w-4 text-guild-green-500 shrink-0" />
+                    <CircleCheckBig className="h-4 w-4 text-(--ms-good) shrink-0" />
                   ) : (
-                    <XCircle className="h-4 w-4 text-oracle-orange-500 shrink-0" />
+                    <XCircle className="h-4 w-4 text-destructive shrink-0" />
                   )
                 }
               />
@@ -181,13 +181,13 @@ export function TransactionTableRowCells({
             label: "OUT",
             tooltip: "Sent a transfer",
             className:
-              "bg-oracle-orange-500/15 text-oracle-orange-500 border-oracle-orange-500/30",
+              "bg-destructive/15 text-destructive border-destructive/30",
           },
           in: {
             label: "IN",
             tooltip: "Received a transfer",
             className:
-              "bg-guild-green-500/15 text-guild-green-500 border-guild-green-500/30",
+              "bg-(--ms-good)/15 text-(--ms-good) border-(--ms-good)/30",
           },
           self: {
             label: "SELF",

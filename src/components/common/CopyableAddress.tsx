@@ -85,7 +85,7 @@ export function CopyableAddress({
 
   const variantStyles = {
     default: href
-      ? "text-guild-green-300 hover:text-guild-green-300/80 transition-colors"
+      ? "text-primary hover:text-primary/80 transition-colors"
       : "",
     muted: "text-muted-foreground",
     hash: "text-foreground bg-muted/50 px-2 py-1 rounded-md",
@@ -156,7 +156,7 @@ export function CopyableAddress({
                     />
                     <Check
                       className={cn(
-                        "absolute inset-0 h-3.5 w-3.5 text-guild-green-500 transition-all duration-200",
+                        "absolute inset-0 h-3.5 w-3.5 text-(--ms-good) transition-all duration-200",
                         copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                       )}
                     />
@@ -185,7 +185,7 @@ export function CopyableAddress({
       {icon}
       {displayText}
       {isVerifiedWithLabel && (
-        <BadgeCheck className="h-5 w-5 text-byzantine-blue-300 shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
+        <BadgeCheck className="h-5 w-5 text-(--ms-info) shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
       )}
     </span>
   );
@@ -203,7 +203,7 @@ export function CopyableAddress({
       {icon}
       {displayText}
       {isVerifiedWithLabel && (
-        <BadgeCheck className="h-5 w-5 text-byzantine-blue-300 shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
+        <BadgeCheck className="h-5 w-5 text-(--ms-info) shrink-0" fill="currentColor" stroke="white" strokeWidth={2} />
       )}
     </Link>
   ) : (
@@ -242,7 +242,7 @@ export function CopyableAddress({
                 onClick={handleCopy}
                 className={cn(
                   "p-1.5 rounded-md transition-all duration-200 cursor-pointer",
-                  "text-muted-foreground hover:text-guild-green-500",
+                  "text-muted-foreground hover:text-primary",
                   "hover:bg-primary/20 active:scale-90",
                 )}
                 aria-label="Copy address"
@@ -256,7 +256,7 @@ export function CopyableAddress({
                   />
                   <Check
                     className={cn(
-                      "absolute inset-0 h-3.5 w-3.5 text-guild-green-500 transition-all duration-200",
+                      "absolute inset-0 h-3.5 w-3.5 text-(--ms-good) transition-all duration-200",
                       copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                     )}
                   />

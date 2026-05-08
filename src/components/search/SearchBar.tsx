@@ -119,9 +119,9 @@ export function SearchBar({
       <div ref={containerRef} className="relative w-full max-w-2xl">
         <form
           onSubmit={handleSubmit}
-          className="flex items-center bg-card border-2 border-guild-green-300 rounded-xl overflow-hidden shadow-[0_0_0_0_#0337FF] transition-all duration-300 ease-out focus-within:-translate-y-1 focus-within:shadow-[5px_5px_0_0_#0337FF]"
+          className="flex items-center bg-card border-2 border-primary rounded-xl overflow-hidden shadow-[0_0_0_0_var(--ms-accent-2)] transition-all duration-300 ease-out focus-within:-translate-y-1 focus-within:shadow-[5px_5px_0_0_var(--ms-accent-2)]"
         >
-          <div className="pl-4 text-[#999]">
+          <div className="pl-4 text-muted-foreground">
             <Search size={20} />
           </div>
           <input
@@ -134,13 +134,13 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-white placeholder:text-[#999] outline-none"
+            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground outline-none"
           />
           <Button
             type="submit"
             variant="glow"
             disabled={isLoading}
-            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-lg! shadow-[4px_4px_0_0_#0337FF]! hover:shadow-[-4px_-4px_0_0_#0337FF]!"
+            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-lg! shadow-[4px_4px_0_0_var(--ms-accent-2)]! hover:shadow-[-4px_-4px_0_0_var(--ms-accent-2)]!"
           >
             {isLoading ? (
               <Loader2 size={24} className="animate-spin !w-6 !h-6" />
@@ -155,17 +155,17 @@ export function SearchBar({
 
         {/* Results dropdown */}
         {isOpen && results.length > 0 && (
-          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="absolute z-100 w-full mt-3 bg-card/95 backdrop-blur-md border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
             {/* Check if only result is "No Results" */}
             {results.length === 1 && results[0].type === "none" ? (
               <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                <div className="w-14 h-14 rounded-full bg-guild-green-300/10 flex items-center justify-center mb-4">
-                  <SearchX size={28} className="text-guild-green-400/60" />
+                <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                  <SearchX size={28} className="text-primary/60" />
                 </div>
                 <p className="text-base font-medium text-foreground">
                   No results found
                 </p>
-                <p className="text-sm text-guild-green-400/60 mt-1.5">
+                <p className="text-sm text-primary/60 mt-1.5">
                   Try searching for an address, transaction, or block
                 </p>
               </div>
@@ -176,8 +176,8 @@ export function SearchBar({
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
                     className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                      ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
-                      : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                      ? "bg-primary/20 border-l-4 border-l-primary"
+                      : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
                       } ${!result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
@@ -188,19 +188,19 @@ export function SearchBar({
                         <img
                           src={result.image}
                           alt=""
-                          className="w-7 h-7 rounded-full ring-2 ring-guild-green-300/30"
+                          className="w-7 h-7 rounded-full ring-2 ring-primary/30"
                         />
                       ) : (
-                        <div className="w-7 h-7 rounded-full bg-guild-green-300/20 flex items-center justify-center">
+                        <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
                           <CornerDownLeft
                             size={16}
-                            className="text-guild-green-400"
+                            className="text-primary"
                           />
                         </div>
                       )}
                       <span
                         className={`text-base font-medium ${index === selectedIndex
-                          ? "text-guild-green-300"
+                          ? "text-primary"
                           : "text-foreground"
                           }`}
                       >
@@ -223,7 +223,7 @@ export function SearchBar({
       <div ref={containerRef} className="relative w-full max-w-2xl">
         <form
           onSubmit={handleSubmit}
-          className="flex items-center bg-background/60 backdrop-blur-sm border border-border/60 rounded-full overflow-hidden transition-all duration-300 ease-out focus-within:border-guild-green-500 focus-within:bg-background/80"
+          className="flex items-center bg-background/60 backdrop-blur-sm border border-border/60 rounded-full overflow-hidden transition-all duration-300 ease-out focus-within:border-primary focus-within:bg-background/80"
         >
           <input
             ref={inputRef}
@@ -235,18 +235,18 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-white placeholder:text-[#999] outline-none"
+            className="flex-1 bg-transparent border-none px-4 py-4 text-base text-foreground placeholder:text-muted-foreground outline-none"
           />
           <Button
             type="submit"
             variant="secondary"
             disabled={isLoading}
-            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-full! bg-guild-green-500! hover:bg-guild-green-600! text-white! border-0!"
+            className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-full! bg-primary! hover:bg-primary/90! text-primary-foreground! border-0!"
           >
             {isLoading ? (
-              <Loader2 size={24} className="animate-spin !w-6 !h-6 text-black" />
+              <Loader2 size={24} className="animate-spin !w-6 !h-6 text-primary-foreground" />
             ) : (
-              <Search size={24} className="!w-6 !h-6 text-black" />
+              <Search size={24} className="!w-6 !h-6 text-primary-foreground" />
             )}
           </Button>
         </form>
@@ -274,8 +274,8 @@ export function SearchBar({
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
                     className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                      ? "bg-guild-green-500/15 border-l-4 border-l-guild-green-500/70"
-                      : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-guild-green-500/30"
+                      ? "bg-primary/15 border-l-4 border-l-primary/70"
+                      : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-primary/30"
                       } ${!result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
@@ -298,7 +298,7 @@ export function SearchBar({
                       )}
                       <span
                         className={`text-base font-medium ${index === selectedIndex
-                          ? "text-guild-green-400"
+                          ? "text-primary"
                           : "text-foreground"
                           }`}
                       >
@@ -337,7 +337,7 @@ export function SearchBar({
         >
           <Search
             size={15}
-            className="absolute left-3.5 text-muted-foreground/60 pointer-events-none transition-colors duration-200 group-focus-within:text-guild-green-500"
+            className="absolute left-3.5 text-muted-foreground/60 pointer-events-none transition-colors duration-200 group-focus-within:text-primary"
           />
 
           <input
@@ -350,7 +350,7 @@ export function SearchBar({
               inputValue.trim() && results.length > 0 && setIsOpen(true)
             }
             placeholder={placeholder}
-            className="w-full h-11 pl-10 pr-24 bg-background/40 backdrop-blur-sm border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-300 focus:border-guild-green-300 focus:bg-background/60 focus:shadow-[0_0_0_3px_rgba(3,55,255,0.08)]"
+            className="w-full h-11 pl-10 pr-24 bg-background/40 backdrop-blur-sm border border-border rounded-full text-sm text-foreground placeholder:text-muted-foreground outline-none transition-all duration-300 focus:border-primary focus:bg-background/60 focus:shadow-[0_0_0_3px_color-mix(in_srgb,var(--ms-accent)_12%,transparent)]"
           />
 
           {isLoading ? (
@@ -365,7 +365,7 @@ export function SearchBar({
               </kbd>
               <button
                 type="submit"
-                className="h-8 px-3 bg-guild-green-300 hover:bg-guild-green-400 text-black text-sm font-semibold rounded-full transition-all duration-200 hover:shadow-sm cursor-pointer"
+                className="h-8 px-3 bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-semibold rounded-full transition-all duration-200 hover:shadow-sm cursor-pointer"
               >
                 Search
               </button>
@@ -388,7 +388,7 @@ export function SearchBar({
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
                     className={`px-4 py-3 cursor-pointer transition-all duration-150 ${index === selectedIndex
-                      ? "bg-guild-green-500/10 border-l-2 border-l-guild-green-500"
+                      ? "bg-primary/10 border-l-2 border-l-primary"
                       : "hover:bg-muted/40 border-l-2 border-l-transparent"
                       } ${!result.to ? "cursor-default opacity-50" : ""}`}
                   >
@@ -447,17 +447,17 @@ export function SearchBar({
 
       {/* Results dropdown */}
       {isOpen && results.length > 0 && (
-        <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border-2 border-guild-green-300 rounded-xl shadow-[4px_4px_0_0_#0337FF] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute z-100 w-full mt-2 bg-card/95 backdrop-blur-sm border-2 border-primary rounded-xl shadow-[4px_4px_0_0_var(--ms-accent-2)] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
           {/* Check if only result is "No Results" */}
           {results.length === 1 && results[0].type === "none" ? (
             <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-              <div className="w-14 h-14 rounded-full bg-guild-green-300/10 flex items-center justify-center mb-4">
-                <SearchX size={28} className="text-guild-green-400/60" />
+              <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
+                <SearchX size={28} className="text-primary/60" />
               </div>
               <p className="text-base font-medium text-foreground">
                 No results found
               </p>
-              <p className="text-sm text-guild-green-400/60 mt-1.5">
+              <p className="text-sm text-primary/60 mt-1.5">
                 Try searching for an address, transaction, or block
               </p>
             </div>
@@ -468,8 +468,8 @@ export function SearchBar({
                   key={`${result.to}-${index}`}
                   onClick={() => handleResultClick(result)}
                   className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                    ? "bg-guild-green-300/20 border-l-4 border-l-guild-green-300"
-                    : "hover:bg-guild-green-300/10 border-l-4 border-l-transparent hover:border-l-guild-green-300/50"
+                    ? "bg-primary/20 border-l-4 border-l-primary"
+                    : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
                     } ${!result.to
                       ? "cursor-default text-muted-foreground"
                       : "hover:pl-5"
@@ -480,19 +480,19 @@ export function SearchBar({
                       <img
                         src={result.image}
                         alt=""
-                        className="w-6 h-6 rounded-full ring-1 ring-guild-green-300/30"
+                        className="w-6 h-6 rounded-full ring-1 ring-primary/30"
                       />
                     ) : (
-                      <div className="w-6 h-6 rounded-full bg-guild-green-300/20 flex items-center justify-center">
+                      <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
                         <CornerDownLeft
                           size={12}
-                          className="text-guild-green-400"
+                          className="text-primary"
                         />
                       </div>
                     )}
                     <span
                       className={`text-sm font-medium ${index === selectedIndex
-                        ? "text-guild-green-300"
+                        ? "text-primary"
                         : "text-foreground"
                         }`}
                     >

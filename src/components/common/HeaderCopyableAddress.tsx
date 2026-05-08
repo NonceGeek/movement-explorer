@@ -61,7 +61,7 @@ export function HeaderCopyableAddress({
               />
               <Check
                 className={cn(
-                  "absolute inset-0 h-4 w-4 text-guild-green-500 transition-all duration-200",
+                  "absolute inset-0 h-4 w-4 text-(--ms-good) transition-all duration-200",
                   copied ? "scale-100 opacity-100" : "scale-0 opacity-0",
                 )}
               />

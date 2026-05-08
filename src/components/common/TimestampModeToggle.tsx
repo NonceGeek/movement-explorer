@@ -45,7 +45,7 @@ export function TimestampModeToggle({
       </button>
       <div className="absolute inset-0.5 pointer-events-none">
         <motion.div
-          className="h-full bg-guild-green-500 rounded shadow-sm"
+          className="h-full bg-primary rounded shadow-sm"
           initial={false}
           animate={{
             x: mode === "age" ? 0 : "100%",

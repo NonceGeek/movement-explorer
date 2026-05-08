@@ -62,7 +62,7 @@ export function AccountLabelBadge({
           <TooltipTrigger asChild>
             <div
               className={cn(
-                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-byzantine-blue-300/10 text-byzantine-blue-300 text-sm font-medium",
+                "inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-(--ms-info)/10 text-(--ms-info) text-sm font-medium",
                 className
               )}
             >

@@ -34,7 +34,7 @@ function getDisplayNetworkName(networkName: string): string {
 }
 
 function getNetworkDotColor(networkName: string): string {
-  if (networkName === "mainnet") return "bg-guild-green-500";
+  if (networkName === "mainnet") return "bg-(--ms-good)";
   if (networkName === "bardock testnet") return "bg-amber-500";
   return "bg-blue-500";
 }

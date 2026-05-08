@@ -156,7 +156,7 @@ function getVerifiedConfig(level: VerifiedType, reason?: string) {
         label: "Verified",
         tooltip: `This asset is verified by the builders of the explorer.${reason ? ` Reason: ${reason}` : ""}`,
         variant: "default" as const,
-        className: "bg-guild-green-500/10 text-guild-green-500 border-guild-green-500/20",
+        className: "bg-(--ms-good)/10 text-(--ms-good) border-(--ms-good)/20",
       };
     case VerifiedType.COMMUNITY_VERIFIED:
       return {

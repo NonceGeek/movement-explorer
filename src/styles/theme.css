@@ -357,7 +357,7 @@
   --ms-bg:            #0D0C0A;
   --ms-nav:           #0D0C0A;
   --ms-card:          #161410;
-  --ms-card-2:        #0D0C0A;
+  --ms-card-2:        #1F1A12;          /* lifted from bg so muted/secondary surfaces (badges, table headers) read */
   --ms-line:          #26221A;
   --ms-line-2:        #3A3325;
   --ms-ink:           #FAF7F2;
@@ -368,10 +368,11 @@
   --ms-accent-soft:   rgba(250, 247, 242, 0.08);
   --ms-accent-fill:   rgba(250, 247, 242, 0.06);
   --ms-on-accent:     #0D0C0A;
-  --ms-good:          #FAF7F2;
-  --ms-good-soft:     rgba(250, 247, 242, 0.08);
-  --ms-bad:           #FAF7F2;
-  --ms-info:          #FAF7F2;
-  --ms-info-soft:     rgba(250, 247, 242, 0.08);
+  /* Status keeps proper hue in dark — brighter variants tuned for near-black bg. */
+  --ms-good:          #6CD69B;
+  --ms-good-soft:     rgba(108, 214, 155, 0.15);
+  --ms-bad:           #FF6642;
+  --ms-info:          #5C7CFF;
+  --ms-info-soft:     rgba(92, 124, 255, 0.15);
   /* All semantic tokens auto-update via var() refs above. */
 }

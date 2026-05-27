@@ -13,6 +13,8 @@ import { cn } from "@/utils/styling";
 
 type EnhancedMetricCardProps = {
   data: string;
+  fullData?: string;
+  preferFullUntilXl?: boolean;
   label: string;
   tooltip: React.ReactNode;
   icon?: React.ReactNode;
@@ -31,6 +33,8 @@ type EnhancedMetricCardProps = {
  */
 export default function EnhancedMetricCard({
   data,
+  fullData,
+  preferFullUntilXl = false,
   label,
   tooltip,
   icon,
@@ -44,7 +48,7 @@ export default function EnhancedMetricCard({
     <Card
       className={cn(
         "border border-border/60 bg-card shadow-sm hover:shadow-md hover:border-primary/50 transition-all duration-300",
-        height
+        height,
       )}
     >
       <CardContent className="flex justify-center flex-col gap-3 h-full">
@@ -55,8 +59,23 @@ export default function EnhancedMetricCard({
               {icon}
             </div>
             {/* Value with Trend Indicator */}
-            <div className="flex items-baseline gap-2 mt-auto">
-              <div className={cn("font-bold", valueSize)}>{data}</div>
+            <div className="flex min-w-0 items-baseline gap-2 mt-auto">
+              <div
+                className={cn(
+                  "min-w-0 max-w-full overflow-hidden text-ellipsis whitespace-nowrap font-bold tabular-nums",
+                  valueSize,
+                )}
+                title={fullData || data}
+              >
+                {preferFullUntilXl && fullData && fullData !== data ? (
+                  <>
+                    <span className="xl:hidden">{fullData}</span>
+                    <span className="hidden xl:inline">{data}</span>
+                  </>
+                ) : (
+                  data
+                )}
+              </div>
               {trend !== undefined && <TrendIndicator value={trend} />}
             </div>
           </div>
@@ -64,11 +83,9 @@ export default function EnhancedMetricCard({
 
         {/* Label with Tooltip */}
         <div className="flex items-center gap-2">
-
           <span className="text-xs text-muted-foreground font-medium uppercase tracking-wide">
             {label}
           </span>
-
 
           <TooltipProvider>
             <Tooltip>
@@ -76,13 +93,18 @@ export default function EnhancedMetricCard({
                 <Info className="h-3.5 w-3.5 text-muted-foreground cursor-help flex-shrink-0" />
               </TooltipTrigger>
               <TooltipContent side="top" className="max-w-[300px]">
-                <p className="text-xs">{tooltip}</p>
+                <div className="space-y-1 text-xs">
+                  <p>{tooltip}</p>
+                  {fullData && fullData !== data ? (
+                    <p className="font-mono text-muted-foreground">
+                      Full value: {fullData}
+                    </p>
+                  ) : null}
+                </div>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-
-
       </CardContent>
     </Card>
   );

@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import Link from "next/link";
 import { Types } from "aptos";
-import { ArrowRight, FileCheck } from "lucide-react";
+import { ArrowRight, Code2 } from "lucide-react";
 import { cn } from "@/utils/styling";
 import {
   Tooltip,
@@ -29,6 +29,20 @@ interface TransactionFunctionProps {
   transaction?: Types.Transaction;
   entryFunctionIdStr?: string;
   className?: string;
+}
+
+export function SourceAvailableIcon({ className }: { className?: string }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border border-primary/25 bg-primary/10 text-primary",
+        className,
+      )}
+      aria-label="Source code available"
+    >
+      <Code2 className="h-3 w-3" strokeWidth={2.25} />
+    </span>
+  );
 }
 
 export function TransactionFunction({
@@ -296,7 +310,9 @@ function FunctionSignature({
           <span className="text-foreground">{p.name}</span>
           <span className="text-muted-foreground">: </span>
           <span className="text-purple-400">{p.value}</span>
-          {i < mergedParams.length - 1 && <span className="text-muted-foreground">,</span>}
+          {i < mergedParams.length - 1 && (
+            <span className="text-muted-foreground">,</span>
+          )}
         </div>
       ))}
       <span className="text-muted-foreground">)</span>
@@ -309,7 +325,9 @@ function TooltipActionSummary({ action }: { action: ParsedAction }) {
     <div className="flex flex-col gap-1.5">
       {/* Action header: description + badge */}
       <div className="flex items-center gap-1.5 flex-wrap text-sm">
-        {action.type === "transfer" && action.details?.metadata && action.details?.amount ? (
+        {action.type === "transfer" &&
+        action.details?.metadata &&
+        action.details?.amount ? (
           <FaTransferDescription
             amount={action.details.amount}
             metadataAddress={action.details.metadata}
@@ -323,7 +341,9 @@ function TooltipActionSummary({ action }: { action: ParsedAction }) {
             fallbackName={action.details?.dex}
           />
         )}
-        {(action.type === "stake" || action.type === "unstake" || action.type === "claim") &&
+        {(action.type === "stake" ||
+          action.type === "unstake" ||
+          action.type === "claim") &&
           action.details?.contract && (
             <StakingPoolBadge poolAddress={action.details.contract} />
           )}
@@ -395,7 +415,8 @@ function TransactionFunctionWithSource({
   className?: string;
 }) {
   const { hasSource } = useContractSourceAvailability(address);
-  const { params, isLoading: paramsLoading } = useGetFunctionParams(functionFullStr);
+  const { params, isLoading: paramsLoading } =
+    useGetFunctionParams(functionFullStr);
   const description = getFunctionDescription(functionFullStr);
   const displayName = description ?? functionName;
 
@@ -417,7 +438,8 @@ function TransactionFunctionWithSource({
     "coin_burn",
   ]);
 
-  const isRichAction = primaryAction && RICH_ACTION_TYPES.has(primaryAction.type);
+  const isRichAction =
+    primaryAction && RICH_ACTION_TYPES.has(primaryAction.type);
   // Generic types: show function signature as primary content
   const showSignature = !isRichAction;
 
@@ -433,10 +455,8 @@ function TransactionFunctionWithSource({
             )}
             onClick={(e) => e.stopPropagation()}
           >
-            {hasSource && (
-              <FileCheck className="size-[16] text-white fill-blue-500 shrink-0" />
-            )}
             <span className="truncate">{displayName}</span>
+            {hasSource && <SourceAvailableIcon className="ml-0.5" />}
           </Link>
         </TooltipTrigger>
         <TooltipContent side="right" className="p-3 max-w-80 sm:max-w-100">
@@ -452,18 +472,28 @@ function TransactionFunctionWithSource({
             {showSignature && (
               <div className={cn("space-y-1", primaryAction && "mt-2")}>
                 <div className="font-mono text-xs bg-black/30 p-2 rounded border border-border/50 [&_span]:!inline">
-                  <FunctionSignature functionName={functionName} params={params} args={args} typeArgs={typeArgs} isLoading={paramsLoading} />
+                  <FunctionSignature
+                    functionName={functionName}
+                    params={params}
+                    args={args}
+                    typeArgs={typeArgs}
+                    isLoading={paramsLoading}
+                  />
                 </div>
               </div>
             )}
 
             {hasSource && (
-              <div className={cn(
-                "flex items-center gap-1.5 px-2 py-1.5 rounded bg-blue-500/15 border border-blue-500/20 text-white [&_span]:!inline [&_svg]:!inline",
-                (isRichAction || showSignature) && "mt-2",
-              )}>
-                <FileCheck size={20} className="text-white fill-blue-500 shrink-0" />
-                <span className="text-xs">This contract is open source and the source code is available for viewing.</span>
+              <div
+                className={cn(
+                  "flex items-center gap-1.5 px-2 py-1.5 rounded bg-primary/10 border border-primary/20 text-foreground [&_span]:!inline [&_svg]:!inline",
+                  (isRichAction || showSignature) && "mt-2",
+                )}
+              >
+                <SourceAvailableIcon />
+                <span className="text-xs">
+                  Source code is available for this contract.
+                </span>
               </div>
             )}
           </div>

@@ -12,6 +12,7 @@ import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
 import { useGetFASupply } from "@/hooks/coins/useGetFASupply";
 import { useGetFaPairedCoin } from "@/hooks/coins/useGetFaPairedCoin";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
+import { useGetMovementTokenPrices } from "@/hooks/coins/useGetMovementTokenPrices";
 import { useGetIsGraphqlClientSupported } from "@/hooks/common/useGraphqlClient";
 import { isValidAccountAddress, getAssetSymbol } from "@/utils";
 import { Users, ArrowLeftRight } from "lucide-react";
@@ -48,6 +49,45 @@ function FAContent() {
     }
   }, [tabSlug, address, router, isGraphqlSupported]);
 
+  // Fetch FA metadata
+  const { data: metadata, isLoading: isLoadingMetadata } =
+    useGetFaMetadata(address);
+
+  // Fetch supply
+  const { data: supply, isLoading: isLoadingSupply } = useGetFASupply(address);
+
+  // Fetch paired coin
+  const { data: pairedCoin, isLoading: isLoadingPairedCoin } =
+    useGetFaPairedCoin(address);
+
+  // Fetch coin list for additional info
+  const { data: coinList } = useGetCoinList();
+  const { data: tokenPrices = {} } = useGetMovementTokenPrices([address]);
+
+  const isLoading = isLoadingMetadata || isLoadingSupply || isLoadingPairedCoin;
+
+  // Find coin description
+  const coinDescription = coinList?.data?.find(
+    (coin) => coin.faAddress === address || coin.tokenAddress === address,
+  );
+
+  const displaySymbol = getAssetSymbol(
+    coinDescription?.panoraSymbol,
+    coinDescription?.bridge,
+    metadata?.symbol,
+  );
+  const onchainUsdPrice = tokenPrices[address.toLowerCase()];
+  const usdPrice =
+    onchainUsdPrice !== undefined
+      ? String(onchainUsdPrice)
+      : coinDescription?.usdPrice;
+
+  useEffect(() => {
+    if (displaySymbol && address) {
+      document.title = `Fungible Asset ${displaySymbol} (${address}) | Movement Explorer`;
+    }
+  }, [displaySymbol, address]);
+
   // Validate address format
   if (!isValidAccountAddress(address)) {
     return (
@@ -63,53 +103,20 @@ function FAContent() {
     );
   }
 
-  // Fetch FA metadata
-  const { data: metadata, isLoading: isLoadingMetadata } =
-    useGetFaMetadata(address);
-
-  // Fetch supply
-  const { data: supply, isLoading: isLoadingSupply } = useGetFASupply(address);
-
-  // Fetch paired coin
-  const { data: pairedCoin, isLoading: isLoadingPairedCoin } =
-    useGetFaPairedCoin(address);
-
-  // Fetch coin list for additional info
-  const { data: coinList } = useGetCoinList();
-
-  const isLoading = isLoadingMetadata || isLoadingSupply || isLoadingPairedCoin;
-
-  // Find coin description
-  const coinDescription = coinList?.data?.find(
-    (coin) => coin.faAddress === address || coin.tokenAddress === address,
-  );
-
-  const displaySymbol = getAssetSymbol(
-    coinDescription?.panoraSymbol,
-    coinDescription?.bridge,
-    metadata?.symbol,
-  );
-
-  useEffect(() => {
-    if (displaySymbol && address) {
-      document.title = `Fungible Asset ${displaySymbol} (${address}) | Movement Explorer`;
-    }
-  }, [displaySymbol, address]);
-
   // Build tab items (only when GraphQL is supported)
   const tabItems = isGraphqlSupported
     ? [
-      {
-        value: "holders",
-        label: "Holders",
-        icon: <Users className="h-4 w-4 mr-1" />,
-      },
-      {
-        value: "transactions",
-        label: "Transactions",
-        icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
-      },
-    ]
+        {
+          value: "holders",
+          label: "Holders",
+          icon: <Users className="h-4 w-4 mr-1" />,
+        },
+        {
+          value: "transactions",
+          label: "Transactions",
+          icon: <ArrowLeftRight className="h-4 w-4 mr-1" />,
+        },
+      ]
     : [];
 
   return (
@@ -187,6 +194,7 @@ function FAContent() {
           pairedCoin={pairedCoin ?? undefined}
           coinDescription={coinDescription}
           displaySymbol={displaySymbol}
+          usdPrice={usdPrice}
           isLoading={isLoading}
         />
 

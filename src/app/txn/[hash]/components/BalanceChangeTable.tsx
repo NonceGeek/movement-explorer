@@ -13,15 +13,14 @@ import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { AssetCell } from "@/components/common/AssetCell";
 import { VerificationCell } from "@/components/common/VerificationCell";
 import type { BalanceChange } from "@/utils/transaction";
-import { Copy } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
 import { formatMovementPath } from "@/utils";
+import { formatUSDValue } from "@/utils/formatters";
 
 interface BalanceChangeTableProps {
   changes: BalanceChange[];
@@ -137,6 +136,11 @@ function AmountCell({ change }: { change: BalanceChange }) {
   const amount = change.amount;
   const isDecrease = amount < 0;
   const absAmount = amount < 0 ? -amount : amount;
+  const usdValue = formatUSDValue(
+    absAmount,
+    change.asset.decimals,
+    change.usdPrice ?? null,
+  );
 
   const formattedAmount = (
     Number(absAmount) / Math.pow(10, change.asset.decimals)
@@ -145,15 +149,46 @@ function AmountCell({ change }: { change: BalanceChange }) {
     maximumFractionDigits: change.asset.decimals,
   });
 
-  const [copied, setCopied] = useState(false);
+  const formattedCurrentPrice = change.usdPrice
+    ? change.usdPrice.toLocaleString("en-US", {
+        style: "currency",
+        currency: "USD",
+        minimumFractionDigits: change.usdPrice < 1 ? 4 : 2,
+        maximumFractionDigits: change.usdPrice < 1 ? 8 : 2,
+      })
+    : null;
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(
-      `${isDecrease ? "-" : "+"}${formattedAmount}`,
+  const amountContent = (
+    <div
+      className={`flex items-center justify-end gap-1 ${isDecrease ? "text-destructive" : "text-green-600"}`}
+    >
+      <span>
+        {isDecrease ? "-" : "+"}
+        {formattedAmount}
+      </span>
+      <span className="text-xs ml-1 text-muted-foreground/70">
+        {change.asset.symbol}
+      </span>
+      {usdValue && (
+        <span className="text-muted-foreground ml-1">({usdValue})</span>
+      )}
+    </div>
+  );
+
+  if (formattedCurrentPrice) {
+    return (
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="ml-auto w-fit">{amountContent}</div>
+          </TooltipTrigger>
+          <TooltipContent side="top">
+            Current Price: {formattedCurrentPrice} / {change.asset.symbol}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     );
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
+  }
 
   return (
     <div

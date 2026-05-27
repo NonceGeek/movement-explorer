@@ -573,9 +573,7 @@ export function getGasInfo(tx: Types.Transaction): GasInfo | null {
  * Extract the primary token type from a transaction.
  * Returns a readable token name from payload type_arguments or events.
  */
-export function getTransactionToken(
-  tx: Types.Transaction,
-): string | null {
+export function getTransactionToken(tx: Types.Transaction): string | null {
   if (!("payload" in tx)) return null;
 
   const payload = tx.payload as Types.TransactionPayload_EntryFunctionPayload;
@@ -609,6 +607,7 @@ export type BalanceChange = {
   logoUrl?: string;
   isInPanoraTokenList?: boolean;
   panoraTags?: CoinDescription["panoraTags"];
+  usdPrice?: number | null;
 };
 
 export type AggregatedBalance = {
@@ -620,6 +619,7 @@ export type AggregatedBalance = {
   isBanned?: boolean;
   logoUrl?: string;
   panoraTags?: CoinDescription["panoraTags"];
+  usdPrice?: number | null;
 };
 
 export function getAssetSymbol(
@@ -718,4 +718,3 @@ export function getStorageRefund(tx: Types.Transaction): bigint | null {
   }
   return null;
 }
-

@@ -24,6 +24,45 @@ interface MetricCardProps {
   href?: string; // Click to navigate
 }
 
+function metricFullValue(value: string | number): string | undefined {
+  return typeof value === "number" ? Math.round(value).toLocaleString() : value;
+}
+
+function MetricValue({
+  value,
+  isHighlight,
+}: {
+  value: string | number;
+  isHighlight?: boolean;
+}) {
+  const className = cn(
+    "min-w-0 max-w-full overflow-hidden text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight whitespace-nowrap",
+    isHighlight ? "text-primary" : "text-foreground",
+  );
+
+  if (typeof value !== "number") {
+    return (
+      <div className={className} title={metricFullValue(value)}>
+        {value}
+      </div>
+    );
+  }
+
+  return (
+    <div className={className} title={metricFullValue(value)}>
+      <span className="sm:hidden">
+        <RollingNumber
+          value={value}
+          format={(current) => formatCompactNumber(Math.round(current), 1)}
+        />
+      </span>
+      <span className="hidden sm:inline">
+        <RollingNumber value={value} />
+      </span>
+    </div>
+  );
+}
+
 /**
  * MetricCard - Individual metric card for core stats
  */
@@ -51,7 +90,7 @@ function MetricCard({
           "cursor-pointer",
         ],
         // Highlight style
-        isHighlight && "border-primary/50 bg-primary/5"
+        isHighlight && "border-primary/50 bg-primary/5",
       )}
     >
       {/* Header: Label & Tooltip */}
@@ -85,35 +124,13 @@ function MetricCard({
           <EnhancedSkeleton className="h-7 w-24" />
         ) : trend ? (
           /* With trend: wrapper with baseline alignment for value + trend */
-          <div className="flex items-baseline gap-2 flex-wrap">
-            <div
-              className={cn(
-                "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
-                isHighlight ? "text-primary" : "text-foreground"
-              )}
-            >
-              {typeof value === "number" ? (
-                <RollingNumber value={value} />
-              ) : (
-                value
-              )}
-            </div>
+          <div className="flex min-w-0 items-baseline gap-2 flex-wrap">
+            <MetricValue value={value} isHighlight={isHighlight} />
             {trend}
           </div>
         ) : (
           /* Without trend: just the value */
-          <div
-            className={cn(
-              "text-xl sm:text-2xl font-bold font-mono tabular-nums leading-tight",
-              isHighlight ? "text-primary" : "text-foreground"
-            )}
-          >
-            {typeof value === "number" ? (
-              <RollingNumber value={value} />
-            ) : (
-              value
-            )}
-          </div>
+          <MetricValue value={value} isHighlight={isHighlight} />
         )}
       </div>
     </div>

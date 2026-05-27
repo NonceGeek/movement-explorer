@@ -12,6 +12,7 @@ interface FAOverviewProps {
   pairedCoin?: string;
   coinDescription?: CoinDescription;
   displaySymbol?: string;
+  usdPrice?: string | null;
   isLoading: boolean;
 }
 
@@ -22,11 +23,14 @@ export function FAOverview({
   pairedCoin,
   coinDescription,
   displaySymbol,
+  usdPrice,
   isLoading,
 }: FAOverviewProps) {
-  const symbol = displaySymbol || metadata?.symbol || coinDescription?.symbol || "";
+  const symbol =
+    displaySymbol || metadata?.symbol || coinDescription?.symbol || "";
   const decimals = metadata?.decimals ?? coinDescription?.decimals ?? 8;
-  const websiteUrl = coinDescription?.websiteUrl || metadata?.project_uri || undefined;
+  const websiteUrl =
+    coinDescription?.websiteUrl || metadata?.project_uri || undefined;
 
   return (
     <AssetOverview
@@ -47,7 +51,7 @@ export function FAOverview({
           : undefined
       }
       websiteUrl={websiteUrl}
-      usdPrice={coinDescription?.usdPrice}
+      usdPrice={usdPrice ?? coinDescription?.usdPrice}
       category={coinDescription?.category}
       panoraTags={coinDescription?.panoraTags}
       isLoading={isLoading}

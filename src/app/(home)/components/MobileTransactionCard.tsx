@@ -5,11 +5,11 @@ import {
   CheckCircle2,
   XCircle,
   ArrowRight,
-  FileCheck,
   FileText,
   User,
 } from "lucide-react";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { SourceAvailableIcon } from "@/components/common/TransactionFunction";
 import { cn } from "@/utils/styling";
 import {
   getTransactionSender,
@@ -181,10 +181,8 @@ export function MobileTransactionCardContent({
                 : "bg-muted/80 font-mono text-primary",
             )}
           >
-            {hasSource && (
-              <FileCheck className="h-3 w-3 text-white fill-blue-500 shrink-0" />
-            )}
             {functionDescription ?? methodName}
+            {hasSource && <SourceAvailableIcon className="h-3.5 w-3.5" />}
           </code>
         )}
         <div className="flex flex-col items-end gap-1 ml-auto shrink-0">
@@ -221,7 +219,7 @@ export function MobileTransactionCard({
         "block bg-card backdrop-blur-sm rounded-lg border border-border/50",
         "p-3 sm:p-4",
         "transition-all active:scale-[0.98] hover:bg-card hover:border-primary/30 hover:shadow-md",
-        className
+        className,
       )}
     >
       <MobileTransactionCardContent

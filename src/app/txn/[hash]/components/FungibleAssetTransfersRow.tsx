@@ -1,10 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ArrowRight, ChevronDown, ChevronUp, ExternalLink } from "lucide-react";
 import { type FungibleAssetActivity } from "@/hooks/transactions/useGetTransactionBalanceChanges";
+import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
+import { CoinDescription } from "@/hooks/coins/types";
+import { useGetMovementTokenPrices } from "@/hooks/coins/useGetMovementTokenPrices";
+import {
+  CoinAssetIcon,
+  FaAssetIcon,
+} from "@/app/account/[address]/components/Tabs/coins/CoinIcons";
 import { DetailRow } from "./DetailRow";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
+import { tryStandardizeAddress } from "@/utils";
+import { formatUSDValue } from "@/utils/formatters";
+import { getAssetSymbol } from "@/utils/transaction";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface FungibleAssetTransfersRowProps {
   activities: FungibleAssetActivity[];
@@ -19,6 +35,7 @@ interface PairedTransfer {
   amount: number;
   decimals: number;
   symbol: string;
+  assetType: string;
 }
 
 interface MultiRecipientTransfer {
@@ -28,6 +45,7 @@ interface MultiRecipientTransfer {
   totalAmount: number;
   decimals: number;
   symbol: string;
+  assetType: string;
 }
 
 interface UnpairedActivity {
@@ -37,6 +55,7 @@ interface UnpairedActivity {
   amount: number;
   decimals: number;
   symbol: string;
+  assetType: string;
 }
 
 type DisplayRow = PairedTransfer | MultiRecipientTransfer | UnpairedActivity;
@@ -48,6 +67,124 @@ function formatAmount(amount: number, decimals: number): string {
     maximumFractionDigits: 8,
     minimumFractionDigits: 0,
   });
+}
+
+function formatCurrentPrice(usdPrice?: number | null): string | null {
+  if (!usdPrice) return null;
+
+  return usdPrice.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    minimumFractionDigits: usdPrice < 1 ? 4 : 2,
+    maximumFractionDigits: usdPrice < 1 ? 8 : 2,
+  });
+}
+
+function findCoinData(
+  coinData: CoinDescription[] | undefined,
+  assetType: string,
+): CoinDescription | undefined {
+  if (!coinData || !assetType) return undefined;
+
+  const coinType = assetType.includes("::")
+    ? assetType.split("::")[0]
+    : undefined;
+  const faAddress = assetType ? tryStandardizeAddress(assetType) : undefined;
+
+  return coinData.find((coin) => {
+    const isMatchingFa =
+      faAddress &&
+      coin.faAddress &&
+      tryStandardizeAddress(faAddress) ===
+        tryStandardizeAddress(coin.faAddress);
+    const isMatchingCoin =
+      coinType && coin.tokenAddress && coin.tokenAddress === coinType;
+    const isMatchingFullCoinType =
+      assetType && coin.tokenAddress && coin.tokenAddress === assetType;
+
+    return isMatchingCoin || isMatchingFa || isMatchingFullCoinType;
+  });
+}
+
+function AmountWithCurrentPrice({
+  amount,
+  decimals,
+  symbol,
+  assetId,
+  logoUrl,
+  usdPrice,
+  className,
+}: {
+  amount: number;
+  decimals: number;
+  symbol: string;
+  assetId: string;
+  logoUrl?: string | null;
+  usdPrice?: number | null;
+  className?: string;
+}) {
+  const usdValue = formatUSDValue(amount, decimals, usdPrice ?? null);
+  const currentPrice = formatCurrentPrice(usdPrice);
+
+  const content = (
+    <span className={className}>
+      <span className="font-mono text-foreground font-medium leading-none">
+        {formatAmount(amount, decimals)}
+      </span>
+      {usdValue && (
+        <span className="text-muted-foreground ml-1">({usdValue})</span>
+      )}
+      <span className="inline-flex items-center gap-1 ml-1 leading-none">
+        <TokenTransferAssetIcon
+          assetId={assetId}
+          logoUrl={logoUrl}
+          symbol={symbol}
+        />
+        <span className="text-muted-foreground text-xs">{symbol}</span>
+      </span>
+    </span>
+  );
+
+  if (!currentPrice) {
+    return content;
+  }
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{content}</TooltipTrigger>
+        <TooltipContent side="top">
+          Current Price: {currentPrice} / {symbol}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+}
+
+function TokenTransferAssetIcon({
+  assetId,
+  logoUrl,
+  symbol,
+}: {
+  assetId: string;
+  logoUrl?: string | null;
+  symbol: string;
+}) {
+  const isCoin = assetId.includes("::");
+
+  return (
+    <span className="inline-flex h-4 w-4 shrink-0 items-center justify-center align-middle [&_img]:h-4 [&_img]:w-4 [&_img]:block [&_div]:h-4 [&_div]:w-4 [&_div]:text-[9px]">
+      {isCoin ? (
+        <CoinAssetIcon logoUrl={logoUrl ?? null} symbol={symbol} />
+      ) : (
+        <FaAssetIcon
+          address={assetId}
+          fallbackLogoUrl={logoUrl ?? null}
+          symbol={symbol}
+        />
+      )}
+    </span>
+  );
 }
 
 function buildDisplayRows(
@@ -110,6 +247,7 @@ function buildDisplayRows(
           amount: w.amount,
           decimals: w.metadata?.decimals ?? d.metadata?.decimals ?? 8,
           symbol: w.metadata?.symbol ?? d.metadata?.symbol ?? "FA",
+          assetType: w.asset_type,
         });
       }
     }
@@ -137,6 +275,7 @@ function buildDisplayRows(
         totalAmount: unmatchedDeposits.reduce((sum, d) => sum + d.amount, 0),
         decimals: sample.metadata?.decimals ?? 8,
         symbol: sample.metadata?.symbol ?? "FA",
+        assetType: sample.asset_type,
       });
     } else {
       // Fallback: show unpaired sender withdrawals
@@ -148,6 +287,7 @@ function buildDisplayRows(
           amount: w.amount,
           decimals: w.metadata?.decimals ?? 8,
           symbol: w.metadata?.symbol ?? "FA",
+          assetType: w.asset_type,
         });
       }
 
@@ -161,6 +301,7 @@ function buildDisplayRows(
             amount: d.amount,
             decimals: d.metadata?.decimals ?? 8,
             symbol: d.metadata?.symbol ?? "FA",
+            assetType: d.asset_type,
           });
         }
       });
@@ -175,10 +316,53 @@ export function FungibleAssetTransfersRow({
   senderAddress,
   onTabChange,
 }: FungibleAssetTransfersRowProps) {
-  const rows = buildDisplayRows(activities, senderAddress);
+  const { data: coinData } = useGetCoinList();
+  const rows = useMemo(
+    () => buildDisplayRows(activities, senderAddress),
+    [activities, senderAddress],
+  );
+  const priceAssetIds = useMemo(() => {
+    const ids = new Set<string>();
+
+    for (const row of rows) {
+      const entry = findCoinData(coinData?.data, row.assetType);
+      const assetId = entry?.faAddress ?? row.assetType;
+      if (assetId && !assetId.includes("::")) {
+        ids.add(assetId);
+      }
+    }
+
+    return Array.from(ids);
+  }, [coinData, rows]);
+
+  const { data: tokenPrices = {} } = useGetMovementTokenPrices(priceAssetIds);
   const [expandedRows, setExpandedRows] = useState<Set<number>>(new Set());
 
   if (rows.length === 0) return null;
+
+  const getPriceInfo = (row: DisplayRow) => {
+    const entry = findCoinData(coinData?.data, row.assetType);
+    const priceAssetId = entry?.faAddress ?? row.assetType;
+    const usdPrice =
+      priceAssetId && !priceAssetId.includes("::")
+        ? (tokenPrices[priceAssetId.toLowerCase()] ??
+          (entry?.usdPrice !== null && entry?.usdPrice !== undefined
+            ? Number(entry.usdPrice)
+            : null))
+        : entry?.usdPrice !== null && entry?.usdPrice !== undefined
+          ? Number(entry.usdPrice)
+          : null;
+    const symbol =
+      getAssetSymbol(
+        entry?.panoraSymbol ?? undefined,
+        entry?.bridge ?? undefined,
+        row.symbol,
+      ) || row.symbol;
+    const assetId = entry?.tokenAddress ?? entry?.faAddress ?? row.assetType;
+    const logoUrl = entry?.logoUrl ?? null;
+
+    return { assetId, logoUrl, symbol, usdPrice };
+  };
 
   const toggleExpand = (i: number) => {
     setExpandedRows((prev) => {
@@ -200,6 +384,8 @@ export function FungibleAssetTransfersRow({
           const isExpanded = expandedRows.has(i);
 
           if (row.kind === "multi") {
+            const { assetId, logoUrl, symbol, usdPrice } = getPriceInfo(row);
+
             return (
               <div
                 key={i}
@@ -247,12 +433,15 @@ export function FungibleAssetTransfersRow({
                         )}
                       </button>
                       <div className="flex items-center gap-1.5 ml-1">
-                        <span className="font-mono text-foreground font-medium">
-                          {formatAmount(row.totalAmount, row.decimals)}
-                        </span>
-                        <span className="text-muted-foreground text-xs">
-                          {row.symbol}
-                        </span>
+                        <AmountWithCurrentPrice
+                          amount={row.totalAmount}
+                          decimals={row.decimals}
+                          symbol={symbol}
+                          assetId={assetId}
+                          logoUrl={logoUrl}
+                          usdPrice={usdPrice}
+                          className="inline-flex items-center"
+                        />
                       </div>
                     </div>
 
@@ -268,7 +457,15 @@ export function FungibleAssetTransfersRow({
                               showLabel
                             />
                             <span className="font-mono text-muted-foreground ml-auto whitespace-nowrap">
-                              {formatAmount(r.amount, row.decimals)} {row.symbol}
+                              <AmountWithCurrentPrice
+                                amount={r.amount}
+                                decimals={row.decimals}
+                                symbol={symbol}
+                                assetId={assetId}
+                                logoUrl={logoUrl}
+                                usdPrice={usdPrice}
+                                className="inline-flex items-center"
+                              />
                             </span>
                           </div>
                         ))}
@@ -281,8 +478,13 @@ export function FungibleAssetTransfersRow({
           }
 
           // paired | unpaired
+          const { assetId, logoUrl, symbol, usdPrice } = getPriceInfo(row);
           const fromAddr =
-            row.kind === "paired" ? row.from : row.isDeposit ? null : row.address;
+            row.kind === "paired"
+              ? row.from
+              : row.isDeposit
+                ? null
+                : row.address;
           const toAddr =
             row.kind === "paired" ? row.to : row.isDeposit ? row.address : null;
           const fromEl = fromAddr ? (
@@ -293,7 +495,9 @@ export function FungibleAssetTransfersRow({
               showLabel
             />
           ) : (
-            <span className="text-muted-foreground/50 text-xs font-mono">···</span>
+            <span className="text-muted-foreground/50 text-xs font-mono">
+              ···
+            </span>
           );
           const toEl = toAddr ? (
             <CopyableAddress
@@ -303,7 +507,9 @@ export function FungibleAssetTransfersRow({
               showLabel
             />
           ) : (
-            <span className="text-muted-foreground/50 text-xs font-mono">···</span>
+            <span className="text-muted-foreground/50 text-xs font-mono">
+              ···
+            </span>
           );
 
           return (
@@ -334,12 +540,15 @@ export function FungibleAssetTransfersRow({
                 </span>
                 {toEl}
                 <div className="flex items-center gap-1.5 sm:ml-1">
-                  <span className="font-mono text-foreground font-medium">
-                    {formatAmount(row.amount, row.decimals)}
-                  </span>
-                  <span className="text-muted-foreground text-xs">
-                    {row.symbol}
-                  </span>
+                  <AmountWithCurrentPrice
+                    amount={row.amount}
+                    decimals={row.decimals}
+                    symbol={symbol}
+                    assetId={assetId}
+                    logoUrl={logoUrl}
+                    usdPrice={usdPrice}
+                    className="inline-flex items-center"
+                  />
                 </div>
               </div>
             </div>

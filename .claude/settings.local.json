@@ -126,7 +126,11 @@
       "Bash(git stash *)",
       "Bash(git checkout *)",
       "Bash(awk -F: '{print $2}')",
-      "Bash(node -e ' *)"
+      "Bash(node -e ' *)",
+      "Bash(xargs sed -i '' 's/bg-card\\\\/50/bg-card/g; s/bg-card\\\\/40/bg-card/g; s/bg-card\\\\/95/bg-card/g')",
+      "Bash(xargs perl -pi -e 's/bg-card\\\\/80\\(?![a-zA-Z0-9]\\)/bg-card/g; s/bg-card\\\\/60\\(?![a-zA-Z0-9]\\)/bg-card/g')",
+      "Bash(pnpm lint *)",
+      "Bash(git log *)"
     ]
   }
 }

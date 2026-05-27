@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table";
 import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
 import { CoinDescription } from "@/hooks/coins/types";
+import { useGetMovementTokenPrices } from "@/hooks/coins/useGetMovementTokenPrices";
 
 interface BalanceChangeTabProps {
   activities: FungibleAssetActivity[];
@@ -50,6 +51,7 @@ function aggregateBalanceChanges(
         isBanned: change.isBanned,
         logoUrl: change.logoUrl,
         panoraTags: change.panoraTags,
+        usdPrice: change.usdPrice,
       });
     }
   });
@@ -91,9 +93,29 @@ function findCoinData(
   return entry;
 }
 
-export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProps) {
+export function BalanceChangeTab({
+  activities,
+  isLoading,
+}: BalanceChangeTabProps) {
   const { data: coinData } = useGetCoinList();
   const [viewType, setViewType] = useState<BalanceViewType>("summary");
+
+  const priceAssetIds = useMemo(() => {
+    if (!activities || activities.length === 0) return [];
+
+    const ids = new Set<string>();
+    for (const activity of activities) {
+      const entry = findCoinData(coinData?.data, activity.asset_type);
+      const assetId = entry?.faAddress ?? activity.asset_type;
+      if (assetId && !assetId.includes("::")) {
+        ids.add(assetId);
+      }
+    }
+
+    return Array.from(ids);
+  }, [activities, coinData]);
+
+  const { data: tokenPrices = {} } = useGetMovementTokenPrices(priceAssetIds);
 
   function convertAddress(a: FungibleAssetActivity) {
     return a.type.includes("GasFeeEvent")
@@ -189,6 +211,11 @@ export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProp
           isBanned: entry?.isBanned,
           logoUrl: entry?.logoUrl ?? fallbackLogoUrl,
           panoraTags: entry?.panoraTags ?? [],
+          usdPrice:
+            tokenPrices[(entry?.faAddress ?? a.asset_type).toLowerCase()] ??
+            (entry?.usdPrice !== null && entry?.usdPrice !== undefined
+              ? Number(entry.usdPrice)
+              : null),
         };
       });
 
@@ -220,16 +247,23 @@ export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProp
         isInPanoraTokenList: true,
         panoraTags: [],
         logoUrl: storageRefundLogoUrl,
+        usdPrice:
+          tokenPrices[gasFeeActivity.asset_type.toLowerCase()] ??
+          tokenPrices["0xa"] ??
+          null,
       });
     }
 
     return changes;
-  }, [activities, coinData]);
+  }, [activities, coinData, tokenPrices]);
 
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <ToggleGroup value={viewType} onValueChange={(v) => setViewType(v as BalanceViewType)}>
+        <ToggleGroup
+          value={viewType}
+          onValueChange={(v) => setViewType(v as BalanceViewType)}
+        >
           <ToggleGroupItem value="summary">Summary</ToggleGroupItem>
           <ToggleGroupItem value="detail">Detail</ToggleGroupItem>
         </ToggleGroup>
@@ -248,12 +282,24 @@ export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProp
           <TableBody>
             {Array.from({ length: 3 }).map((_, i) => (
               <TableRow key={i}>
-                <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
-                <TableCell><EnhancedSkeleton className="h-5 w-16 rounded-full" /></TableCell>
-                <TableCell><EnhancedSkeleton className="h-4 w-16" /></TableCell>
-                <TableCell><EnhancedSkeleton className="h-4 w-24" /></TableCell>
-                <TableCell><EnhancedSkeleton className="h-4 w-12" /></TableCell>
-                <TableCell className="text-right"><EnhancedSkeleton className="h-4 w-28 ml-auto" /></TableCell>
+                <TableCell>
+                  <EnhancedSkeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <EnhancedSkeleton className="h-5 w-16 rounded-full" />
+                </TableCell>
+                <TableCell>
+                  <EnhancedSkeleton className="h-4 w-16" />
+                </TableCell>
+                <TableCell>
+                  <EnhancedSkeleton className="h-4 w-24" />
+                </TableCell>
+                <TableCell>
+                  <EnhancedSkeleton className="h-4 w-12" />
+                </TableCell>
+                <TableCell className="text-right">
+                  <EnhancedSkeleton className="h-4 w-28 ml-auto" />
+                </TableCell>
               </TableRow>
             ))}
           </TableBody>
@@ -284,7 +330,10 @@ export function BalanceChangeTab({ activities, isLoading }: BalanceChangeTabProp
 
   return (
     <div className="space-y-4">
-      <ToggleGroup value={viewType} onValueChange={(v) => setViewType(v as BalanceViewType)}>
+      <ToggleGroup
+        value={viewType}
+        onValueChange={(v) => setViewType(v as BalanceViewType)}
+      >
         <ToggleGroupItem value="summary">Summary</ToggleGroupItem>
         <ToggleGroupItem value="detail">Detail</ToggleGroupItem>
       </ToggleGroup>

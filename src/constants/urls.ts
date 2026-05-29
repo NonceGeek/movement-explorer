@@ -25,8 +25,9 @@ export const COINGECKO_API_ENDPOINT =
 // Movement Name Service (MNS)
 export const MNS_API_BASE_URL = "https://move.movementlabs.xyz";
 
-// Verified Token List (local)
-export const MOVEMENT_TOKENS_URL = "/tokens.json";
+// Verified Token List
+export const MOVEMENT_TOKENS_URL =
+  "https://raw.githubusercontent.com/movementlabsxyz/movement-tokens/refs/heads/main/tokens.json";
 
 // External Links
 export const STAKING_URL = "https://staking.movementnetwork.xyz";

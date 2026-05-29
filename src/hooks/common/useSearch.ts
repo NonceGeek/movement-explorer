@@ -51,7 +51,7 @@ type SearchMode = "idle" | "loading" | "results";
 // Helper function for prefix matching
 function prefixMatchLongerThan3(
   searchLowerCase: string,
-  knownName: string | null | undefined
+  knownName: string | null | undefined,
 ): boolean {
   if (!knownName) {
     return false;
@@ -69,7 +69,7 @@ function prefixMatchLongerThan3(
 function getAssetSymbol(
   panoraSymbol: string | null,
   bridge: string | null,
-  symbol: string
+  symbol: string,
 ): string {
   if (panoraSymbol) {
     return panoraSymbol;
@@ -124,7 +124,7 @@ export function useSearch() {
             if (ansName && address) {
               foundResults.push({
                 label: `Account ${truncateAddress(
-                  address.toString()
+                  address.toString(),
                 )} (${ansSearchText})`,
                 to: `/account/${address}`,
                 type: "ans",
@@ -244,7 +244,7 @@ export function useSearch() {
           try {
             await aptos_client.getAccountResource(
               address,
-              `0x1::coin::CoinInfo<${actualStruct}>`
+              `0x1::coin::CoinInfo<${actualStruct}>`,
             );
             foundResults.push({
               label: `Coin ${formatMovementPath(actualStruct)}`,
@@ -264,7 +264,7 @@ export function useSearch() {
           if (emojicoinData) {
             try {
               await aptos_client.getAccount(
-                emojicoinData.marketAddress.toString()
+                emojicoinData.marketAddress.toString(),
               );
               foundResults.push({
                 label: `${trimmed} Emojicoin`,
@@ -295,19 +295,18 @@ export function useSearch() {
                 (prefixMatchLongerThan3(searchLower, coin.name) ||
                   prefixMatchLongerThan3(searchLower, coin.symbol) ||
                   prefixMatchLongerThan3(searchLower, coin.panoraSymbol) ||
-                  coin.tokenAddress === trimmed)
+                  coin.tokenAddress === trimmed),
             )
             .sort(
               (a: CoinDescription, b: CoinDescription) =>
-                coinOrderIndex(a) - coinOrderIndex(b)
-            )
-            .slice(0, 5); // Limit to 5 coin results
+                coinOrderIndex(a) - coinOrderIndex(b),
+            );
 
           matchedCoins.forEach((coin: CoinDescription) => {
             const label = `${coin.name} - ${getAssetSymbol(
               coin.panoraSymbol,
               coin.bridge,
-              coin.symbol
+              coin.symbol,
             )}`;
             if (coin.tokenAddress) {
               foundResults.push({
@@ -342,7 +341,7 @@ export function useSearch() {
             ) {
               // Avoid duplicates
               const exists = foundResults.some(
-                (r) => r.to === `/account/${address}`
+                (r) => r.to === `/account/${address}`,
               );
               if (!exists) {
                 foundResults.push({
@@ -368,7 +367,7 @@ export function useSearch() {
 
       setMode("results");
     },
-    [sdk_v2_client, aptos_client, coinListData]
+    [sdk_v2_client, aptos_client, coinListData],
   );
 
   const clearResults = useCallback(() => {

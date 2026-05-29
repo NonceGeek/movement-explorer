@@ -66,8 +66,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero + Stats Section - Full Width */}
-      <div className="relative overflow-hidden">
-
+      <div className="relative overflow-x-clip overflow-y-visible">
         {/* Centered Glow above search bar */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[300px] bg-(--ms-accent)/15 blur-[120px] rounded-full pointer-events-none" />
         <div className="absolute top-10 left-1/2 -translate-x-1/2 w-100 h-50 bg-(--ms-accent-2)/12 blur-[100px] rounded-full pointer-events-none" />

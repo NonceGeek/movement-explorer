@@ -1,13 +1,8 @@
 import { useGetFaMetadata } from "@/hooks/coins/useGetFaMetadata";
-import { Coins } from "lucide-react";
+import { TokenIcon } from "@/components/common/TokenIcon";
 
 export function AssetIconFallback({ symbol }: { symbol: string }) {
-  const text = symbol ? symbol.slice(0, 2).toUpperCase() : "";
-  return (
-    <div className="h-6 w-6 rounded-full bg-muted flex items-center justify-center text-xs font-semibold text-muted-foreground">
-      {text ? text : <Coins className="h-4 w-4" />}
-    </div>
-  );
+  return <TokenIcon symbol={symbol} className="h-6 w-6" />;
 }
 
 export function CoinAssetIcon({
@@ -19,13 +14,11 @@ export function CoinAssetIcon({
 }) {
   if (logoUrl) {
     return (
-      <img
+      <TokenIcon
         src={logoUrl}
+        symbol={symbol}
         alt={symbol || "Coin"}
-        className="h-6 w-6 rounded-full"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
+        className="h-6 w-6"
       />
     );
   }
@@ -47,13 +40,11 @@ export function FaAssetIcon({
 
   if (iconUrl) {
     return (
-      <img
+      <TokenIcon
         src={iconUrl}
+        symbol={symbol}
         alt={symbol || "FA"}
-        className="h-6 w-6 rounded-full"
-        onError={(e) => {
-          (e.target as HTMLImageElement).style.display = "none";
-        }}
+        className="h-6 w-6"
       />
     );
   }

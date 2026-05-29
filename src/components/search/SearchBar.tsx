@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@movementlabsxyz/movement-design-system";
+import { TokenIcon } from "@/components/common/TokenIcon";
 
 export interface SearchBarProps {
   variant?: "default" | "hero" | "hero-subtle" | "navigation";
@@ -71,7 +72,7 @@ export function SearchBar({
       case "ArrowUp":
         e.preventDefault();
         setSelectedIndex(
-          (prev) => (prev - 1 + results.length) % results.length
+          (prev) => (prev - 1 + results.length) % results.length,
         );
         break;
       case "Enter":
@@ -175,34 +176,35 @@ export function SearchBar({
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                      ? "bg-primary/20 border-l-4 border-l-primary"
-                      : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
-                      } ${!result.to
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
+                      index === selectedIndex
+                        ? "bg-primary/20 border-l-4 border-l-primary"
+                        : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
+                    } ${
+                      !result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
-                      }`}
+                    }`}
                   >
                     <div className="flex items-center gap-3.5">
                       {result.image ? (
-                        <img
+                        <TokenIcon
                           src={result.image}
-                          alt=""
-                          className="w-7 h-7 rounded-full ring-2 ring-primary/30"
+                          symbol={result.label}
+                          className="w-7 h-7 ring-2 ring-primary/30"
+                          textClassName="text-[9px]"
                         />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-primary/20 flex items-center justify-center">
-                          <CornerDownLeft
-                            size={16}
-                            className="text-primary"
-                          />
+                          <CornerDownLeft size={16} className="text-primary" />
                         </div>
                       )}
                       <span
-                        className={`text-base font-medium ${index === selectedIndex
-                          ? "text-primary"
-                          : "text-foreground"
-                          }`}
+                        className={`text-base font-medium ${
+                          index === selectedIndex
+                            ? "text-primary"
+                            : "text-foreground"
+                        }`}
                       >
                         {result.label}
                       </span>
@@ -244,7 +246,10 @@ export function SearchBar({
             className="m-1.5 sm:m-2 w-auto! max-w-none! p-2.5 sm:p-3! px-3 sm:px-6! text-sm sm:text-base! rounded-full! bg-primary! hover:bg-primary/90! text-primary-foreground! border-0!"
           >
             {isLoading ? (
-              <Loader2 size={24} className="animate-spin !w-6 !h-6 text-primary-foreground" />
+              <Loader2
+                size={24}
+                className="animate-spin !w-6 !h-6 text-primary-foreground"
+              />
             ) : (
               <Search size={24} className="!w-6 !h-6 text-primary-foreground" />
             )}
@@ -273,20 +278,23 @@ export function SearchBar({
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                      ? "bg-primary/15 border-l-4 border-l-primary/70"
-                      : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-primary/30"
-                      } ${!result.to
+                    className={`px-4 py-4 cursor-pointer transition-all duration-200 ${
+                      index === selectedIndex
+                        ? "bg-primary/15 border-l-4 border-l-primary/70"
+                        : "hover:bg-muted/50 border-l-4 border-l-transparent hover:border-l-primary/30"
+                    } ${
+                      !result.to
                         ? "cursor-default text-muted-foreground"
                         : "hover:pl-6"
-                      }`}
+                    }`}
                   >
                     <div className="flex items-center gap-3.5">
                       {result.image ? (
-                        <img
+                        <TokenIcon
                           src={result.image}
-                          alt=""
-                          className="w-7 h-7 rounded-full ring-1 ring-border/50"
+                          symbol={result.label}
+                          className="w-7 h-7 ring-1 ring-border/50"
+                          textClassName="text-[9px]"
                         />
                       ) : (
                         <div className="w-7 h-7 rounded-full bg-muted/50 flex items-center justify-center">
@@ -297,10 +305,11 @@ export function SearchBar({
                         </div>
                       )}
                       <span
-                        className={`text-base font-medium ${index === selectedIndex
-                          ? "text-primary"
-                          : "text-foreground"
-                          }`}
+                        className={`text-base font-medium ${
+                          index === selectedIndex
+                            ? "text-primary"
+                            : "text-foreground"
+                        }`}
                       >
                         {result.label}
                       </span>
@@ -387,22 +396,27 @@ export function SearchBar({
                   <li
                     key={`${result.to}-${index}`}
                     onClick={() => handleResultClick(result)}
-                    className={`px-4 py-3 cursor-pointer transition-all duration-150 ${index === selectedIndex
-                      ? "bg-primary/10 border-l-2 border-l-primary"
-                      : "hover:bg-muted/40 border-l-2 border-l-transparent"
-                      } ${!result.to ? "cursor-default opacity-50" : ""}`}
+                    className={`px-4 py-3 cursor-pointer transition-all duration-150 ${
+                      index === selectedIndex
+                        ? "bg-primary/10 border-l-2 border-l-primary"
+                        : "hover:bg-muted/40 border-l-2 border-l-transparent"
+                    } ${!result.to ? "cursor-default opacity-50" : ""}`}
                   >
                     <div className="flex items-center justify-between gap-3">
                       <div className="flex items-center gap-2.5 min-w-0">
                         {result.image ? (
-                          <img
+                          <TokenIcon
                             src={result.image}
-                            alt=""
-                            className="w-5 h-5 rounded-full ring-1 ring-border/30 shrink-0"
+                            symbol={result.label}
+                            className="w-5 h-5 ring-1 ring-border/30"
+                            textClassName="text-[7px]"
                           />
                         ) : (
                           <div className="w-5 h-5 rounded-full bg-muted/50 flex items-center justify-center shrink-0">
-                            <ArrowRight size={10} className="text-muted-foreground/60" />
+                            <ArrowRight
+                              size={10}
+                              className="text-muted-foreground/60"
+                            />
                           </div>
                         )}
                         <p className="text-sm truncate">{result.label}</p>
@@ -467,34 +481,35 @@ export function SearchBar({
                 <li
                   key={`${result.to}-${index}`}
                   onClick={() => handleResultClick(result)}
-                  className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${index === selectedIndex
-                    ? "bg-primary/20 border-l-4 border-l-primary"
-                    : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
-                    } ${!result.to
+                  className={`px-4 py-3.5 cursor-pointer transition-all duration-200 ${
+                    index === selectedIndex
+                      ? "bg-primary/20 border-l-4 border-l-primary"
+                      : "hover:bg-primary/10 border-l-4 border-l-transparent hover:border-l-primary/50"
+                  } ${
+                    !result.to
                       ? "cursor-default text-muted-foreground"
                       : "hover:pl-5"
-                    }`}
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     {result.image ? (
-                      <img
+                      <TokenIcon
                         src={result.image}
-                        alt=""
-                        className="w-6 h-6 rounded-full ring-1 ring-primary/30"
+                        symbol={result.label}
+                        className="w-6 h-6 ring-1 ring-primary/30"
+                        textClassName="text-[8px]"
                       />
                     ) : (
                       <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center">
-                        <CornerDownLeft
-                          size={12}
-                          className="text-primary"
-                        />
+                        <CornerDownLeft size={12} className="text-primary" />
                       </div>
                     )}
                     <span
-                      className={`text-sm font-medium ${index === selectedIndex
-                        ? "text-primary"
-                        : "text-foreground"
-                        }`}
+                      className={`text-sm font-medium ${
+                        index === selectedIndex
+                          ? "text-primary"
+                          : "text-foreground"
+                      }`}
                     >
                       {result.label}
                     </span>

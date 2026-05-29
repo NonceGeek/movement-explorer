@@ -8,6 +8,7 @@ import { useSearch, SearchResult } from "@/hooks/common/useSearch";
 import { cn } from "@/utils/styling";
 import { useScrollDirection } from "@/hooks/useScrollDirection";
 import dynamic from "next/dynamic";
+import { TokenIcon } from "@/components/common/TokenIcon";
 
 const NetworkBadge = dynamic(() => import("./NetworkBadge"), { ssr: false });
 const GasPriceIndicator = dynamic(() => import("./GasPriceIndicator"), {
@@ -138,10 +139,11 @@ export default function PageNavigation({
                           <div className="flex items-center justify-between gap-2">
                             <div className="flex items-center gap-2 min-w-0">
                               {result.image ? (
-                                <img
+                                <TokenIcon
                                   src={result.image}
-                                  alt=""
-                                  className="w-4 h-4 rounded-full shrink-0"
+                                  symbol={result.label}
+                                  className="w-4 h-4"
+                                  textClassName="text-[6px]"
                                 />
                               ) : (
                                 <ArrowRight

@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { COINGECKO_API_ENDPOINT } from "../constants";
+
+const SIMPLE_PRICE_API_ENDPOINT = "/api/prices/simple";
 
 export interface PriceData {
   price: number | null;
@@ -22,7 +23,7 @@ export async function getPrice(
   };
 
   const queryString = new URLSearchParams(query);
-  const url = `${COINGECKO_API_ENDPOINT}?${queryString}`;
+  const url = `${SIMPLE_PRICE_API_ENDPOINT}?${queryString}`;
 
   try {
     const response = await fetch(url, {
@@ -37,7 +38,7 @@ export async function getPrice(
     const data = await response.json();
     return Number(data[coinId]?.usd || 0);
   } catch (error) {
-    console.error(`Error fetching ${coinId} price from CoinGecko:`, error);
+    console.error(`Error fetching ${coinId} price:`, error);
     return null;
   }
 }
@@ -74,7 +75,7 @@ export async function getPriceWithMarketCap(
   };
 
   const queryString = new URLSearchParams(query);
-  const url = `${COINGECKO_API_ENDPOINT}?${queryString}`;
+  const url = `${SIMPLE_PRICE_API_ENDPOINT}?${queryString}`;
 
   try {
     const response = await fetch(url, {
@@ -93,7 +94,7 @@ export async function getPriceWithMarketCap(
       priceChange24h: Number(data[coinId]?.usd_24h_change || 0) || null,
     };
   } catch (error) {
-    console.error(`Error fetching ${coinId} data from CoinGecko:`, error);
+    console.error(`Error fetching ${coinId} price data:`, error);
     return { price: null, marketCap: null, priceChange24h: null };
   }
 }

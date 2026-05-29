@@ -3,7 +3,6 @@ import { useGlobalStore } from "../../store/useGlobalStore";
 import {
   ANALYTICS_DATA_URL,
   TESTNET_ANALYTICS_DATA_URL,
-  BARDOCK_ANALYTICS_DATA_URL,
 } from "../../constants";
 
 export type AnalyticsData = {
@@ -98,7 +97,6 @@ export function useGetAnalyticsData() {
   const { network_name } = useGlobalStore();
 
   const urls: Record<string, string | null> = {
-    "bardock testnet": BARDOCK_ANALYTICS_DATA_URL,
     testnet: TESTNET_ANALYTICS_DATA_URL,
     mainnet: ANALYTICS_DATA_URL,
     devnet: null,

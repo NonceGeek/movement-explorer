@@ -4,9 +4,9 @@ import { useState } from "react";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import {
   availableNetworks,
-  NetworkName,
   networks,
   defaultNetworkName,
+  normalizeNetworkName,
 } from "@/constants";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -21,22 +21,14 @@ import { networkToUrlParam } from "./NetworkSelect";
 
 function getShortNetworkName(networkName: string): string {
   if (networkName === "mainnet") return "Mainnet";
-  if (networkName === "bardock testnet") return "Bardock";
-  if (networkName === "testnet") return "Porto";
+  if (networkName === "testnet") return "Testnet";
   return networkName.charAt(0).toUpperCase() + networkName.slice(1);
 }
 
 function getDisplayNetworkName(networkName: string): string {
-  if (networkName === "testnet") return "Porto Testnet";
-  if (networkName === "bardock testnet") return "Bardock Testnet";
-  if (networkName === "mainnet") return "Mainnet Beta";
+  if (networkName === "testnet") return "Testnet";
+  if (networkName === "mainnet") return "Mainnet";
   return networkName.charAt(0).toUpperCase() + networkName.slice(1);
-}
-
-function getNetworkDotColor(networkName: string): string {
-  if (networkName === "mainnet") return "bg-(--ms-good)";
-  if (networkName === "bardock testnet") return "bg-amber-500";
-  return "bg-blue-500";
 }
 
 export default function NetworkBadge() {
@@ -47,7 +39,7 @@ export default function NetworkBadge() {
   const [open, setOpen] = useState(false);
 
   const handleNetworkChange = (network: string) => {
-    const networkName = network as NetworkName;
+    const networkName = normalizeNetworkName(network);
     selectNetwork(networkName);
     setOpen(false);
 
@@ -76,7 +68,7 @@ export default function NetworkBadge() {
     <DropdownMenu open={open} onOpenChange={setOpen}>
       <DropdownMenuTrigger
         className={cn(
-          "flex items-center gap-1.5 px-2.5 py-1.5",
+          "flex h-8 w-[100px] items-center justify-between gap-1.5 px-3 py-1.5",
           "rounded-full border border-primary bg-background/40",
           "text-sm font-medium text-muted-foreground",
           "hover:bg-background/60 hover:text-foreground",
@@ -95,7 +87,7 @@ export default function NetworkBadge() {
         align="start"
         sideOffset={8}
         className={cn(
-          "w-48 rounded-xl p-2 space-y-1",
+          "!w-[100px] !min-w-[100px] rounded-xl p-2 space-y-1",
           "bg-card backdrop-blur-xl",
           "border border-border/60",
           "shadow-xl shadow-black/10",

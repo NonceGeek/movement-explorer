@@ -11,9 +11,9 @@ import {
   networks,
   isValidNetworkName,
   isValidFeatureName,
-  mainnetUrl,
   MAINNET_GRAPHQL_URL,
   TESTNET_GRAPHQL_URL,
+  normalizeNetworkName,
 } from "../constants";
 
 const HEADERS = {
@@ -24,7 +24,7 @@ export function getGraphqlURI(network: NetworkName): string | undefined {
   switch (network) {
     case "mainnet":
       return MAINNET_GRAPHQL_URL;
-    case "bardock testnet":
+    case "testnet":
       return TESTNET_GRAPHQL_URL;
     default:
       return undefined;
@@ -49,10 +49,12 @@ type GlobalActions = {
 };
 
 const deriveClients = (network_name: NetworkName): ClientState => {
-  const networkUrl = networks[network_name];
+  const normalizedNetworkName = normalizeNetworkName(network_name);
+  const networkUrl = networks[normalizedNetworkName];
 
   // If network has no URL, fallback to mainnet to prevent crashes
-  const safeNetworkName = networkUrl === "" ? defaultNetworkName : network_name;
+  const safeNetworkName =
+    networkUrl === "" ? defaultNetworkName : normalizedNetworkName;
   const safeNetworkUrl =
     networkUrl === "" ? networks[defaultNetworkName] : networkUrl;
 
@@ -83,14 +85,14 @@ const deriveClients = (network_name: NetworkName): ClientState => {
           HEADERS,
           API_KEY: apiKey,
         },
-      })
+      }),
     ),
   };
 };
 
 export const useGlobalStore = create<GlobalState & GlobalActions>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       feature_name: defaultFeatureName,
       network_name: defaultNetworkName,
       ...deriveClients(defaultNetworkName),
@@ -101,9 +103,10 @@ export const useGlobalStore = create<GlobalState & GlobalActions>()(
       },
 
       selectNetwork: (network: NetworkName) => {
-        if (!isValidNetworkName(network)) return;
-        const clients = deriveClients(network);
-        set({ network_name: network, ...clients });
+        const normalizedNetwork = normalizeNetworkName(network);
+        if (!isValidNetworkName(normalizedNetwork)) return;
+        const clients = deriveClients(normalizedNetwork);
+        set({ network_name: normalizedNetwork, ...clients });
       },
     }),
     {
@@ -115,10 +118,14 @@ export const useGlobalStore = create<GlobalState & GlobalActions>()(
       onRehydrateStorage: () => (state) => {
         // Re-derive clients when state is rehydrated from localStorage
         if (state) {
-          const clients = deriveClients(state.network_name);
-          useGlobalStore.setState(clients); // Update the store with derived clients
+          const networkName = normalizeNetworkName(state.network_name);
+          const clients = deriveClients(networkName);
+          useGlobalStore.setState({
+            network_name: networkName,
+            ...clients,
+          }); // Update the store with derived clients
         }
       },
-    }
-  )
+    },
+  ),
 );

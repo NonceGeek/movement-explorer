@@ -85,39 +85,39 @@ export default function HoldersTab({
         Top {holders.length.toLocaleString()} holders by balance
       </p>
       <div className="overflow-x-auto">
-      <Table>
-        <TableHeader>
-          <HeaderRow>
-            <TableHead className="w-16">Rank</TableHead>
-            <TableHead>Address</TableHead>
-            <TableHead className="text-right">Amount</TableHead>
-          </HeaderRow>
-        </TableHeader>
-        <TableBody>
-          {holders.map((holder, index) => (
-            <TableRow key={holder.owner_address}>
-              <TableCell className="font-mono tabular-nums text-muted-foreground">
-                #{index + 1}
-              </TableCell>
-              <TableCell>
-                <CopyableAddress
-                  address={holder.owner_address}
-                  href={`/account/${holder.owner_address}`}
-                  variant="label"
-                  showLabel
-                  truncateLength={{ start: 8, end: 6 }}
-                />
-              </TableCell>
-              <TableCell className="text-right font-mono tabular-nums">
-                {holder.amount_v2 != null
-                  ? formatMoveAmount(BigInt(holder.amount_v2), decimals)
-                  : "0"}{" "}
-                <span className="text-muted-foreground">{symbol}</span>
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+        <Table>
+          <TableHeader>
+            <HeaderRow>
+              <TableHead className="w-16">Rank</TableHead>
+              <TableHead>Address</TableHead>
+              <TableHead className="text-right">Amount</TableHead>
+            </HeaderRow>
+          </TableHeader>
+          <TableBody>
+            {holders.map((holder, index) => (
+              <TableRow key={holder.owner_address}>
+                <TableCell className="font-mono tabular-nums text-muted-foreground">
+                  #{index + 1}
+                </TableCell>
+                <TableCell>
+                  <CopyableAddress
+                    address={holder.owner_address}
+                    href={`/account/${holder.owner_address}`}
+                    variant="label"
+                    showLabel
+                    truncateLength={{ start: 8, end: 6 }}
+                  />
+                </TableCell>
+                <TableCell className="text-right font-mono tabular-nums">
+                  {holder.amount != null
+                    ? formatMoveAmount(BigInt(holder.amount), decimals)
+                    : "0"}{" "}
+                  <span className="text-muted-foreground">{symbol}</span>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );

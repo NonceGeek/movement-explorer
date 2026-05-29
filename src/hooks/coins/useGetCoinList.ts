@@ -5,7 +5,6 @@ import { useQuery } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGetVerifiedTokens } from "./useGetVerifiedTokens";
 import { CoinDescription } from "./types";
-import { COINGECKO_API_ENDPOINT } from "../../constants";
 
 export function useGetCoinList(options?: { retry?: number | boolean }) {
   const { data: verifiedTokens } = useGetVerifiedTokens();
@@ -26,17 +25,21 @@ export function useGetCoinList(options?: { retry?: number | boolean }) {
       if (!verifiedTokens) return { data: [] };
 
       const coins = Object.values(verifiedTokens);
-      const coinGeckoIds = coins
-        .map((coin) => coin.coinGeckoId)
-        .filter((id) => id);
+      const coinGeckoIds = Array.from(
+        new Set(
+          coins
+            .map((coin) => coin.coinGeckoId)
+            .filter((id): id is string => Boolean(id)),
+        ),
+      );
 
-      // Fetch prices from CoinGecko
+      // Fetch prices through the local BFF to share cache across users.
       const query = {
         vs_currencies: "usd",
         ids: coinGeckoIds.join(","),
       };
       const queryString = new URLSearchParams(query);
-      const url = `${COINGECKO_API_ENDPOINT}?${queryString}`;
+      const url = `/api/prices/simple?${queryString}`;
 
       let priceData: Record<string, { usd: number }> = {};
       try {
@@ -51,7 +54,7 @@ export function useGetCoinList(options?: { retry?: number | boolean }) {
       const coinDescriptions: CoinDescription[] = coins.map((coin) => ({
         ...coin,
         usdPrice: coin.coinGeckoId
-          ? priceData[coin.coinGeckoId]?.usd?.toString() ?? null
+          ? (priceData[coin.coinGeckoId]?.usd?.toString() ?? null)
           : null,
       }));
 

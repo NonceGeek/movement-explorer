@@ -3,17 +3,17 @@ import { gql } from "@apollo/client";
 
 type RawCoinHolder = {
   owner_address: string;
-  amount: string;
+  amount: string | null;
 };
 
 export type CoinHolder = {
   owner_address: string;
-  amount_v2: number | null;
+  amount: string | null;
 };
 
 export function useGetCoinHolders(
   coin_type: string,
-  offset?: number
+  offset?: number,
 ): {
   isLoading: boolean;
   error: Error | undefined;
@@ -25,28 +25,27 @@ export function useGetCoinHolders(
     gql`
       query GetFungibleAssetBalances($coin_type: String!, $offset: Int!) {
         current_fungible_asset_balances(
-          where: { asset_type: { _eq: $coin_type }, amount: { _gt: "0" } }
+          where: {
+            asset_type: { _eq: $coin_type }
+            amount: { _is_null: false }
+          }
           limit: 100
           offset: $offset
-          order_by: { amount: desc }
+          order_by: { amount: desc_nulls_last }
         ) {
           owner_address
           amount
         }
       }
     `,
-    { variables: { coin_type, offset: offset ?? 0 } }
+    { variables: { coin_type, offset: offset ?? 0 } },
   );
-
-  // Transform amount to amount_v2 for backward compatibility
-  const holders = data?.current_fungible_asset_balances?.map((holder) => ({
-    owner_address: holder.owner_address,
-    amount_v2: holder.amount ? parseInt(holder.amount, 10) : null,
-  }));
 
   return {
     isLoading: loading,
     error,
-    data: holders,
+    data: data?.current_fungible_asset_balances?.filter(
+      (holder) => holder.amount !== null && holder.amount !== undefined,
+    ),
   };
 }

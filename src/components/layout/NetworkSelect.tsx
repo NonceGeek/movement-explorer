@@ -7,6 +7,7 @@ import {
   NetworkName,
   networks,
   defaultNetworkName,
+  normalizeNetworkName,
 } from "@/constants";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { ChevronDown } from "lucide-react";
@@ -22,27 +23,22 @@ import { cn } from "@/utils/styling";
  * Get display-friendly network name
  */
 function getDisplayNetworkName(networkName: string): string {
-  if (networkName === "testnet") {
-    return "Porto Testnet";
-  } else if (networkName === "bardock testnet") {
-    return "Bardock Testnet";
-  } else if (networkName === "mainnet") {
-    return "Mainnet Beta";
-  }
+  if (networkName === "testnet") return "Testnet";
+  if (networkName === "mainnet") return "Mainnet";
   return networkName.charAt(0).toUpperCase() + networkName.slice(1);
 }
 
 // Network name to URL param mapping
 const networkToUrlParam: Record<string, string> = {
   mainnet: "mainnet",
-  "bardock testnet": "bardock-testnet",
+  testnet: "testnet",
 };
 
 // URL param to network name mapping
 const urlParamToNetwork: Record<string, NetworkName> = {
   mainnet: "mainnet",
-  "bardock-testnet": "bardock testnet",
-  testnet: "bardock testnet", // alias
+  "bardock-testnet": "testnet",
+  testnet: "testnet",
 };
 
 export default function NetworkSelect() {
@@ -68,7 +64,7 @@ export default function NetworkSelect() {
   }, []);
 
   const handleNetworkChange = (network: string) => {
-    const networkName = network as NetworkName;
+    const networkName = normalizeNetworkName(network);
     selectNetwork(networkName);
     if (closeTimeoutRef.current) {
       clearTimeout(closeTimeoutRef.current);
@@ -107,7 +103,7 @@ export default function NetworkSelect() {
         onMouseLeave={handleClose}
         className={cn(
           "flex items-center justify-between gap-1.5",
-          "w-[180px] h-9 px-3 py-2",
+          "w-25 h-9 px-3 py-2",
           "rounded-full border-2 border-primary bg-background",
           "text-sm font-normal capitalize",
           "hover:bg-primary hover:text-primary-foreground",
@@ -126,7 +122,7 @@ export default function NetworkSelect() {
         align="start"
         sideOffset={12}
         className={cn(
-          "w-60 rounded-2xl p-3 space-y-1.5",
+          "!w-[130px] !min-w-[130px] rounded-2xl p-2.5 space-y-1",
           "bg-card backdrop-blur-xl",
           "border border-border/60",
           "shadow-xl shadow-black/10",
@@ -139,7 +135,7 @@ export default function NetworkSelect() {
             key={name}
             onClick={() => handleNetworkChange(name)}
             className={cn(
-              "cursor-pointer rounded-xl px-5 py-2.5 text-base font-medium uppercase",
+              "cursor-pointer rounded-xl px-4 py-2 text-base font-medium uppercase",
               "transition-all duration-200 ease-out",
               network_name === name
                 ? "bg-primary text-primary-foreground"

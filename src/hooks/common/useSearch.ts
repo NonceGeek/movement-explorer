@@ -66,16 +66,9 @@ function prefixMatchLongerThan3(
 }
 
 // Helper to get asset symbol with bridge info
-function getAssetSymbol(
-  panoraSymbol: string | null,
-  bridge: string | null,
-  symbol: string,
-): string {
+function getAssetSymbol(panoraSymbol: string | null, symbol: string): string {
   if (panoraSymbol) {
     return panoraSymbol;
-  }
-  if (bridge) {
-    return `${symbol} (${bridge})`;
   }
   return symbol;
 }
@@ -305,7 +298,6 @@ export function useSearch() {
           matchedCoins.forEach((coin: CoinDescription) => {
             const label = `${coin.name} - ${getAssetSymbol(
               coin.panoraSymbol,
-              coin.bridge,
               coin.symbol,
             )}`;
             if (coin.tokenAddress) {

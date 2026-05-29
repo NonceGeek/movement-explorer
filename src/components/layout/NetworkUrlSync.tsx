@@ -61,10 +61,7 @@ export default function NetworkUrlSync() {
           return;
         }
 
-        if (
-          network_name === defaultNetworkName ||
-          normalizedNetwork === defaultNetworkName
-        ) {
+        if (normalizedNetwork === defaultNetworkName) {
           nextParams.delete("network");
           const nextUrl = nextParams.toString()
             ? `${pathname}?${nextParams.toString()}`

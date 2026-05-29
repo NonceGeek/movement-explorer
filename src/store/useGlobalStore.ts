@@ -48,6 +48,8 @@ type GlobalActions = {
   selectNetwork: (network: NetworkName) => void;
 };
 
+type PersistedGlobalState = Partial<Pick<GlobalState, "feature_name">>;
+
 const deriveClients = (network_name: NetworkName): ClientState => {
   const normalizedNetworkName = normalizeNetworkName(network_name);
   const networkUrl = networks[normalizedNetworkName];
@@ -113,17 +115,27 @@ export const useGlobalStore = create<GlobalState & GlobalActions>()(
       name: "global-storage",
       partialize: (state) => ({
         feature_name: state.feature_name,
-        network_name: state.network_name,
       }),
+      merge: (persistedState, currentState) => {
+        const persisted = persistedState as PersistedGlobalState | undefined;
+        const featureName = persisted?.feature_name;
+
+        return {
+          ...currentState,
+          feature_name:
+            featureName && isValidFeatureName(featureName)
+              ? featureName
+              : currentState.feature_name,
+        };
+      },
       onRehydrateStorage: () => (state) => {
-        // Re-derive clients when state is rehydrated from localStorage
+        // Network is URL/session state, so always keep default clients after localStorage rehydration.
         if (state) {
-          const networkName = normalizeNetworkName(state.network_name);
-          const clients = deriveClients(networkName);
+          const clients = deriveClients(defaultNetworkName);
           useGlobalStore.setState({
-            network_name: networkName,
+            network_name: defaultNetworkName,
             ...clients,
-          }); // Update the store with derived clients
+          });
         }
       },
     },

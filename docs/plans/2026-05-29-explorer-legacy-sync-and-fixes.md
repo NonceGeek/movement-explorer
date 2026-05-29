@@ -156,21 +156,29 @@ Affected files:
 ## URL Network Persistence
 
 The old explorer treats `network` as a global persistent URL parameter. The new
-explorer now follows the same expectation:
+explorer now follows that expectation without storing the selected network in
+localStorage. Network is session/URL state only:
 
 - Visiting `?network=testnet` selects Testnet.
-- Internal navigation preserves Testnet by adding `network=testnet` when needed.
+- First loading a URL without `network` uses the default Mainnet, even if a
+  previous local session selected Testnet.
+- Internal navigation preserves the in-memory Testnet selection by adding
+  `network=testnet` when a link omits it.
 - Switching back to Mainnet removes the `network` parameter.
 - `network=bardock-testnet` is normalized to `network=testnet`.
 
 A race was fixed after testing: switching from Testnet back to Mainnet could be
 pulled back to Testnet by the stale URL query. The final implementation splits
 URL-to-store and store-to-URL synchronization so dropdown changes are not
-overridden by old query params.
+overridden by old query params. The global store only persists `feature_name`;
+old persisted `network_name` values are ignored during rehydration. A clean URL
+without `network` is therefore an explicit default-Mainnet entry point, which
+keeps copied/shared URLs predictable.
 
 Affected file:
 
 - `src/components/layout/NetworkUrlSync.tsx`
+- `src/store/useGlobalStore.ts`
 
 ## CoinGecko Simple Price BFF Cache
 

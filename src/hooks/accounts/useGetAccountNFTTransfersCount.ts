@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import { tryStandardizeAddress } from "@/utils";
 
 export function useGetAccountNFTTransfersCount(
   address: string,
@@ -13,6 +14,7 @@ export function useGetAccountNFTTransfersCount(
   data: number | undefined;
 } {
   const { network_value, sdk_v2_client } = useGlobalStore();
+  const normalizedAddress = tryStandardizeAddress(address);
 
   const hasActivity = !!activityType;
   const hasTimestamp = !!timestampGte && !!timestampLte;
@@ -23,7 +25,7 @@ export function useGetAccountNFTTransfersCount(
   >({
     queryKey: [
       "accountNFTTransfersCount",
-      address,
+      normalizedAddress ?? address,
       activityType ?? null,
       timestampGte ?? null,
       timestampLte ?? null,
@@ -31,6 +33,8 @@ export function useGetAccountNFTTransfersCount(
     ],
     queryFn: async () => {
       try {
+        if (!normalizedAddress) return undefined;
+
         const varParts = ["$address: String!"];
         if (hasActivity) varParts.push("$activityType: String!");
         if (hasTimestamp) {
@@ -63,7 +67,9 @@ export function useGetAccountNFTTransfersCount(
           }
         `;
 
-        const variables: Record<string, unknown> = { address };
+        const variables: Record<string, unknown> = {
+          address: normalizedAddress,
+        };
         if (hasActivity) variables.activityType = activityType;
         if (hasTimestamp) {
           variables.timestampGte = timestampGte;
@@ -84,7 +90,7 @@ export function useGetAccountNFTTransfersCount(
         return undefined;
       }
     },
-    enabled: !!address,
+    enabled: !!normalizedAddress,
   });
 
   return {

@@ -4,13 +4,13 @@ import { useGlobalStore } from "../../store/useGlobalStore";
 import { standardizeAddress } from "../../utils";
 
 export function useGetAccountTransactionCount(
-  address: string
+  address: string,
 ): UseQueryResult<number | undefined, ResponseError> {
   const { network_value, sdk_v2_client } = useGlobalStore();
   const addr64Hash = standardizeAddress(address);
 
   return useQuery<number | undefined, ResponseError>({
-    queryKey: ["accountTransactionCount", address, network_value],
+    queryKey: ["accountTransactionCount", addr64Hash, network_value],
     queryFn: async () => {
       try {
         const result = await sdk_v2_client.queryIndexer<{
@@ -42,4 +42,3 @@ export function useGetAccountTransactionCount(
     enabled: !!address,
   });
 }
-

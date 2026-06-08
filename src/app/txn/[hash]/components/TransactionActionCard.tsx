@@ -54,9 +54,9 @@ export interface ParsedAction {
     amountOut?: string;
     symbolIn?: string;
     symbolOut?: string;
-    metadataIn?: string;  // FA metadata address for input token
+    metadataIn?: string; // FA metadata address for input token
     metadataOut?: string; // FA metadata address for output token
-    dex?: string;         // Fallback DEX name (hardcoded)
+    dex?: string; // Fallback DEX name (hardcoded)
     dexEventType?: string; // Original event type for dynamic package name lookup
     collection?: string;
     token?: string;
@@ -64,10 +64,10 @@ export interface ParsedAction {
     contract?: string;
     function?: string;
     isMultiHop?: boolean; // Flag for multi-hop swaps
-    metadata?: string;       // FA metadata address (for primary_fungible_store::transfer)
-    proposalId?: string;     // For governance vote actions
+    metadata?: string; // FA metadata address (for primary_fungible_store::transfer)
+    proposalId?: string; // For governance vote actions
     recipientCount?: number; // For batch transfers
-    moduleName?: string;     // For deploy actions (extracted from write_module changes)
+    moduleName?: string; // For deploy actions (extracted from write_module changes)
   };
 }
 
@@ -110,13 +110,16 @@ export const ACTION_COLORS: Record<ParsedAction["type"], string> = {
 // Helper: Extract FA metadata address from store address using changes
 function extractMetadataFromStore(
   storeAddress: string,
-  changes: Types.WriteSetChange[]
+  changes: Types.WriteSetChange[],
 ): string | undefined {
   if (!storeAddress) return undefined;
 
   // Special case: MOVE token
-  if (storeAddress.toLowerCase().includes("0xa") ||
-      storeAddress === "0x000000000000000000000000000000000000000000000000000000000000000a") {
+  if (
+    storeAddress.toLowerCase().includes("0xa") ||
+    storeAddress ===
+      "0x000000000000000000000000000000000000000000000000000000000000000a"
+  ) {
     return "0xa";
   }
 
@@ -144,6 +147,23 @@ function extractMetadataFromStore(
         return changeWithData.data.data.metadata.inner;
       }
     }
+  }
+
+  return undefined;
+}
+
+function extractMetadataAddress(value: unknown): string | undefined {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (
+    value &&
+    typeof value === "object" &&
+    "inner" in value &&
+    typeof value.inner === "string"
+  ) {
+    return value.inner;
   }
 
   return undefined;
@@ -216,11 +236,7 @@ function findAmountsInData(data: any): {
     }
 
     // Look for numeric string values (amounts are usually strings in events)
-    if (
-      typeof value === "string" &&
-      /^\d+$/.test(value) &&
-      value !== "0"
-    ) {
+    if (typeof value === "string" && /^\d+$/.test(value) && value !== "0") {
       if (lowerKey.includes("in")) {
         inCandidates.push({ key, value });
       } else if (lowerKey.includes("out")) {
@@ -237,9 +253,7 @@ function findAmountsInData(data: any): {
 }
 
 // Parse transaction into human-readable actions
-export function parseTransactionActions(
-  tx: Types.Transaction
-): ParsedAction[] {
+export function parseTransactionActions(tx: Types.Transaction): ParsedAction[] {
   const actions: ParsedAction[] = [];
 
   if (!("payload" in tx)) {
@@ -261,7 +275,8 @@ export function parseTransactionActions(
   // ── Module Deployment ──
   if (
     func === "0x1::code::publish_package_txn" ||
-    func === "0x1::resource_account::create_resource_account_and_publish_package"
+    func ===
+      "0x1::resource_account::create_resource_account_and_publish_package"
   ) {
     const isResourceAccount = func.includes("resource_account");
     // Extract deployed module name from write_module changes
@@ -278,7 +293,9 @@ export function parseTransactionActions(
     const baseDesc = isResourceAccount ? "Deploy (Resource Account)" : "Deploy";
     actions.push({
       type: "deploy",
-      description: moduleName ? `${baseDesc} ${moduleName}` : `${baseDesc} Module`,
+      description: moduleName
+        ? `${baseDesc} ${moduleName}`
+        : `${baseDesc} Module`,
       details: {
         contract: sender || undefined,
         function: func.split("::").slice(1).join("::"),
@@ -295,8 +312,10 @@ export function parseTransactionActions(
     func === "0x1::multisig_account::create_with_owners"
   ) {
     let description = "Create Account";
-    if (func.includes("resource_account")) description = "Create Resource Account";
-    if (func.includes("multisig_account")) description = "Create Multisig Account";
+    if (func.includes("resource_account"))
+      description = "Create Resource Account";
+    if (func.includes("multisig_account"))
+      description = "Create Multisig Account";
 
     const newAccount = args[0] as string | undefined;
     actions.push({
@@ -391,9 +410,13 @@ export function parseTransactionActions(
     const isPool = func.includes("delegation_pool");
     let description: string;
     if (isVote) {
-      description = isPool ? "Vote on Pool Proposal" : "Vote on Governance Proposal";
+      description = isPool
+        ? "Vote on Pool Proposal"
+        : "Vote on Governance Proposal";
     } else {
-      description = isPool ? "Create Pool Proposal" : "Create Governance Proposal";
+      description = isPool
+        ? "Create Pool Proposal"
+        : "Create Governance Proposal";
     }
     const proposalId = isVote ? (args[1] as string) : undefined;
     actions.push({
@@ -449,7 +472,9 @@ export function parseTransactionActions(
       symbol = "MOVE";
     } else if (typeArgs[0]) {
       // For transfer_coins and coin::transfer, check type_arguments
-      symbol = typeArgs[0].includes("AptosCoin") ? "MOVE" : getTokenSymbol(typeArgs[0]);
+      symbol = typeArgs[0].includes("AptosCoin")
+        ? "MOVE"
+        : getTokenSymbol(typeArgs[0]);
     }
 
     actions.push({
@@ -470,7 +495,7 @@ export function parseTransactionActions(
     func === "0x1::primary_fungible_store::transfer" ||
     func === "0x1::aptos_account::fungible_transfer_only"
   ) {
-    const metadataAddr = args[0] as string;
+    const metadataAddr = extractMetadataAddress(args[0]);
     const to = args[1] as string;
     const amount = args[2] as string;
     actions.push({
@@ -479,9 +504,9 @@ export function parseTransactionActions(
       details: {
         from: sender || undefined,
         to,
-        amount,        // Raw amount — TokenAmount component formats with metadata decimals
+        amount, // Raw amount — TokenAmount component formats with metadata decimals
         metadata: metadataAddr,
-        symbol: "FA",  // Fallback only; UI resolves real symbol from metadata
+        symbol: "FA", // Fallback only; UI resolves real symbol from metadata
       },
     });
     return actions;
@@ -728,7 +753,7 @@ export function parseTransactionActions(
     (e) =>
       e.type.includes("::swap::") ||
       e.type.includes("SwapEvent") ||
-      e.type.includes("::pool::Swap")
+      e.type.includes("::pool::Swap"),
   );
   if (swapEvents.length > 0) {
     const firstSwap = swapEvents[0];
@@ -746,10 +771,10 @@ export function parseTransactionActions(
 
     // Try to extract metadata addresses from FA Withdraw/Deposit events
     const faWithdrawEvents = events.filter(
-      (e) => e.type === "0x1::fungible_asset::Withdraw"
+      (e) => e.type === "0x1::fungible_asset::Withdraw",
     );
     const faDepositEvents = events.filter(
-      (e) => e.type === "0x1::fungible_asset::Deposit"
+      (e) => e.type === "0x1::fungible_asset::Deposit",
     );
 
     // Get metadata for input token (first withdraw)
@@ -811,7 +836,7 @@ export function parseTransactionActions(
     (e) =>
       e.type.includes("::collection::Mint") ||
       e.type.includes("::collection::MintEvent") ||
-      e.type.includes("::token::MintToken")
+      e.type.includes("::token::MintToken"),
   );
   if (mintEvents.length > 0) {
     const mintEvent = mintEvents[0];
@@ -821,10 +846,7 @@ export function parseTransactionActions(
     // If token address not in event, try to find newly created 0x4::token::Token in changes
     if (!tokenAddr) {
       for (const change of changes) {
-        if (
-          change.type === "write_resource" &&
-          "address" in change
-        ) {
+        if (change.type === "write_resource" && "address" in change) {
           const cd = change as { data?: { type?: string } };
           if (cd.data?.type === "0x4::token::Token") {
             tokenAddr = (change as { address?: string }).address;
@@ -849,7 +871,7 @@ export function parseTransactionActions(
   const burnEvents = events.filter(
     (e) =>
       e.type.includes("::collection::Burn") ||
-      e.type.includes("::collection::BurnEvent")
+      e.type.includes("::collection::BurnEvent"),
   );
   if (burnEvents.length > 0) {
     const burnEvent = burnEvents[0];
@@ -920,7 +942,7 @@ export function TransactionActionCard({
     <div
       className={cn(
         "bg-card backdrop-blur-sm border border-border/50 rounded-xl p-4 mb-4",
-        className
+        className,
       )}
     >
       <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-3">
@@ -965,8 +987,12 @@ export function TokenAmount({
   const symbol = metadata?.symbol || "";
 
   // Get icon_uri from metadata, with fallback for MOVE token
-  const isMoveToken = metadataAddress === "0xa" || metadataAddress === "0x000000000000000000000000000000000000000000000000000000000000000a";
-  const iconUri = metadata?.icon_uri || (isMoveToken ? "/coinLogo.png" : undefined);
+  const isMoveToken =
+    metadataAddress === "0xa" ||
+    metadataAddress ===
+      "0x000000000000000000000000000000000000000000000000000000000000000a";
+  const iconUri =
+    metadata?.icon_uri || (isMoveToken ? "/coinLogo.png" : undefined);
 
   // Determine if this is a Coin (contains ::) or FA (just address)
   // Same logic as BalanceChangeTable
@@ -982,7 +1008,7 @@ export function TokenAmount({
     <span
       className={cn(
         "inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors",
-        assetHref && "cursor-pointer"
+        assetHref && "cursor-pointer",
       )}
     >
       {/* Token Icon with fallback */}
@@ -1058,7 +1084,7 @@ export function FaTransferDescription({
     <span
       className={cn(
         "inline-flex items-center gap-1 text-primary hover:text-primary/80 transition-colors font-medium",
-        assetHref && "cursor-pointer"
+        assetHref && "cursor-pointer",
       )}
     >
       {iconUri ? (
@@ -1123,8 +1149,7 @@ export function DexBadge({
     <span
       className={cn(
         "inline-flex items-center text-sm font-medium transition-colors",
-        modulesLink &&
-          "text-primary hover:text-primary/80 cursor-pointer"
+        modulesLink && "text-primary hover:text-primary/80 cursor-pointer",
       )}
     >
       {displayName}
@@ -1157,9 +1182,7 @@ export function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
   const validatorLink = `/validator/${poolAddress}`;
 
   const nameContent = (
-    <span
-      className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer"
-    >
+    <span className="inline-flex items-center text-sm font-medium text-primary hover:text-primary/80 transition-colors cursor-pointer">
       {displayName}
     </span>
   );
@@ -1179,7 +1202,11 @@ export function StakingPoolBadge({ poolAddress }: { poolAddress: string }) {
 }
 
 // Component to display contract/package name badge with link to modules page
-export function ContractBadge({ contractAddress }: { contractAddress: string }) {
+export function ContractBadge({
+  contractAddress,
+}: {
+  contractAddress: string;
+}) {
   const { data: packageName } = useGetPackageName(contractAddress);
   const displayName =
     packageName ||
@@ -1218,7 +1245,7 @@ function NftActionDetail({
   const isTokenAddr =
     tokenAddress?.startsWith("0x") && tokenAddress.length > 10;
   const { data: tokenDatas, isLoading } = useGetTokenData(
-    isTokenAddr ? tokenAddress : undefined
+    isTokenAddr ? tokenAddress : undefined,
   );
   const token = tokenDatas?.[0];
 
@@ -1303,14 +1330,16 @@ function ActionItem({ action }: { action: ParsedAction }) {
       <div
         className={cn(
           "flex items-center justify-center w-10 h-10 rounded-lg border shrink-0",
-          ACTION_COLORS[action.type]
+          ACTION_COLORS[action.type],
         )}
       >
         {Icon}
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 flex-wrap">
-          {action.type === "transfer" && action.details?.metadata && action.details?.amount ? (
+          {action.type === "transfer" &&
+          action.details?.metadata &&
+          action.details?.amount ? (
             <FaTransferDescription
               amount={action.details.amount}
               metadataAddress={action.details.metadata}
@@ -1324,8 +1353,9 @@ function ActionItem({ action }: { action: ParsedAction }) {
               fallbackName={action.details?.dex}
             />
           )}
-          {action.type === "contract_call" && action.details?.function && (
-            action.details.contract ? (
+          {action.type === "contract_call" &&
+            action.details?.function &&
+            (action.details.contract ? (
               <a
                 href={`/account/${action.details.contract}/modules/code/${action.details.function.split("::")[0]}`}
                 className="text-sm font-mono font-medium text-primary hover:text-primary/80 transition-colors"
@@ -1334,9 +1364,10 @@ function ActionItem({ action }: { action: ParsedAction }) {
                 {action.details.function}
               </a>
             ) : (
-              <span className="text-sm font-mono font-medium">{action.details.function}</span>
-            )
-          )}
+              <span className="text-sm font-mono font-medium">
+                {action.details.function}
+              </span>
+            ))}
           {action.type === "register" && action.details?.function && (
             <span className="inline-flex items-center px-2 py-0.5 rounded-md bg-muted text-muted-foreground text-xs font-mono border border-border/50">
               {action.details.function}
@@ -1347,10 +1378,12 @@ function ActionItem({ action }: { action: ParsedAction }) {
               Proposal #{action.details.proposalId}
             </span>
           )}
-          {(action.type === "stake" || action.type === "unstake" || action.type === "claim") &&
+          {(action.type === "stake" ||
+            action.type === "unstake" ||
+            action.type === "claim") &&
             action.details?.contract && (
-            <StakingPoolBadge poolAddress={action.details.contract} />
-          )}
+              <StakingPoolBadge poolAddress={action.details.contract} />
+            )}
           {action.type === "contract_call" && action.details?.contract && (
             <ContractBadge contractAddress={action.details.contract} />
           )}
@@ -1403,11 +1436,11 @@ function ActionItem({ action }: { action: ParsedAction }) {
             {/* NFT token and collection with resolved names */}
             {(action.type === "nft_mint" || action.type === "nft_burn") &&
               (action.details.token || action.details.collection) && (
-              <NftActionDetail
-                tokenAddress={action.details.token}
-                collectionAddress={action.details.collection}
-              />
-            )}
+                <NftActionDetail
+                  tokenAddress={action.details.token}
+                  collectionAddress={action.details.collection}
+                />
+              )}
             {/* Object transfer: link to object page */}
             {action.type === "object_transfer" && action.details.object && (
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -1440,16 +1473,16 @@ function ActionItem({ action }: { action: ParsedAction }) {
               action.type !== "claim" &&
               action.type !== "register" &&
               action.type !== "governance" && (
-              <div className="flex items-center gap-1.5 flex-wrap">
-                <span>Contract:</span>
-                <CopyableAddress
-                  address={action.details.contract}
-                  href={`/account/${action.details.contract}`}
-                  truncateLength={{ start: 6, end: 4 }}
-                  showLabel
-                />
-              </div>
-            )}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  <span>Contract:</span>
+                  <CopyableAddress
+                    address={action.details.contract}
+                    href={`/account/${action.details.contract}`}
+                    truncateLength={{ start: 6, end: 4 }}
+                    showLabel
+                  />
+                </div>
+              )}
           </div>
         )}
       </div>

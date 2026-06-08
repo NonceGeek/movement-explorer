@@ -23,7 +23,7 @@ export function useGetAccountFirstLastTx(
   const addr64Hash = standardizeAddress(address);
 
   return useQuery<AccountTimeline | null, ResponseError>({
-    queryKey: ["accountFirstLastTx", address, network_value],
+    queryKey: ["accountFirstLastTx", addr64Hash, network_value],
     queryFn: async () => {
       try {
         // Query first and last transaction versions in a single request

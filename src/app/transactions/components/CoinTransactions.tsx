@@ -53,11 +53,12 @@ export function CoinTransactions({
   // Get limit from URL or use store value
   const limitParam = searchParams.get("limit");
   const currentLimit: PageSize = limitParam
-    ? ((parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE)
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
     : pageSize;
 
   // Fetch transaction count
-  const { data: txCount } = useGetCoinActivitiesCount(coinType);
+  const { data: txCount, isLoading: countLoading } =
+    useGetCoinActivitiesCount(coinType);
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
     MAX_PAGES,
@@ -66,10 +67,8 @@ export function CoinTransactions({
 
   // Fetch coin activities for current page
   const offset = (currentPage - 1) * currentLimit;
-  const {
-    data: activities,
-    isLoading: activitiesLoading,
-  } = useGetCoinActivities(coinType, offset, currentLimit);
+  const { data: activities, isLoading: activitiesLoading } =
+    useGetCoinActivities(coinType, offset, currentLimit);
 
   const transactionVersions = activities?.map((a) => a.transaction_version);
 
@@ -152,9 +151,7 @@ export function CoinTransactions({
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-xl sm:text-3xl font-bold">
-            Coin Transactions
-          </h1>
+          <h1 className="text-xl sm:text-3xl font-bold">Coin Transactions</h1>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-8">
           <CopyableAddress
@@ -175,7 +172,12 @@ export function CoinTransactions({
         transactions={tableData}
         isLoading={isLoading}
         infoText={
-          totalCount > 0 ? (
+          countLoading ? (
+            <>
+              <span className="inline-block h-4 w-16 animate-pulse rounded bg-muted align-middle" />{" "}
+              transactions found
+            </>
+          ) : totalCount > 0 ? (
             <>
               <span className="font-medium text-foreground">
                 {totalCount.toLocaleString()}

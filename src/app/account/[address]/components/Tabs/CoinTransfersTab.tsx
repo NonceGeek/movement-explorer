@@ -5,14 +5,10 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { getTransaction } from "@/services";
+import { useGetFungibleAssetActivitiesByVersions } from "@/hooks/accounts/useGetFungibleAssetActivitiesByVersions";
 import { useGetAccountCoinTransfers } from "@/hooks/accounts/useGetAccountCoinTransfers";
 import { useGetAccountCoinTransfersCount } from "@/hooks/accounts/useGetAccountCoinTransfersCount";
-import {
-  TransactionTable,
-  TOKEN_TRANSFER_COLUMNS,
-  TransactionRowData,
-  ColumnFilters,
-} from "@/components/transactions";
+import { ColumnFilters } from "@/components/transactions";
 import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
 import {
   DateRangeColumnFilter,
@@ -22,6 +18,7 @@ import { AddressColumnFilter } from "@/components/transactions/filters/AddressCo
 import { EmptyState } from "..";
 import { ArrowLeftRight, ArrowRight, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AccountTokenTransfersTable } from "@/app/transactions/components/AccountTokenTransfersTable";
 
 const MAX_DISPLAY = 25;
 
@@ -32,42 +29,49 @@ interface CoinTransfersTabProps {
 export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   // Filter state (declared before hooks that depend on them)
   const [coinFilter, setCoinFilter] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
-  const { data: totalCount } = useGetAccountCoinTransfersCount(
-    address,
-    coinFilter,
-    dateRange.from,
-    dateRange.to,
-  );
+  const { data: totalCount, isLoading: countLoading } =
+    useGetAccountCoinTransfersCount(
+      address,
+      coinFilter,
+      dateRange.from,
+      dateRange.to,
+    );
 
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, MAX_DISPLAY, 0, coinFilter, dateRange.from, dateRange.to, senderFilter);
+    useGetAccountCoinTransfers(
+      address,
+      MAX_DISPLAY,
+      0,
+      coinFilter,
+      dateRange.from,
+      dateRange.to,
+      senderFilter,
+    );
+
+  const activeVersions = Array.from(new Set(transactionVersions || []));
+  const { data: relatedActivities, isLoading: relatedActivitiesLoading } =
+    useGetFungibleAssetActivitiesByVersions(activeVersions);
 
   // Fetch full transaction details (same as TransactionsSubTab)
   const { aptos_client } = useGlobalStore();
   const { data: transactions, isLoading: detailsLoading } = useQuery({
-    queryKey: [
-      "accountCoinTransferDetails",
-      address,
-      transactionVersions,
-    ],
+    queryKey: ["accountCoinTransferDetails", address, activeVersions],
     queryFn: async () => {
-      if (!transactionVersions || transactionVersions.length === 0) return [];
+      if (activeVersions.length === 0) return [];
       return Promise.all(
-        transactionVersions.map((v) =>
+        activeVersions.map((v) =>
           getTransaction({ txnHashOrVersion: v }, aptos_client),
         ),
       );
     },
-    enabled: !!transactionVersions && transactionVersions.length > 0,
-  });
-
-  const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return { version, transaction: tx };
+    enabled: activeVersions.length > 0,
   });
 
   const columnFilters: ColumnFilters = {
@@ -79,12 +83,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
         onToggleTimestampMode={setTimestampMode}
       />
     ),
-    token: (
-      <CoinColumnFilter
-        value={coinFilter}
-        onChange={setCoinFilter}
-      />
-    ),
+    token: <CoinColumnFilter value={coinFilter} onChange={setCoinFilter} />,
     sender: (
       <AddressColumnFilter
         label="Sender"
@@ -94,7 +93,8 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
     ),
   };
 
-  const hasActiveFilters = coinFilter !== null || dateRange.from !== null || senderFilter !== null;
+  const hasActiveFilters =
+    coinFilter !== null || dateRange.from !== null || senderFilter !== null;
 
   const clearAllFilters = () => {
     setCoinFilter(null);
@@ -102,11 +102,18 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
     setSenderFilter(null);
   };
 
-  const isLoading = versionsLoading || detailsLoading;
-  const displayCount = totalCount ?? (transactionVersions?.length || 0);
+  const isLoading =
+    versionsLoading || relatedActivitiesLoading || detailsLoading;
+  const rowCount = transactionVersions?.length || 0;
+  const displayCount = totalCount ?? 0;
 
   // Show full empty state only when there are no filters active
-  if (!isLoading && (!tableData || tableData.length === 0) && !hasActiveFilters) {
+  if (
+    !isLoading &&
+    !countLoading &&
+    (!transactionVersions || transactionVersions.length === 0) &&
+    !hasActiveFilters
+  ) {
     return (
       <EmptyState
         icon={<ArrowLeftRight className="h-12 w-12" />}
@@ -118,17 +125,19 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
 
   return (
     <div className="space-y-4">
-      {(displayCount > 0 || hasActiveFilters) && (
+      {(rowCount > 0 || hasActiveFilters || countLoading) && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <p>
-            {tableData.length > 0 ? (
+            {transactionVersions && transactionVersions.length > 0 ? (
               <>
-                Latest{" "}
-                {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
-                total of{" "}
-                <span className="font-medium text-foreground">
-                  {displayCount.toLocaleString()}
-                </span>{" "}
+                Latest {rowCount.toLocaleString()} from a total of{" "}
+                {countLoading || totalCount === undefined ? (
+                  <span className="inline-block h-4 w-14 animate-pulse rounded bg-muted align-middle" />
+                ) : (
+                  <span className="font-medium text-foreground">
+                    {displayCount.toLocaleString()}
+                  </span>
+                )}{" "}
                 token transfers
               </>
             ) : (
@@ -155,23 +164,22 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
       )}
 
       <div className="overflow-x-auto">
-        <TransactionTable
-          data={tableData}
-          columns={TOKEN_TRANSFER_COLUMNS}
+        <AccountTokenTransfersTable
+          relatedActivities={relatedActivities || []}
+          transactions={transactions || []}
           isLoading={isLoading}
           loadingRowCount={MAX_DISPLAY}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
-            setTimestampMode((prev) =>
-              prev === "age" ? "dateTime" : "age",
-            )
+            setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
           address={address}
+          assetType={coinFilter}
           columnFilters={columnFilters}
         />
       </div>
 
-      {!isLoading && displayCount > MAX_DISPLAY && (
+      {!isLoading && !countLoading && displayCount > MAX_DISPLAY && (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/token-transfers?address=${address}`}>

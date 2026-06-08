@@ -17,6 +17,8 @@ export interface AssetCellProps {
   subtext?: string;
   /** Maximum width for truncation */
   maxWidth?: string;
+  /** Optional icon size class */
+  iconClassName?: string;
 }
 
 /**
@@ -39,14 +41,13 @@ export function AssetCell({
   showSubtext = true,
   subtext,
   maxWidth = "150px",
+  iconClassName,
 }: AssetCellProps) {
   // Determine if asset is v1 Coin or v2 FA
   const isCoin = assetId.includes("::");
 
   // Default subtext: module name for v1 Coins, "FA" for v2
-  const defaultSubtext = isCoin
-    ? assetId.split("::")[1] || assetId
-    : "FA";
+  const defaultSubtext = isCoin ? assetId.split("::")[1] || assetId : "FA";
 
   const displaySubtext = formatMovementPath(subtext ?? defaultSubtext);
 
@@ -54,12 +55,17 @@ export function AssetCell({
     <div className="flex items-center gap-2">
       {/* Asset Logo */}
       {isCoin ? (
-        <CoinAssetIcon logoUrl={logoUrl ?? null} symbol={symbol} />
+        <CoinAssetIcon
+          logoUrl={logoUrl ?? null}
+          symbol={symbol}
+          className={iconClassName}
+        />
       ) : (
         <FaAssetIcon
           address={assetId}
           fallbackLogoUrl={logoUrl ?? null}
           symbol={symbol}
+          className={iconClassName}
         />
       )}
 

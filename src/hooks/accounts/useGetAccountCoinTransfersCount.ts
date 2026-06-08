@@ -1,6 +1,7 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { ResponseError } from "../../utils/api-client";
 import { useGlobalStore } from "../../store/useGlobalStore";
+import { tryStandardizeAddress } from "../../utils";
 
 /**
  * Build the GraphQL query and variables for coin transfer count.
@@ -68,6 +69,7 @@ export function useGetAccountCoinTransfersCount(
   data: number | undefined;
 } {
   const { network_value, sdk_v2_client } = useGlobalStore();
+  const normalizedAddress = tryStandardizeAddress(address);
 
   const { isLoading, error, data } = useQuery<
     number | undefined,
@@ -75,7 +77,7 @@ export function useGetAccountCoinTransfersCount(
   >({
     queryKey: [
       "accountCoinTransfersCount",
-      address,
+      normalizedAddress ?? address,
       assetType ?? null,
       timestampGte ?? null,
       timestampLte ?? null,
@@ -83,8 +85,10 @@ export function useGetAccountCoinTransfersCount(
     ],
     queryFn: async () => {
       try {
+        if (!normalizedAddress) return undefined;
+
         const { query, variables } = buildCoinTransfersCountQuery(
-          address,
+          normalizedAddress,
           assetType,
           timestampGte,
           timestampLte,
@@ -107,7 +111,7 @@ export function useGetAccountCoinTransfersCount(
         return undefined;
       }
     },
-    enabled: !!address,
+    enabled: !!normalizedAddress,
   });
 
   return {

@@ -1,5 +1,6 @@
 import { gql } from "@apollo/client";
 import { useQuery as useGraphqlQuery } from "@apollo/client/react";
+import { tryStandardizeAddress } from "@/utils";
 
 const ACCOUNT_TOKENS_QUERY = gql`
   query AccountTokens($address: String!, $limit: Int!, $offset: Int) {
@@ -75,14 +76,15 @@ interface AccountTokensCountResponse {
 export function useGetAccountTokens(
   address: string,
   limit: number = 25,
-  offset: number = 0
+  offset: number = 0,
 ) {
+  const normalizedAddress = tryStandardizeAddress(address);
   const { loading, error, data } = useGraphqlQuery<AccountTokensResponse>(
     ACCOUNT_TOKENS_QUERY,
     {
-      variables: { address, limit, offset },
-      skip: !address,
-    }
+      variables: { address: normalizedAddress, limit, offset },
+      skip: !normalizedAddress,
+    },
   );
 
   return {
@@ -93,12 +95,13 @@ export function useGetAccountTokens(
 }
 
 export function useGetAccountTokensCount(address: string) {
+  const normalizedAddress = tryStandardizeAddress(address);
   const { loading, error, data } = useGraphqlQuery<AccountTokensCountResponse>(
     ACCOUNT_TOKENS_COUNT_QUERY,
     {
-      variables: { address },
-      skip: !address,
-    }
+      variables: { address: normalizedAddress },
+      skip: !normalizedAddress,
+    },
   );
 
   return {

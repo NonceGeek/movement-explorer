@@ -87,7 +87,10 @@ export function AccountNFTTransfers({
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
 
   // Get page from URL or default to 1, capped at MAX_PAGES
   const pageParam = searchParams.get("page");
@@ -99,11 +102,17 @@ export function AccountNFTTransfers({
   // Get limit from URL or use store value
   const limitParam = searchParams.get("limit");
   const currentLimit: PageSize = limitParam
-    ? ((parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE)
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
     : pageSize;
 
   // Fetch count
-  const { data: txCount } = useGetAccountNFTTransfersCount(address, activityFilter, dateRange.from, dateRange.to);
+  const { data: txCount, isLoading: countLoading } =
+    useGetAccountNFTTransfersCount(
+      address,
+      activityFilter,
+      dateRange.from,
+      dateRange.to,
+    );
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
     MAX_PAGES,
@@ -113,7 +122,14 @@ export function AccountNFTTransfers({
   // Fetch NFT activities for current page
   const offset = (currentPage - 1) * currentLimit;
   const { data: activities, isLoading: activitiesLoading } =
-    useGetAccountNFTTransfers(address, currentLimit, offset, activityFilter, dateRange.from, dateRange.to);
+    useGetAccountNFTTransfers(
+      address,
+      currentLimit,
+      offset,
+      activityFilter,
+      dateRange.from,
+      dateRange.to,
+    );
 
   // Extract unique transaction versions to fetch full transaction details
   const uniqueVersions = useMemo(() => {
@@ -158,7 +174,7 @@ export function AccountNFTTransfers({
       params.set("limit", limit.toString());
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams],
+    [pathname, router, searchParams],
   );
 
   const handlePageChange = useCallback(
@@ -224,13 +240,20 @@ export function AccountNFTTransfers({
         isLoading={isLoading}
         infoText={
           <div className="flex items-center gap-2">
-            {totalCount > 0 && (
-              <span>
-                <span className="font-medium text-foreground">
-                  {totalCount.toLocaleString()}
-                </span>{" "}
+            {countLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-4 w-16 animate-pulse rounded bg-muted" />
                 NFT transfers found
               </span>
+            ) : (
+              totalCount > 0 && (
+                <span>
+                  <span className="font-medium text-foreground">
+                    {totalCount.toLocaleString()}
+                  </span>{" "}
+                  NFT transfers found
+                </span>
+              )
             )}
             {hasActiveFilters && (
               <button

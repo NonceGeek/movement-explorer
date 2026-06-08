@@ -45,7 +45,10 @@ export function AccountTransactions({
   const router = useRouter();
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
   // Get page from URL or default to 1, capped at MAX_PAGES
@@ -58,11 +61,12 @@ export function AccountTransactions({
   // Get limit from URL or use store value
   const limitParam = searchParams.get("limit");
   const currentLimit: PageSize = limitParam
-    ? ((parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE)
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
     : pageSize;
 
   // Fetch transaction count
-  const { data: txCount } = useGetAccountTransactionCount(address);
+  const { data: txCount, isLoading: countLoading } =
+    useGetAccountTransactionCount(address);
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
     MAX_PAGES,
@@ -72,21 +76,29 @@ export function AccountTransactions({
   // Fetch transaction versions for current page
   const offset = (currentPage - 1) * currentLimit;
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountTransactionVersions(address, currentLimit, offset, dateRange.from, dateRange.to, senderFilter);
+    useGetAccountTransactionVersions(
+      address,
+      currentLimit,
+      offset,
+      dateRange.from,
+      dateRange.to,
+      senderFilter,
+    );
 
   // Stream transaction details as they resolve
-  const {
-    rows: tableData,
-    isStreaming,
-  } = useStreamingTransactions(
-    transactionVersions && transactionVersions.length > 0 ? transactionVersions : undefined,
+  const { rows: tableData, isStreaming } = useStreamingTransactions(
+    transactionVersions && transactionVersions.length > 0
+      ? transactionVersions
+      : undefined,
     aptos_client,
     true,
     network_value,
   );
 
   // Only loaded rows (for toolbar/download — excludes skeleton placeholders)
-  const loadedRows = tableData.filter((r) => r.transaction !== null) as import("@/components/transactions").TransactionRowData[];
+  const loadedRows = tableData.filter(
+    (r) => r.transaction !== null,
+  ) as import("@/components/transactions").TransactionRowData[];
 
   const isLoading = versionsLoading && tableData.length === 0;
 
@@ -170,11 +182,7 @@ export function AccountTransactions({
           </h1>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-8">
-          <CopyableAddress
-            address={address}
-            showCopyButton
-            variant="muted"
-          />
+          <CopyableAddress address={address} showCopyButton variant="muted" />
         </div>
         {headerEndDecorator}
       </div>
@@ -188,13 +196,20 @@ export function AccountTransactions({
         isLoading={isLoading}
         infoText={
           <div className="flex items-center gap-2">
-            {totalCount > 0 && (
-              <span>
-                <span className="font-medium text-foreground">
-                  {totalCount.toLocaleString()}
-                </span>{" "}
+            {countLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-4 w-16 animate-pulse rounded bg-muted" />
                 transactions found
               </span>
+            ) : (
+              totalCount > 0 && (
+                <span>
+                  <span className="font-medium text-foreground">
+                    {totalCount.toLocaleString()}
+                  </span>{" "}
+                  transactions found
+                </span>
+              )
             )}
             {hasActiveFilters && (
               <button

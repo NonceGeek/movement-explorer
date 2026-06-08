@@ -1,6 +1,7 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import { tryStandardizeAddress } from "@/utils";
 
 export interface NFTActivity {
   transaction_version: number;
@@ -84,11 +85,12 @@ export function useGetAccountNFTTransfers(
   timestampLte?: string | null,
 ): UseQueryResult<NFTActivity[], ResponseError> {
   const { network_value, sdk_v2_client } = useGlobalStore();
+  const normalizedAddress = tryStandardizeAddress(address);
 
   return useQuery<NFTActivity[], ResponseError>({
     queryKey: [
       "accountNFTTransfers",
-      address,
+      normalizedAddress ?? address,
       limit,
       offset,
       activityType ?? null,
@@ -98,13 +100,19 @@ export function useGetAccountNFTTransfers(
     ],
     queryFn: async () => {
       try {
+        if (!normalizedAddress) return [];
+
         const query = buildNFTTransfersQuery(
           activityType,
           timestampGte,
           timestampLte,
         );
 
-        const variables: Record<string, unknown> = { address, limit, offset };
+        const variables: Record<string, unknown> = {
+          address: normalizedAddress,
+          limit,
+          offset,
+        };
         if (activityType) variables.activityType = activityType;
         if (timestampGte && timestampLte) {
           variables.timestampGte = timestampGte;
@@ -123,6 +131,6 @@ export function useGetAccountNFTTransfers(
         return [];
       }
     },
-    enabled: !!address && limit > 0,
+    enabled: !!normalizedAddress && limit > 0,
   });
 }

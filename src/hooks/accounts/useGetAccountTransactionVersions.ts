@@ -1,7 +1,7 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { ResponseError } from "../../utils/api-client";
 import { useGlobalStore } from "../../store/useGlobalStore";
-import { standardizeAddress } from "../../utils";
+import { standardizeAddress, tryStandardizeAddress } from "../../utils";
 
 /**
  * Build the GraphQL query and variables for account transaction versions.
@@ -83,16 +83,17 @@ export function useGetAccountTransactionVersions(
 ): UseQueryResult<number[], ResponseError> {
   const { network_value, sdk_v2_client } = useGlobalStore();
   const addr64Hash = standardizeAddress(address);
+  const normalizedSender = sender ? tryStandardizeAddress(sender) : null;
 
   return useQuery<number[], ResponseError>({
     queryKey: [
       "accountTransactionVersions",
-      address,
+      addr64Hash,
       limit,
       offset,
       timestampGte ?? null,
       timestampLte ?? null,
-      sender ?? null,
+      normalizedSender ?? sender ?? null,
       network_value,
     ],
     queryFn: async () => {
@@ -103,7 +104,7 @@ export function useGetAccountTransactionVersions(
           offset,
           timestampGte,
           timestampLte,
-          sender,
+          normalizedSender,
         );
 
         const result = await sdk_v2_client.queryIndexer<{

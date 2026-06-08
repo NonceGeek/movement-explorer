@@ -9,6 +9,7 @@ import { formatTokenAmount } from "@/utils/formatters";
 import { ExternalLink, Info } from "lucide-react";
 import type { AccountTimeline } from "@/hooks/accounts/useGetAccountFirstLastTx";
 import type { AccountMoveFlow } from "@/hooks/accounts/useGetAccountMoveFlow";
+import { AccountTokenHoldingsDropdown } from "./AccountTokenHoldingsDropdown";
 
 const CARD_CLASS =
   "p-4 md:p-5 bg-card backdrop-blur-sm rounded-xl border border-border/50 transition-all duration-300 hover:bg-card hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 hover:-translate-y-0.5";
@@ -40,14 +41,12 @@ export interface AccountOverviewProps {
 }
 
 export function AccountOverview({
+  address,
   balanceUSD,
   formattedBalance,
   accountData,
   objectData,
   movePrice,
-  coinCount,
-  tokenCount,
-  resourceCount,
   isLoading,
   onTabChange,
   timeline,
@@ -96,39 +95,14 @@ export function AccountOverview({
           </div>
           {/* Holdings — compressed single row */}
           <div>
-            <div className={LABEL_CLASS}>Holdings</div>
+            <div className={LABEL_CLASS}>Token Holdings</div>
             {isLoading ? (
               <EnhancedSkeleton className="h-5 w-40 mt-1" />
             ) : (
-              <div className="flex items-center gap-x-4 text-sm mt-0.5 flex-wrap">
-                <span>
-                  <span className="text-muted-foreground">Coins: </span>
-                  <button
-                    onClick={() => onTabChange("coins")}
-                    className="font-medium text-primary hover:underline tabular-nums cursor-pointer"
-                  >
-                    {coinCount}
-                  </button>
-                </span>
-                <span>
-                  <span className="text-muted-foreground">NFTs: </span>
-                  <button
-                    onClick={() => onTabChange("nfts")}
-                    className="font-medium text-primary hover:underline tabular-nums cursor-pointer"
-                  >
-                    {tokenCount}
-                  </button>
-                </span>
-                <span>
-                  <span className="text-muted-foreground">Resources: </span>
-                  <button
-                    onClick={() => onTabChange("resources")}
-                    className="font-medium text-primary hover:underline tabular-nums cursor-pointer"
-                  >
-                    {resourceCount}
-                  </button>
-                </span>
-              </div>
+              <AccountTokenHoldingsDropdown
+                address={address}
+                onViewAll={() => onTabChange("coins")}
+              />
             )}
           </div>
         </div>
@@ -201,8 +175,8 @@ export function AccountOverview({
           <p className="text-xs text-muted-foreground/70 flex items-start gap-1.5">
             <Info className="h-3 w-3 shrink-0 mt-0.5" />
             <span>
-              Flow data is based on Coin v1 events only and may not reflect
-              all Fungible Asset v2 transactions. Net Flow may differ from the
+              Flow data is based on Coin v1 events only and may not reflect all
+              Fungible Asset v2 transactions. Net Flow may differ from the
               actual balance.
             </span>
           </p>

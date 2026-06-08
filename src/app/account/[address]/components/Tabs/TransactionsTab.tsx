@@ -84,7 +84,8 @@ function TransactionsSubTab({
   address: string;
   accountData: Types.AccountData | undefined;
 }) {
-  const { data: indexerTxCount } = useGetAccountTransactionCount(address);
+  const { data: indexerTxCount, isLoading: countLoading } =
+    useGetAccountTransactionCount(address);
 
   const sequenceNum = accountData
     ? parseInt(accountData.sequence_number, 10)
@@ -95,13 +96,23 @@ function TransactionsSubTab({
     indexerTxCount !== undefined ? indexerTxCount : sequenceNum;
 
   // Filter state (declared before hooks that depend on them)
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
   // Always fetch only the latest 25 transactions (sender filter is server-side)
   const { data: transactionVersions, isLoading: transactionsLoading } =
-    useGetAccountTransactionVersions(address, MAX_DISPLAY, 0, dateRange.from, dateRange.to, senderFilter);
+    useGetAccountTransactionVersions(
+      address,
+      MAX_DISPLAY,
+      0,
+      dateRange.from,
+      dateRange.to,
+      senderFilter,
+    );
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
@@ -152,7 +163,11 @@ function TransactionsSubTab({
   const hasActiveFilters = dateRange.from !== null || senderFilter !== null;
 
   // Show full empty state only when there are no filters active
-  if (!isLoading && (!tableData || tableData.length === 0) && !hasActiveFilters) {
+  if (
+    !isLoading &&
+    (!tableData || tableData.length === 0) &&
+    !hasActiveFilters
+  ) {
     return (
       <EmptyState
         icon={<Activity className="h-12 w-12" />}
@@ -165,15 +180,19 @@ function TransactionsSubTab({
   return (
     <div className="space-y-4">
       {/* Info */}
-      {(totalTxCount > 0 || hasActiveFilters) && (
+      {(totalTxCount > 0 || hasActiveFilters || countLoading) && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <p>
             {tableData.length > 0 ? (
               <>
-                Latest {Math.min(MAX_DISPLAY, totalTxCount).toLocaleString()} from a total of{" "}
-                <span className="font-medium text-foreground">
-                  {totalTxCount.toLocaleString()}
-                </span>{" "}
+                Latest {tableData.length.toLocaleString()} from a total of{" "}
+                {countLoading && indexerTxCount === undefined ? (
+                  <span className="inline-block h-4 w-14 animate-pulse rounded bg-muted align-middle" />
+                ) : (
+                  <span className="font-medium text-foreground">
+                    {totalTxCount.toLocaleString()}
+                  </span>
+                )}{" "}
                 transactions
               </>
             ) : (
@@ -210,16 +229,14 @@ function TransactionsSubTab({
           loadingRowCount={MAX_DISPLAY}
           timestampMode={timestampMode}
           onToggleTimestampMode={() =>
-            setTimestampMode((prev) =>
-              prev === "age" ? "dateTime" : "age",
-            )
+            setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
           address={address}
           columnFilters={columnFilters}
         />
       </div>
 
-      {!isLoading && totalTxCount > MAX_DISPLAY && (
+      {!isLoading && !countLoading && totalTxCount > MAX_DISPLAY && (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/transactions?address=${address}`}>

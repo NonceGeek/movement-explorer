@@ -11,14 +11,10 @@ import {
   PageSize,
   DEFAULT_PAGE_SIZE,
 } from "@/store/useTransactionPaginationStore";
+import { useGetFungibleAssetActivitiesByVersions } from "@/hooks/accounts/useGetFungibleAssetActivitiesByVersions";
 import { useGetAccountCoinTransfers } from "@/hooks/accounts/useGetAccountCoinTransfers";
 import { useGetAccountCoinTransfersCount } from "@/hooks/accounts/useGetAccountCoinTransfersCount";
-import {
-  TransactionTable,
-  TOKEN_TRANSFER_COLUMNS,
-  TransactionRowData,
-  ColumnFilters,
-} from "@/components/transactions";
+import { ColumnFilters } from "@/components/transactions";
 import {
   DateRangeColumnFilter,
   DateRange,
@@ -30,6 +26,7 @@ import { TransactionTableFooter } from "@/components/transactions/TransactionTab
 import { TableLoadingBar } from "@/components/common/TableLoadingBar";
 import { CopyableAddress } from "@/components/common/CopyableAddress";
 import { ArrowLeft, X } from "lucide-react";
+import { AccountTokenTransfersTable } from "./AccountTokenTransfersTable";
 
 const MAX_PAGES = 100;
 
@@ -48,7 +45,10 @@ export function AccountCoinTransfers({
   const pathname = usePathname();
 
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
   const [coinFilter, setCoinFilter] = useState<string | null>(null);
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
 
@@ -62,7 +62,7 @@ export function AccountCoinTransfers({
   // Get limit from URL or use store value
   const limitParam = searchParams.get("limit");
   const currentLimit: PageSize = limitParam
-    ? ((parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE)
+    ? (parseInt(limitParam) as PageSize) || DEFAULT_PAGE_SIZE
     : pageSize;
 
   // Get optional coinType filter from URL (seed the coinFilter state on first render)
@@ -70,48 +70,53 @@ export function AccountCoinTransfers({
   const activeCoin = coinFilter ?? coinTypeParam;
 
   // Fetch count
-  const { data: txCount } = useGetAccountCoinTransfersCount(
-    address,
-    activeCoin,
-    dateRange.from,
-    dateRange.to,
-  );
+  const { data: txCount, isLoading: countLoading } =
+    useGetAccountCoinTransfersCount(
+      address,
+      activeCoin,
+      dateRange.from,
+      dateRange.to,
+    );
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
     MAX_PAGES,
     Math.max(1, Math.ceil(totalCount / currentLimit)),
   );
 
-  // Fetch coin transfer versions for current page
+  // Fetch transfer transaction versions for current page
   const offset = (currentPage - 1) * currentLimit;
   const { data: transactionVersions, isLoading: versionsLoading } =
-    useGetAccountCoinTransfers(address, currentLimit, offset, activeCoin, dateRange.from, dateRange.to, senderFilter);
+    useGetAccountCoinTransfers(
+      address,
+      currentLimit,
+      offset,
+      activeCoin,
+      dateRange.from,
+      dateRange.to,
+      senderFilter,
+    );
+
+  const activeVersions = Array.from(new Set(transactionVersions || []));
+  const { data: relatedActivities, isLoading: relatedActivitiesLoading } =
+    useGetFungibleAssetActivitiesByVersions(activeVersions);
 
   // Fetch full transaction details
   const { aptos_client } = useGlobalStore();
   const { data: transactions, isLoading: detailsLoading } = useQuery({
-    queryKey: [
-      "accountCoinTransferDetails",
-      address,
-      transactionVersions,
-    ],
+    queryKey: ["accountCoinTransferDetails", address, activeVersions],
     queryFn: async () => {
-      if (!transactionVersions || transactionVersions.length === 0) return [];
+      if (activeVersions.length === 0) return [];
       return Promise.all(
-        transactionVersions.map((v) =>
+        activeVersions.map((v) =>
           getTransaction({ txnHashOrVersion: v }, aptos_client),
         ),
       );
     },
-    enabled: !!transactionVersions && transactionVersions.length > 0,
+    enabled: activeVersions.length > 0,
   });
 
-  const isLoading = versionsLoading || detailsLoading;
-
-  const tableData: TransactionRowData[] = (transactions || []).map((tx) => {
-    const version = "version" in tx ? parseInt(tx.version) : 0;
-    return { version, transaction: tx };
-  });
+  const isLoading =
+    versionsLoading || relatedActivitiesLoading || detailsLoading;
 
   // URL sync handlers
   const updateURL = useCallback(
@@ -121,7 +126,7 @@ export function AccountCoinTransfers({
       params.set("limit", limit.toString());
       router.push(`${pathname}?${params.toString()}`, { scroll: false });
     },
-    [router, searchParams],
+    [pathname, router, searchParams],
   );
 
   const handlePageChange = useCallback(
@@ -153,7 +158,8 @@ export function AccountCoinTransfers({
     }
   }, [filterKey, currentPage, handlePageChange]);
 
-  const hasActiveFilters = dateRange.from !== null || coinFilter !== null || senderFilter !== null;
+  const hasActiveFilters =
+    dateRange.from !== null || coinFilter !== null || senderFilter !== null;
 
   const clearAllFilters = () => {
     setDateRange({ from: null, to: null });
@@ -170,12 +176,7 @@ export function AccountCoinTransfers({
         onToggleTimestampMode={setTimestampMode}
       />
     ),
-    token: (
-      <CoinColumnFilter
-        value={activeCoin}
-        onChange={setCoinFilter}
-      />
-    ),
+    token: <CoinColumnFilter value={activeCoin} onChange={setCoinFilter} />,
     sender: (
       <AddressColumnFilter
         label="Sender"
@@ -195,16 +196,10 @@ export function AccountCoinTransfers({
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-xl sm:text-3xl font-bold">
-            Token Transfers
-          </h1>
+          <h1 className="text-xl sm:text-3xl font-bold">Token Transfers</h1>
         </div>
         <div className="flex items-center gap-2 mt-1 ml-8">
-          <CopyableAddress
-            address={address}
-            showCopyButton
-            variant="muted"
-          />
+          <CopyableAddress address={address} showCopyButton variant="muted" />
         </div>
         {headerEndDecorator}
       </div>
@@ -218,13 +213,20 @@ export function AccountCoinTransfers({
         isLoading={isLoading}
         infoText={
           <div className="flex items-center gap-2">
-            {totalCount > 0 && (
-              <span>
-                <span className="font-medium text-foreground">
-                  {totalCount.toLocaleString()}
-                </span>{" "}
+            {countLoading ? (
+              <span className="inline-flex items-center gap-2">
+                <span className="inline-block h-4 w-16 animate-pulse rounded bg-muted" />
                 token transfers found
               </span>
+            ) : (
+              totalCount > 0 && (
+                <span>
+                  <span className="font-medium text-foreground">
+                    {totalCount.toLocaleString()}
+                  </span>{" "}
+                  token transfers found
+                </span>
+              )
             )}
             {hasActiveFilters && (
               <button
@@ -241,10 +243,10 @@ export function AccountCoinTransfers({
 
       {/* Table */}
       <div className="relative overflow-x-auto overflow-y-hidden [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        <TableLoadingBar visible={!isLoading && !!transactions} />
-        <TransactionTable
-          data={tableData}
-          columns={TOKEN_TRANSFER_COLUMNS}
+        <TableLoadingBar visible={!isLoading && !!transactionVersions} />
+        <AccountTokenTransfersTable
+          relatedActivities={relatedActivities || []}
+          transactions={transactions || []}
           isLoading={isLoading}
           loadingRowCount={currentLimit}
           timestampMode={timestampMode}
@@ -252,6 +254,7 @@ export function AccountCoinTransfers({
             setTimestampMode((prev) => (prev === "age" ? "dateTime" : "age"))
           }
           address={address}
+          assetType={activeCoin}
           columnFilters={columnFilters}
         />
       </div>

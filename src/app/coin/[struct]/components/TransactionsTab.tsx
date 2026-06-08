@@ -28,7 +28,8 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
   // Fetch total count
-  const { data: totalCount } = useGetCoinActivitiesCount(struct);
+  const { data: totalCount, isLoading: countLoading } =
+    useGetCoinActivitiesCount(struct);
 
   // Fetch only latest 25 transactions
   const {
@@ -92,17 +93,19 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
     );
   }
 
-  const displayCount = totalCount ?? tableData.length;
+  const rowCount = tableData.length;
+  const displayCount = totalCount ?? 0;
 
   return (
     <div className="space-y-4">
       {/* Info */}
-      {displayCount > 0 && (
+      {(rowCount > 0 || countLoading) && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Latest {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
-            total of{" "}
-            {displayCount > MAX_DISPLAY ? (
+            Latest {rowCount.toLocaleString()} from a total of{" "}
+            {countLoading || totalCount === undefined ? (
+              <span className="inline-block h-4 w-14 animate-pulse rounded bg-muted align-middle" />
+            ) : displayCount > MAX_DISPLAY ? (
               <Link
                 href={`/transactions?coinType=${encodeURIComponent(struct)}`}
                 className="font-medium text-primary hover:underline"
@@ -133,12 +136,10 @@ export default function TransactionsTab({ struct }: TransactionsTabProps) {
       </div>
 
       {/* View all link */}
-      {!isLoading && displayCount > MAX_DISPLAY && (
+      {!isLoading && !countLoading && displayCount > MAX_DISPLAY && (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" asChild>
-            <Link
-              href={`/transactions?coinType=${encodeURIComponent(struct)}`}
-            >
+            <Link href={`/transactions?coinType=${encodeURIComponent(struct)}`}>
               View all {displayCount.toLocaleString()} transactions
               <ArrowRight className="h-4 w-4 ml-1" />
             </Link>

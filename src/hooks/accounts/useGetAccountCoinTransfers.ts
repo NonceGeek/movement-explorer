@@ -1,6 +1,7 @@
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { ResponseError } from "@/utils/api-client";
 import { useGlobalStore } from "@/store/useGlobalStore";
+import { tryStandardizeAddress } from "@/utils";
 
 /**
  * Build the GraphQL query and variables for coin transfer versions.
@@ -88,29 +89,33 @@ export function useGetAccountCoinTransfers(
   sender?: string | null,
 ): UseQueryResult<number[], ResponseError> {
   const { network_value, sdk_v2_client } = useGlobalStore();
+  const normalizedAddress = tryStandardizeAddress(address);
+  const normalizedSender = sender ? tryStandardizeAddress(sender) : null;
 
   return useQuery<number[], ResponseError>({
     queryKey: [
       "accountCoinTransferVersions",
-      address,
+      normalizedAddress ?? address,
       limit,
       offset,
       assetType ?? null,
       timestampGte ?? null,
       timestampLte ?? null,
-      sender ?? null,
+      normalizedSender ?? sender ?? null,
       network_value,
     ],
     queryFn: async () => {
       try {
+        if (!normalizedAddress) return [];
+
         const { query, variables } = buildCoinTransfersQuery(
-          address,
+          normalizedAddress,
           limit,
           offset,
           assetType,
           timestampGte,
           timestampLte,
-          sender,
+          normalizedSender,
         );
 
         const result = await sdk_v2_client.queryIndexer<{
@@ -130,6 +135,6 @@ export function useGetAccountCoinTransfers(
         return [];
       }
     },
-    enabled: !!address && limit > 0,
+    enabled: !!normalizedAddress && limit > 0,
   });
 }

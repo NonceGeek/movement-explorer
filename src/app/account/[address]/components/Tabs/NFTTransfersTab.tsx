@@ -23,7 +23,14 @@ import {
   TRANSACTION_TYPE_INFO,
 } from "@/constants/transaction";
 import { EmptyState } from "..";
-import { ImageIcon, CircleCheckBig, XCircle, ArrowRight, X, SearchX } from "lucide-react";
+import {
+  ImageIcon,
+  CircleCheckBig,
+  XCircle,
+  ArrowRight,
+  X,
+  SearchX,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import {
@@ -79,11 +86,27 @@ interface NFTTransfersTabProps {
 
 export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
   const [activityFilter, setActivityFilter] = useState<string | null>(null);
-  const [dateRange, setDateRange] = useState<DateRange>({ from: null, to: null });
+  const [dateRange, setDateRange] = useState<DateRange>({
+    from: null,
+    to: null,
+  });
 
-  const { data: totalCount } = useGetAccountNFTTransfersCount(address, activityFilter, dateRange.from, dateRange.to);
+  const { data: totalCount, isLoading: countLoading } =
+    useGetAccountNFTTransfersCount(
+      address,
+      activityFilter,
+      dateRange.from,
+      dateRange.to,
+    );
   const { data: activities, isLoading: activitiesLoading } =
-    useGetAccountNFTTransfers(address, MAX_DISPLAY, 0, activityFilter, dateRange.from, dateRange.to);
+    useGetAccountNFTTransfers(
+      address,
+      MAX_DISPLAY,
+      0,
+      activityFilter,
+      dateRange.from,
+      dateRange.to,
+    );
 
   // Extract unique transaction versions to fetch full transaction details
   const uniqueVersions = useMemo(() => {
@@ -121,12 +144,18 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
 
   const isLoading = activitiesLoading || txDetailsLoading;
-  const displayCount = totalCount ?? (activities?.length || 0);
+  const rowCount = activities?.length || 0;
+  const displayCount = totalCount ?? 0;
 
   const hasActiveFilters = activityFilter !== null || dateRange.from !== null;
 
   // Show full empty state only when there are no filters active
-  if (!isLoading && (!activities || activities.length === 0) && !hasActiveFilters) {
+  if (
+    !isLoading &&
+    !countLoading &&
+    (!activities || activities.length === 0) &&
+    !hasActiveFilters
+  ) {
     return (
       <EmptyState
         icon={<ImageIcon className="h-12 w-12" />}
@@ -138,16 +167,19 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
 
   return (
     <div className="space-y-4">
-      {(displayCount > 0 || hasActiveFilters) && (
+      {(rowCount > 0 || hasActiveFilters || countLoading) && (
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
           <p>
             {(activities?.length ?? 0) > 0 ? (
               <>
-                Latest {Math.min(MAX_DISPLAY, displayCount).toLocaleString()} from a
-                total of{" "}
-                <span className="font-medium text-foreground">
-                  {displayCount.toLocaleString()}
-                </span>{" "}
+                Latest {rowCount.toLocaleString()} from a total of{" "}
+                {countLoading || totalCount === undefined ? (
+                  <span className="inline-block h-4 w-14 animate-pulse rounded bg-muted align-middle" />
+                ) : (
+                  <span className="font-medium text-foreground">
+                    {displayCount.toLocaleString()}
+                  </span>
+                )}{" "}
                 NFT transfers
               </>
             ) : (
@@ -204,49 +236,54 @@ export default function NFTTransfersTab({ address }: NFTTransfersTabProps) {
             </StyledTableHeaderRow>
           </StyledTableHeader>
           <TableBody>
-            {isLoading
-              ? Array.from({ length: MAX_DISPLAY }).map((_, i) => (
-                  <TableRow key={i} className="h-16">
-                    {Array.from({ length: 7 }).map((_, j) => (
-                      <TableCell key={j}>
-                        <EnhancedSkeleton className="h-8 w-full" />
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))
-              : (activities || []).length === 0 ? (
-                  <TableRow className="hover:bg-transparent">
-                    <TableCell colSpan={7} className="h-40">
-                      <div className="flex flex-col items-center justify-center gap-3">
-                        <div className="p-3 bg-muted/30 rounded-full">
-                          <SearchX className="h-8 w-8 text-muted-foreground/60" />
-                        </div>
-                        <div className="text-center">
-                          <p className="text-sm font-medium text-foreground/70">No matching results</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Try adjusting or clearing your filters</p>
-                        </div>
-                      </div>
+            {isLoading ? (
+              Array.from({ length: MAX_DISPLAY }).map((_, i) => (
+                <TableRow key={i} className="h-16">
+                  {Array.from({ length: 7 }).map((_, j) => (
+                    <TableCell key={j}>
+                      <EnhancedSkeleton className="h-8 w-full" />
                     </TableCell>
-                  </TableRow>
-                )
-              : (activities || []).map((activity) => (
-                  <NFTActivityRow
-                    key={`${activity.transaction_version}-${activity.event_index}`}
-                    activity={activity}
-                    transaction={txMap.get(activity.transaction_version)}
-                    timestampMode={timestampMode}
-                    onToggleTimestampMode={() =>
-                      setTimestampMode((prev) =>
-                        prev === "age" ? "dateTime" : "age",
-                      )
-                    }
-                  />
-                ))}
+                  ))}
+                </TableRow>
+              ))
+            ) : (activities || []).length === 0 ? (
+              <TableRow className="hover:bg-transparent">
+                <TableCell colSpan={7} className="h-40">
+                  <div className="flex flex-col items-center justify-center gap-3">
+                    <div className="p-3 bg-muted/30 rounded-full">
+                      <SearchX className="h-8 w-8 text-muted-foreground/60" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-sm font-medium text-foreground/70">
+                        No matching results
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Try adjusting or clearing your filters
+                      </p>
+                    </div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              (activities || []).map((activity) => (
+                <NFTActivityRow
+                  key={`${activity.transaction_version}-${activity.event_index}`}
+                  activity={activity}
+                  transaction={txMap.get(activity.transaction_version)}
+                  timestampMode={timestampMode}
+                  onToggleTimestampMode={() =>
+                    setTimestampMode((prev) =>
+                      prev === "age" ? "dateTime" : "age",
+                    )
+                  }
+                />
+              ))
+            )}
           </TableBody>
         </StyledTable>
       </div>
 
-      {!isLoading && displayCount > MAX_DISPLAY && (
+      {!isLoading && !countLoading && displayCount > MAX_DISPLAY && (
         <div className="flex justify-center pt-2">
           <Button variant="outline" size="sm" asChild>
             <Link href={`/nft-transfers?address=${address}`}>
@@ -277,12 +314,16 @@ function NFTActivityRow({
 
   // Transaction details from REST API
   const txHash = transaction?.hash || "";
-  const status = transaction && "success" in transaction ? transaction.success : true;
+  const status =
+    transaction && "success" in transaction ? transaction.success : true;
   const txType = (transaction?.type || "unknown") as TransactionTypeName;
   const typeInfo =
     TRANSACTION_TYPE_INFO[txType] ??
     TRANSACTION_TYPE_INFO[TransactionTypeName.Unknown];
-  const timestamp = transaction && "timestamp" in transaction ? transaction.timestamp : activity.transaction_timestamp;
+  const timestamp =
+    transaction && "timestamp" in transaction
+      ? transaction.timestamp
+      : activity.transaction_timestamp;
 
   const tokenDisplay = activity.token_data_id
     ? activity.token_data_id.length > 20

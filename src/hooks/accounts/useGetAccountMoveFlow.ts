@@ -23,7 +23,7 @@ export function useGetAccountMoveFlow(
   const addr64Hash = standardizeAddress(address);
 
   return useQuery<AccountMoveFlow | null, ResponseError>({
-    queryKey: ["accountMoveFlow", address, network_value],
+    queryKey: ["accountMoveFlow", addr64Hash, network_value],
     queryFn: async () => {
       try {
         const result = await sdk_v2_client.queryIndexer<{

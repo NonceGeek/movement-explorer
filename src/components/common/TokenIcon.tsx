@@ -42,13 +42,13 @@ function getInitials(value?: string | null): string {
   const words = clean.split(/\s+/).filter(Boolean);
   if (words.length > 1) {
     return words
-      .slice(0, 3)
+      .slice(0, 2)
       .map((word) => word[0])
       .join("")
       .toUpperCase();
   }
 
-  return clean.slice(0, 3).toUpperCase();
+  return clean.slice(0, 2).toUpperCase();
 }
 
 export function TokenIcon({
@@ -88,6 +88,7 @@ export function TokenIcon({
       className={cn(
         "inline-flex items-center justify-center border font-semibold leading-none",
         baseClassName,
+        "text-[9px] sm:text-[10px]",
         textClassName,
       )}
       style={{
@@ -97,7 +98,9 @@ export function TokenIcon({
       }}
     >
       {initials ? (
-        <span className="scale-[0.9]">{initials}</span>
+        <span className="max-w-full overflow-hidden px-px text-center">
+          {initials}
+        </span>
       ) : (
         <Coins className="h-3/5 w-3/5" />
       )}

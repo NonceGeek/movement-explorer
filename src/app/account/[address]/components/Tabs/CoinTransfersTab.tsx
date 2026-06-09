@@ -8,6 +8,7 @@ import { getTransaction } from "@/services";
 import { useGetFungibleAssetActivitiesByVersions } from "@/hooks/accounts/useGetFungibleAssetActivitiesByVersions";
 import { useGetAccountCoinTransfers } from "@/hooks/accounts/useGetAccountCoinTransfers";
 import { useGetAccountCoinTransfersCount } from "@/hooks/accounts/useGetAccountCoinTransfersCount";
+import { useGetAccountCoinTransferTokenOptions } from "@/hooks/accounts/useGetAccountCoinTransferTokenOptions";
 import { ColumnFilters } from "@/components/transactions";
 import { CoinColumnFilter } from "@/components/transactions/filters/CoinColumnFilter";
 import {
@@ -35,6 +36,8 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
   });
   const [timestampMode, setTimestampMode] = useState<"age" | "dateTime">("age");
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
+  const { data: tokenOptions, isLoading: tokenOptionsLoading } =
+    useGetAccountCoinTransferTokenOptions(address);
 
   const { data: totalCount, isLoading: countLoading } =
     useGetAccountCoinTransfersCount(
@@ -42,6 +45,7 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
       coinFilter,
       dateRange.from,
       dateRange.to,
+      senderFilter,
     );
 
   const { data: transactionVersions, isLoading: versionsLoading } =
@@ -83,7 +87,14 @@ export default function CoinTransfersTab({ address }: CoinTransfersTabProps) {
         onToggleTimestampMode={setTimestampMode}
       />
     ),
-    token: <CoinColumnFilter value={coinFilter} onChange={setCoinFilter} />,
+    token: (
+      <CoinColumnFilter
+        value={coinFilter}
+        onChange={setCoinFilter}
+        tokens={tokenOptions}
+        isLoading={tokenOptionsLoading}
+      />
+    ),
     sender: (
       <AddressColumnFilter
         label="Sender"

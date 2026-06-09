@@ -627,16 +627,18 @@ export function getAssetSymbol(
   bridge?: string,
   symbol?: string,
 ): string {
-  if (panoraSymbol) {
+  const isUrlLike = (value?: string) => /^https?:\/\//i.test(value ?? "");
+
+  if (panoraSymbol && !isUrlLike(panoraSymbol)) {
     return panoraSymbol;
   }
 
-  if (bridge) {
-    return bridge;
+  if (symbol && !isUrlLike(symbol)) {
+    return symbol;
   }
 
-  if (symbol) {
-    return symbol;
+  if (bridge && !isUrlLike(bridge)) {
+    return bridge;
   }
 
   return "";

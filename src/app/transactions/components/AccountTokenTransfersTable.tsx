@@ -20,10 +20,7 @@ import { TimestampToggle } from "@/components/common/TimestampToggle";
 import { TransactionFunction } from "@/components/common/TransactionFunction";
 import { AssetCell } from "@/components/common/AssetCell";
 import { TransactionTypeTooltip } from "@/components/common/TransactionTypeTooltip";
-import {
-  parseTransactionActions,
-  TokenAmount,
-} from "@/app/txn/[hash]/components";
+import { parseTransactionActions } from "@/app/txn/[hash]/components";
 import type { ParsedAction } from "@/app/txn/[hash]/components";
 import {
   formatMoveAmount,
@@ -84,6 +81,21 @@ function isMoveAssetType(assetType: string | undefined) {
   );
 }
 
+function normalizeAssetType(assetType: string | undefined) {
+  if (!assetType) return undefined;
+  if (isMoveAssetType(assetType)) return "MOVE";
+  return assetType.includes("::")
+    ? assetType
+    : (tryStandardizeAddress(assetType) ?? assetType);
+}
+
+function isSameAssetType(left: string | undefined, right: string | undefined) {
+  const normalizedLeft = normalizeAssetType(left);
+  const normalizedRight = normalizeAssetType(right);
+
+  return !!normalizedLeft && normalizedLeft === normalizedRight;
+}
+
 function normalizeTokenSymbol(
   symbol: string | null | undefined,
   assetType?: string,
@@ -97,22 +109,6 @@ function normalizeTokenSymbol(
   }
 
   return symbol || null;
-}
-
-function normalizeTokenName(
-  name: string | null | undefined,
-  symbol: string | null | undefined,
-  assetType?: string,
-) {
-  if (isMoveAssetType(assetType) || symbol === "AptosCoin") {
-    return "Movement Coin";
-  }
-
-  if (name === "Metadata" || name === "FA") {
-    return undefined;
-  }
-
-  return name;
 }
 
 function isWithdraw(activity: AccountFungibleAssetActivity) {
@@ -189,9 +185,10 @@ function buildRows({
   const currentAddress = tryStandardizeAddress(address);
   const byVersion = new Map<number, AccountFungibleAssetActivity[]>();
   for (const activity of relatedActivities) {
-    const group = byVersion.get(activity.transaction_version) ?? [];
+    const version = Number(activity.transaction_version);
+    const group = byVersion.get(version) ?? [];
     group.push(activity);
-    byVersion.set(activity.transaction_version, group);
+    byVersion.set(version, group);
   }
 
   return transactions.map((transaction) => {
@@ -202,8 +199,8 @@ function buildRows({
       return currentAddress && owner === currentAddress;
     });
     const matchingAssetActivities = assetType
-      ? accountActivities.filter(
-          (activity) => activity.asset_type === assetType,
+      ? accountActivities.filter((activity) =>
+          isSameAssetType(activity.asset_type, assetType),
         )
       : accountActivities;
     const candidateActivities =
@@ -349,66 +346,45 @@ function formatActivityAmount(activity: AccountFungibleAssetActivity) {
   return formatMoveAmount(activity.amount, activity.metadata?.decimals ?? 8);
 }
 
-function InlineActivityAmount({
-  activity,
-  coins,
+function TokenNumericAmount({
+  amount,
+  metadataAddress,
 }: {
-  activity: AccountFungibleAssetActivity;
-  coins?: CoinDescription[];
+  amount: string;
+  metadataAddress?: string;
 }) {
-  const symbol = getActivitySymbol(activity, coins);
-  const coin = findCoinData(coins, activity.asset_type);
+  const { data: metadata } = useGetFaMetadata(metadataAddress || "");
+  const formattedAmount = metadata
+    ? formatMoveAmount(amount, metadata.decimals)
+    : amount;
 
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span>{formatActivityAmount(activity)}</span>
-      <AssetCell
-        assetId={activity.asset_type}
-        symbol={symbol}
-        logoUrl={coin?.logoUrl}
-        showSubtext={false}
-        maxWidth="90px"
-        iconClassName="h-4 w-4"
-      />
-    </span>
-  );
+  return <span>{formattedAmount}</span>;
 }
 
-function InlineFallbackAmount({
-  amount,
-  symbol,
+function InlineActivityAmountText({
+  activity,
 }: {
-  amount: bigint;
-  symbol: string;
+  activity: AccountFungibleAssetActivity;
 }) {
-  return (
-    <span className="inline-flex items-center gap-1">
-      <span>{formatMoveAmount(amount)}</span>
-      <AssetCell
-        assetId="0x1::aptos_coin::AptosCoin"
-        symbol={symbol}
-        showSubtext={false}
-        maxWidth="90px"
-        iconClassName="h-4 w-4"
-      />
-    </span>
-  );
+  return <span>{formatActivityAmount(activity)}</span>;
+}
+
+function InlineFallbackAmountText({ amount }: { amount: bigint }) {
+  return <span>{formatMoveAmount(amount)}</span>;
 }
 
 function TransferAmount({
   row,
   fallbackAmount,
-  fallbackSymbol,
-  coins,
   swapAction,
   transferAction,
+  suppressFallback,
 }: {
   row: TokenTransferRow;
   fallbackAmount: bigint | undefined;
-  fallbackSymbol: string;
-  coins?: CoinDescription[];
   swapAction?: ParsedAction;
   transferAction?: ParsedAction;
+  suppressFallback?: boolean;
 }) {
   if (
     swapAction?.type === "swap" &&
@@ -416,22 +392,15 @@ function TransferAmount({
     swapAction.details?.amountOut
   ) {
     return (
-      <div className="flex flex-wrap items-center justify-end gap-x-2 gap-y-0.5">
-        <span className="inline-flex items-center gap-1">
-          <TokenAmount
-            amount={swapAction.details.amountIn}
-            metadataAddress={swapAction.details.metadataIn}
-          />
-          <span className="text-xs text-destructive">OUT</span>
-        </span>
-        <span className="text-muted-foreground">/</span>
-        <span className="inline-flex items-center gap-1">
-          <TokenAmount
-            amount={swapAction.details.amountOut}
-            metadataAddress={swapAction.details.metadataOut}
-          />
-          <span className="text-xs text-(--ms-good)">IN</span>
-        </span>
+      <div className="flex flex-col items-end gap-0.5">
+        <TokenNumericAmount
+          amount={swapAction.details.amountIn}
+          metadataAddress={swapAction.details.metadataIn}
+        />
+        <TokenNumericAmount
+          amount={swapAction.details.amountOut}
+          metadataAddress={swapAction.details.metadataOut}
+        />
       </div>
     );
   }
@@ -442,7 +411,7 @@ function TransferAmount({
     transferAction.details?.amount
   ) {
     return (
-      <TokenAmount
+      <TokenNumericAmount
         amount={transferAction.details.amount}
         metadataAddress={transferAction.details.metadata}
       />
@@ -460,77 +429,132 @@ function TransferAmount({
   if (primaryWithdraw && primaryDeposit) {
     return (
       <div className="flex flex-col items-end gap-0.5">
-        <span className="inline-flex items-center gap-1">
-          <span className="text-xs text-destructive">OUT</span>
-          <InlineActivityAmount activity={primaryWithdraw} coins={coins} />
-        </span>
-        <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-          <span className="text-(--ms-good)">IN</span>
-          <InlineActivityAmount activity={primaryDeposit} coins={coins} />
-        </span>
+        <InlineActivityAmountText activity={primaryWithdraw} />
+        <InlineActivityAmountText activity={primaryDeposit} />
       </div>
     );
   }
 
   const single = row.activity ?? primaryWithdraw ?? primaryDeposit;
   if (single) {
-    const prefix = isWithdraw(single) ? "OUT " : isDeposit(single) ? "IN " : "";
-    return (
-      <span className="inline-flex items-center gap-1">
-        <span>{prefix.trim()}</span>
-        <InlineActivityAmount activity={single} coins={coins} />
-      </span>
-    );
+    return <InlineActivityAmountText activity={single} />;
   }
 
-  if (fallbackAmount !== undefined) {
-    return (
-      <InlineFallbackAmount amount={fallbackAmount} symbol={fallbackSymbol} />
-    );
+  if (!suppressFallback && fallbackAmount !== undefined) {
+    return <InlineFallbackAmountText amount={fallbackAmount} />;
   }
 
   return <span className="text-muted-foreground">-</span>;
 }
 
-function SwapTokenLabel({ action }: { action: ParsedAction }) {
-  const { data: metadataIn } = useGetFaMetadata(
-    action.details?.metadataIn || "",
-  );
-  const { data: metadataOut } = useGetFaMetadata(
-    action.details?.metadataOut || "",
-  );
-  const symbolIn = normalizeTokenSymbol(
-    metadataIn?.symbol,
-    action.details?.metadataIn,
-  );
-  const symbolOut = normalizeTokenSymbol(
-    metadataOut?.symbol,
-    action.details?.metadataOut,
-  );
+function MetadataAssetCell({
+  metadataAddress,
+  fallbackSymbol,
+  maxWidth = "110px",
+}: {
+  metadataAddress?: string;
+  fallbackSymbol?: string;
+  maxWidth?: string;
+}) {
+  const { data: metadata } = useGetFaMetadata(metadataAddress || "");
+  const symbol =
+    normalizeTokenSymbol(metadata?.symbol ?? fallbackSymbol, metadataAddress) ??
+    fallbackTokenLabel(metadataAddress);
 
-  if (!symbolIn && !symbolOut) {
+  if (!metadataAddress) {
+    return <span className="text-sm text-foreground/80">{symbol}</span>;
+  }
+
+  return (
+    <AssetCell
+      assetId={metadataAddress}
+      symbol={symbol}
+      logoUrl={metadata?.icon_uri}
+      showSubtext={false}
+      maxWidth={maxWidth}
+      iconClassName="h-4 w-4"
+    />
+  );
+}
+
+function SwapTokenLabel({ action }: { action: ParsedAction }) {
+  if (!action.details?.metadataIn && !action.details?.metadataOut) {
     return <span className="text-sm text-foreground/80">Multi-token</span>;
   }
 
   return (
-    <span className="text-sm text-foreground/80">
-      {symbolIn || "Unknown Token"} / {symbolOut || "Unknown Token"}
-    </span>
+    <div className="flex flex-col gap-1">
+      <MetadataAssetCell
+        metadataAddress={action.details?.metadataIn}
+        maxWidth="82px"
+      />
+      <MetadataAssetCell
+        metadataAddress={action.details?.metadataOut}
+        maxWidth="82px"
+      />
+    </div>
   );
 }
 
 function TransferTokenLabel({ action }: { action: ParsedAction }) {
-  const { data: metadata } = useGetFaMetadata(action.details?.metadata || "");
-  const symbol = normalizeTokenSymbol(
-    metadata?.symbol,
-    action.details?.metadata,
+  return (
+    <MetadataAssetCell
+      metadataAddress={action.details?.metadata}
+      fallbackSymbol={action.details?.symbol}
+    />
   );
+}
+
+function ActivityAssetCell({
+  activity,
+  coins,
+}: {
+  activity: AccountFungibleAssetActivity;
+  coins?: CoinDescription[];
+}) {
+  const symbol = getActivitySymbol(activity, coins);
+  const coin = findCoinData(coins, activity.asset_type);
 
   return (
-    <span className="text-sm text-foreground/80">
-      {symbol || action.details?.symbol || "Unknown Token"}
-    </span>
+    <AssetCell
+      assetId={activity.asset_type}
+      symbol={symbol}
+      logoUrl={coin?.logoUrl}
+      showSubtext={false}
+      maxWidth="120px"
+      iconClassName="h-4 w-4"
+    />
   );
+}
+
+function ActivityTokenLabel({
+  row,
+  coins,
+}: {
+  row: TokenTransferRow;
+  coins?: CoinDescription[];
+}) {
+  const withdrawals = row.activities.filter((activity) => isWithdraw(activity));
+  const deposits = row.activities.filter((activity) => isDeposit(activity));
+  const primaryWithdraw = withdrawals[0];
+  const primaryDeposit =
+    deposits.find(
+      (activity) => activity.asset_type !== primaryWithdraw?.asset_type,
+    ) ?? deposits[0];
+
+  if (primaryWithdraw && primaryDeposit) {
+    return (
+      <div className="flex flex-col gap-1">
+        <ActivityAssetCell activity={primaryWithdraw} coins={coins} />
+        <ActivityAssetCell activity={primaryDeposit} coins={coins} />
+      </div>
+    );
+  }
+
+  const single = row.activity ?? primaryWithdraw ?? primaryDeposit;
+  if (!single) return null;
+
+  return <ActivityAssetCell activity={single} coins={coins} />;
 }
 
 export function AccountTokenTransfersTable({
@@ -635,12 +659,21 @@ export function AccountTokenTransfersTable({
             const { activity, transaction } = row;
             const actions = parseTransactionActions(transaction);
             const swapAction = actions.find((action) => action.type === "swap");
-            const transferAction = actions.find(
+            const parsedTransferAction = actions.find(
               (action) =>
                 action.type === "transfer" &&
                 !!action.details?.metadata &&
                 !!action.details?.amount,
             );
+            const transferAction =
+              parsedTransferAction &&
+              (!activity ||
+                isSameAssetType(
+                  parsedTransferAction.details?.metadata,
+                  activity.asset_type,
+                ))
+                ? parsedTransferAction
+                : undefined;
             const displayFrom = transferAction?.details?.from ?? row.from;
             const displayTo = transferAction?.details?.to ?? row.to;
             const displayDirection =
@@ -740,10 +773,9 @@ export function AccountTokenTransfersTable({
                   <TransferAmount
                     row={row}
                     fallbackAmount={fallbackAmount}
-                    fallbackSymbol={symbol}
-                    coins={coins}
                     swapAction={swapAction}
                     transferAction={transferAction}
+                    suppressFallback={!!assetType && !activity}
                   />
                 </TableCell>
                 <TableCell className={COLUMNS[7].width}>
@@ -752,20 +784,9 @@ export function AccountTokenTransfersTable({
                   ) : transferAction ? (
                     <TransferTokenLabel action={transferAction} />
                   ) : activity ? (
-                    <AssetCell
-                      assetId={activity.asset_type}
-                      symbol={symbol}
-                      showSubtext={false}
-                      subtext={
-                        normalizeTokenName(
-                          findCoinData(coins, activity.asset_type)?.name ??
-                            activity.metadata?.name,
-                          symbol,
-                          activity.asset_type,
-                        ) ?? undefined
-                      }
-                      maxWidth="120px"
-                    />
+                    <ActivityTokenLabel row={row} coins={coins} />
+                  ) : assetType ? (
+                    <span className="text-sm text-muted-foreground">-</span>
                   ) : (
                     <span className="text-sm text-foreground/80">{symbol}</span>
                   )}

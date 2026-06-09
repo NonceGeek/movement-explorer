@@ -3,6 +3,31 @@ import { ResponseError } from "@/utils/api-client";
 import { useGlobalStore } from "@/store/useGlobalStore";
 import { tryStandardizeAddress } from "@/utils";
 
+const MOVE_ASSET_TYPES = [
+  "0x1::aptos_coin::AptosCoin",
+  "0xa",
+  "0x000000000000000000000000000000000000000000000000000000000000000a",
+];
+
+function expandAssetTypeFilter(assetType?: string | null) {
+  if (!assetType) return [];
+
+  const normalizedAssetAddress = assetType.includes("::")
+    ? null
+    : tryStandardizeAddress(assetType);
+  const isMoveAsset =
+    MOVE_ASSET_TYPES.includes(assetType) ||
+    (!!normalizedAssetAddress &&
+      MOVE_ASSET_TYPES.includes(normalizedAssetAddress));
+  const candidates = isMoveAsset
+    ? [...MOVE_ASSET_TYPES, assetType, normalizedAssetAddress]
+    : [assetType, normalizedAssetAddress];
+
+  return Array.from(
+    new Set(candidates.filter((candidate): candidate is string => !!candidate)),
+  );
+}
+
 /**
  * Build the GraphQL query and variables for coin transfer versions.
  * Handles all 4 combinations: with/without assetType x with/without timestamp.
@@ -16,13 +41,14 @@ function buildCoinTransfersQuery(
   timestampLte?: string | null,
   sender?: string | null,
 ): { query: string; variables: Record<string, unknown> } {
-  const hasAsset = !!assetType;
+  const assetTypes = expandAssetTypeFilter(assetType);
+  const hasAsset = assetTypes.length > 0;
   const hasTimestamp = !!timestampGte && !!timestampLte;
   const hasSender = !!sender;
 
   // Build variable declarations
   const varParts = ["$address: String!", "$limit: Int", "$offset: Int"];
-  if (hasAsset) varParts.push("$assetType: String!");
+  if (hasAsset) varParts.push("$assetTypes: [String!]");
   if (hasTimestamp) {
     varParts.push("$timestampGte: timestamp");
     varParts.push("$timestampLte: timestamp");
@@ -32,7 +58,7 @@ function buildCoinTransfersQuery(
   // Build where clause parts
   const whereParts = ["account_address: { _eq: $address }"];
   const faaFilter = hasAsset
-    ? "fungible_asset_activities: { is_gas_fee: { _eq: false }, asset_type: { _eq: $assetType } }"
+    ? "fungible_asset_activities: { is_gas_fee: { _eq: false }, asset_type: { _in: $assetTypes } }"
     : "fungible_asset_activities: { is_gas_fee: { _eq: false } }";
   whereParts.push(faaFilter);
 
@@ -62,7 +88,7 @@ function buildCoinTransfersQuery(
   `;
 
   const variables: Record<string, unknown> = { address, limit, offset };
-  if (hasAsset) variables.assetType = assetType;
+  if (hasAsset) variables.assetTypes = assetTypes;
   if (hasTimestamp) {
     variables.timestampGte = timestampGte;
     variables.timestampLte = timestampLte;

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Funnel, Search, X } from "lucide-react";
 import {
   DropdownMenu,
@@ -10,40 +10,109 @@ import {
   DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/utils/styling";
-
-// Well-known coins on Movement
-const KNOWN_COINS = [
-  { symbol: "MOVE", assetType: "0x1::aptos_coin::AptosCoin" },
-  { symbol: "USDC", assetType: "0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::USDC" },
-  { symbol: "USDT", assetType: "0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::USDT" },
-  { symbol: "WETH", assetType: "0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::WETH" },
-  { symbol: "WBTC", assetType: "0xf22bede237a07e121b56d91a491eb7bcdfd1f5907926a9e58338f964a01b17fa::asset::WBTC" },
-];
+import { useGetCoinList } from "@/hooks/coins/useGetCoinList";
+import { CoinDescription } from "@/hooks/coins/types";
+import { getAssetSymbol } from "@/utils/transaction";
+import { AssetCell } from "@/components/common/AssetCell";
 
 interface CoinColumnFilterProps {
   value: string | null;
   onChange: (assetType: string | null) => void;
+  tokens?: TokenOption[];
+  isLoading?: boolean;
 }
 
-export function CoinColumnFilter({ value, onChange }: CoinColumnFilterProps) {
+export type TokenOption = {
+  label: string;
+  name: string;
+  value: string;
+  tokenAddress: string | null;
+  logoUrl?: string | null;
+  subtext?: string;
+};
+
+function getFilterAssetType(coin: CoinDescription) {
+  return coin.faAddress || coin.tokenAddress;
+}
+
+function getTokenLabel(coin: CoinDescription) {
+  return (
+    getAssetSymbol(
+      coin.panoraSymbol ?? undefined,
+      coin.bridge ?? undefined,
+      coin.symbol,
+    ) || coin.symbol
+  );
+}
+
+export function CoinColumnFilter({
+  value,
+  onChange,
+  tokens,
+  isLoading: tokensLoading,
+}: CoinColumnFilterProps) {
   const [search, setSearch] = useState("");
+  const { data: coinListData, isLoading } = useGetCoinList();
   const isActive = value !== null;
+
+  const tokenOptions = useMemo(() => {
+    if (tokens) return tokens;
+
+    const seen = new Set<string>();
+    const coins = coinListData?.data ?? [];
+
+    return coins
+      .map((coin): TokenOption | null => {
+        const assetType = getFilterAssetType(coin);
+        if (!assetType || seen.has(assetType)) return null;
+        seen.add(assetType);
+
+        return {
+          label: getTokenLabel(coin),
+          name: coin.name,
+          value: assetType,
+          tokenAddress: coin.tokenAddress,
+          logoUrl: coin.logoUrl,
+        };
+      })
+      .filter((option): option is TokenOption => option !== null)
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [coinListData?.data, tokens]);
+
+  const loading = tokensLoading ?? isLoading;
 
   const activeLabel = useMemo(() => {
     if (!value) return null;
-    const known = KNOWN_COINS.find((c) => c.assetType === value);
-    return known?.symbol ?? value.split("::").pop() ?? "Token";
-  }, [value]);
-
-  const filteredCoins = useMemo(() => {
-    if (!search) return KNOWN_COINS;
-    const q = search.toLowerCase();
-    return KNOWN_COINS.filter(
-      (c) =>
-        c.symbol.toLowerCase().includes(q) ||
-        c.assetType.toLowerCase().includes(q),
+    const known = tokenOptions.find(
+      (token) => token.value === value || token.tokenAddress === value,
     );
-  }, [search]);
+    if (known?.subtext) return `${known.label} (${known.subtext})`;
+    return known?.label ?? value.split("::").pop() ?? "Token";
+  }, [tokenOptions, value]);
+
+  useEffect(() => {
+    if (!tokens || loading || !value) return;
+
+    const hasSelectedToken = tokenOptions.some(
+      (token) => token.value === value || token.tokenAddress === value,
+    );
+
+    if (!hasSelectedToken) {
+      onChange(null);
+    }
+  }, [loading, onChange, tokenOptions, tokens, value]);
+
+  const filteredTokens = useMemo(() => {
+    if (!search) return tokenOptions;
+    const q = search.toLowerCase();
+    return tokenOptions.filter(
+      (token) =>
+        token.label.toLowerCase().includes(q) ||
+        token.name.toLowerCase().includes(q) ||
+        token.value.toLowerCase().includes(q) ||
+        token.tokenAddress?.toLowerCase().includes(q),
+    );
+  }, [search, tokenOptions]);
 
   return (
     <DropdownMenu modal={false}>
@@ -57,6 +126,27 @@ export function CoinColumnFilter({ value, onChange }: CoinColumnFilterProps) {
           )}
         >
           {isActive ? `Token: ${activeLabel}` : "Token"}
+          {isActive && (
+            <span
+              role="button"
+              aria-label="Clear token filter"
+              tabIndex={0}
+              className="inline-flex h-3.5 w-3.5 items-center justify-center rounded-full hover:bg-primary/15"
+              onClick={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                onChange(null);
+              }}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter" && event.key !== " ") return;
+                event.preventDefault();
+                event.stopPropagation();
+                onChange(null);
+              }}
+            >
+              <X className="h-3 w-3" />
+            </span>
+          )}
           <span className="relative">
             <Funnel className="h-3.5 w-3.5" />
             {isActive && (
@@ -84,22 +174,41 @@ export function CoinColumnFilter({ value, onChange }: CoinColumnFilterProps) {
         </div>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => { onChange(null); setSearch(""); }}
+          onClick={() => {
+            onChange(null);
+            setSearch("");
+          }}
           className={cn(!isActive && "font-medium")}
         >
-          All Coins
+          All Tokens
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        {filteredCoins.map((coin) => (
+        {filteredTokens.map((token) => (
           <DropdownMenuItem
-            key={coin.assetType}
-            onClick={() => { onChange(coin.assetType); setSearch(""); }}
-            className={cn(value === coin.assetType && "font-medium")}
+            key={token.value}
+            onClick={() => {
+              onChange(token.value);
+              setSearch("");
+            }}
+            className={cn(value === token.value && "font-medium")}
           >
-            {coin.symbol}
+            <AssetCell
+              assetId={token.value}
+              symbol={token.label}
+              logoUrl={token.logoUrl}
+              showSubtext={!!token.subtext}
+              subtext={token.subtext}
+              maxWidth="150px"
+              iconClassName="h-4 w-4"
+            />
           </DropdownMenuItem>
         ))}
-        {filteredCoins.length === 0 && (
+        {loading && filteredTokens.length === 0 && (
+          <div className="px-2 py-4 text-sm text-center text-muted-foreground">
+            Loading tokens...
+          </div>
+        )}
+        {!loading && filteredTokens.length === 0 && (
           <div className="px-2 py-4 text-sm text-center text-muted-foreground">
             No tokens found
           </div>

@@ -14,6 +14,7 @@ import {
 import { useGetFungibleAssetActivitiesByVersions } from "@/hooks/accounts/useGetFungibleAssetActivitiesByVersions";
 import { useGetAccountCoinTransfers } from "@/hooks/accounts/useGetAccountCoinTransfers";
 import { useGetAccountCoinTransfersCount } from "@/hooks/accounts/useGetAccountCoinTransfersCount";
+import { useGetAccountCoinTransferTokenOptions } from "@/hooks/accounts/useGetAccountCoinTransferTokenOptions";
 import { ColumnFilters } from "@/components/transactions";
 import {
   DateRangeColumnFilter,
@@ -51,6 +52,8 @@ export function AccountCoinTransfers({
   });
   const [coinFilter, setCoinFilter] = useState<string | null>(null);
   const [senderFilter, setSenderFilter] = useState<string | null>(null);
+  const { data: tokenOptions, isLoading: tokenOptionsLoading } =
+    useGetAccountCoinTransferTokenOptions(address);
 
   // Get page from URL or default to 1, capped at MAX_PAGES
   const pageParam = searchParams.get("page");
@@ -76,6 +79,7 @@ export function AccountCoinTransfers({
       activeCoin,
       dateRange.from,
       dateRange.to,
+      senderFilter,
     );
   const totalCount = txCount ?? 0;
   const totalPages = Math.min(
@@ -176,7 +180,14 @@ export function AccountCoinTransfers({
         onToggleTimestampMode={setTimestampMode}
       />
     ),
-    token: <CoinColumnFilter value={activeCoin} onChange={setCoinFilter} />,
+    token: (
+      <CoinColumnFilter
+        value={activeCoin}
+        onChange={setCoinFilter}
+        tokens={tokenOptions}
+        isLoading={tokenOptionsLoading}
+      />
+    ),
     sender: (
       <AddressColumnFilter
         label="Sender"

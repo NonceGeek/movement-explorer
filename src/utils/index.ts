@@ -20,7 +20,7 @@ We can consider the version to be Infinity for this case.
 */
 export function sortTransactions(
   a: Types.Transaction,
-  b: Types.Transaction
+  b: Types.Transaction,
 ): number {
   const first = "version" in a ? parseInt(a.version) : Infinity;
   const second = "version" in b ? parseInt(b.version) : Infinity;
@@ -31,7 +31,7 @@ export function sortTransactions(
 export function setLocalStorageWithExpiry(
   key: string,
   value: string,
-  ttl: number
+  ttl: number,
 ) {
   if (typeof window === "undefined") return; // Server-side guard
   const now = new Date();
@@ -118,7 +118,7 @@ export const standardizeAddress = (address: AccountAddressInput): string => {
 
 export const tryStandardizeAddress = (
   address: AccountAddressInput | null | undefined,
-  logError?: boolean
+  logError?: boolean,
 ): string | undefined => {
   if (address) {
     try {
@@ -138,7 +138,7 @@ export const tryStandardizeAddress = (
 // Return 0 if the function is not found.
 export function getPublicFunctionLineNumber(
   sourceCode: string,
-  functionName: string
+  functionName: string,
 ) {
   const lines = sourceCode.split("\n");
   const fnRegex = buildFnDeclRegex(functionName);
@@ -195,8 +195,8 @@ function encodeVectorForViewRequest(type: string, value: string) {
             if (result < 0 || result > 255)
               throw new Error(`Invalid u8 value: ${result}`);
             return result;
-          })
-        )
+          }),
+        ),
       ).toString();
     } else if (["u16", "u32"].includes(match[1])) {
       return rawVector.map((v) => ensureNumber(v.trim()));
@@ -258,7 +258,7 @@ function assertType(val: any, types: string[] | string, message?: string) {
       message ||
         `Invalid arg: ${val} type should be ${
           types instanceof Array ? types.join(" or ") : types
-        }`
+        }`,
     );
   }
 }
@@ -283,7 +283,7 @@ function ensureMillisecondTimestamp(timestamp: string): bigint {
 
 export function parseTimestamp(
   timestamp: string,
-  ensureMilliSeconds: boolean = true
+  ensureMilliSeconds: boolean = true,
 ): moment.Moment {
   let time: bigint;
   if (ensureMilliSeconds) {
@@ -343,15 +343,23 @@ export function isValidStruct(text: string): boolean {
 export function getAssetSymbol(
   panoraSymbol: string | null | undefined,
   bridge: string | null | undefined,
-  symbol: string | null | undefined
+  symbol: string | null | undefined,
 ): string {
-  if (panoraSymbol && panoraSymbol !== symbol) {
-    if (bridge) {
-      return `${panoraSymbol} (${bridge} ${symbol})`;
+  const isUrlLike = (value?: string | null) =>
+    /^https?:\/\//i.test(value ?? "");
+  const safePanoraSymbol = isUrlLike(panoraSymbol) ? null : panoraSymbol;
+  const safeBridge = isUrlLike(bridge) ? null : bridge;
+  const safeSymbol = isUrlLike(symbol) ? null : symbol;
+
+  if (safePanoraSymbol && safePanoraSymbol !== safeSymbol) {
+    if (safeBridge) {
+      return `${safePanoraSymbol} (${safeBridge} ${safeSymbol})`;
     }
-    return `${panoraSymbol} (${symbol})`;
-  } else if (symbol) {
-    return symbol;
+    return safeSymbol
+      ? `${safePanoraSymbol} (${safeSymbol})`
+      : safePanoraSymbol;
+  } else if (safeSymbol) {
+    return safeSymbol;
   }
   return "";
 }
